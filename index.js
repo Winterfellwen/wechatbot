@@ -18,8 +18,31 @@ const pool = DATABASE_URL ? new Pool({
   connectionString: DATABASE_URL,
 }) : null;
 
+const APP_ID = 'wx2510f82943d7741e';
+const APP_SECRET = '2ebc324a6ee1d9baabf7223511006366';
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/wechat/openid', async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({ error: 'Missing code' });
+    }
+    
+    const response = await fetch(`https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${APP_SECRET}&js_code=${code}&grant_type=authorization_code`);
+    const data = await response.json();
+    
+    if (data.errcode) {
+      return res.status(400).json({ error: data.errmsg });
+    }
+    
+    res.json({ openid: data.openid, session_key: data.session_key });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/init', async (req, res) => {
