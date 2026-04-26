@@ -71,21 +71,19 @@ login() {
 
   checkOrCreateUser(openid, avatarUrl) {
     wx.request({
-      url: `${API_URL}/api/user/check`,
-      method: 'POST',
-      data: { openid },
-      header: { 'x-api-key': API_KEY },
+      url: `${API_URL}/api/users/${openid}`,
+      method: 'GET',
       success: (res) => {
-        if (res.data && res.data.exists) {
-          const userInfo = res.data.user;
+        if (res.statusCode === 200) {
+          const userInfo = res.data;
           app.setUserInfo(userInfo);
           this.setData({ userInfo, isLoggedIn: true });
-        } else {
+        } else if (res.statusCode === 404) {
           this.promptNickname(openid, avatarUrl);
         }
       },
       fail: () => {
-        wx.showToast({ title: '网络错误', icon: 'none' });
+        this.promptNickname(openid, avatarUrl);
       }
     });
   },
@@ -107,13 +105,13 @@ login() {
 
   createUser(openid, avatarUrl, nickName) {
     wx.request({
-      url: `${API_URL}/api/user/create`,
+      url: `${API_URL}/api/users/${openid}`,
       method: 'POST',
       data: { openid, nickName, avatarUrl },
       header: { 'x-api-key': API_KEY },
       success: (res) => {
-        if (res.data && res.data.user) {
-          const userInfo = res.data.user;
+        if (res.data) {
+          const userInfo = { openid, nickName, avatarUrl };
           app.setUserInfo(userInfo);
           this.setData({ userInfo, isLoggedIn: true });
           wx.showToast({ title: '登录成功', icon: 'success' });
