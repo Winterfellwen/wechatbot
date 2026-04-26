@@ -1,12 +1,12 @@
 <!--pages/user/user.wxml-->
 <view class="container">
-  <view class="user-header">
+  <button class="user-header" open-type="{{isLoggedIn ? 'chooseAvatar' : ''}}" bindchooseavatar="handleChooseAvatar" bindtap="handleUserTap">
     <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
     <view class="user-info">
       <text class="user-nickname">{{userInfo.nickName || '游客'}}</text>
-      <text class="user-status">{{isLoggedIn ? '已登录' : '未登录'}}</text>
+      <text class="user-status">{{isLoggedIn ? '已登录 点击更换头像' : '点击登录'}}</text>
     </view>
-  </view>
+  </button>
 
   <view class="user-content">
     <view class="info-card">

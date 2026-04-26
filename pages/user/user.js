@@ -23,6 +23,12 @@ Page({
     });
   },
 
+  handleUserTap() {
+    if (!this.data.isLoggedIn) {
+      wx.switchTab({ url: '/pages/index/index' });
+    }
+  },
+
   handleChooseAvatar(e) {
     if (!this.data.isLoggedIn) return;
     const avatarUrl = e.detail.avatarUrl;
