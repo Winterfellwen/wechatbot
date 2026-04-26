@@ -50,13 +50,14 @@ Page({
     });
   },
 
-  loginWithCode(code) {
-    const API_KEY = 'rnd_cIEZYlFoB5pJx4byk0tiONKcCBnk';
+loginWithCode(code) {
     const OPENID = wx.getStorageSync('openid') || 'wx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     wx.setStorageSync('openid', OPENID);
 
+    wx.showLoading({ title: '登录中...' });
+
     wx.request({
-      url: `https://render-db-api.onrender.com/api/users/${OPENID}/wx-login`,
+      url: `${API_URL}/api/users/${OPENID}/wx-login`,
       method: 'POST',
       header: {
         'Authorization': API_KEY,
