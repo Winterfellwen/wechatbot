@@ -94,7 +94,7 @@ app.post('/api/users/:openid/wx-login', async (req, res) => {
        VALUES ($1, '微信用户', NOW(), NOW())
        ON CONFLICT (openid) DO UPDATE SET updatedAt = NOW()
        RETURNING *`,
-      [openid, '微信用户']
+      [openid]
     );
     
     res.json({ user: result.rows[0] });
