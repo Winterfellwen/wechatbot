@@ -31,6 +31,27 @@ Page({
     }
   },
 
+  handleNicknameTap() {
+    if (!this.data.isLoggedIn) return;
+    wx.showModal({
+      title: '修改昵称',
+      placeholderText: '请输入昵称',
+      editable: true,
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const nickName = res.content.trim();
+          if (nickName) {
+            const userInfo = { ...this.data.userInfo, nickName: nickName };
+            app.setUserInfo(userInfo);
+            this.setData({ userInfo: userInfo });
+            this.saveUserToBackend(userInfo);
+            wx.showToast({ title: '昵称已更新', icon: 'success' });
+          }
+        }
+      }
+    });
+  },
+
   handleChooseAvatarTap() {
     wx.showToast({ title: '点击头像更换', icon: 'none' });
   },

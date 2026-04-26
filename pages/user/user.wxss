@@ -67,6 +67,16 @@
   font-size: 28rpx;
 }
 
+.info-value-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.info-arrow {
+  margin-left: 10rpx;
+  color: #999;
+}
+
 .btn-group {
   margin-top: 40rpx;
   padding: 0 20rpx;

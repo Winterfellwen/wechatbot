@@ -1,6 +1,6 @@
 <!--pages/user/user.wxml-->
 <view class="container">
-  <view class="user-header" bindtap="{{isLoggedIn ? 'handleChooseAvatarTap' : 'handleUserTap'}}">
+  <view class="user-header" bindtap="handleUserTap">
     <view class="user-info">
       <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
       <view class="user-detail">
@@ -12,13 +12,16 @@
 
   <view class="user-content">
     <view class="info-card">
-      <view class="info-item">
-        <text class="info-label">头像</text>
-        <text class="info-value">{{isLoggedIn ? '已设置' : '未设置'}}</text>
+      <view class="info-item" bindtap="handleNicknameTap">
+        <text class="info-label">昵称</text>
+        <view class="info-value-wrap">
+          <text class="info-value">{{userInfo.nickName || '-'}}</text>
+          <text class="info-arrow">></text>
+        </view>
       </view>
       <view class="info-item">
-        <text class="info-label">昵称</text>
-        <text class="info-value">{{userInfo.nickName || '-'}}</text>
+        <text class="info-label">头像</text>
+        <text class="info-value">{{userInfo.avatarUrl ? '已设置' : '未设置'}}</text>
       </view>
       <view class="info-item">
         <text class="info-label">状态</text>
@@ -27,9 +30,7 @@
     </view>
 
     <view class="btn-group">
-      <view class="btn-primary" bindtap="handleLogout" wx:if="{{isLoggedIn}}">
-        <text>退出登录</text>
-      </view>
+      <button class="btn-primary" bindtap="handleLogout" wx:if="{{isLoggedIn}}">退出登录</button>
     </view>
   </view>
 </view>
