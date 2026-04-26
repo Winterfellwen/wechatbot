@@ -9,13 +9,12 @@ app.use(express.json());
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
-  console.error('DATABASE_URL not set');
-  process.exit(1);
+  console.error('DATABASE_URL not set - using fallback mode');
 }
 
-const pool = new Pool({
+const pool = DATABASE_URL ? new Pool({
   connectionString: DATABASE_URL,
-});
+}) : null;
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
