@@ -25,7 +25,31 @@ Page({
     });
   },
 
+  login() {
+    wx.showLoading({ title: '登录中...' });
+    wx.login({
+      success: (res) => {
+        if (res.code) {
+          this.loginWithCode(res.code, '');
+        } else {
+          wx.hideLoading();
+          wx.showToast({ title: '登录失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({ title: '登录失败', icon: 'none' });
+      }
+    });
+  },
+
   handleUserTap() {
+    if (!this.data.isLoggedIn) {
+      this.login();
+    }
+  },
+
+  handleChooseAvatarTap() {
     if (!this.data.isLoggedIn) {
       this.login();
     }
@@ -52,100 +76,6 @@ Page({
     });
   },
 
-  handleChooseAvatarTap() {
-    wx.showToast({ title: '点击头像更换', icon: 'none' });
-  },
-
-  login() {
-    wx.showLoading({ title: '登录中...' });
-    
-    wx.login({
-      success: (res) => {
-        if (res.code) {
-          this.loginWithCode(res.code);
-        } else {
-          wx.hideLoading();
-          wx.showToast({ title: '登录失败', icon: 'none' });
-        }
-      },
-      fail: () => {
-        wx.hideLoading();
-        wx.showToast({ title: '登录失败', icon: 'none' });
-      }
-    });
-  },
-
-  loginWithCode(code) {
-    wx.showLoading({ title: '登录中...' });
-
-    wx.request({
-      url: `${API_URL}/api/wechat/openid?code=${code}`,
-      method: 'GET',
-      success: (res) => {
-        wx.hideLoading();
-        if (res.data && res.data.openid) {
-          const OPENID = res.data.openid;
-          wx.setStorageSync('openid', OPENID);
-          this.loginWithOpenid(OPENID);
-        } else {
-          this.simpleLogin('wx_' + Date.now());
-        }
-      },
-      fail: () => {
-        wx.hideLoading();
-        this.simpleLogin('wx_' + Date.now());
-      }
-    });
-  },
-
-  loginWithOpenid(openid) {
-    wx.request({
-      url: `${API_URL}/api/users/${openid}/wx-login`,
-      method: 'POST',
-      header: {
-        'Authorization': API_KEY,
-        'Content-Type': 'application/json'
-      },
-      data: {},
-      success: (res) => {
-        if (res.data && res.data.user) {
-          const userInfo = {
-            openid: res.data.user.openid,
-            nickName: res.data.user.nickname || '微信用户',
-            avatarUrl: res.data.user.avatarurl || ''
-          };
-          app.setUserInfo(userInfo);
-          this.setData({ userInfo: userInfo, isLoggedIn: true });
-          wx.showToast({ title: '登录成功', icon: 'success' });
-        } else {
-          this.simpleLogin(openid);
-        }
-      },
-      fail: () => {
-        this.simpleLogin(openid);
-      }
-    });
-  },
-
-  simpleLogin(openid) {
-    const userInfo = { openid: openid, nickName: '微信用户', avatarUrl: '' };
-    app.setUserInfo(userInfo);
-    this.setData({ userInfo: userInfo, isLoggedIn: true });
-    wx.showToast({ title: '登录成功', icon: 'success' });
-  },
-
-  handleChooseAvatar(e) {
-    if (!this.data.isLoggedIn) return;
-    const avatarUrl = e.detail.avatarUrl;
-    if (avatarUrl) {
-      const userInfo = { ...this.data.userInfo, avatarUrl: avatarUrl };
-      app.setUserInfo(userInfo);
-      this.setData({ userInfo: userInfo });
-      this.saveUserToBackend(userInfo);
-      wx.showToast({ title: '头像已更新', icon: 'success' });
-    }
-  },
-
   saveUserToBackend(userInfo) {
     if (!userInfo.openid) return;
     wx.request({
@@ -169,5 +99,86 @@ Page({
         }
       }
     });
+  },
+
+  loginWithCode(code, avatarUrl) {
+    wx.request({
+      url: `${API_URL}/api/wechat/openid?code=${code}`,
+      method: 'GET',
+      success: (res) => {
+        wx.hideLoading();
+        if (res.data && res.data.openid) {
+          wx.setStorageSync('openid', res.data.openid);
+          this.loginWithOpenid(res.data.openid, avatarUrl);
+        } else {
+          this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl);
+        }
+      },
+      fail: () => {
+        wx.hideLoading();
+        this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl);
+      }
+    });
+  },
+
+  loginWithOpenid(openid, avatarUrl) {
+    wx.request({
+      url: `${API_URL}/api/users/${openid}/wx-login`,
+      method: 'POST',
+      header: { 'Authorization': API_KEY, 'Content-Type': 'application/json' },
+      data: {},
+      success: (res) => {
+        this.loginAfterSuccess(res.data?.user || { openid: openid }, avatarUrl);
+      },
+      fail: () => {
+        this.loginAfterSuccess({ openid: openid }, avatarUrl);
+      }
+    });
+  },
+
+  loginAfterSuccess(userData, avatarUrl) {
+    const userInfo = {
+      openid: userData.openid,
+      nickName: userData.nickname || '',
+      avatarUrl: avatarUrl || userData.avatarurl || ''
+    };
+    
+    if (!userInfo.nickName) {
+      this.showNicknameInput(userInfo);
+    } else {
+      this.completeLogin(userInfo);
+    }
+  },
+
+  showNicknameInput(userInfo) {
+    wx.showModal({
+      title: '设置昵称',
+      placeholderText: '请输入昵称',
+      editable: true,
+      success: (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          userInfo.nickName = res.content.trim();
+          this.saveAndCompleteLogin(userInfo);
+        } else {
+          this.showNicknameInput(userInfo);
+        }
+      },
+      fail: () => {
+        userInfo.nickName = '用户' + Date.now() % 10000;
+        this.saveAndCompleteLogin(userInfo);
+      }
+    });
+  },
+
+  saveAndCompleteLogin(userInfo) {
+    app.setUserInfo(userInfo);
+    this.setData({ userInfo: userInfo, isLoggedIn: true });
+    wx.showToast({ title: '登录成功', icon: 'success' });
+  },
+
+  completeLogin(userInfo) {
+    app.setUserInfo(userInfo);
+    this.setData({ userInfo: userInfo, isLoggedIn: true });
+    wx.showToast({ title: '登录成功', icon: 'success' });
   }
 });

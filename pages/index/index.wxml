@@ -1,15 +1,15 @@
 <!--pages/index/index.wxml-->
 <view class="container">
   <!-- 顶部用户信息栏 -->
-  <view class="header" bindtap="handleUserTap">
+  <button class="header" open-type="chooseAvatar" bindchooseavatar="handleChooseAvatar">
     <view class="user-info">
       <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
       <view class="user-detail">
         <text class="nickname">{{userInfo.nickName || '游客'}}</text>
-        <text class="status">{{isLoggedIn ? '已登录' : '点击登录'}}</text>
+        <text class="status">{{isLoggedIn ? '已登录' : '点击头像登录'}}</text>
       </view>
     </view>
-  </view>
+  </button>
 
   <!-- 入口卡片区 -->
   <view class="entry-container">
