@@ -73,18 +73,18 @@ Page({
   },
 
   goToLesson() {
-    wx.redirectTo({ url: '/pages/learn/learn' });
+    wx.redirectTo({ url: '/japanese/pages/learn/learn' });
   },
 
   goToCourse() {
-    wx.redirectTo({ url: '/pages/course/course' });
+    wx.redirectTo({ url: '/japanese/pages/course/course' });
   },
 
   goToAI() {
-    wx.redirectTo({ url: '/pages/aichat/aichat' });
+    wx.redirectTo({ url: '/japanese/pages/aichat/aichat' });
   },
 
   goToRank() {
-    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+    wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' });
   }
 });

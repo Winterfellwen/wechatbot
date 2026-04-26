@@ -212,23 +212,23 @@ Page({
   startLesson: function(e) {
     var id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: '/pages/lesson/lesson?id=' + id
+      url: '/japanese/pages/lesson/lesson?id=' + id
     });
   },
 
   goToLesson: function() {
-    wx.redirectTo({ url: '/pages/learn/learn' });
+    wx.redirectTo({ url: '/japanese/pages/learn/learn' });
   },
 
   goToCourse: function() {
-    wx.redirectTo({ url: '/pages/course/course' });
+    wx.redirectTo({ url: '/japanese/pages/course/course' });
   },
 
   goToAI: function() {
-    wx.redirectTo({ url: '/pages/aichat/aichat' });
+    wx.redirectTo({ url: '/japanese/pages/aichat/aichat' });
   },
 
   goToRank: function() {
-    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+    wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' });
   }
 });

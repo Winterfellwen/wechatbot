@@ -124,7 +124,7 @@ login() {
   handleEntryTap(e) {
     const type = e.currentTarget.dataset.type;
     if (type === 'japanese') {
-      wx.navigateTo({ url: '/pages/learn/learn' });
+      wx.navigateTo({ url: '/japanese/pages/learn/learn' });
     } else if (type === 'german') {
       wx.showToast({ title: '德语学习开发中', icon: 'none' });
     } else if (type === 'pdf') {

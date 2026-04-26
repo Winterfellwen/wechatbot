@@ -48,8 +48,9 @@ Page({
       cancelText: '系统阅读器',
       success: (res) => {
         if (res.confirm) {
-          wx.navigateTo({
-            url: `/pages/pdfviewer/pdfviewer?file=${fileName}`
+          wx.showToast({
+            title: '功能开发中',
+            icon: 'none'
           });
         } else {
           this.openInSystem(fileName);
@@ -69,11 +70,11 @@ Page({
     const type = e.currentTarget.dataset.type;
     if (type === 'words') {
       wx.navigateTo({
-        url: '/pages/wordbook/wordbook'
+        url: '/japanese/pages/wordbook/wordbook'
       });
     } else if (type === 'kanji') {
       wx.navigateTo({
-        url: '/pages/grammar/grammar'
+        url: '/japanese/pages/grammar/grammar'
       });
     } else if (type === 'course') {
       wx.showToast({
