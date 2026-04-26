@@ -1,5 +1,4 @@
-var API_KEY = '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';
-var API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+var API_URL = 'https://wechatbot-api.onrender.com/api/chat';
 var SYSTEM_PROMPT = '你是日语学习智能老师，擅长用简单易懂的方式教日语。可以回答日语语法、词汇、发音、日常对话等问题。你的回复应该简洁、有帮助，适合初学者。可以用中文回答，也可以中日双语对照。';
 
 Page({
@@ -35,18 +34,12 @@ Page({
     wx.request({
       url: API_URL,
       method: 'POST',
-      header: {
-        'Authorization': 'Bearer ' + API_KEY,
-        'Content-Type': 'application/json'
-      },
       data: {
-        model: 'nvidia/nemotron-3-super-120b-a12b:free',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT }
         ].concat(that.data.messages.slice(-10).map(function(m) {
           return { role: m.role, content: m.content };
-        })),
-        max_tokens: 500
+        }))
       },
       success: function(res) {
         var content = '';

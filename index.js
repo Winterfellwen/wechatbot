@@ -137,3 +137,33 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { messages } = req.body;
+    const openrouterKey = process.env.OPENROUTER_KEY;
+    
+    if (!openrouterKey) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openrouterKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'nvidia/nemotron-3-super-120b-a12b:free',
+        messages: messages,
+        max_tokens: 500
+      })
+    });
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
