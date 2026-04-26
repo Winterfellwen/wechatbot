@@ -1,7 +1,7 @@
 /*pages/user/user.wxss*/
 .user-header {
-  background-color: #fff;
-  padding: 30rpx;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
+  padding: 40rpx 32rpx;
   display: flex;
   align-items: center;
   border: none;
@@ -14,45 +14,48 @@
 }
 
 .user-avatar {
-  width: 100rpx;
-  height: 100rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background-color: #E2E8F0;
+  border: 4rpx solid #FFFFFF;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
-  margin-left: 20rpx;
+  margin-left: 24rpx;
   display: flex;
   flex-direction: column;
 }
 
 .user-nickname {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1E293B;
 }
 
 .user-status {
   font-size: 24rpx;
-  color: #999;
-  margin-top: 8rpx;
+  color: #64748B;
+  margin-top: 6rpx;
 }
 
 .user-content {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .info-card {
-  background-color: #fff;
+  background: #FFFFFF;
   border-radius: 16rpx;
-  padding: 20rpx 30rpx;
+  padding: 8rpx 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #F1F5F9;
 }
 
 .info-item:last-child {
@@ -60,34 +63,32 @@
 }
 
 .info-label {
-  color: #999;
+  color: #64748B;
   font-size: 28rpx;
 }
 
 .info-value {
-  color: #333;
+  color: #1E293B;
   font-size: 28rpx;
+  font-weight: 500;
 }
 
 .btn-group {
-  margin-top: 40rpx;
-  padding: 0 20rpx;
+  margin-top: 32rpx;
+  padding: 0;
 }
 
 .btn-primary {
-  background-color: #1890ff;
-  color: #fff;
-  border-radius: 10rpx;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  border-radius: 12rpx;
   padding: 24rpx 0;
   text-align: center;
+  font-weight: 600;
   font-size: 30rpx;
 }
 
-.btn-danger {
-  background-color: #ff4d4f;
-  color: #fff;
-  border-radius: 10rpx;
-  padding: 24rpx 0;
-  text-align: center;
-  font-size: 30rpx;
+.btn-primary:active {
+  opacity: 0.9;
+  transform: scale(0.98);
 }
