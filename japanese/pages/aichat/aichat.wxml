@@ -1,0 +1,48 @@
+<!--pages/aichat/aichat.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="header-title">智能老师</text>
+  </view>
+
+  <scroll-view scroll-y class="chat-list">
+    <block wx:for="{{messages}}" wx:key="id">
+      <view class="message {{item.role}}">
+        <view class="avatar">{{item.role === 'assistant' ? '🤖' : '👤'}}</view>
+        <view class="content">
+          <text>{{item.content}}</text>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{loading}}" class="message assistant">
+      <view class="avatar">🤖</view>
+      <view class="content loading">
+        <text>思考中...</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="input-area">
+    <input class="input" placeholder="问我任何日语问题..." bindinput="onInput" value="{{input}}" confirm-type="send" bindconfirm="sendMessage" />
+    <view class="send-btn" bindtap="sendMessage">发送</view>
+  </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view class="nav-item {{currentTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
+      <text class="nav-icon">🎯</text>
+      <text class="nav-text">闯关</text>
+    </view>
+    <view class="nav-item {{currentTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
+      <text class="nav-icon">📚</text>
+      <text class="nav-text">课程</text>
+    </view>
+    <view class="nav-item {{currentTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
+      <text class="nav-icon">🤖</text>
+      <text class="nav-text">智能老师</text>
+    </view>
+    <view class="nav-item {{currentTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
+      <text class="nav-icon">🏆</text>
+      <text class="nav-text">排行榜</text>
+    </view>
+  </view>
+</view>

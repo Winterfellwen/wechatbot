@@ -1,14 +1,14 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/learn/learn",
-    "pages/lesson/lesson",
-    "pages/course/course",
-    "pages/wordbook/wordbook",
-    "pages/grammar/grammar",
-    "pages/aichat/aichat",
-    "pages/textbook/textbook",
-    "pages/leaderboard/leaderboard",
+    "japanese/pages/learn/learn",
+    "japanese/pages/lesson/lesson",
+    "japanese/pages/course/course",
+    "japanese/pages/wordbook/wordbook",
+    "japanese/pages/grammar/grammar",
+    "japanese/pages/aichat/aichat",
+    "japanese/pages/textbook/textbook",
+    "japanese/pages/leaderboard/leaderboard",
     "pages/user/user"
   ],
   "window": {
