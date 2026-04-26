@@ -1,0 +1,86 @@
+/*pages/user/user.wxss*/
+.user-header {
+  background-color: #fff;
+  padding: 40rpx 30rpx;
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+}
+
+.user-info {
+  margin-left: 30rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-nickname {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-status {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
+
+.user-content {
+  padding: 20rpx;
+}
+
+.info-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 30rpx;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.info-value {
+  color: #333;
+  font-size: 28rpx;
+}
+
+.btn-group {
+  margin-top: 40rpx;
+  padding: 0 20rpx;
+}
+
+.btn-primary {
+  background-color: #1890ff;
+  color: #fff;
+  border-radius: 10rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+}
+
+.btn-danger {
+  background-color: #ff4d4f;
+  color: #fff;
+  border-radius: 10rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+}
