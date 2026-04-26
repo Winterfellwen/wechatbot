@@ -31,6 +31,10 @@ Page({
     }
   },
 
+  handleChooseAvatarTap() {
+    wx.showToast({ title: '点击头像更换', icon: 'none' });
+  },
+
   login() {
     wx.showLoading({ title: '登录中...' });
     

@@ -4,13 +4,11 @@
   padding: 30rpx;
   display: flex;
   align-items: center;
-  border: none;
-  margin: 0;
-  width: 100%;
 }
 
-.user-header::after {
-  display: none;
+.user-info {
+  display: flex;
+  align-items: center;
 }
 
 .user-avatar {
@@ -20,7 +18,7 @@
   background-color: #f0f0f0;
 }
 
-.user-info {
+.user-detail {
   margin-left: 20rpx;
   display: flex;
   flex-direction: column;
