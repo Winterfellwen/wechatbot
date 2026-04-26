@@ -123,14 +123,14 @@ login() {
 
   handleEntryTap(e) {
     const type = e.currentTarget.dataset.type;
-    if (type === 'learn') {
-      wx.switchTab({ url: '/pages/learn/learn' });
-    } else if (type === 'wordbook') {
-      wx.navigateTo({ url: '/pages/wordbook/wordbook' });
-    } else if (type === 'grammar') {
-      wx.navigateTo({ url: '/pages/grammar/grammar' });
-    } else if (type === 'leaderboard') {
-      wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+    if (type === 'japanese') {
+      wx.navigateTo({ url: '/pages/learn/learn' });
+    } else if (type === 'german') {
+      wx.showToast({ title: '德语学习开发中', icon: 'none' });
+    } else if (type === 'pdf') {
+      wx.showToast({ title: 'PDF工具开发中', icon: 'none' });
+    } else if (type === 'developing') {
+      wx.showToast({ title: '功能开发中', icon: 'none' });
     }
   }
 });

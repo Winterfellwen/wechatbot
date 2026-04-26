@@ -22,6 +22,10 @@ Page({
     this.loadProgress();
   },
 
+  goBack() {
+    wx.navigateBack();
+  },
+
   onShow() {
     this.loadProgress();
   },
@@ -65,6 +69,22 @@ Page({
     wx.navigateTo({
       url: `/pages/lesson/lesson?id=${id}&book=${this.data.currentLesson}`
     });
+  },
+
+  goToWords() {
+    wx.navigateTo({ url: '/pages/wordbook/wordbook' });
+  },
+
+  goToGrammar() {
+    wx.navigateTo({ url: '/pages/grammar/grammar' });
+  },
+
+  goToTextbook() {
+    wx.navigateTo({ url: '/pages/textbook/textbook' });
+  },
+
+  goToRank() {
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
   },
 
   getSampleLessons(bookId) {
