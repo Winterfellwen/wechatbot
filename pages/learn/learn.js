@@ -8,7 +8,8 @@ Page({
     exp: 0,
     currentBook: 1,
     books: [],
-    currentLessonData: []
+    currentLessonData: [],
+    currentTab: 'lesson'
   },
 
   onLoad() {
@@ -24,15 +25,14 @@ Page({
   },
 
   loadData() {
-    const books = CourseData.getBooks();
-    const completed = wx.getStorageSync('completedLessons') || [];
-    const totalLessons = CourseData.getTotalLessons();
-    const progress = wx.getStorageSync('learningProgress') || {};
+    var books = CourseData.getBooks();
+    var completed = wx.getStorageSync('completedLessons') || [];
+    var totalLessons = CourseData.getTotalLessons();
+    var progress = wx.getStorageSync('learningProgress') || {};
     
-    const currentData = CourseData.getLessonsByBook(this.data.currentBook).map(lesson => ({
-      ...lesson,
-      completed: completed.includes(lesson.id)
-    }));
+    var currentData = CourseData.getLessonsByBook(this.data.currentBook).map(function(lesson) {
+      return { ...lesson, completed: completed.indexOf(lesson.id) !== -1 };
+    });
     
     this.setData({
       books: books,
@@ -44,14 +44,13 @@ Page({
   },
 
   loadProgress() {
-    const completed = wx.getStorageSync('completedLessons') || [];
-    const progress = wx.getStorageSync('learningProgress') || {};
-    const totalLessons = CourseData.getTotalLessons();
+    var completed = wx.getStorageSync('completedLessons') || [];
+    var progress = wx.getStorageSync('learningProgress') || {};
+    var totalLessons = CourseData.getTotalLessons();
     
-    const currentData = CourseData.getLessonsByBook(this.data.currentBook).map(lesson => ({
-      ...lesson,
-      completed: completed.includes(lesson.id)
-    }));
+    var currentData = CourseData.getLessonsByBook(this.data.currentBook).map(function(lesson) {
+      return { ...lesson, completed: completed.indexOf(lesson.id) !== -1 };
+    });
     
     this.setData({
       progress: progress.progress || ((progress.lessonsCompleted || 0) / totalLessons * 100),
@@ -62,12 +61,11 @@ Page({
   },
 
   switchLesson(e) {
-    const id = e.currentTarget.dataset.id;
-    const completed = wx.getStorageSync('completedLessons') || [];
-    const currentData = CourseData.getLessonsByBook(id).map(lesson => ({
-      ...lesson,
-      completed: completed.includes(lesson.id)
-    }));
+    var id = e.currentTarget.dataset.id;
+    var completed = wx.getStorageSync('completedLessons') || [];
+    var currentData = CourseData.getLessonsByBook(id).map(function(lesson) {
+      return { ...lesson, completed: completed.indexOf(lesson.id) !== -1 };
+    });
     
     this.setData({
       currentBook: id,
@@ -76,22 +74,22 @@ Page({
   },
 
   startLesson(e) {
-    const id = e.currentTarget.dataset.id;
+    var id = e.currentTarget.dataset.id;
     wx.navigateTo({
       url: '/pages/lesson/lesson?id=' + id
     });
   },
 
-  goToWords() {
-    wx.navigateTo({ url: '/pages/wordbook/wordbook' });
+  goToLesson() {
+    wx.redirectTo({ url: '/pages/learn/learn' });
   },
 
-  goToGrammar() {
-    wx.navigateTo({ url: '/pages/grammar/grammar' });
+  goToCourse() {
+    wx.redirectTo({ url: '/pages/course/course' });
   },
 
-  goToTextbook() {
-    wx.navigateTo({ url: '/pages/textbook/textbook' });
+  goToAI() {
+    wx.redirectTo({ url: '/pages/aichat/aichat' });
   },
 
   goToRank() {

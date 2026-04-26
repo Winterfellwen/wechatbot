@@ -54,4 +54,24 @@
       <text class="stat-label">连续天数</text>
     </view>
   </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view class="nav-item {{currentPageTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
+      <text class="nav-icon">🎯</text>
+      <text class="nav-text">闯关</text>
+    </view>
+    <view class="nav-item {{currentPageTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
+      <text class="nav-icon">📚</text>
+      <text class="nav-text">课程</text>
+    </view>
+    <view class="nav-item {{currentPageTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
+      <text class="nav-icon">🤖</text>
+      <text class="nav-text">智能老师</text>
+    </view>
+    <view class="nav-item {{currentPageTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
+      <text class="nav-icon">🏆</text>
+      <text class="nav-text">排行榜</text>
+    </view>
+  </view>
 </view>

@@ -44,19 +44,19 @@
 
   <!-- 底部导航 -->
   <view class="bottom-nav">
-    <view class="nav-item" bindtap="goToWords">
-      <text class="nav-icon">📝</text>
-      <text class="nav-text">单词本</text>
+    <view class="nav-item {{currentTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
+      <text class="nav-icon">🎯</text>
+      <text class="nav-text">闯关</text>
     </view>
-    <view class="nav-item" bindtap="goToGrammar">
-      <text class="nav-icon">📖</text>
-      <text class="nav-text">语法</text>
-    </view>
-    <view class="nav-item" bindtap="goToTextbook">
+    <view class="nav-item {{currentTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
       <text class="nav-icon">📚</text>
-      <text class="nav-text">课本</text>
+      <text class="nav-text">课程</text>
     </view>
-    <view class="nav-item" bindtap="goToRank">
+    <view class="nav-item {{currentTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
+      <text class="nav-icon">🤖</text>
+      <text class="nav-text">智能老师</text>
+    </view>
+    <view class="nav-item {{currentTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
       <text class="nav-icon">🏆</text>
       <text class="nav-text">排行榜</text>
     </view>

@@ -3,8 +3,10 @@
     "pages/index/index",
     "pages/learn/learn",
     "pages/lesson/lesson",
+    "pages/course/course",
     "pages/wordbook/wordbook",
     "pages/grammar/grammar",
+    "pages/aichat/aichat",
     "pages/textbook/textbook",
     "pages/leaderboard/leaderboard",
     "pages/user/user"

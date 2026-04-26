@@ -8,6 +8,7 @@ Page({
     level: 1,
     totalScore: 0,
     currentTab: 'progress',
+    currentPageTab: 'rank',
     rankList: [],
     wordsLearned: 0,
     lessonsCompleted: 0,
@@ -15,6 +16,7 @@ Page({
   },
 
   onLoad() {
+    this.setData({ currentPageTab: 'rank' });
     this.loadUserInfo();
   },
 
@@ -81,5 +83,21 @@ Page({
       { openid: 'user5', nickName: '学习爱好者', avatarUrl: '', level: 3, progress: 15, words: 180, score: 900 },
       { openid: 'user6', nickName: '新手入门', avatarUrl: '', level: 1, progress: 5, words: 50, score: 200 }
     ];
+  },
+
+  goToLesson() {
+    wx.redirectTo({ url: '/pages/learn/learn' });
+  },
+
+  goToCourse() {
+    wx.redirectTo({ url: '/pages/course/course' });
+  },
+
+  goToAI() {
+    wx.redirectTo({ url: '/pages/aichat/aichat' });
+  },
+
+  goToRank() {
+    wx.redirectTo({ url: '/pages/leaderboard/leaderboard' });
   }
 });
