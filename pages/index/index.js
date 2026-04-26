@@ -53,37 +53,46 @@ Page({
   },
 
 loginWithCode(code) {
-    const OPENID = wx.getStorageSync('openid') || 'wx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    wx.setStorageSync('openid', OPENID);
-
     wx.showLoading({ title: '登录中...' });
 
-    wx.request({
-      url: `${API_URL}/api/users/${OPENID}/wx-login`,
-      method: 'POST',
-      header: {
-        'Authorization': API_KEY,
-        'Content-Type': 'application/json'
-      },
-      data: { code: code },
-      success: (res) => {
-        wx.hideLoading();
-        if (res.data && res.data.user) {
-          const userInfo = {
-            openid: res.data.user.openid,
-            nickName: res.data.user.nickName || '微信用户',
-            avatarUrl: res.data.user.avatarUrl || ''
-          };
-          app.setUserInfo(userInfo);
-          this.setData({ userInfo: userInfo, isLoggedIn: true });
-          wx.showToast({ title: '登录成功', icon: 'success' });
-        } else {
-          this.simpleLogin(OPENID);
-        }
+    wx.getSystemInfo({
+      success: (sysInfo) => {
+        const deviceId = sysInfo.deviceId || sysInfo.system + '_' + sysInfo.model;
+        const OPENID = 'user_' + Math.abs(deviceId.split('').reduce((a, b) => a + b.charCodeAt(0), 0));
+        wx.setStorageSync('openid', OPENID);
+
+        wx.request({
+          url: `${API_URL}/api/users/${OPENID}/wx-login`,
+          method: 'POST',
+          header: {
+            'Authorization': API_KEY,
+            'Content-Type': 'application/json'
+          },
+          data: { code: code, deviceInfo: sysInfo.brand + ' ' + sysInfo.model },
+          success: (res) => {
+            wx.hideLoading();
+            if (res.data && res.data.user) {
+              const userInfo = {
+                openid: res.data.user.openid,
+                nickName: res.data.user.nickname || '微信用户',
+                avatarUrl: res.data.user.avatarurl || ''
+              };
+              app.setUserInfo(userInfo);
+              this.setData({ userInfo: userInfo, isLoggedIn: true });
+              wx.showToast({ title: '登录成功', icon: 'success' });
+            } else {
+              this.simpleLogin(OPENID);
+            }
+          },
+          fail: () => {
+            wx.hideLoading();
+            this.simpleLogin(OPENID);
+          }
+        });
       },
       fail: () => {
         wx.hideLoading();
-        this.simpleLogin(OPENID);
+        this.simpleLogin('wx_' + Date.now());
       }
     });
   },
@@ -97,6 +106,12 @@ loginWithCode(code) {
     app.setUserInfo(userInfo);
     this.setData({ userInfo: userInfo, isLoggedIn: true });
     wx.showToast({ title: '登录成功', icon: 'success' });
+  },
+
+  handleUserTap() {
+    if (this.data.isLoggedIn) {
+      wx.switchTab({ url: '/pages/user/user' });
+    }
   },
 
   handleChooseAvatar(e) {

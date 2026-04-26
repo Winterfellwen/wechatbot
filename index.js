@@ -87,7 +87,7 @@ app.get('/api/users/:openid', async (req, res) => {
 app.post('/api/users/:openid/wx-login', async (req, res) => {
   try {
     const { openid } = req.params;
-    const { code } = req.body;
+    const { code, deviceInfo } = req.body;
     
     const result = await pool.query(
       `INSERT INTO users (openid, nickName, createdAt, updatedAt)
