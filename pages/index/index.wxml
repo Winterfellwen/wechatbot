@@ -1,7 +1,7 @@
 <!--pages/index/index.wxml-->
 <view class="container">
   <!-- 顶部用户信息栏 -->
-  <button class="header" open-type="chooseAvatar" bindchooseavatar="handleChooseAvatar">
+  <button class="header-btn" open-type="chooseAvatar" bindchooseavatar="handleChooseAvatar">
     <view class="user-info">
       <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
       <view class="user-detail">
