@@ -22,6 +22,29 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/init', async (req, res) => {
+  if (!pool) return res.status(500).json({ error: 'No database' });
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        openid VARCHAR(255) PRIMARY KEY,
+        nickName VARCHAR(255),
+        avatarUrl TEXT,
+        gender INTEGER,
+        country VARCHAR(100),
+        province VARCHAR(100),
+        city VARCHAR(100),
+        language VARCHAR(50),
+        createdAt TIMESTAMP DEFAULT NOW(),
+        updatedAt TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    res.json({ status: 'ok', message: 'Users table created' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/users/:openid', async (req, res) => {
   try {
     const { openid } = req.params;
