@@ -74,14 +74,14 @@ app.post('/api/users/:openid', async (req, res) => {
     const { nickName, avatarUrl, gender, country, province, city, language } = req.body;
     
     const result = await pool.query(
-      `INSERT INTO users (openid, nickName, avatarUrl, gender, country, province, city, language, createdAt, updatedAt)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      `INSERT INTO users (openid, nickName, avatarUrl, createdAt, updatedAt)
+       VALUES ($1, $2, $3, NOW(), NOW())
        ON CONFLICT (openid) DO UPDATE SET
          nickName = COALESCE(EXCLUDED.nickName, users.nickName),
          avatarUrl = COALESCE(EXCLUDED.avatarUrl, users.avatarUrl),
          updatedAt = NOW()
        RETURNING *`,
-      [openid, nickName, avatarUrl, gender, country, province, city, language]
+      [openid, nickName, avatarUrl || null]
     );
     
     res.json(result.rows[0]);
