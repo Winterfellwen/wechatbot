@@ -19,7 +19,7 @@
   align-items: center;
 }
 
-.avatar {
+.user-avatar {
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
@@ -32,13 +32,13 @@
   flex-direction: column;
 }
 
-.nickname {
+.user-nickname {
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
 }
 
-.status {
+.user-status {
   font-size: 24rpx;
   color: #999;
   margin-top: 8rpx;
