@@ -117,16 +117,6 @@ simpleLogin(openid) {
     }
   },
 
-  handleChooseAvatar(e) {
-    const avatarUrl = e.detail.avatarUrl;
-    if (avatarUrl) {
-      const userInfo = { ...this.data.userInfo, avatarUrl: avatarUrl };
-      app.setUserInfo(userInfo);
-      this.setData({ userInfo: userInfo });
-      wx.showToast({ title: '头像已更新', icon: 'success' });
-    }
-  },
-
   handleEntryTap(e) {
     const type = e.currentTarget.dataset.type;
 
