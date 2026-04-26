@@ -1,25 +1,18 @@
 const app = getApp();
-const API_URL = 'https://wechatbot-api.onrender.com';
-const API_KEY = 'rnd_cIEZYlFoB5pJx4byk0tiONKcCBnk';
+const CourseData = require('../../data/courseData');
 
 Page({
   data: {
     progress: 0,
     level: 1,
     exp: 0,
-    currentLesson: 1,
-    lessons: [
-      { id: 1, name: '第一册' },
-      { id: 2, name: '第二册' },
-      { id: 3, name: '第三册' },
-      { id: 4, name: '第四册' },
-      { id: 5, name: '第五册' }
-    ],
+    currentBook: 1,
+    books: [],
     currentLessonData: []
   },
 
   onLoad() {
-    this.loadProgress();
+    this.loadData();
   },
 
   goBack() {
@@ -30,17 +23,81 @@ Page({
     this.loadProgress();
   },
 
-  loadProgress() {
-    const progress = wx.getStorageSync('learningProgress') || {};
+  loadData() {
+    const books = CourseData.getBooks();
     const completed = wx.getStorageSync('completedLessons') || [];
-    const totalLessons = 28;
+    const totalLessons = CourseData.getTotalLessons();
+    const progress = wx.getStorageSync('learningProgress') || {};
+    
+    const currentData = CourseData.getLessonsByBook(this.data.currentBook).map(lesson => ({
+      ...lesson,
+      completed: completed.includes(lesson.id)
+    }));
+    
+    this.setData({
+      books: books,
+      currentLessonData: currentData,
+      progress: (progress.lessonsCompleted || 0) / totalLessons * 100,
+      level: progress.level || 1,
+      exp: progress.exp || 0
+    });
+  },
+
+  loadProgress() {
+    const completed = wx.getStorageSync('completedLessons') || [];
+    const progress = wx.getStorageSync('learningProgress') || {};
+    const totalLessons = CourseData.getTotalLessons();
+    
+    const currentData = CourseData.getLessonsByBook(this.data.currentBook).map(lesson => ({
+      ...lesson,
+      completed: completed.includes(lesson.id)
+    }));
     
     this.setData({
       progress: progress.progress || ((progress.lessonsCompleted || 0) / totalLessons * 100),
       level: progress.level || 1,
       exp: progress.exp || 0,
-      currentLessonData: this.getSampleLessons(this.data.currentLesson, completed)
+      currentLessonData: currentData
     });
+  },
+
+  switchLesson(e) {
+    const id = e.currentTarget.dataset.id;
+    const completed = wx.getStorageSync('completedLessons') || [];
+    const currentData = CourseData.getLessonsByBook(id).map(lesson => ({
+      ...lesson,
+      completed: completed.includes(lesson.id)
+    }));
+    
+    this.setData({
+      currentBook: id,
+      currentLessonData: currentData
+    });
+  },
+
+  startLesson(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/lesson/lesson?id=${id}`
+    });
+  },
+
+  goToWords() {
+    wx.navigateTo({ url: '/pages/wordbook/wordbook' });
+  },
+
+  goToGrammar() {
+    wx.navigateTo({ url: '/pages/grammar/grammar' });
+  },
+
+  goToTextbook() {
+    wx.navigateTo({ url: '/pages/textbook/textbook' });
+  },
+
+  goToRank() {
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+  }
+});
   },
 
   switchLesson(e) {

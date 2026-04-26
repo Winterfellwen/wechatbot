@@ -9,12 +9,12 @@
     <view class="progress-text">Lv.{{level}} · {{exp}}XP</view>
   </view>
 
-  <!-- 课程选择 -->
+  <!-- 教材选择 -->
   <view class="lesson-tabs">
     <view 
-      wx:for="{{lessons}}" 
+      wx:for="{{books}}" 
       wx:key="id" 
-      class="tab-item {{currentLesson === item.id ? 'active' : ''}}"
+      class="tab-item {{currentBook === item.id ? 'active' : ''}}"
       bindtap="switchLesson" 
       data-id="{{item.id}}">
       {{item.name}}
