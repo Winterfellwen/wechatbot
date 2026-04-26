@@ -81,9 +81,8 @@ Page({
     wx.request({
       url: `${API_URL}/api/users/${userInfo.openid}`,
       method: 'POST',
-      header: { 'x-api-key': API_KEY },
       data: { nickName: userInfo.nickName, avatarUrl: userInfo.avatarUrl },
-      fail: () => {}
+      success: () => {}
     });
   },
 

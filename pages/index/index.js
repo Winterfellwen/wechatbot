@@ -108,7 +108,6 @@ login() {
       url: `${API_URL}/api/users/${openid}`,
       method: 'POST',
       data: { openid, nickName, avatarUrl },
-      header: { 'x-api-key': API_KEY },
       success: (res) => {
         if (res.data) {
           const userInfo = { openid, nickName, avatarUrl };

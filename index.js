@@ -70,8 +70,11 @@ app.get('/api/init', async (req, res) => {
 
 app.post('/api/users/:openid', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
     const { openid } = req.params;
-    const { nickName, avatarUrl, gender, country, province, city, language } = req.body;
+    const { nickName, avatarUrl } = req.body;
     
     const result = await pool.query(
       `INSERT INTO users (openid, nickName, avatarUrl, createdAt, updatedAt)
@@ -86,13 +89,16 @@ app.post('/api/users/:openid', async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('POST /api/users/:openid error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.get('/api/users/:openid', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
     const { openid } = req.params;
     const result = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
     
@@ -102,7 +108,7 @@ app.get('/api/users/:openid', async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('GET /api/users/:openid error:', err);
     res.status(500).json({ error: err.message });
   }
 });
