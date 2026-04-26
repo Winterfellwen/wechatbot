@@ -81,7 +81,7 @@ Page({
     wx.request({
       url: `${API_URL}/api/users/${userInfo.openid}`,
       method: 'POST',
-      header: { 'Authorization': API_KEY, 'Content-Type': 'application/json' },
+      header: { 'x-api-key': API_KEY },
       data: { nickName: userInfo.nickName, avatarUrl: userInfo.avatarUrl },
       fail: () => {}
     });
@@ -125,7 +125,7 @@ Page({
     wx.request({
       url: `${API_URL}/api/users/${openid}/wx-login`,
       method: 'POST',
-      header: { 'Authorization': API_KEY, 'Content-Type': 'application/json' },
+      header: { 'x-api-key': API_KEY },
       data: {},
       success: (res) => {
         this.loginAfterSuccess(res.data?.user || { openid: openid }, avatarUrl);
