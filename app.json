@@ -1,6 +1,12 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/learn/learn",
+    "pages/lesson/lesson",
+    "pages/wordbook/wordbook",
+    "pages/grammar/grammar",
+    "pages/textbook/textbook",
+    "pages/leaderboard/leaderboard",
     "pages/user/user"
   ],
   "window": {
@@ -20,6 +26,18 @@
         "text": "入口",
         "iconPath": "images/icon-home.png",
         "selectedIconPath": "images/icon-home-active.png"
+      },
+      {
+        "pagePath": "pages/learn/learn",
+        "text": "学习",
+        "iconPath": "images/icon-learn.png",
+        "selectedIconPath": "images/icon-learn-active.png"
+      },
+      {
+        "pagePath": "pages/textbook/textbook",
+        "text": "课本",
+        "iconPath": "images/icon-book.png",
+        "selectedIconPath": "images/icon-book-active.png"
       },
       {
         "pagePath": "pages/user/user",

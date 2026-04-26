@@ -1,0 +1,156 @@
+/*pages/leaderboard/leaderboard.wxss*/
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 200rpx;
+}
+
+.personal-card {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background-color: #58cc02;
+  margin: 20rpx;
+  border-radius: 16rpx;
+}
+
+.rank-number {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 30rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  border: 4rpx solid #fff;
+}
+
+.user-detail {
+  margin-left: 20rpx;
+}
+
+.nickname {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stats {
+  font-size: 26rpx;
+  color: rgba(255,255,255,0.8);
+  margin-top: 8rpx;
+}
+
+.tabs {
+  display: flex;
+  padding: 20rpx;
+  background-color: #fff;
+  margin: 0 20rpx;
+  border-radius: 16rpx 16rpx 0 0;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.tab.active {
+  color: #58cc02;
+  font-weight: bold;
+  border-bottom: 4rpx solid #58cc02;
+}
+
+.rank-list {
+  padding: 20rpx;
+  height: calc(100vh - 600rpx);
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.rank-item.top {
+  background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+}
+
+.rank-num {
+  width: 60rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #666;
+}
+
+.rank-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-left: 16rpx;
+}
+
+.rank-info {
+  flex: 1;
+  margin-left: 16rpx;
+}
+
+.rank-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.rank-level {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.rank-score {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #58cc02;
+}
+
+.my-stats {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: 30rpx;
+  background-color: #fff;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.1);
+}
+
+.stat-box {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #58cc02;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}

@@ -14,28 +14,28 @@
   <!-- 入口卡片区 -->
   <view class="entry-container">
     <view class="entry-grid">
-      <view class="entry-card" bindtap="handleEntryTap" data-type="japanese">
-        <image class="entry-icon" src="/images/icon-japanese.png" mode="aspectFit"></image>
-        <text class="entry-title">日语学习机器人</text>
-        <text class="entry-desc">日语学习好帮手</text>
+      <view class="entry-card" bindtap="handleEntryTap" data-type="learn">
+        <image class="entry-icon" src="/images/icon-learn.png" mode="aspectFit"></image>
+        <text class="entry-title">日语学习</text>
+        <text class="entry-desc">闯关学习</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="german">
-        <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
-        <text class="entry-title">德语学习机器人</text>
-        <text class="entry-desc">德语学习好帮手</text>
+      <view class="entry-card" bindtap="handleEntryTap" data-type="wordbook">
+        <image class="entry-icon" src="/images/icon-book.png" mode="aspectFit"></image>
+        <text class="entry-title">单词本</text>
+        <text class="entry-desc">背单词</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="pdf">
-        <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
-        <text class="entry-title">PDF机器人</text>
-        <text class="entry-desc">PDF处理工具</text>
+      <view class="entry-card" bindtap="handleEntryTap" data-type="grammar">
+        <image class="entry-icon" src="/images/icon-grammar.png" mode="aspectFit"></image>
+        <text class="entry-title">语法</text>
+        <text class="entry-desc">语法点</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="developing">
-        <image class="entry-icon" src="/images/icon-developing.png" mode="aspectFit"></image>
-        <text class="entry-title">新功能开发中</text>
-        <text class="entry-desc">敬请期待</text>
+      <view class="entry-card" bindtap="handleEntryTap" data-type="leaderboard">
+        <image class="entry-icon" src="/images/icon-rank.png" mode="aspectFit"></image>
+        <text class="entry-title">排行榜</text>
+        <text class="entry-desc">学习排名</text>
       </view>
     </view>
   </view>
