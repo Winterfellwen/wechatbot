@@ -46,6 +46,8 @@ login() {
   handleUserTap() {
     if (!this.data.isLoggedIn) {
       this.login();
+    } else {
+      wx.switchTab({ url: '/pages/user/user' });
     }
   },
 
