@@ -8,6 +8,8 @@ app.use(express.json());
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
+console.log('DATABASE_URL:', DATABASE_URL ? 'set' : 'NOT SET');
+
 if (!DATABASE_URL) {
   console.error('DATABASE_URL not set - using fallback mode');
 }
