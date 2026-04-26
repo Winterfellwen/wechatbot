@@ -1,17 +1,9 @@
 /*pages/index/index.wxss*/
-.header-btn {
+.user-header {
   background-color: #fff;
   padding: 30rpx;
   display: flex;
   align-items: center;
-  border: none;
-  margin: 0;
-  width: 100%;
-  border-radius: 0;
-}
-
-.header-btn::after {
-  display: none;
 }
 
 .user-info {
@@ -39,76 +31,6 @@
 }
 
 .user-status {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 8rpx;
-}
-
-.entry-container {
-  padding: 20rpx;
-}
-
-.entry-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.entry-card {
-  width: calc(50% - 15rpx);
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.entry-icon {
-  width: 100rpx;
-  height: 100rpx;
-  margin-bottom: 20rpx;
-}
-
-.entry-title {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.entry-desc {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 10rpx;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-}
-
-.user-detail {
-  margin-left: 20rpx;
-  display: flex;
-  flex-direction: column;
-}
-
-.nickname {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.status {
   font-size: 24rpx;
   color: #999;
   margin-top: 8rpx;
