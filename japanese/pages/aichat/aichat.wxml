@@ -1,19 +1,19 @@
 <view class="page">
   <view class="header">
-    <text class="header-title">花子先生 · 智能老师</text>
+    <text class="header-title">日语智能老师</text>
   </view>
 
   <scroll-view class="chat-list" scroll-y enhanced scroll-with-animation scroll-top="{{scrollTop}}">
     <block wx:for="{{messages}}" wx:key="id">
       <view class="msg-wrap {{item.role === 'assistant' ? 'msg-left' : 'msg-right'}}">
-        <view wx:if="{{item.role === 'assistant'}}" class="avatar avatar-assist">花</view>
+        <view wx:if="{{item.role === 'assistant'}}" class="avatar avatar-assist">师</view>
         <view class="bubble {{item.role === 'assistant' ? 'bubble-assist' : 'bubble-user'}}">{{item.content}}</view>
         <view wx:if="{{item.role === 'user'}}" class="avatar avatar-user">我</view>
       </view>
     </block>
 
     <view wx:if="{{loading}}" class="msg-wrap msg-left">
-      <view class="avatar avatar-assist">花</view>
+      <view class="avatar avatar-assist">师</view>
       <view class="bubble bubble-assist loading-bubble">
         <view class="dot-typing">
           <view class="dot"></view>
