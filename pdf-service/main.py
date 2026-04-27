@@ -135,39 +135,49 @@ async def docx_to_pdf(input_path: Path) -> Path:
     pdf = FPDF()
     pdf.add_page()
 
-    font_path = Path("/tmp/NotoSansSC-Regular.ttf")
-    if not font_path.exists():
-        try:
-            url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf"
-            urllib.request.urlretrieve(url, str(font_path))
-        except:
-            pass
+    # Try multiple font sources
+    font_paths = [
+        Path("/tmp/NotoSansSC-Regular.otf"),
+        Path("/tmp/NotoSansSC-Regular.ttf"),
+        Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
+    ]
+    
+    font_urls = [
+        "https://cdn.jsdelivr.net/gh/AimeeMao/Fonts@main/NotoSansSC-Regular.otf",
+        "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+    ]
+    
+    for fp in font_paths:
+        if fp.exists():
+            break
+    else:
+        for url in font_urls:
+            try:
+                urllib.request.urlretrieve(url, str(font_paths[0]))
+                break
+            except:
+                continue
 
     font_ok = False
-    for fp in [str(font_path),
-               "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"]:
-        if os.path.exists(fp):
+    for fp in font_paths:
+        if fp.exists():
             try:
-                pdf.add_font("Uni", "", fp, uni=True)
+                pdf.add_font("CJK", "", str(fp), uni=True)
                 font_ok = True
                 break
             except:
-                pass
+                continue
 
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
         if font_ok:
-            pdf.set_font("Uni", size=11)
+            pdf.set_font("CJK", size=11)
+            pdf.multi_cell(0, 7, text)
         else:
             pdf.set_font("Helvetica", size=11)
-        try:
-            pdf.multi_cell(0, 7, text)
-        except:
-            safe = text.encode("ascii", errors="replace").decode("ascii")
-            pdf.set_font("Helvetica", size=11)
-            pdf.multi_cell(0, 7, safe)
+            pdf.multi_cell(0, 7, text.encode("ascii", errors="replace").decode("ascii"))
         pdf.ln(2)
 
     output_path = input_path.with_suffix(".pdf")
