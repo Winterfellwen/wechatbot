@@ -164,6 +164,13 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// Keep Python service warm when this service is active
+const KEEPALIVE_INTERVAL = 14 * 60 * 1000;
+setInterval(() => {
+  console.log('Keepalive: warming Python service');
+  fetch('https://pdf-converter-idfi.onrender.com/').catch(() => {});
+}, KEEPALIVE_INTERVAL);
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
