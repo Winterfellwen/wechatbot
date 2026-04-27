@@ -128,61 +128,89 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
+    """Convert DOCX to PDF preserving Chinese text using HTML intermediate format"""
     from docx import Document
-    from fpdf import FPDF
-
+    
+    # Extract DOCX content as HTML-like structure
     doc = Document(str(input_path))
-    pdf = FPDF()
-    pdf.add_page()
-
-    # Try multiple font sources
-    font_paths = [
-        Path("/tmp/NotoSansSC-Regular.otf"),
-        Path("/tmp/NotoSansSC-Regular.ttf"),
-        Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
-    ]
+    html_parts = ['<html><head><meta charset="utf-8"><style>body{font-family:sans-serif;font-size:12pt;line-height:1.6}p{margin:4pt 0}h1,h2,h3{font-weight:bold}</style></head><body>']
     
-    font_urls = [
-        "https://cdn.jsdelivr.net/gh/AimeeMao/Fonts@main/NotoSansSC-Regular.otf",
-        "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
-    ]
-    
-    for fp in font_paths:
-        if fp.exists():
-            break
-    else:
-        for url in font_urls:
-            try:
-                urllib.request.urlretrieve(url, str(font_paths[0]))
-                break
-            except:
-                continue
-
-    font_ok = False
-    for fp in font_paths:
-        if fp.exists():
-            try:
-                pdf.add_font("CJK", "", str(fp), uni=True)
-                font_ok = True
-                break
-            except:
-                continue
-
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
-        if font_ok:
-            pdf.set_font("CJK", size=11)
-            pdf.multi_cell(0, 7, text)
+        style = para.style.name if para.style else ''
+        if 'Heading' in style or 'heading' in style:
+            html_parts.append(f'<h3>{text}</h3>')
         else:
-            pdf.set_font("Helvetica", size=11)
-            pdf.multi_cell(0, 7, text.encode("ascii", errors="replace").decode("ascii"))
-        pdf.ln(2)
-
-    output_path = input_path.with_suffix(".pdf")
-    pdf.output(str(output_path))
+            html_parts.append(f'<p>{text}</p>')
+    
+    html_parts.append('</body></html>')
+    html = '\n'.join(html_parts)
+    
+    # Write HTML to temp file
+    html_path = input_path.with_suffix('.html')
+    html_path.write_text(html, encoding='utf-8')
+    
+    output_path = input_path.with_suffix('.pdf')
+    
+    # Try weasyprint first (best CJK support)
+    try:
+        from weasyprint import HTML
+        HTML(string=html).write_pdf(str(output_path))
+    except ImportError:
+        # Fallback: use pdfkit (wkhtmltopdf)
+        try:
+            import pdfkit
+            pdfkit.from_file(str(html_path), str(output_path))
+        except (ImportError, OSError):
+            # Last resort: fpdf with downloaded font
+            from fpdf import FPDF
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(True)
+            
+            # Try to add CJK font
+            try:
+                font_file = download_cjk_font()
+                pdf.add_font("CJK", "", font_file, uni=True)
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        pdf.set_font("CJK", size=11)
+                        pdf.multi_cell(0, 7, para.text.strip())
+                        pdf.ln(2)
+            except:
+                pdf.set_font("Helvetica", size=11)
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        pdf.multi_cell(0, 7, para.text.strip().encode("ascii","replace").decode("ascii"))
+                        pdf.ln(2)
+            
+            pdf.output(str(output_path))
+    
+    if html_path.exists():
+        html_path.unlink(missing_ok=True)
     return output_path
+
+
+def download_cjk_font() -> str:
+    """Download CJK font, return path"""
+    cache = Path("/tmp/NotoSansSC.ttf")
+    if cache.exists() and cache.stat().st_size > 10000:
+        return str(cache)
+    
+    urls = [
+        "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+        "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+    ]
+    for url in urls:
+        try:
+            urllib.request.urlretrieve(url, str(cache))
+            if cache.stat().st_size > 10000:
+                return str(cache)
+        except:
+            continue
+    raise Exception("Cannot download CJK font")
 
 
 @app.get("/")
