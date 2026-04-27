@@ -8,18 +8,18 @@
       </view>
       <text class="exp-text">{{exp}} XP</text>
     </view>
-    <view class="progress-circle">
-      <text class="progress-text">{{overallProgress}}%</text>
-    </view>
   </view>
 
   <view class="unit-selector">
     <scroll-view scroll-x class="unit-scroll">
       <block wx:for="{{units}}" wx:key="id">
-        <view class="unit-tab {{activeUnit === item.id ? 'active' : ''}}" bindtap="switchUnit" data-id="{{item.id}}" style="background: {{item.color}}">
-          <view class="unit-name">{{item.name}}</view>
+        <view class="unit-tab {{activeUnit === item.id ? 'active' : ''}}" bindtap="switchUnit" data-id="{{item.id}}" style="border-color: {{item.color}}">
+          <view class="unit-name" style="color: {{item.color}}">{{item.name}}</view>
           <view class="unit-sub">{{item.subtitle}}</view>
-          <view wx:if="{{item.progress > 0}}" class="unit-bar"><view class="unit-bar-fill" style="width: {{item.progress}}%"></view></view>
+          <view class="unit-progress-wrap">
+            <view class="unit-bar"><view class="unit-bar-fill" style="width: {{item.progress}}%; background: {{item.color}}"></view></view>
+            <text class="unit-pct">{{item.progress}}%</text>
+          </view>
         </view>
       </block>
     </scroll-view>
@@ -27,19 +27,22 @@
 
   <scroll-view scroll-y class="lesson-path">
     <block wx:for="{{units}}" wx:key="id" wx:for-item="unit">
-      <view wx:if="{{activeUnit === unit.id}}" class="path-column">
+      <view wx:if="{{activeUnit === unit.id}}" class="path-body">
         <block wx:for="{{unit.lessons}}" wx:key="id">
-          <view class="path-step {{item.completed ? 'completed' : ''}} {{item.active ? 'active' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
-            <view class="step-dot" style="background: {{item.completed ? '#58cc02' : (item.active ? '#ffd700' : '#e0e0e0')}}">
-              <text wx:if="{{item.completed}}">✓</text>
-              <text wx:elif="{{item.active}}"></text>
+          <view class="path-row">
+            <view class="path-node {{item.completed ? 'done' : ''}} {{item.active ? 'current' : ''}} {{!item.completed && !item.active ? 'locked' : ''}}"
+                  bindtap="startLesson" data-id="{{item.id}}">
+              <view class="node-circle">
+                <text wx:if="{{item.completed}}" class="node-check">&#10003;</text>
+                <text wx:elif="{{item.active}}" class="node-star">&#9733;</text>
+                <text wx:else class="node-num">{{index + 1}}</text>
+              </view>
+              <view class="node-label">{{item.title}}</view>
             </view>
-            <view class="step-info">
-              <text class="step-title">{{item.title}}</text>
-              <text wx:if="{{item.completed}}" class="step-done">已完成</text>
+            <view wx:if="{{index < unit.lessons.length - 1}}" class="path-connector {{item.completed ? 'conn-done' : ''}}">
+              <view class="conn-line"></view>
             </view>
           </view>
-          <view wx:if="{{index < unit.total - 1}}" class="path-line" style="background: {{item.completed ? '#58cc02' : '#e0e0e0'}}"></view>
         </block>
       </view>
     </block>
