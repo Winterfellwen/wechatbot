@@ -79,10 +79,11 @@
         <view class="question-text">{{currentQuestion.question}}</view>
       </view>
 
+      <!-- Choice type -->
       <view wx:if="{{currentQuestion.options}}" class="options-list">
-        <block wx:for="{{currentQuestion.options}}" wx:key="*this">
+        <block wx:for="{{currentQuestion.options}}" wx:key="index">
           <view
-            class="option-btn {{showResult ? (index === correctIndex ? 'correct' : (index === selectedIndex ? 'wrong' : '')) : ''}}"
+            class="option-btn {{showResult && index === correctIndex ? 'correct' : ''}} {{showResult && index === selectedIndex && index !== correctIndex ? 'wrong' : ''}}"
             bindtap="selectOption"
             data-index="{{index}}">
             <text class="option-letter">{{['A','B','C','D'][index]}}</text>
@@ -91,9 +92,15 @@
         </block>
       </view>
 
+      <!-- Fill type -->
+      <view wx:if="{{!currentQuestion.options}}" class="fill-area">
+        <input class="fill-input" value="{{fillAnswer}}" placeholder="输入答案" bindinput="onFillInput" confirm-type="done" />
+        <view class="fill-btn" bindtap="checkFill">确认</view>
+      </view>
+
       <view wx:if="{{showResult}}" class="result-bar">
         <view wx:if="{{isCorrect}}" class="result-correct">✓ 正确!</view>
-        <view wx:else class="result-wrong">✗ 正确答案: {{currentQuestion.options[correctIndex]}}</view>
+        <view wx:else class="result-wrong">✗ 正确答案: {{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</view>
         <view class="next-btn" bindtap="nextQuestion">
           {{current < total ? '下一题' : '完成!'}}
         </view>

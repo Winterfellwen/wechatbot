@@ -98,10 +98,8 @@ Page({
     }
 
     var firstQ = quizQuestions[0];
-    var correctIdx = firstQ.answer;
-    if (typeof correctIdx === 'undefined') {
-      correctIdx = 0;
-    }
+    var isChoice = (firstQ.type === 'choice' && firstQ.options);
+    var correctVal = isChoice ? firstQ.answer : 0;
 
     this.setData({
       segment: 'quiz',
@@ -111,9 +109,15 @@ Page({
       showResult: false,
       selectedIndex: -1,
       currentQuestion: firstQ,
-      correctIndex: correctIdx,
+      correctIndex: correctVal,
+      fillAnswer: '',
+      isChoice: isChoice,
       progress: Math.round(1 / quizQuestions.length * 100)
     });
+  },
+
+  onFillInput: function(e) {
+    this.setData({ fillAnswer: e.detail.value });
   },
 
   selectOption: function(e) {
@@ -122,18 +126,29 @@ Page({
     var index = parseInt(e.currentTarget.dataset.index);
     var question = this.data.currentQuestion;
     var correct = question.answer;
-    if (typeof correct === 'undefined' || correct === null) {
-      correct = 0;
-    }
-    var isCorrect = index === correct;
-    var newScore = this.data.score + (isCorrect ? 1 : 0);
+    var isCorrect = (index === correct);
 
     this.setData({
       selectedIndex: index,
       correctIndex: correct,
       showResult: true,
       isCorrect: isCorrect,
-      score: newScore
+      score: this.data.score + (isCorrect ? 1 : 0)
+    });
+  },
+
+  checkFill: function() {
+    if (this.data.showResult) return;
+
+    var question = this.data.currentQuestion;
+    var userAnswer = (this.data.fillAnswer || '').trim().toLowerCase();
+    var correctAnswer = (question.answer || '').trim().toLowerCase();
+    var isCorrect = userAnswer === correctAnswer;
+
+    this.setData({
+      showResult: true,
+      isCorrect: isCorrect,
+      score: this.data.score + (isCorrect ? 1 : 0)
     });
   },
 
@@ -147,17 +162,17 @@ Page({
     }
 
     var q = questions[next];
-    var correctIdx = q.answer;
-    if (typeof correctIdx === 'undefined') {
-      correctIdx = 0;
-    }
+    var isChoice = (q.type === 'choice' && q.options);
+    var correctVal = isChoice ? q.answer : 0;
 
     this.setData({
       current: next + 1,
       showResult: false,
       selectedIndex: -1,
       currentQuestion: q,
-      correctIndex: correctIdx,
+      correctIndex: correctVal,
+      fillAnswer: '',
+      isChoice: isChoice,
       progress: Math.round((next + 1) / questions.length * 100)
     });
   },
