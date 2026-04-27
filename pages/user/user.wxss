@@ -11,12 +11,6 @@
   align-items: center;
 }
 
-.avatar-btn {
-  padding: 0; margin: 0; border: none; background: transparent;
-  line-height: 1; width: 100rpx; height: 100rpx;
-}
-.avatar-btn::after { border: none; }
-
 .user-avatar {
   width: 100rpx;
   height: 100rpx;
@@ -35,14 +29,6 @@
   font-weight: bold;
   color: #333;
 }
-
-.nickname-wrap { margin-bottom: 4rpx; }
-.nickname-input {
-  font-size: 32rpx; font-weight: bold; color: #333;
-  height: 44rpx; line-height: 44rpx; padding: 0;
-  background: transparent; border: none;
-}
-.nickname-input::placeholder { color: #bbb; font-weight: normal; }
 
 .user-status {
   font-size: 24rpx;

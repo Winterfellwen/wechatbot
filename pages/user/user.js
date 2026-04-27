@@ -39,32 +39,29 @@ Page({
     if (!this.data.isLoggedIn) this.login();
   },
 
-  onChooseAvatar: function(e) {
-    var avatarUrl = e.detail.avatarUrl;
-    if (!avatarUrl || !this.data.userInfo) return;
-    var userData = {};
-    for (var k in this.data.userInfo) {
-      if (this.data.userInfo.hasOwnProperty(k)) userData[k] = this.data.userInfo[k];
+  handleChooseAvatarTap: function() {
+    if (!this.data.isLoggedIn) {
+      this.login();
+      return;
     }
-    userData.avatarUrl = avatarUrl;
-    app.setUserInfo(userData);
-    this.setData({ userInfo: userData });
-    this.saveUserToBackend(userData);
-    wx.showToast({ title: '头像已更新', icon: 'success' });
-  },
-
-  onNicknameBlur: function(e) {
-    var nickName = (e.detail.value || '').trim();
-    if (!nickName || !this.data.userInfo) return;
-    if (nickName === this.data.userInfo.nickName) return;
-    var userData = {};
-    for (var k in this.data.userInfo) {
-      if (this.data.userInfo.hasOwnProperty(k)) userData[k] = this.data.userInfo[k];
-    }
-    userData.nickName = nickName;
-    app.setUserInfo(userData);
-    this.setData({ userInfo: userData });
-    this.saveUserToBackend(userData);
+    var that = this;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var tempPath = res.tempFiles[0].tempFilePath;
+        var userData = {};
+        for (var k in that.data.userInfo) {
+          if (that.data.userInfo.hasOwnProperty(k)) userData[k] = that.data.userInfo[k];
+        }
+        userData.avatarUrl = tempPath;
+        app.setUserInfo(userData);
+        that.setData({ userInfo: userData });
+        that.saveUserToBackend(userData);
+        wx.showToast({ title: '头像已更新', icon: 'success' });
+      }
+    });
   },
 
   handleNicknameTap: function() {
@@ -91,10 +88,6 @@ Page({
         }
       }
     });
-  },
-
-  onChooseAvatarTap: function() {
-    wx.showToast({ title: '点击头像图片更换', icon: 'none' });
   },
 
   saveUserToBackend: function(userData) {
