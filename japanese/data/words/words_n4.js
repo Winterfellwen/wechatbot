@@ -330,4 +330,4 @@ const words_n4 = [
   { id: "n4-38-16", lesson: 38, word: "つづく", reading: "つづく", meaning: "继续/延续", partOfSpeech: "動詞", example: "このでんとうはこれからもつづいてほしいです。", example_reading: "このでんとうはこれからもつづいてほしいです。", example_translation: "希望这个传统今后也能延续下去。" },
 ];
 
-module.exports = { words_n4 };
+module.exports = words_n4;
