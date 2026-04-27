@@ -1,5 +1,6 @@
 const app = getApp();
 const API_URL = 'https://wechatbot-api.onrender.com';
+const wordsData = require('../../data/words.js');
 
 Page({
   data: {
@@ -19,18 +20,58 @@ Page({
     this.loadWords();
   },
 
-  loadWords() {
+loadWords() {
     const savedWords = wx.getStorageSync('wordbook');
-    const words = savedWords || this.getSampleWords();
+    const baseWords = savedWords || wordsData;
     
+    const mastered = baseWords.filter(w => w.mastered).length;
+    this.setData({
+      allWords: baseWords,
+      filteredWords: baseWords,
+      totalWords: baseWords.length,
+      masteredWords: mastered,
+      learningWords: baseWords.length - mastered
+    });
+  },
+
+  onSearch(e) {
+    const key = e.detail.value.toLowerCase();
+    if (!key) {
+      this.setData({ filteredWords: this.data.allWords, searchKey: '' });
+      return;
+    }
+    const filtered = this.data.allWords.filter(w => 
+      w.word.includes(key) || w.meaning.includes(key) || w.reading.includes(key)
+    );
+    this.setData({ filteredWords: filtered, searchKey: key });
+  },
+
+  clearSearch() {
+    this.setData({ filteredWords: this.data.allWords, searchKey: '' });
+  },
+
+  toggleMaster(e) {
+    const idx = e.currentTarget.dataset.idx;
+    const words = [...this.data.allWords];
+    words[idx].mastered = !words[idx].mastered;
+    wx.setStorageSync('wordbook', words);
     const mastered = words.filter(w => w.mastered).length;
     this.setData({
       allWords: words,
       filteredWords: words,
-      totalWords: words.length,
       masteredWords: mastered,
       learningWords: words.length - mastered
     });
+  },
+
+  playAudio(e) {
+    const word = e.currentTarget.dataset.word;
+    const audioCtx = wx.createInnerAudioContext();
+    if (audioCtx) {
+      wx.showToast({ title: word, icon: 'none' });
+    }
+  }
+});
   },
 
   onSearch(e) {
