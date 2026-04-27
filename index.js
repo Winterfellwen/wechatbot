@@ -228,6 +228,7 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 
     const buffer = await pyRes.arrayBuffer();
     const outFile = '/tmp/serve/conv_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + (to || 'docx');
+    fs.mkdirSync('/tmp/serve', { recursive: true });
     fs.writeFileSync(outFile, Buffer.from(buffer));
     
     res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
