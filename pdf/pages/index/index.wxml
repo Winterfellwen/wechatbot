@@ -35,7 +35,7 @@
 
     <view class="convert-btn-wrap">
       <view class="convert-btn {{converting ? 'loading' : ''}}" bindtap="doConvert">
-        {{converting ? '转换中...' : '开始转换'}}
+        {{converting ? (progressText || '处理中...') : '开始转换'}}
       </view>
     </view>
   </view>

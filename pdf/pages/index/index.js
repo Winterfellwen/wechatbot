@@ -48,7 +48,7 @@ Page({
       return;
     }
     var that = this;
-    that.setData({ converting: true });
+    that.setData({ converting: true, progressText: '上传中 0%' });
 
     var task = wx.uploadFile({
       url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
@@ -56,14 +56,16 @@ Page({
       name: 'file',
       formData: { from: that.data.fromFormat, to: that.data.toFormat },
       success: function(res) {
+        that.setData({ progressText: '转换中...' });
         if (res.statusCode === 200) {
           var data = {};
           try { data = JSON.parse(res.data); } catch(e) {}
           if (data.url) {
+            that.setData({ progressText: '下载中...' });
             wx.downloadFile({
               url: data.url,
               success: function(dl) {
-                that.setData({ converting: false });
+                that.setData({ converting: false, progressText: '' });
                 wx.openDocument({
                   filePath: dl.tempFilePath,
                   fileType: that.data.toFormat,
@@ -72,21 +74,21 @@ Page({
                 });
               },
               fail: function() {
-                that.setData({ converting: false });
+                that.setData({ converting: false, progressText: '' });
                 wx.showToast({ title: '下载失败', icon: 'none' });
               }
             });
           } else {
-            that.setData({ converting: false });
+            that.setData({ converting: false, progressText: '' });
             wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
           }
         } else {
-          that.setData({ converting: false });
+          that.setData({ converting: false, progressText: '' });
           wx.showToast({ title: '服务器错误(' + res.statusCode + ')，请重试', icon: 'none' });
         }
       },
       fail: function(err) {
-        that.setData({ converting: false });
+        that.setData({ converting: false, progressText: '' });
         var msg = err.errMsg || '';
         if (msg.indexOf('timeout') !== -1) {
           wx.showModal({
@@ -99,6 +101,10 @@ Page({
           wx.showToast({ title: '上传失败，请重试', icon: 'none' });
         }
       }
+    });
+
+    task.onProgressUpdate(function(res) {
+      that.setData({ progressText: '上传中 ' + res.progress + '%' });
     });
   },
 
