@@ -4,3 +4,5 @@ python-multipart==0.0.18
 pdf2docx==0.5.12
 python-docx==1.1.2
 reportlab==4.4.10
+weasyprint==65.1
+mammoth==1.12.0

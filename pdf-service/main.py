@@ -128,7 +128,64 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF with proper Chinese support using reportlab"""
+    """Convert DOCX to PDF using WeasyPrint for proper mixed content support"""
+    import subprocess
+    import sys
+    
+    output_path = input_path.with_suffix(".pdf")
+    
+    # Try using LibreOffice (best quality)
+    try:
+        # Check if LibreOffice is available
+        result = subprocess.run(['which', 'libreoffice'], capture_output=True, text=True)
+        if result.returncode == 0:
+            print("Using LibreOffice for conversion")
+            result = subprocess.run([
+                'libreoffice', '--headless', '--convert-to', 'pdf',
+                '--outdir', str(input_path.parent), str(input_path)
+            ], capture_output=True, timeout=120)
+            
+            if result.returncode == 0:
+                generated = input_path.with_suffix('.pdf')
+                if generated.exists():
+                    generated.rename(output_path)
+                    return output_path
+    except Exception as e:
+        print(f"LibreOffice conversion failed: {e}")
+    
+    # Fallback: Use mammoth + WeasyPrint
+    try:
+        print("Trying mammoth + WeasyPrint")
+        import mammoth
+        from weasyprint import HTML, CSS
+        from weasyprint.text.fonts import FontConfiguration
+        
+        # Convert docx to HTML
+        with open(input_path, 'rb') as docx_file:
+            result = mammoth.convert_to_html(docx_file)
+            html = result.value
+        
+        # Add CSS for better rendering
+        css = CSS(string='''
+            @page { margin: 2cm; }
+            body { font-family: "Noto Sans CJK SC", "WenQuanYi Zen Hei", sans-serif; }
+        ''')
+        
+        # Convert HTML to PDF with font config
+        font_config = FontConfiguration()
+        HTML(string=html).write_pdf(str(output_path), stylesheets=[css], font_config=font_config)
+        print("WeasyPrint conversion successful")
+        return output_path
+    except Exception as e:
+        print(f"WeasyPrint conversion failed: {e}")
+    
+    # Last resort: Use python-docx + reportlab with proper font handling
+    print("Falling back to reportlab")
+    return await docx_to_pdf_reportlab(input_path)
+
+
+async def docx_to_pdf_reportlab(input_path: Path) -> Path:
+    """Fallback DOCX to PDF using reportlab with font fallback"""
     from docx import Document
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
@@ -141,45 +198,38 @@ async def docx_to_pdf(input_path: Path) -> Path:
 
     output_path = input_path.with_suffix(".pdf")
     
-    # Register Chinese TTF font
-    font_registered = False
+    # Try to register CJK font
     font_path = _get_cjk_ttf_font()
+    cjk_font_available = False
     
     if font_path and os.path.exists(font_path):
         try:
             pdfmetrics.registerFont(TTFont('CJKFont', font_path))
-            font_registered = True
-            print(f"Registered CJK font: {font_path}")
-        except Exception as e:
-            print(f"Failed to register font: {e}")
+            cjk_font_available = True
+        except:
+            pass
     
-    # Create PDF
     doc_template = SimpleDocTemplate(
         str(output_path), 
         pagesize=A4,
         rightMargin=2*cm, 
         leftMargin=2*cm,
-        topMargin=2*cm, 
-        bottomMargin=2*cm
     )
     
-    # Define styles
     styles = getSampleStyleSheet()
     
-    if font_registered:
-        # Use registered CJK font for all text (it supports Latin chars too)
+    if cjk_font_available:
+        # Create style with CJK font
+        # reportlab will use this font for all chars it supports
         normal_style = ParagraphStyle(
-            name='CJKNormal',
+            'CJKNormal',
             fontName='CJKFont',
             fontSize=11,
             leading=18,
         )
     else:
-        # Fallback
         normal_style = styles['Normal']
-        print("Warning: No CJK font, using default")
     
-    # Build content
     story = []
     docx_doc = Document(str(input_path))
     
@@ -190,21 +240,15 @@ async def docx_to_pdf(input_path: Path) -> Path:
             continue
         
         try:
-            # Escape XML special chars for reportlab Paragraph
-            # But preserve spaces and handle mixed content
             escaped_text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
             p = Paragraph(escaped_text, normal_style)
             story.append(p)
             story.append(Spacer(1, 0.2*cm))
-        except Exception as e:
-            print(f"Paragraph error: {e}")
+        except:
             continue
     
     doc_template.build(story)
     return output_path
-
-
-def _get_cjk_ttf_font() -> str:
     """Get CJK TTF/TTC font file path for fpdf2"""
     import hashlib
     
