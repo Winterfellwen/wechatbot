@@ -32,13 +32,11 @@ Page({
         if (res.code) {
           this.loginWithCode(res.code);
         } else {
-          wx.hideLoading();
           this.loginAfterSuccess({ openid: 'wx_' + Date.now() });
         }
       },
       fail: () => {
-        wx.hideLoading();
-        wx.showToast({ title: '登录失败', icon: 'none' });
+        this.loginAfterSuccess({ openid: 'wx_' + Date.now() });
       }
     });
   },
@@ -159,7 +157,7 @@ Page({
     const userInfo = {
       openid: userData.openid,
       nickName: nickName || userData.nickname || randomNick,
-      avatarUrl: avatarUrl || userData.avatarurl || ''
+      avatarUrl: userData.avatarurl || ''
     };
     
     app.setUserInfo(userInfo);
