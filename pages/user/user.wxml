@@ -1,4 +1,3 @@
-<!--pages/user/user.wxml-->
 <view class="container">
   <view class="user-header" bindtap="handleUserTap">
     <view class="user-info">
@@ -11,6 +10,10 @@
   </view>
 
   <view class="user-content">
+    <view class="btn-group" wx:if="{{!isLoggedIn}}">
+      <button class="btn-primary" bindtap="login">微信一键登录</button>
+    </view>
+
     <view class="info-card" wx:if="{{isLoggedIn}}">
       <view class="info-item" bindtap="handleNicknameTap">
         <text class="info-label">昵称</text>
