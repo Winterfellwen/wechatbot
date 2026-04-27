@@ -16,6 +16,8 @@
   line-height: 1; width: 100rpx; height: 100rpx;
 }
 .avatar-btn::after { border: none; }
+
+.user-avatar {
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
