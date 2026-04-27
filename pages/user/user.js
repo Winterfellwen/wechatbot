@@ -39,29 +39,18 @@ Page({
     if (!this.data.isLoggedIn) this.login();
   },
 
-  handleChooseAvatarTap: function() {
-    if (!this.data.isLoggedIn) {
-      this.login();
-      return;
+  onChooseAvatar: function(e) {
+    var avatarUrl = e.detail.avatarUrl;
+    if (!avatarUrl) return;
+    var userData = {};
+    for (var k in this.data.userInfo) {
+      if (this.data.userInfo.hasOwnProperty(k)) userData[k] = this.data.userInfo[k];
     }
-    var that = this;
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var tempPath = res.tempFiles[0].tempFilePath;
-        var userData = {};
-        for (var k in that.data.userInfo) {
-          if (that.data.userInfo.hasOwnProperty(k)) userData[k] = that.data.userInfo[k];
-        }
-        userData.avatarUrl = tempPath;
-        app.setUserInfo(userData);
-        that.setData({ userInfo: userData });
-        that.saveUserToBackend(userData);
-        wx.showToast({ title: '头像已更新', icon: 'success' });
-      }
-    });
+    userData.avatarUrl = avatarUrl;
+    app.setUserInfo(userData);
+    this.setData({ userInfo: userData });
+    this.saveUserToBackend(userData);
+    wx.showToast({ title: '头像已更新', icon: 'success' });
   },
 
   handleNicknameTap: function() {
