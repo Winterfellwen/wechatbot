@@ -24,7 +24,7 @@ Page({
     that.setData({ converting: true });
 
     wx.uploadFile({
-      url: 'https://wechatbot-api.onrender.com/api/pdf/convert',
+      url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
       filePath: that.data.filePath,
       name: 'file',
       formData: {

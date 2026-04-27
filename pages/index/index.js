@@ -1,5 +1,5 @@
 const app = getApp();
-const API_URL = 'https://wechatbot-api.onrender.com';
+const API_URL = 'https://wechatbot-g6ez.onrender.com';
 const API_KEY = 'rnd_cIEZYlFoB5pJx4byk0tiONKcCBnk';
 
 Page({

@@ -268,7 +268,7 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     const modifiedPdfBytes = await pdfDoc.save();
     const outputPath = '/tmp/output_' + Date.now() + '.pdf';
     fs.writeFileSync(outputPath, modifiedPdfBytes);
-    const downloadUrl = 'https://wechatbot-api.onrender.com/api/pdf/download/' + path.basename(outputPath);
+    const downloadUrl = 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outputPath);
     // Move file to serve location
     const servePath = '/tmp/serve/' + path.basename(outputPath);
     fs.mkdirSync('/tmp/serve', { recursive: true });

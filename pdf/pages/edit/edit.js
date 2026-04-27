@@ -32,7 +32,7 @@ Page({
     that.setData({ processing: true });
 
     wx.uploadFile({
-      url: 'https://wechatbot-api.onrender.com/api/pdf/edit',
+      url: 'https://wechatbot-g6ez.onrender.com/api/pdf/edit',
       filePath: that.data.filePath,
       name: 'file',
       formData: {

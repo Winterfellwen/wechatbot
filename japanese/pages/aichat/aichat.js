@@ -44,7 +44,7 @@ Page({
     }
 
     wx.request({
-      url: 'https://wechatbot-api.onrender.com/api/chat',
+      url: 'https://wechatbot-g6ez.onrender.com/api/chat',
       method: 'POST',
       data: { messages: apiMessages },
       success: function(res) {
