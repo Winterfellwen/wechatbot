@@ -100,16 +100,16 @@ Page({
   },
 
   goToLesson: function () {
-    wx.redirectTo({ url: '/pages/lesson/lesson' });
+    wx.redirectTo({ url: '/japanese/pages/learn/learn' });
   },
 
   goToCourse: function () {
-    wx.redirectTo({ url: '/pages/course/course' });
+    wx.redirectTo({ url: '/japanese/pages/course/course' });
   },
 
   goToAI: function () {},
 
   goToRank: function () {
-    wx.redirectTo({ url: '/pages/rank/rank' });
+    wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' });
   }
 });
