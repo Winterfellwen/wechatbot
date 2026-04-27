@@ -194,24 +194,38 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// PDF conversion endpoint
+// PDF conversion endpoint - proxies to Python service
 const upload = multer({ dest: '/tmp/uploads/' });
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   try {
+    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'http://pdf-converter:8000';
     const { from, to } = req.body;
-    const filePath = req.file.path;
     
-    if (from === 'pdf' && (to === 'docx' || to === 'doc')) {
-      // PDF to DOCX - use a simple approach: extract text and create text file
-      // Full conversion would require LibreOffice which isn't available on Render free
-      res.json({ error: 'PDF→DOCX需要LibreOffice，免费服务器暂不支持。请使用在线工具。' });
-    } else if ((from === 'docx' || from === 'doc') && to === 'pdf') {
-      // DOCX to PDF - same limitation
-      res.json({ error: 'DOCX→PDF需要LibreOffice，免费服务器暂不支持。请使用在线工具。' });
-    } else {
-      res.json({ error: '不支持此转换格式' });
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('file', fs.createReadStream(req.file.path), { filename: req.file.originalname });
+    form.append('from_fmt', from);
+    form.append('to_fmt', to);
+
+    const response = await fetch(pdfServiceUrl + '/convert', {
+      method: 'POST',
+      headers: form.getHeaders(),
+      body: form
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      return res.status(400).json(err);
     }
+
+    const buffer = await response.buffer();
+    const ext = to;
+    res.set('Content-Type', 'application/octet-stream');
+    res.set('Content-Disposition', 'attachment; filename=converted.' + ext);
+    res.send(buffer);
+    
+    fs.unlinkSync(req.file.path);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
