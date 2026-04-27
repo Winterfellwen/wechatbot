@@ -1,8 +1,8 @@
-const wordsN5 = require('./words/words_n5.js');
-const wordsN4 = require('./words/words_n4.js');
-const wordsN3 = require('./words/words_n3.js');
-const wordsN2 = require('./words/words_n2.js');
-const wordsN1 = require('./words/words_n1.js');
+const wordsN5 = require('./words_n5.js');
+const wordsN4 = require('./words_n4.js');
+const wordsN3 = require('./words_n3.js');
+const wordsN2 = require('./words_n2.js');
+const wordsN1 = require('./words_n1.js');
 
 const allWords = [...wordsN5, ...wordsN4, ...wordsN3, ...wordsN2, ...wordsN1];
 
