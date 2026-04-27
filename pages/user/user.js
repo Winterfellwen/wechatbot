@@ -16,9 +16,9 @@ Page({
     this.checkLoginStatus();
   },
 
-  checkLoginStatus() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const isLoggedIn = !!userInfo;
+  checkLoginStatus: function() {
+    var userInfo = wx.getStorageSync('userInfo');
+    var isLoggedIn = !!userInfo;
     this.setData({
       userInfo: userInfo || null,
       isLoggedIn: isLoggedIn
@@ -26,17 +26,34 @@ Page({
   },
 
   login() {
+    var that = this;
+    wx.getUserProfile({
+      desc: '用于完善个人资料，获取您的微信头像和昵称',
+      success: function(res) {
+        var wxInfo = res.userInfo || {};
+        that.doWxLogin(wxInfo);
+      },
+      fail: function() {
+        that.doWxLogin({});
+      }
+    });
+  },
+
+  doWxLogin: function(wxInfo) {
+    var that = this;
     wx.showLoading({ title: '登录中...' });
     wx.login({
-      success: (res) => {
+      success: function(res) {
         if (res.code) {
-          this.loginWithCode(res.code);
+          that.loginWithCode(res.code, wxInfo.avatarUrl || '', wxInfo.nickName || '');
         } else {
-          this.loginAfterSuccess({ openid: 'wx_' + Date.now() });
+          wx.hideLoading();
+          that.loginAfterSuccess({ openid: 'wx_' + Date.now() }, wxInfo.avatarUrl || '', wxInfo.nickName || '');
         }
       },
-      fail: () => {
-        this.loginAfterSuccess({ openid: 'wx_' + Date.now() });
+      fail: function() {
+        wx.hideLoading();
+        that.loginAfterSuccess({ openid: 'wx_' + Date.now() }, wxInfo.avatarUrl || '', wxInfo.nickName || '');
       }
     });
   },
@@ -47,40 +64,50 @@ Page({
     }
   },
 
-  handleChooseAvatarTap() {
+  handleChooseAvatarTap: function() {
     if (!this.data.isLoggedIn) {
       this.login();
       return;
     }
+    var that = this;
     wx.getUserProfile({
       desc: '用于设置头像',
-      success: (res) => {
-        const userInfo = res.userInfo;
-        const userData = { ...this.data.userInfo, avatarUrl: userInfo.avatarUrl };
+      success: function(res) {
+        var userInfo = res.userInfo;
+        var userData = {};
+        for (var k in that.data.userInfo) {
+          if (that.data.userInfo.hasOwnProperty(k)) userData[k] = that.data.userInfo[k];
+        }
+        userData.avatarUrl = userInfo.avatarUrl;
         app.setUserInfo(userData);
-        this.setData({ userInfo: userData });
+        that.setData({ userInfo: userData });
         wx.showToast({ title: '头像已更新', icon: 'success' });
       },
-      fail: () => {
+      fail: function() {
         wx.showToast({ title: '需要授权头像', icon: 'none' });
       }
     });
   },
 
-  handleNicknameTap() {
+  handleNicknameTap: function() {
     if (!this.data.isLoggedIn) return;
+    var that = this;
     wx.showModal({
       title: '修改昵称',
       placeholderText: '请输入昵称',
       editable: true,
-      success: (res) => {
+      success: function(res) {
         if (res.confirm && res.content) {
-          const nickName = res.content.trim();
+          var nickName = res.content.trim();
           if (nickName) {
-            const userInfo = { ...this.data.userInfo, nickName: nickName };
+            var userInfo = {};
+            for (var k in that.data.userInfo) {
+              if (that.data.userInfo.hasOwnProperty(k)) userInfo[k] = that.data.userInfo[k];
+            }
+            userInfo.nickName = nickName;
             app.setUserInfo(userInfo);
-            this.setData({ userInfo: userInfo });
-            this.saveUserToBackend(userInfo);
+            that.setData({ userInfo: userInfo });
+            that.saveUserToBackend(userInfo);
             wx.showToast({ title: '昵称已更新', icon: 'success' });
           }
         }
@@ -88,42 +115,44 @@ Page({
     });
   },
 
-  saveUserToBackend(userInfo) {
+  saveUserToBackend: function(userInfo) {
     if (!userInfo.openid) return;
     wx.request({
-      url: `${API_URL}/api/users/${userInfo.openid}`,
+      url: API_URL + '/api/users/' + userInfo.openid,
       method: 'POST',
       data: { nickName: userInfo.nickName, avatarUrl: userInfo.avatarUrl },
-      success: () => {}
+      success: function() {}
     });
   },
 
-  handleLogout() {
+  handleLogout: function() {
+    var that = this;
     wx.showModal({
       title: '提示',
       content: '确定要退出登录吗？',
-      success: (res) => {
+      success: function(res) {
         if (res.confirm) {
           app.clearUserInfo();
-          this.setData({ userInfo: null, isLoggedIn: false });
+          that.setData({ userInfo: null, isLoggedIn: false });
           wx.showToast({ title: '已退出登录', icon: 'success' });
         }
       }
     });
   },
 
-  handleDeleteAccount() {
+  handleDeleteAccount: function() {
+    var that = this;
     wx.showModal({
       title: '注销账号',
       content: '确定要注销账号吗？此操作不可恢复！',
-      success: (res) => {
+      success: function(res) {
         if (res.confirm) {
           wx.showModal({
             title: '确认注销',
             content: '再次确认注销，所有数据将被清除',
-            success: (res2) => {
+            success: function(res2) {
               if (res2.confirm) {
-                this.deleteAccount();
+                that.deleteAccount();
               }
             }
           });
@@ -132,25 +161,26 @@ Page({
     });
   },
 
-  deleteAccount() {
-    const userInfo = this.data.userInfo;
+  deleteAccount: function() {
+    var userInfo = this.data.userInfo;
     if (!userInfo || !userInfo.openid) return;
+    var that = this;
     
     wx.request({
-      url: `${API_URL}/api/users/${userInfo.openid}`,
+      url: API_URL + '/api/users/' + userInfo.openid,
       method: 'DELETE',
       header: { 'x-api-key': API_KEY },
-      success: () => {
+      success: function() {
         wx.removeStorageSync('openid');
         app.clearUserInfo();
-        this.setData({ userInfo: null, isLoggedIn: false });
+        that.setData({ userInfo: null, isLoggedIn: false });
         wx.showToast({ title: '账号已注销', icon: 'success' });
       },
-      fail: (res) => {
+      fail: function(res) {
         if (res.statusCode === 404) {
           wx.removeStorageSync('openid');
           app.clearUserInfo();
-          this.setData({ userInfo: null, isLoggedIn: false });
+          that.setData({ userInfo: null, isLoggedIn: false });
           wx.showToast({ title: '账号已注销', icon: 'success' });
         } else {
           wx.showToast({ title: '注销失败', icon: 'none' });
@@ -159,52 +189,49 @@ Page({
     });
   },
 
-  loginWithCode(code, avatarUrl) {
-    let userWxInfo = null;
-    if (!code && avatarUrl && avatarUrl.includes('://')) {
-    } else if (avatarUrl && avatarUrl.includes('://')) {
-      userWxInfo = { avatarUrl: avatarUrl, nickName: '' };
-    }
+  loginWithCode(code, avatarUrl, nickName) {
+    var that = this;
     wx.request({
-      url: `${API_URL}/api/wechat/openid?code=${code}`,
+      url: API_URL + '/api/wechat/openid?code=' + code,
       method: 'GET',
-      success: (res) => {
+      success: function(res) {
         wx.hideLoading();
         if (res.data && res.data.openid) {
           wx.setStorageSync('openid', res.data.openid);
-          this.loginWithOpenid(res.data.openid, userWxInfo?.avatarUrl, userWxInfo?.nickName);
+          that.loginWithOpenid(res.data.openid, avatarUrl, nickName);
         } else {
-          this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, userWxInfo?.avatarUrl || '');
+          that.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl, nickName);
         }
       },
-      fail: () => {
+      fail: function() {
         wx.hideLoading();
-        this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, userWxInfo?.avatarUrl || '');
+        that.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl, nickName);
       }
     });
   },
 
-  loginWithOpenid(openid, avatarUrl, nickName) {
+  loginWithOpenid: function(openid, avatarUrl, nickName) {
+    var that = this;
     wx.request({
-      url: `${API_URL}/api/users/${openid}/wx-login`,
+      url: API_URL + '/api/users/' + openid + '/wx-login',
       method: 'POST',
       header: { 'x-api-key': API_KEY },
       data: {},
-      success: (res) => {
-        this.loginAfterSuccess(res.data?.user || { openid: openid }, avatarUrl, nickName);
+      success: function(res) {
+        that.loginAfterSuccess(res.data && res.data.user || { openid: openid }, avatarUrl, nickName);
       },
-      fail: () => {
-        this.loginAfterSuccess({ openid: openid }, avatarUrl, nickName);
+      fail: function() {
+        that.loginAfterSuccess({ openid: openid }, avatarUrl, nickName);
       }
     });
   },
 
-  loginAfterSuccess(userData, avatarUrl, nickName) {
-    const randomNick = '用户' + Math.floor(Math.random() * 9000 + 1000);
-    const userInfo = {
+  loginAfterSuccess: function(userData, avatarUrl, nickName) {
+    var randomNick = '用户' + Math.floor(Math.random() * 9000 + 1000);
+    var userInfo = {
       openid: userData.openid,
       nickName: nickName || userData.nickname || randomNick,
-      avatarUrl: userData.avatarurl || ''
+      avatarUrl: avatarUrl || userData.avatarurl || ''
     };
     
     app.setUserInfo(userInfo);
@@ -213,37 +240,38 @@ Page({
     wx.showToast({ title: '登录成功', icon: 'success' });
   },
 
-  showNicknameInput(userInfo, defaultNick) {
-    const initial = defaultNick || userInfo.nickName || '';
+  showNicknameInput: function(userInfo, defaultNick) {
+    var that = this;
+    var initial = defaultNick || userInfo.nickName || '';
     wx.showModal({
       title: '设置昵称',
       placeholderText: '请输入昵称',
       editable: true,
-      success: (res) => {
+      success: function(res) {
         if (res.confirm && res.content && res.content.trim()) {
           userInfo.nickName = res.content.trim();
-          this.saveAndCompleteLogin(userInfo);
+          that.saveAndCompleteLogin(userInfo);
         } else if (defaultNick) {
           userInfo.nickName = defaultNick;
-          this.saveAndCompleteLogin(userInfo);
+          that.saveAndCompleteLogin(userInfo);
         } else {
-          this.showNicknameInput(userInfo, defaultNick);
+          that.showNicknameInput(userInfo, defaultNick);
         }
       },
-      fail: () => {
+      fail: function() {
         userInfo.nickName = defaultNick || '用户' + Date.now() % 10000;
-        this.saveAndCompleteLogin(userInfo);
+        that.saveAndCompleteLogin(userInfo);
       }
     });
   },
 
-  saveAndCompleteLogin(userInfo) {
+  saveAndCompleteLogin: function(userInfo) {
     app.setUserInfo(userInfo);
     this.setData({ userInfo: userInfo, isLoggedIn: true });
     wx.showToast({ title: '登录成功', icon: 'success' });
   },
 
-  completeLogin(userInfo) {
+  completeLogin: function(userInfo) {
     app.setUserInfo(userInfo);
     this.setData({ userInfo: userInfo, isLoggedIn: true });
     wx.showToast({ title: '登录成功', icon: 'success' });
