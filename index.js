@@ -1,6 +1,10 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const multer = require('multer');
+const { PDFDocument } = require('pdf-lib');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -191,10 +195,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // PDF conversion endpoint
-const multer = require('multer');
 const upload = multer({ dest: '/tmp/uploads/' });
-const { PDFDocument } = require('pdf-lib');
-const fs = require('fs');
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   try {
@@ -270,4 +271,3 @@ app.get('/api/pdf/download/:filename', (req, res) => {
   }
 });
 
-const path = require('path');
