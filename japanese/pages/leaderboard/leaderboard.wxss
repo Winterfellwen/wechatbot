@@ -22,7 +22,7 @@
 
 .rank-item {
   display: flex; align-items: center; gap: 16rpx;
-  background: #fff; border-radius: 18rpx; padding: 20rpx 24rpx; margin-bottom: 14rpx;
+  background: #fff; border-radius: 18rpx; padding: 20rpx 28rpx; margin-bottom: 14rpx;
   box-shadow: 0 2rpx 8rpx rgba(14,165,233,0.04); overflow: hidden;
 }
 .rank-item.top { border-left: 6rpx solid #F59E0B; }
@@ -31,7 +31,7 @@
 .rank-info { flex: 1; min-width: 0; overflow: hidden; }
 .rank-name { font-size: 28rpx; color: #0F172A; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-level { font-size: 22rpx; color: #94A3B8; }
-.rank-score { font-size: 26rpx; font-weight: bold; color: #0EA5E9; flex-shrink: 0; margin-left: 8rpx; }
+.rank-score { font-size: 26rpx; font-weight: bold; color: #0EA5E9; flex-shrink: 0; margin-left: 12rpx; padding-right: 4rpx; }
 
 .my-stats { display: flex; padding: 24rpx; gap: 20rpx; }
 .stat-box {
