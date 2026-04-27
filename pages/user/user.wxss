@@ -82,6 +82,10 @@
   padding: 0 20rpx;
 }
 
+.btn-group + .btn-group {
+  margin-top: 20rpx;
+}
+
 .btn-primary {
   background-color: #1890ff;
   color: #fff;

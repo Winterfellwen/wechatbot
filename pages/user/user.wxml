@@ -31,6 +31,8 @@
 
     <view class="btn-group">
       <button class="btn-primary" bindtap="handleLogout" wx:if="{{isLoggedIn}}">退出登录</button>
+    </view>
+    <view class="btn-group">
       <button class="btn-danger" bindtap="handleDeleteAccount" wx:if="{{isLoggedIn}}">注销账号</button>
     </view>
   </view>
