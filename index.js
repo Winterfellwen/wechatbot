@@ -195,10 +195,14 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // PDF conversion endpoint - proxies to Python service
+fs.mkdirSync('/tmp/uploads', { recursive: true });
 const upload = multer({ dest: '/tmp/uploads/' });
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: '请上传文件' });
+    }
     const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { from, to } = req.body;
     
