@@ -101,7 +101,7 @@ Page({
 
   startLesson: function(e) {
     var id = e.currentTarget.dataset.id;
-    wx.navigateTo({ url: '/japanese/pages/lesson/lesson?id=' + id });
+    wx.navigateTo({ url: '/japanese/pages/lesson/lesson?id=' + id + '&mode=quiz' });
   },
 
   goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
