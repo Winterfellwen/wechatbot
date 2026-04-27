@@ -128,123 +128,111 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF with proper Chinese support using reportlab"""
+    """Convert DOCX to PDF with proper Chinese support - use fpdf2 with TTF font"""
     from docx import Document
-    from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from fpdf import FPDF
     import os
-
+    
     output_path = input_path.with_suffix(".pdf")
     
-    # Register Chinese font
-    font_registered = False
-    font_path = _get_cjk_font_path()
+    # Get TTF font path (fpdf2 works better with TTF)
+    font_path = _get_cjk_ttf_font()
+    
+    doc = Document(str(input_path))
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
     
     if font_path and os.path.exists(font_path):
         try:
-            pdfmetrics.registerFont(TTFont('CJK', font_path))
-            font_registered = True
+            pdf.add_font("CJK", style="", fname=font_path)
+            pdf.set_font("CJK", size=11)
+            print(f"Using CJK font: {font_path}")
         except Exception as e:
-            print(f"Failed to register font: {e}")
-    
-    # Create PDF
-    doc_template = SimpleDocTemplate(str(output_path), pagesize=A4,
-                                     rightMargin=2*cm, leftMargin=2*cm,
-                                     topMargin=2*cm, bottomMargin=2*cm)
-    
-    # Define styles
-    styles = getSampleStyleSheet()
-    if font_registered:
-        # Create custom style with CJK font
-        if 'CJKNormal' not in styles:
-            styles.add(ParagraphStyle(name='CJKNormal', fontName='CJK', 
-                                      fontSize=11, leading=16))
-        normal_style = styles['CJKNormal']
+            print(f"Failed to load CJK font: {e}")
+            pdf.set_font("Helvetica", size=11)
     else:
-        normal_style = styles['Normal']
+        print("Warning: No CJK TTF font found, using Helvetica")
+        pdf.set_font("Helvetica", size=11)
     
-    # Build content
-    story = []
-    docx_doc = Document(str(input_path))
-    
-    for para in docx_doc.paragraphs:
+    for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
-            story.append(Spacer(1, 0.3*cm))
+            pdf.ln(3)
             continue
         
         try:
-            p = Paragraph(text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'), 
-                         normal_style)
-            story.append(p)
-            story.append(Spacer(1, 0.2*cm))
+            # fpdf2 handles UTF-8 natively with added font
+            pdf.multi_cell(w=0, h=7, txt=text)
+            pdf.ln(2)
         except Exception as e:
-            print(f"Paragraph error: {e}")
-            # Fallback: add as plain text
-            story.append(Spacer(1, 0.2*cm))
+            print(f"Text rendering error: {e}")
+            continue
     
-    doc_template.build(story)
+    pdf.output(str(output_path))
     return output_path
 
 
-def _get_cjk_font_path() -> str:
-    """Get CJK font file path, trying multiple sources"""
+def _get_cjk_ttf_font() -> str:
+    """Get CJK TTF/TTC font file path for fpdf2"""
     import hashlib
     
     cache_dir = Path("/tmp/font-cache")
-    # Windows cache path
-    if os.name == 'nt':
-        cache_dir = Path.home() / ".cache" / "font-cache"
     cache_dir.mkdir(exist_ok=True)
-    cache_path = cache_dir / "NotoSansSC-Regular.otf"
     
-    # Check if cached font exists
-    if cache_path.exists() and cache_path.stat().st_size > 50000:
-        return str(cache_path)
+    # Prefer TTF fonts over OTF for fpdf2 compatibility
+    # Try cached TTF font first
+    ttf_cache = cache_dir / "NotoSansSC-Regular.ttf"
+    if ttf_cache.exists() and ttf_cache.stat().st_size > 50000:
+        return str(ttf_cache)
     
-    # Try system fonts - Linux/Mac
+    # Try cached TTC (TrueType Collection)
+    ttc_cache = cache_dir / "wqy-zenhei.ttc"
+    if ttc_cache.exists() and ttc_cache.stat().st_size > 50000:
+        return str(ttc_cache)
+    
+    # Try system TTF/TTC fonts (Linux)
     system_paths = [
-        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",  # WenQuanYi Zen Hei
         "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
-        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
-        "/usr/share/fonts/truetype/noto/NotoSansSC-Regular.otf",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/arphic/uming.ttc",  # AR PL UMing
     ]
-    
-    # Windows system fonts
-    if os.name == 'nt':
-        windir = os.environ.get('WINDIR', 'C:\\Windows')
-        system_paths.extend([
-            f"{windir}\\Fonts\\msyh.ttc",  # Microsoft YaHei
-            f"{windir}\\Fonts\\simhei.ttf",  # SimHei
-            f"{windir}\\Fonts\\simsun.ttc",  # SimSun
-            f"{windir}\\Fonts\\kaiti.ttf",  # KaiTi
-        ])
     
     for sp in system_paths:
         if os.path.exists(sp):
             return sp
     
-    # Download from CDNs
-    urls = [
-        "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/SubsetOTF/CN/NotoSansSC-Regular.otf",
-        "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
-        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+    # Download TTF font from CDN
+    # Noto Sans SC TTF version
+    ttf_urls = [
+        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
     ]
-    for url in urls:
+    
+    for url in ttf_urls:
         try:
-            data = urllib.request.urlopen(url, timeout=20).read()
+            print(f"Downloading TTF font from {url}")
+            data = urllib.request.urlopen(url, timeout=30).read()
             if len(data) > 50000:
-                cache_path.write_bytes(data)
-                return str(cache_path)
+                ttf_cache.write_bytes(data)
+                print(f"Downloaded TTF font: {len(data)} bytes")
+                return str(ttf_cache)
         except Exception as e:
-            print(f"Font download failed from {url}: {e}")
+            print(f"TTF font download failed from {url}: {e}")
             continue
+    
+    # Fallback: try to download Droid Sans Fallback
+    fallback_url = "https://github.com/android/platform_frameworks_base/raw/master/data/fonts/DroidSansFallback.ttf"
+    try:
+        print(f"Trying fallback font: {fallback_url}")
+        data = urllib.request.urlopen(fallback_url, timeout=30).read()
+        if len(data) > 50000:
+            fallback_path = cache_dir / "DroidSansFallback.ttf"
+            fallback_path.write_bytes(data)
+            return str(fallback_path)
+    except Exception as e:
+        print(f"Fallback font download failed: {e}")
     
     return None
 
