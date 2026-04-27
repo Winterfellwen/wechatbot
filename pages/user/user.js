@@ -26,40 +26,19 @@ Page({
   },
 
   login() {
-    wx.getUserProfile({
-      desc: '用于完善用户资料',
-      success: (res) => {
-        const userInfo = res.userInfo;
-        if (userInfo && userInfo.nickName) {
-          this.loginWithWxInfo(userInfo);
-        } else {
-          this.loginWithCode('', userInfo.avatarUrl);
-        }
-      },
-      fail: () => {
-        wx.showLoading({ title: '登录中...' });
-        wx.login({
-          success: (res) => {
-            if (res.code) {
-              this.loginWithCode(res.code, '');
-            }
-          }
-        });
-      }
-    });
-  },
-
-  loginWithWxInfo(wxUserInfo) {
     wx.showLoading({ title: '登录中...' });
     wx.login({
       success: (res) => {
         if (res.code) {
-          this.loginWithCode(res.code, wxUserInfo.avatarUrl);
+          this.loginWithCode(res.code);
+        } else {
+          wx.hideLoading();
+          this.loginAfterSuccess({ openid: 'wx_' + Date.now() });
         }
       },
       fail: () => {
         wx.hideLoading();
-        this.loginAfterSuccess({ openid: 'wx_' + Date.now(), nickName: wxUserInfo.nickName }, wxUserInfo.avatarUrl);
+        wx.showToast({ title: '登录失败', icon: 'none' });
       }
     });
   },
@@ -67,6 +46,8 @@ Page({
   handleUserTap() {
     if (!this.data.isLoggedIn) {
       this.login();
+    } else {
+      this.showNicknameInput({}, '');
     }
   },
 
