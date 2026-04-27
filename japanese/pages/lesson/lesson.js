@@ -22,7 +22,9 @@ Page({
     selectedIndex: -1,
     correctIndex: -1,
     currentQuestion: null,
-    score: 0
+    score: 0,
+    fillAnswer: '',
+    isChoice: true
   },
 
   onLoad: function(options) {

@@ -95,8 +95,10 @@ Page({
   },
 
   switchUnit: function(e) {
-    var id = parseInt(e.currentTarget.dataset.id) || 0;
-    this.setData({ activeUnit: id });
+    var id = Number(e.currentTarget.dataset.id);
+    if (id > 0) {
+      this.setData({ activeUnit: id });
+    }
   },
 
   startLesson: function(e) {

@@ -46,20 +46,20 @@ Page({
   },
 
   onSearch: function(e) {
-    var key = e.detail.value.toLowerCase();
+    var key = e.detail.value;
     var words = this.data.allWords;
     if (key) {
       var filtered = [];
       var i;
       for (i = 0; i < words.length; i++) {
         var w = words[i];
-        if ((w.word && w.word.toLowerCase().indexOf(key) !== -1) ||
-            (w.meaning && w.meaning.toLowerCase().indexOf(key) !== -1) ||
-            (w.reading && w.reading.toLowerCase().indexOf(key) !== -1)) {
+        if ((w.word && w.word.indexOf(key) !== -1) ||
+            (w.meaning && w.meaning.indexOf(key) !== -1) ||
+            (w.reading && w.reading.indexOf(key) !== -1)) {
           filtered = filtered.concat([w]);
         }
       }
-      this.setData({ filteredWords: filtered, searchKey: e.detail.value });
+      this.setData({ filteredWords: filtered, searchKey: key });
     } else {
       this.setData({ filteredWords: words, searchKey: '' });
     }
