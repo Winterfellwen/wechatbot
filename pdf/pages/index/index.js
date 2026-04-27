@@ -50,39 +50,54 @@ Page({
     var that = this;
     that.setData({ converting: true });
 
-    wx.uploadFile({
+    var task = wx.uploadFile({
       url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
       filePath: that.data.filePath,
       name: 'file',
       formData: { from: that.data.fromFormat, to: that.data.toFormat },
       success: function(res) {
-        var data = {};
-        try { data = JSON.parse(res.data); } catch(e) {}
-        if (data.url) {
-          wx.downloadFile({
-            url: data.url,
-            success: function(dl) {
-              that.setData({ converting: false });
-              wx.openDocument({
-                filePath: dl.tempFilePath,
-                fileType: that.data.toFormat,
-                showMenu: true,
-                success: function() { wx.showToast({ title: '转换成功', icon: 'success' }); }
-              });
-            },
-            fail: function() {
-              that.setData({ converting: false });
-              wx.showToast({ title: '下载失败', icon: 'none' });
-            }
-          });
+        if (res.statusCode === 200) {
+          var data = {};
+          try { data = JSON.parse(res.data); } catch(e) {}
+          if (data.url) {
+            wx.downloadFile({
+              url: data.url,
+              success: function(dl) {
+                that.setData({ converting: false });
+                wx.openDocument({
+                  filePath: dl.tempFilePath,
+                  fileType: that.data.toFormat,
+                  showMenu: true,
+                  success: function() { wx.showToast({ title: '转换成功', icon: 'success' }); }
+                });
+              },
+              fail: function() {
+                that.setData({ converting: false });
+                wx.showToast({ title: '下载失败', icon: 'none' });
+              }
+            });
+          } else {
+            that.setData({ converting: false });
+            wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
+          }
         } else {
           that.setData({ converting: false });
-          wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
+          wx.showToast({ title: '服务器错误(' + res.statusCode + ')，请重试', icon: 'none' });
         }
       },
-      fail: function() {
+      fail: function(err) {
         that.setData({ converting: false });
-        wx.showToast({ title: '上传失败', icon: 'none' });
+        var msg = err.errMsg || '';
+        if (msg.indexOf('timeout') !== -1) {
+          wx.showModal({
+            title: '转换超时',
+            content: '免费服务器首次启动较慢(30-60秒)，请点击重试',
+            showCancel: false,
+            success: function() { that.doConvert(); }
+          });
+        } else {
+          wx.showToast({ title: '上传失败，请重试', icon: 'none' });
+        }
       }
     });
   },
