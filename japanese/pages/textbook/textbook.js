@@ -2,7 +2,9 @@ var lessons = require('../../data/lessons.js');
 
 Page({
   data: {
-    books: []
+    books: [],
+    currentBook: null,
+    currentBookLessons: []
   },
 
   onLoad: function() {
@@ -24,75 +26,80 @@ Page({
       'N1': '日语N1 精通掌握'
     };
     var levelColors = {
-      'N5': '#4CAF50',
-      'N4': '#2196F3',
-      'N3': '#FF9800',
-      'N2': '#9C27B0',
-      'N1': '#F44336'
-    };
-    var levelIds = {
-      'N5': 1,
-      'N4': 21,
-      'N3': 39,
-      'N2': 57,
-      'N1': 67
+      'N5': '#4CAF50', 'N4': '#0EA5E9', 'N3': '#F59E0B', 'N2': '#8B5CF6', 'N1': '#EF4444'
     };
 
     var books = [];
-    var i, j;
-    for (i = 0; i < levels.length; i++) {
+    for (var i = 0; i < levels.length; i++) {
       var level = levels[i];
       var levelLessons = [];
-      for (j = 0; j < lessons.length; j++) {
-        if (lessons[j].level === level) {
-          levelLessons = levelLessons.concat([lessons[j]]);
-        }
+      for (var j = 0; j < lessons.length; j++) {
+        if (lessons[j].level === level) levelLessons.push(lessons[j]);
       }
 
       var completed = 0;
-      for (j = 0; j < levelLessons.length; j++) {
-        if (completedLessons.indexOf(levelLessons[j].id) !== -1) {
-          completed = completed + 1;
-        }
+      for (var k = 0; k < levelLessons.length; k++) {
+        if (completedLessons.indexOf(levelLessons[k].id) !== -1) completed++;
       }
       var progress = levelLessons.length > 0 ? Math.round(completed / levelLessons.length * 100) : 0;
 
-      var firstIncomplete = 0;
-      for (j = 0; j < levelLessons.length; j++) {
-        if (completedLessons.indexOf(levelLessons[j].id) === -1) {
-          firstIncomplete = levelLessons[j].id;
-          break;
-        }
-      }
-      if (firstIncomplete === 0 && levelLessons.length > 0) {
-        firstIncomplete = levelLessons[0].id;
-      }
-
-      var book = {
+      books.push({
         level: level,
         title: levelTitles[level],
         color: levelColors[level],
         lessonCount: levelLessons.length,
         completedCount: completed,
         progress: progress,
-        firstLessonId: firstIncomplete
-      };
-      books = books.concat([book]);
+        lessons: levelLessons
+      });
     }
 
     this.setData({ books: books });
   },
 
   openBook: function(e) {
-    var lessonId = e.currentTarget.dataset.id;
-    if (lessonId > 0) {
-      wx.navigateTo({
-        url: '/japanese/pages/lesson/lesson?id=' + lessonId
+    var level = e.currentTarget.dataset.level;
+    var book = null;
+    for (var i = 0; i < this.data.books.length; i++) {
+      if (this.data.books[i].level === level) { book = this.data.books[i]; break; }
+    }
+    if (!book) return;
+
+    var completed = wx.getStorageSync('completedLessons') || [];
+    var mapped = [];
+    for (var j = 0; j < book.lessons.length; j++) {
+      var ls = book.lessons[j];
+      mapped.push({
+        id: ls.id,
+        title: ls.title,
+        subtitle: ls.description || '',
+        done: completed.indexOf(ls.id) !== -1,
+        number: j + 1,
+        words: ls.words_count || 0,
+        grammar: ls.grammar_count || 0
       });
     }
+
+    this.setData({
+      currentBook: { title: book.title, level: book.level, color: book.color },
+      currentBookLessons: mapped
+    });
+  },
+
+  closeBook: function() {
+    this.setData({ currentBook: null, currentBookLessons: [] });
+  },
+
+  startLesson: function(e) {
+    var id = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: '/japanese/pages/lesson/lesson?id=' + id });
   },
 
   goBack: function() {
-    wx.navigateBack();
+    if (this.data.currentBook) {
+      this.closeBook();
+    } else {
+      wx.navigateBack();
+    }
   }
 });

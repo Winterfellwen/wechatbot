@@ -13,27 +13,48 @@
 .book-card {
   display: flex; align-items: center; background: #fff; border-radius: 20rpx;
   padding: 28rpx; margin-bottom: 22rpx; box-shadow: 0 4rpx 16rpx rgba(14,165,233,0.06);
-  transition: box-shadow 0.2s;
 }
-
 .book-cover {
   width: 108rpx; height: 108rpx; border-radius: 20rpx;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
 }
 .book-level-badge { font-size: 34rpx; font-weight: bold; color: #fff; }
-
 .book-info { flex: 1; margin-left: 28rpx; }
 .book-title { font-size: 34rpx; font-weight: bold; color: #0F172A; }
-
 .book-meta { display: flex; gap: 24rpx; margin-top: 10rpx; }
 .book-lesson-count { font-size: 26rpx; color: #475569; }
 .book-completed { font-size: 26rpx; color: #22C55E; font-weight: 600; }
-
 .progress-wrap { display: flex; align-items: center; margin-top: 14rpx; }
 .progress-bar { flex: 1; height: 12rpx; background: #E0F2FE; border-radius: 6rpx; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 6rpx; transition: width 0.3s; }
 .progress-text { margin-left: 20rpx; font-size: 24rpx; color: #64748B; min-width: 64rpx; }
-
 .book-arrow { width: 40rpx; }
 .arrow-icon { font-size: 48rpx; color: #CBD5E1; font-weight: bold; }
+
+/* Book detail (lesson list) */
+.book-detail-header {
+  padding: 40rpx 30rpx; color: #fff; text-align: center;
+  margin-bottom: 4rpx;
+}
+.detail-level { font-size: 48rpx; font-weight: bold; display: block; }
+.detail-count { font-size: 28rpx; opacity: 0.85; display: block; margin-top: 8rpx; }
+
+.lesson-list { padding: 24rpx; }
+
+.lesson-row {
+  display: flex; align-items: center; gap: 24rpx;
+  background: #fff; border-radius: 18rpx; padding: 28rpx 30rpx;
+  margin-bottom: 16rpx; box-shadow: 0 2rpx 8rpx rgba(14,165,233,0.04);
+}
+.lesson-row.done { background: #F0FDF4; }
+.lesson-num-circle {
+  width: 72rpx; height: 72rpx; border-radius: 50%;
+  border: 3rpx solid #CBD5E1; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: #fff;
+}
+.lesson-row.done .lesson-num-circle { border-color: #22C55E; }
+.lesson-info { flex: 1; }
+.lesson-title { font-size: 30rpx; font-weight: bold; color: #0F172A; display: block; }
+.lesson-meta { font-size: 24rpx; color: #64748B; display: block; margin-top: 4rpx; }
+.lesson-arrow { font-size: 36rpx; color: #CBD5E1; }

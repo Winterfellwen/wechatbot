@@ -45,8 +45,9 @@
 .fill-section { margin-top: 24rpx; }
 .fill-hint { font-size: 26rpx; color: #64748B; text-align: center; margin-bottom: 28rpx; }
 .fill-input {
-  border: 3rpx solid #0EA5E9; border-radius: 16rpx; padding: 28rpx 32rpx;
-  font-size: 34rpx; text-align: center; width: 100%; box-sizing: border-box;
+  border: 3rpx solid #0EA5E9; border-radius: 16rpx;
+  padding: 28rpx 32rpx; height: 106rpx;
+  font-size: 36rpx; text-align: center; width: 100%; box-sizing: border-box;
   background: #fff; box-shadow: 0 4rpx 16rpx rgba(14,165,233,0.1);
 }
 .fill-submit {
