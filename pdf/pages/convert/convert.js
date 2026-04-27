@@ -2,22 +2,64 @@ Page({
   data: {
     fileName: '',
     filePath: '',
-    fromFormat: 'pdf',
-    toFormat: 'docx',
+    fromFormat: '',
+    toFormat: '',
     converting: false,
-    resultUrl: ''
+    targetOptions: []
   },
 
   onLoad: function(options) {
-    if (options.file) this.setData({ fileName: decodeURIComponent(options.file), filePath: decodeURIComponent(options.path || '') });
+    if (options.file) {
+      var name = decodeURIComponent(options.file);
+      var ext = name.split('.').pop().toLowerCase();
+      var fromFmt = '';
+      if (ext === 'pdf') fromFmt = 'pdf';
+      else if (ext === 'docx') fromFmt = 'docx';
+      else if (ext === 'doc') fromFmt = 'doc';
+      
+      var targets = this.getTargets(fromFmt);
+      
+      this.setData({
+        fileName: name,
+        filePath: decodeURIComponent(options.path || ''),
+        fromFormat: fromFmt,
+        toFormat: targets.length > 0 ? targets[0].value : '',
+        targetOptions: targets
+      });
+    }
   },
 
-  switchFrom: function(e) { this.setData({ fromFormat: e.currentTarget.dataset.f, resultUrl: '' }); },
-  switchTo: function(e) { this.setData({ toFormat: e.currentTarget.dataset.f, resultUrl: '' }); },
+  getTargets: function(from) {
+    if (from === 'pdf') {
+      return [
+        { label: 'DOCX (Word文档)', value: 'docx' },
+        { label: 'DOC (旧版Word)', value: 'doc' }
+      ];
+    } else if (from === 'docx') {
+      return [
+        { label: 'PDF', value: 'pdf' },
+        { label: 'DOC (旧版Word)', value: 'doc' }
+      ];
+    } else if (from === 'doc') {
+      return [
+        { label: 'PDF', value: 'pdf' },
+        { label: 'DOCX (Word文档)', value: 'docx' }
+      ];
+    }
+    return [];
+  },
+
+  selectTarget: function(e) {
+    this.setData({ toFormat: e.currentTarget.dataset.value });
+  },
 
   doConvert: function() {
     if (!this.data.filePath) {
       wx.showToast({ title: '请先上传文件', icon: 'none' });
+      return;
+    }
+    if (!this.data.toFormat) {
+      wx.showToast({ title: '请选择目标格式', icon: 'none' });
       return;
     }
     var that = this;
@@ -41,7 +83,7 @@ Page({
           wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
         }
       },
-      fail: function(err) {
+      fail: function() {
         that.setData({ converting: false });
         wx.showToast({ title: '上传失败', icon: 'none' });
       }
