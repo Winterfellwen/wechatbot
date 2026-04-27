@@ -199,7 +199,7 @@ const upload = multer({ dest: '/tmp/uploads/' });
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   try {
-    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'http://pdf-converter:8000';
+    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { from, to } = req.body;
     
     const FormData = require('form-data');
