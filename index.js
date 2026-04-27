@@ -2,7 +2,6 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const multer = require('multer');
-const { PDFDocument, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
@@ -247,42 +246,35 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 
 app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   try {
+    if (!req.file) return res.status(400).json({ error: '请上传文件' });
     const { op, text, angle } = req.body;
-    const filePath = req.file.path;
-    const pdfBytes = fs.readFileSync(filePath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    
-    if (op === 'rotate') {
-      const pages = pdfDoc.getPages();
-      for (const page of pages) {
-        const currentRotation = page.getRotation().angle || 0;
-        page.setRotation({ angle: (currentRotation + parseInt(angle || 90)) % 360 });
-      }
-    } else if (op === 'watermark') {
-      const pages = pdfDoc.getPages();
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      for (const page of pages) {
-        const { width, height } = page.getSize();
-        page.drawText(text || 'WATERMARK', {
-          x: width / 2 - 100, y: height / 2,
-          size: 30, font: helveticaFont,
-          opacity: 0.3, color: { red: 0.5, green: 0.5, blue: 0.5 }
-        });
-      }
-    } else if (op === 'merge') {
-      res.json({ error: '合并需要两个文件，请分别上传' });
-      return;
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+
+    var body = new URLSearchParams();
+    body.append('file_base64', fileBase64);
+    body.append('op', op || '');
+    body.append('text', text || '');
+    body.append('angle', angle || '90');
+
+    const pyRes = await fetch(pdfServiceUrl + '/edit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+
+    if (!pyRes.ok) {
+      const err = await pyRes.json();
+      return res.status(400).json(err);
     }
-    
-    const modifiedPdfBytes = await pdfDoc.save();
-    const outputPath = '/tmp/output_' + Date.now() + '.pdf';
-    fs.writeFileSync(outputPath, modifiedPdfBytes);
-    const downloadUrl = 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outputPath);
-    // Move file to serve location
-    const servePath = '/tmp/serve/' + path.basename(outputPath);
+
+    const buffer = await pyRes.arrayBuffer();
+    const outFile = '/tmp/serve/edit_' + Date.now() + '.pdf';
     fs.mkdirSync('/tmp/serve', { recursive: true });
-    fs.renameSync(outputPath, servePath);
-    res.json({ url: downloadUrl });
+    fs.writeFileSync(outFile, Buffer.from(buffer));
+
+    res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
+    fs.unlinkSync(req.file.path);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

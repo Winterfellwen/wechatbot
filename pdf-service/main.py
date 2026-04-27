@@ -4,7 +4,7 @@ import tempfile
 import uuid
 import urllib.request
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -28,14 +28,14 @@ class ConvertRequest(BaseModel):
 async def convert(req: ConvertRequest):
     input_id = uuid.uuid4().hex
     input_path = UPLOAD_DIR / f"{input_id}.{req.from_fmt}"
-    
+
     try:
         file_data = base64.b64decode(req.file_base64)
         with open(input_path, "wb") as f:
             f.write(file_data)
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid base64 file data")
-    
+        raise HTTPException(status_code=400, detail="Invalid base64 data")
+
     try:
         if req.from_fmt == "pdf" and req.to_fmt == "docx":
             output_path = await pdf_to_docx(input_path)
@@ -51,9 +51,38 @@ async def convert(req: ConvertRequest):
             output_path = input_path.with_suffix(".docx")
             shutil.copy(input_path, output_path)
         else:
-            raise HTTPException(status_code=400, detail=f"不支持 {req.from_fmt} → {req.to_fmt}")
-        
+            raise HTTPException(status_code=400, detail=f"不支持 {req.from_fmt} -> {req.to_fmt}")
+
         return FileResponse(output_path, filename=f"converted.{req.to_fmt}",
+                            media_type="application/octet-stream")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if input_path.exists():
+            input_path.unlink(missing_ok=True)
+
+
+@app.post("/edit")
+async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = Form(""), angle: str = Form("90")):
+    input_id = uuid.uuid4().hex
+    input_path = UPLOAD_DIR / f"{input_id}.pdf"
+
+    try:
+        file_data = base64.b64decode(file_base64)
+        with open(input_path, "wb") as f:
+            f.write(file_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid base64 data")
+
+    try:
+        if op == "watermark":
+            output_path = await pdf_watermark(input_path, text)
+        elif op == "rotate":
+            output_path = await pdf_rotate(input_path, int(angle))
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
+
+        return FileResponse(output_path, filename="edited.pdf",
                             media_type="application/octet-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,16 +100,41 @@ async def pdf_to_docx(input_path: Path) -> Path:
     return output_path
 
 
+async def pdf_watermark(input_path: Path, text: str) -> Path:
+    import fitz
+    doc = fitz.open(str(input_path))
+    for page in doc:
+        rect = page.rect
+        page.insert_text(
+            fitz.Point(rect.width / 2 - 80, rect.height / 2),
+            text or "WATERMARK",
+            fontsize=40, color=(0.7, 0.7, 0.7), rotate=45, overlay=True
+        )
+    output_path = input_path.with_suffix("_wm.pdf")
+    doc.save(str(output_path))
+    doc.close()
+    return output_path
+
+
+async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
+    import fitz
+    doc = fitz.open(str(input_path))
+    for page in doc:
+        page.set_rotation((page.rotation or 0) + angle)
+    output_path = input_path.with_suffix("_rot.pdf")
+    doc.save(str(output_path))
+    doc.close()
+    return output_path
+
+
 async def docx_to_pdf(input_path: Path) -> Path:
     from docx import Document
     from fpdf import FPDF
-    import urllib.request
 
     doc = Document(str(input_path))
     pdf = FPDF()
     pdf.add_page()
-    
-    # Download CJK font if not present
+
     font_path = Path("/tmp/NotoSansSC-Regular.ttf")
     if not font_path.exists():
         try:
@@ -88,11 +142,10 @@ async def docx_to_pdf(input_path: Path) -> Path:
             urllib.request.urlretrieve(url, str(font_path))
         except:
             pass
-    
+
     font_ok = False
-    for fp in [str(font_path), 
-               "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-               "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"]:
+    for fp in [str(font_path),
+               "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"]:
         if os.path.exists(fp):
             try:
                 pdf.add_font("Uni", "", fp, uni=True)
@@ -100,21 +153,20 @@ async def docx_to_pdf(input_path: Path) -> Path:
                 break
             except:
                 pass
-    
+
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
-        size = 11
         if font_ok:
-            pdf.set_font("Uni", size=size)
+            pdf.set_font("Uni", size=11)
         else:
-            pdf.set_font("Helvetica", size=size)
+            pdf.set_font("Helvetica", size=11)
         try:
             pdf.multi_cell(0, 7, text)
         except:
             safe = text.encode("ascii", errors="replace").decode("ascii")
-            pdf.set_font("Helvetica", size=size)
+            pdf.set_font("Helvetica", size=11)
             pdf.multi_cell(0, 7, safe)
         pdf.ln(2)
 
