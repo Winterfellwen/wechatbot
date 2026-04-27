@@ -1,53 +1,98 @@
 <!--pages/lesson/lesson.wxml-->
 <view class="container">
-  <!-- 顶部 -->
   <view class="header">
-    <view class="header-left" bindtap="goBack">←</view>
+    <view class="header-left" bindtap="goBack">← {{level}}</view>
     <view class="header-title">{{lessonTitle}}</view>
-    <view class="header-right">{{current}}/{{total}}</view>
+    <view class="header-right"></view>
   </view>
 
-  <!-- 进度条 -->
-  <view class="progress-container">
-    <view class="progress-bar">
-      <view class="progress-fill" style="width: {{progress}}%"></view>
-    </view>
-  </view>
-
-  <!-- 问题区域 -->
-  <view class="question-container">
-    <view class="question-number">第{{current}}题</view>
-    <view class="question-text">{{currentQuestion.question}}</view>
-    <view wx:if="{{currentQuestion.audio}}" class="audio-btn" bindtap="playAudio">🔊</view>
-  </view>
-
-  <!-- 选项 -->
-  <view class="options-container">
-    <block wx:for="{{currentQuestion.options}}" wx:key="index">
-      <view 
-        class="option-btn {{selectedIndex === index ? (correctIndex === index ? 'correct' : (selectedIndex === index ? 'wrong' : '')) : (showResult && correctIndex === index ? 'correct' : '')}}"
-        bindtap="selectOption" 
-        data-index="{{index}}"
-        wx:if="{{!showResult || selectedIndex === index || correctIndex === index}}">
-        <view class="option-letter">{{['A','B','C','D'][index]}}</view>
-        <view class="option-text">{{item}}</view>
+  <view class="segment-tabs">
+    <block wx:for="{{segments}}" wx:key="key">
+      <view class="seg-tab {{segment === item.key ? 'active' : ''}}" bindtap="selectSegment" data-seg="{{item.key}}">
+        {{item.label}}
       </view>
     </block>
   </view>
 
-  <!-- 结果 -->
-  <view wx:if="{{showResult}}" class="result-container">
-    <view wx:if="{{isCorrect}}" class="result-correct">
-      <text class="result-icon">✓</text>
-      <text class="result-text">正确!</text>
-      <text class="result-xp">+{{currentQuestion.xp}} XP</text>
+  <!-- Words segment -->
+  <scroll-view wx:if="{{segment === 'words'}}" scroll-y class="content-area">
+    <block wx:for="{{words}}" wx:key="id">
+      <view class="word-card">
+        <view class="word-jp">{{item.word}}</view>
+        <view class="word-reading">{{item.reading}}</view>
+        <view class="word-meaning">{{item.meaning}}</view>
+        <view wx:if="{{item.example}}" class="word-example">
+          <text>{{item.example}}</text>
+          <text class="word-example-cn">{{item.example_translation}}</text>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- Grammar segment -->
+  <scroll-view wx:if="{{segment === 'grammar'}}" scroll-y class="content-area">
+    <block wx:for="{{grammar}}" wx:key="id">
+      <view class="grammar-card">
+        <text class="grammar-pattern">{{item.pattern}}</text>
+        <text class="grammar-structure">{{item.structure}}</text>
+        <text class="grammar-explain">{{item.explanation}}</text>
+        <view class="grammar-example">
+          <text>{{item.example}}</text>
+          <text class="grammar-trans">{{item.translation}}</text>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- Text segment -->
+  <scroll-view wx:if="{{segment === 'text'}}" scroll-y class="content-area">
+    <block wx:if="{{textDialogue}}">
+      <view class="text-title">{{textDialogue.title}}</view>
+      <block wx:for="{{textDialogue.dialogue}}" wx:key="*this">
+        <view class="dialogue-line">
+          <text class="dialogue-speaker">{{item.speaker}}:</text>
+          <text class="dialogue-jp">{{item.text}}</text>
+          <text class="dialogue-cn">{{item.translation}}</text>
+        </view>
+      </block>
+    </block>
+    <block wx:else>
+      <view class="placeholder-text">本课暂无对话</view>
+    </block>
+  </scroll-view>
+
+  <!-- Quiz segment -->
+  <view wx:if="{{segment === 'quiz'}}" class="quiz-area">
+    <view class="progress-bar-small">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{progress}}%"></view>
+      </view>
+      <text>{{current}}/{{total}}</text>
     </view>
-    <view wx:else class="result-wrong">
-      <text class="result-icon">✗</text>
-      <text class="result-text">正确答案是: {{currentQuestion.options[correctIndex]}}</text>
+
+    <view class="question-box" wx:if="{{currentQuestion}}">
+      <view class="question-number">第{{current}}题</view>
+      <view class="question-text">{{currentQuestion.question}}</view>
     </view>
-    <view class="next-btn" bindtap="nextQuestion">
-      <text>{{current < total ? '下一题' : '完成!'}}</text>
+
+    <view class="options-list">
+      <block wx:for="{{currentQuestion.options}}" wx:key="index">
+        <view 
+          class="option-btn {{showResult ? (index === correctIndex ? 'correct' : (index === selectedIndex ? 'wrong' : '')) : ''}}"
+          bindtap="selectOption" 
+          data-index="{{index}}">
+          <text class="option-letter">{{['A','B','C','D'][index]}}</text>
+          <text class="option-text">{{item}}</text>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{showResult}}" class="result-bar">
+      <view wx:if="{{isCorrect}}" class="result-correct">✓ 正确!</view>
+      <view wx:else class="result-wrong">✗ 正确答案: {{currentQuestion.options[correctIndex]}}</view>
+      <view class="next-btn" bindtap="nextQuestion">
+        {{current < total ? '下一题' : '完成!'}}
+      </view>
     </view>
   </view>
 </view>

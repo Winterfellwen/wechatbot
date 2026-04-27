@@ -1,63 +1,56 @@
 <!--pages/learn/learn.wxml-->
 <view class="container">
-  <!-- 顶部进度条 -->
   <view class="progress-header">
-    <view class="back-btn" bindtap="goBack">←</view>
     <view class="progress-bar">
       <view class="progress-fill" style="width: {{progress}}%"></view>
     </view>
     <view class="progress-text">Lv.{{level}} · {{exp}}XP</view>
   </view>
 
-  <!-- 教材选择 -->
   <view class="lesson-tabs">
     <view 
-      wx:for="{{books}}" 
+      wx:for="{{levels}}" 
       wx:key="id" 
-      class="tab-item {{currentBook === item.id ? 'active' : ''}}"
-      bindtap="switchLesson" 
-      data-id="{{item.id}}">
-      {{item.name}}
+      class="tab-item {{currentLevel === item.id ? 'active' : ''}}"
+      bindtap="switchLevel" 
+      data-level="{{item.id}}">
+      <text class="tab-name">{{item.name}}</text>
+      <text class="tab-desc">{{item.desc}}</text>
     </view>
   </view>
 
-  <!-- 闯关列表 -->
   <scroll-view scroll-y class="lesson-list">
-    <block wx:for="{{currentLessonData}}" wx:key="id">
+    <block wx:for="{{currentLessons}}" wx:key="id">
       <view class="lesson-card {{item.completed ? 'completed' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
-        <view class="lesson-number">{{item.number}}</view>
+        <view class="lesson-number">{{item.id}}</view>
         <view class="lesson-info">
           <view class="lesson-title">{{item.title}}</view>
           <view class="lesson-desc">{{item.description}}</view>
           <view class="lesson-stats">
-            <text class="xp">+{{item.xp}} XP</text>
-            <text wx:if="{{item.completed}}" class="checkmark">✓</text>
+            <text class="stat">词汇 {{item.words}}</text>
+            <text class="stat">语法 {{item.grammar}}</text>
+            <text class="level-badge">{{item.level}}</text>
           </view>
         </view>
         <view class="lesson-icon">
-          <text wx:if="{{item.completed}}">⭐</text>
-          <text wx:else>▶</text>
+          <text wx:if="{{item.completed}}" class="check">✓</text>
+          <text wx:else class="play">→</text>
         </view>
       </view>
     </block>
   </scroll-view>
 
-  <!-- 底部导航 -->
   <view class="bottom-nav">
     <view class="nav-item {{currentTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
-      <text class="nav-icon">🎯</text>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item {{currentTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
-      <text class="nav-icon">📚</text>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item {{currentTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
-      <text class="nav-icon">🤖</text>
       <text class="nav-text">智能老师</text>
     </view>
     <view class="nav-item {{currentTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
-      <text class="nav-icon">🏆</text>
       <text class="nav-text">排行榜</text>
     </view>
   </view>

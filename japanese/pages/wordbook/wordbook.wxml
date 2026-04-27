@@ -24,15 +24,19 @@
 
   <!-- 词表 -->
   <scroll-view scroll-y class="word-list">
-    <block wx:for="{{filteredWords}}" wx:key="word">
-      <view class="word-card" bindtap="playAudio" data-word="{{item.word}}">
+    <block wx:for="{{filteredWords}}" wx:key="id">
+      <view class="word-card">
         <view class="word-main">
           <view class="word-japanese">{{item.word}}</view>
           <view class="word-chinese">{{item.meaning}}</view>
           <view wx:if="{{item.reading}}" class="word-reading">[{{item.reading}}]</view>
+          <view wx:if="{{item.example}}" class="word-example">
+            <text class="example-jp">{{item.example}}</text>
+            <text class="example-cn">{{item.example_translation}}</text>
+          </view>
         </view>
         <view class="word-actions">
-          <view class="action-btn {{item.mastered ? 'mastered' : ''}}" catchtap="toggleMaster" data-word="{{item.word}}">
+          <view class="action-btn {{item.mastered ? 'mastered' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
             {{item.mastered ? '✓' : '☆'}}
           </view>
         </view>

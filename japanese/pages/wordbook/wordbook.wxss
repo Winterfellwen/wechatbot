@@ -92,6 +92,16 @@
   margin-top: 4rpx;
 }
 
+.word-example {
+  margin-top: 10rpx;
+  padding: 10rpx 16rpx;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #58cc02;
+}
+.example-jp { font-size: 26rpx; color: #666; display: block; }
+.example-cn { font-size: 24rpx; color: #999; display: block; margin-top: 2rpx; }
+
 .word-actions {
   display: flex;
   gap: 20rpx;
