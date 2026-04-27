@@ -26,7 +26,7 @@
           <view class="rank-name">{{item.nickName}}</view>
           <view class="rank-level">Lv.{{item.level}}</view>
         </view>
-        <view class="rank-score">{{item.score}}分</view>
+        <view class="rank-score">{{currentTab === 'score' ? item.score + '分' : (currentTab === 'words' ? item.words + '词' : item.progress + '%')}}</view>
       </view>
     </block>
   </scroll-view>
