@@ -1,57 +1,54 @@
 <!--pages/learn/learn.wxml-->
 <view class="container">
-  <view class="progress-header">
-    <view class="progress-bar">
-      <view class="progress-fill" style="width: {{progress}}%"></view>
+  <view class="top-bar">
+    <view class="level-badge">Lv.{{level}}</view>
+    <view class="exp-bar-wrap">
+      <view class="exp-bar">
+        <view class="exp-fill" style="width: {{exp % 100}}%"></view>
+      </view>
+      <text class="exp-text">{{exp}} XP</text>
     </view>
-    <view class="progress-text">Lv.{{level}} · {{exp}}XP</view>
-  </view>
-
-  <view class="lesson-tabs">
-    <view 
-      wx:for="{{levels}}" 
-      wx:key="id" 
-      class="tab-item {{currentLevel === item.id ? 'active' : ''}}"
-      bindtap="switchLevel" 
-      data-level="{{item.id}}">
-      <text class="tab-name">{{item.name}}</text>
-      <text class="tab-desc">{{item.desc}}</text>
+    <view class="progress-circle">
+      <text class="progress-text">{{overallProgress}}%</text>
     </view>
   </view>
 
-  <scroll-view scroll-y class="lesson-list">
-    <block wx:for="{{currentLessons}}" wx:key="id">
-      <view class="lesson-card {{item.completed ? 'completed' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
-        <view class="lesson-number">{{item.id}}</view>
-        <view class="lesson-info">
-          <view class="lesson-title">{{item.title}}</view>
-          <view class="lesson-desc">{{item.description}}</view>
-          <view class="lesson-stats">
-            <text class="stat">词汇 {{item.words}}</text>
-            <text class="stat">语法 {{item.grammar}}</text>
-            <text class="level-badge">{{item.level}}</text>
+  <view class="unit-selector">
+    <scroll-view scroll-x class="unit-scroll">
+      <block wx:for="{{units}}" wx:key="id">
+        <view class="unit-tab {{activeUnit === item.id ? 'active' : ''}}" bindtap="switchUnit" data-id="{{item.id}}" style="background: {{item.color}}">
+          <view class="unit-name">{{item.name}}</view>
+          <view class="unit-sub">{{item.subtitle}}</view>
+          <view wx:if="{{item.progress > 0}}" class="unit-bar"><view class="unit-bar-fill" style="width: {{item.progress}}%"></view></view>
+        </view>
+      </block>
+    </scroll-view>
+  </view>
+
+  <scroll-view scroll-y class="lesson-path">
+    <block wx:for="{{units}}" wx:key="id">
+      <view wx:if="{{activeUnit === item.id}}" class="path-column">
+        <block wx:for="{{item.lessons}}" wx:key="id">
+          <view class="path-step {{item.completed ? 'completed' : ''}} {{item.active ? 'active' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
+            <view class="step-dot" style="background: {{item.completed ? '#58cc02' : (item.active ? '#ffd700' : '#e0e0e0')}}">
+              <text wx:if="{{item.completed}}">✓</text>
+              <text wx:elif="{{item.active}}"></text>
+            </view>
+            <view class="step-info">
+              <text class="step-title">{{item.title}}</text>
+              <text wx:if="{{item.completed}}" class="step-done">已完成</text>
+            </view>
           </view>
-        </view>
-        <view class="lesson-icon">
-          <text wx:if="{{item.completed}}" class="check">✓</text>
-          <text wx:else class="play">→</text>
-        </view>
+          <view wx:if="{{index < item.total - 1}}" class="path-line" style="background: {{item.completed ? '#58cc02' : '#e0e0e0'}}"></view>
+        </block>
       </view>
     </block>
   </scroll-view>
 
   <view class="bottom-nav">
-    <view class="nav-item {{currentTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
-      <text class="nav-text">闯关</text>
-    </view>
-    <view class="nav-item {{currentTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
-      <text class="nav-text">课程</text>
-    </view>
-    <view class="nav-item {{currentTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
-      <text class="nav-text">智能老师</text>
-    </view>
-    <view class="nav-item {{currentTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
-      <text class="nav-text">排行榜</text>
-    </view>
+    <view class="nav-item active"><text class="nav-text">闯关</text></view>
+    <view class="nav-item" bindtap="goToCourse"><text class="nav-text">课程</text></view>
+    <view class="nav-item" bindtap="goToAI"><text class="nav-text">智能老师</text></view>
+    <view class="nav-item" bindtap="goToRank"><text class="nav-text">排行榜</text></view>
   </view>
 </view>

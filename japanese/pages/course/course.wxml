@@ -1,67 +1,37 @@
 <!--pages/course/course.wxml-->
 <view class="container">
   <view class="header">
-    <text class="header-title">课程</text>
+    <text class="header-title">课程中心</text>
+    <text class="header-sub">日语学习资料库</text>
   </view>
 
-  <view class="category-tabs">
-    <view class="tab {{activeTab === 'textbook' ? 'active' : ''}}" bindtap="switchTab" data-tab="textbook">课本</view>
-    <view class="tab {{activeTab === 'wordbook' ? 'active' : ''}}" bindtap="switchTab" data-tab="wordbook">单词本</view>
-    <view class="tab {{activeTab === 'grammar' ? 'active' : ''}}" bindtap="switchTab" data-tab="grammar">语法</view>
-  </view>
-
-  <view wx:if="{{activeTab === 'textbook'}}" class="content">
-    <view class="book-list">
-      <block wx:for="{{textbooks}}" wx:key="id">
-        <view class="book-card" bindtap="openBook" data-id="{{item.id}}">
-          <view class="book-cover" style="background-color: {{item.cover}}"></view>
-          <view class="book-info">
-            <view class="book-title">{{item.title}}</view>
-            <view class="book-desc">{{item.desc}}</view>
-            <view class="book-subtitle">{{item.subtitle}}</view>
-            <view class="book-progress-bar">
-              <view class="book-progress-fill" style="width: {{item.progress}}%"></view>
-            </view>
-            <text class="book-progress-text">{{item.progress}}%</text>
-          </view>
-          <view class="book-arrow">→</view>
-        </view>
-      </block>
+  <view class="hub-grid">
+    <view class="hub-card" bindtap="goToTextbook" style="background: linear-gradient(135deg, #4CAF50, #81C784)">
+      <view class="hub-icon">📖</view>
+      <view class="hub-name">课本</view>
+      <view class="hub-desc">N5 → N1 共5册</view>
+      <view class="hub-badge">76课</view>
     </view>
-  </view>
 
-  <view wx:if="{{activeTab === 'wordbook'}}" class="content">
-    <view class="entry-card" bindtap="goToWordbook">
-      <view class="entry-info">
-        <view class="entry-title">单词本</view>
-        <view class="entry-desc">N5-N1 1231个词汇</view>
-      </view>
-      <view class="entry-arrow">→</view>
+    <view class="hub-card" bindtap="goToWordbook" style="background: linear-gradient(135deg, #2196F3, #64B5F6)">
+      <view class="hub-icon">📝</view>
+      <view class="hub-name">单词本</view>
+      <view class="hub-desc">1231个词汇</view>
+      <view class="hub-badge">{{masteredCount}}/{{wordCount}}</view>
     </view>
-  </view>
 
-  <view wx:if="{{activeTab === 'grammar'}}" class="content">
-    <view class="entry-card" bindtap="goToGrammar">
-      <view class="entry-info">
-        <view class="entry-title">日语语法</view>
-        <view class="entry-desc">N5-N1 264个语法点</view>
-      </view>
-      <view class="entry-arrow">→</view>
+    <view class="hub-card" bindtap="goToGrammar" style="background: linear-gradient(135deg, #FF9800, #FFB74D)">
+      <view class="hub-icon">📚</view>
+      <view class="hub-name">语法</view>
+      <view class="hub-desc">N5-N1全覆盖</view>
+      <view class="hub-badge">{{grammarCount}}条</view>
     </view>
   </view>
 
   <view class="bottom-nav">
-    <view class="nav-item {{currentTab === 'lesson' ? 'active' : ''}}" bindtap="goToLesson">
-      <text class="nav-text">闯关</text>
-    </view>
-    <view class="nav-item {{currentTab === 'course' ? 'active' : ''}}" bindtap="goToCourse">
-      <text class="nav-text">课程</text>
-    </view>
-    <view class="nav-item {{currentTab === 'aichat' ? 'active' : ''}}" bindtap="goToAI">
-      <text class="nav-text">智能老师</text>
-    </view>
-    <view class="nav-item {{currentTab === 'rank' ? 'active' : ''}}" bindtap="goToRank">
-      <text class="nav-text">排行榜</text>
-    </view>
+    <view class="nav-item" bindtap="goToLesson"><text class="nav-text">闯关</text></view>
+    <view class="nav-item active"><text class="nav-text">课程</text></view>
+    <view class="nav-item" bindtap="goToAI"><text class="nav-text">智能老师</text></view>
+    <view class="nav-item" bindtap="goToRank"><text class="nav-text">排行榜</text></view>
   </view>
 </view>
