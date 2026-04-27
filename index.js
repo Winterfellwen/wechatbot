@@ -213,34 +213,53 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { from, to } = req.body;
 
+    // Pre-wake Python service
+    try { await fetch(pdfServiceUrl + '/', { signal: AbortSignal.timeout(10000) }).catch(() => {}); } catch(e) {}
+
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
 
-    const pyRes = await fetch(pdfServiceUrl + '/convert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file_base64: fileBase64,
-        filename: req.file.originalname || 'file.' + (from || 'pdf'),
-        from_fmt: from || 'pdf',
-        to_fmt: to || 'docx'
-      })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
 
-    if (!pyRes.ok) {
-      const err = await pyRes.json();
-      return res.status(400).json(err);
+    try {
+      const pyRes = await fetch(pdfServiceUrl + '/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_base64: fileBase64,
+          filename: req.file.originalname || 'file.' + (from || 'pdf'),
+          from_fmt: from || 'pdf',
+          to_fmt: to || 'docx'
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      if (!pyRes.ok) {
+        const errText = await pyRes.text().catch(() => 'Unknown error');
+        let errMsg = errText;
+        try { errMsg = JSON.parse(errText).detail || errText; } catch(e) {}
+        return res.status(400).json({ error: errMsg.substring(0, 200) });
+      }
+
+      const buffer = await pyRes.arrayBuffer();
+      const outFile = '/tmp/serve/conv_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + (to || 'docx');
+      fs.mkdirSync('/tmp/serve', { recursive: true });
+      fs.writeFileSync(outFile, Buffer.from(buffer));
+      res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
+      fs.unlinkSync(req.file.path);
+    } catch(fetchErr) {
+      clearTimeout(timeout);
+      throw fetchErr;
     }
-
-    const buffer = await pyRes.arrayBuffer();
-    const outFile = '/tmp/serve/conv_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + (to || 'docx');
-    fs.mkdirSync('/tmp/serve', { recursive: true });
-    fs.writeFileSync(outFile, Buffer.from(buffer));
-    
-    res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error('Convert error:', err.message);
+    if (err.name === 'AbortError') {
+      res.status(504).json({ error: '转换超时，请重试。服务器正在启动中...' });
+    } else {
+      res.status(500).json({ error: err.message.substring(0, 200) });
+    }
   }
 });
 

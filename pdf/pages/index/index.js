@@ -42,13 +42,14 @@ Page({
     this.setData({ toFormat: e.currentTarget.dataset.value });
   },
 
-  doConvert: function() {
+  doConvert: function(retryCount) {
+    retryCount = retryCount || 0;
     if (!this.data.filePath) {
       wx.showToast({ title: '请先上传文件', icon: 'none' });
       return;
     }
     var that = this;
-    that.setData({ converting: true, progressText: '上传中 0%' });
+    that.setData({ converting: true, progressText: retryCount > 0 ? '重试中...' : '上传中 0%' });
 
     var task = wx.uploadFile({
       url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
@@ -56,73 +57,63 @@ Page({
       name: 'file',
       formData: { from: that.data.fromFormat, to: that.data.toFormat },
       success: function(res) {
-        that.setData({ progressText: '转换中...' });
+        that.setData({ progressText: '处理中...' });
         if (res.statusCode === 200) {
           var data = {};
-          try { data = JSON.parse(res.data); } catch(e) { data = { error: res.data }; }
+          try { data = JSON.parse(res.data); } catch(e) { data = {}; }
           if (data.url) {
             that.setData({ progressText: '下载中...' });
             wx.downloadFile({
               url: data.url,
               success: function(dl) {
                 that.setData({ converting: false, progressText: '' });
-                // Save to permanent storage
                 var fs = wx.getFileSystemManager();
                 var savedPath = wx.env.USER_DATA_PATH + '/converted.' + that.data.toFormat;
-                try {
-                  fs.saveFileSync(dl.tempFilePath, savedPath);
-                } catch(e) {
-                  savedPath = dl.tempFilePath;
-                }
+                try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
                 wx.showModal({
                   title: '转换完成',
                   content: '文件已保存。是否立即打开？',
-                  confirmText: '打开文件',
-                  cancelText: '稍后查看',
-                  success: function(modalRes) {
-                    if (modalRes.confirm) {
-                      wx.openDocument({
-                        filePath: savedPath,
-                        fileType: that.data.toFormat,
-                        showMenu: true
-                      });
-                    }
-                  }
+                  confirmText: '打开',
+                  cancelText: '稍后',
+                  success: function(r) { if (r.confirm) wx.openDocument({ filePath: savedPath, fileType: that.data.toFormat, showMenu: true }); }
                 });
               },
               fail: function(e) {
                 that.setData({ converting: false, progressText: '' });
-                wx.showToast({ title: '下载失败: ' + (e.errMsg || '网络错误'), icon: 'none' });
+                wx.showToast({ title: '下载失败，请重试', icon: 'none' });
               }
             });
           } else {
             that.setData({ converting: false, progressText: '' });
-            var msg = data.error || data.detail || JSON.stringify(data);
-            if (msg.length > 40) msg = msg.substring(0, 40) + '...';
-            wx.showToast({ title: msg, icon: 'none', duration: 3000 });
+            var err = data.error || data.detail || '转换失败';
+            // Auto-retry on server timeout/error
+            if (retryCount < 2 && (err.indexOf('超时') !== -1 || err.indexOf('timeout') !== -1 || (res.statusCode >= 500))) {
+              wx.showToast({ title: '服务器启动中，自动重试...', icon: 'loading', duration: 2000 });
+              setTimeout(function() { that.doConvert(retryCount + 1); }, 3000);
+            } else {
+              wx.showToast({ title: err.substring(0, 40), icon: 'none', duration: 3000 });
+            }
           }
         } else {
-          that.setData({ converting: false, progressText: '' });
-          var txt = (res.data || '').substring(0, 60);
-          wx.showModal({
-            title: '服务器错误 ' + res.statusCode,
-            content: txt || '请重试',
-            showCancel: false
-          });
+          // Auto-retry on 503/504
+          if (retryCount < 2 && res.statusCode >= 500) {
+            wx.showToast({ title: '服务器启动中(' + res.statusCode + ')，自动重试...', icon: 'loading', duration: 2000 });
+            setTimeout(function() { that.doConvert(retryCount + 1); }, 3000);
+          } else {
+            that.setData({ converting: false, progressText: '' });
+            wx.showToast({ title: '失败(' + res.statusCode + ')请重试', icon: 'none' });
+          }
         }
       },
       fail: function(err) {
-        that.setData({ converting: false, progressText: '' });
         var msg = err.errMsg || '';
-        if (msg.indexOf('timeout') !== -1) {
-          wx.showModal({
-            title: '转换超时',
-            content: '免费服务器首次启动较慢(30-60秒)，请点击重试',
-            showCancel: false,
-            success: function() { that.doConvert(); }
-          });
+        // Auto-retry on timeout (cold start)
+        if (retryCount < 2) {
+          wx.showToast({ title: '服务器启动中，自动重试...', icon: 'loading', duration: 2000 });
+          setTimeout(function() { that.doConvert(retryCount + 1); }, 3000);
         } else {
-          wx.showToast({ title: '上传失败，请重试', icon: 'none' });
+          that.setData({ converting: false, progressText: '' });
+          wx.showToast({ title: '网络超时，请稍后重试', icon: 'none', duration: 3000 });
         }
       }
     });
