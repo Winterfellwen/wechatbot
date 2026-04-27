@@ -1,13 +1,19 @@
-const lessons = require('../../data/lessons.js');
-const exercises = require('../../data/exercises.js');
-// const texts = require('../../data/texts.js');
-const wordsIndex = require('../../data/words/index.js');
+var lessons = require('../../data/lessons.js');
+var exercises = require('../../data/exercises.js');
+var grammarData = require('../../data/grammar.js');
+var wordsIndex = require('../../data/words/index.js');
+var textsData = require('../../data/texts.js');
 
 Page({
   data: {
     lessonId: 0,
     lessonTitle: '',
     level: '',
+    segment: 'words',
+    words: [],
+    grammar: [],
+    textDialogue: null,
+    questions: [],
     current: 0,
     total: 0,
     progress: 0,
@@ -16,69 +22,85 @@ Page({
     selectedIndex: -1,
     correctIndex: -1,
     currentQuestion: null,
-    questions: [],
-    score: 0,
-    segment: 'words',
-    segments: [
-      { key: 'words', label: '词汇' },
-      { key: 'grammar', label: '语法' },
-      { key: 'text', label: '课文' },
-      { key: 'quiz', label: '练习' }
-    ],
-    currentSegmentIndex: 0,
-    words: [],
-    grammar: [],
-    textDialogue: null,
-    segmentProgress: 0
+    score: 0
   },
 
-  onLoad(options) {
-    const lessonId = parseInt(options.id) || 1;
-    const lesson = lessons.find(l => l.id === lessonId);
+  onLoad: function(options) {
+    var lessonId = parseInt(options.id) || 1;
+    var lesson = null;
+    for (var i = 0; i < lessons.length; i++) {
+      if (lessons[i].id === lessonId) {
+        lesson = lessons[i];
+        break;
+      }
+    }
 
     if (!lesson) {
       wx.showToast({ title: '课程不存在', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 1500);
+      setTimeout(function() { wx.navigateBack(); }, 1500);
       return;
     }
 
-    const lessonExercises = exercises.filter(e => e.lesson === lessonId);
-    const lessonWords = wordsIndex.byLesson(lessonId);
+    var lessonWords = wordsIndex.byLesson(lessonId).slice(0, 20);
+
+    var lessonGrammar = [];
+    for (var gi = 0; gi < grammarData.length; gi++) {
+      if (grammarData[gi].lesson === lessonId) {
+        lessonGrammar.push(grammarData[gi]);
+      }
+    }
+
+    var lessonTexts = [];
+    for (var ti = 0; ti < textsData.length; ti++) {
+      if (textsData[ti].lesson === lessonId) {
+        lessonTexts.push(textsData[ti]);
+      }
+    }
+
+    var lessonExercises = [];
+    for (var ei = 0; ei < exercises.length; ei++) {
+      if (exercises[ei].lesson === lessonId) {
+        lessonExercises.push(exercises[ei]);
+      }
+    }
 
     this.setData({
-      lessonId,
+      lessonId: lessonId,
       lessonTitle: lesson.title,
       level: lesson.level,
+      words: lessonWords,
+      grammar: lessonGrammar,
+      textDialogue: lessonTexts.length > 0 ? lessonTexts[0] : null,
       questions: lessonExercises,
-      total: 4, // 4 segments total
-      words: lessonWords.slice(0, 15),
-      grammar: [],
-      currentSegmentIndex: 0
+      segment: 'words'
     });
-
-    this.goToSegment('words');
   },
 
-  goToSegment(key) {
-    if (key === 'quiz') {
+  goBack: function() {
+    wx.navigateBack();
+  },
+
+  selectSegment: function(e) {
+    if (this.data.showResult) return;
+    var seg = e.currentTarget.dataset.seg;
+    if (seg === 'quiz') {
       this.startQuiz();
     } else {
-      this.setData({ segment: key });
+      this.setData({ segment: seg });
     }
   },
 
-  selectSegment(e) {
-    if (this.data.showResult) return;
-    const seg = e.currentTarget.dataset.seg;
-    this.goToSegment(seg);
-  },
-
-  // Quiz logic
-  startQuiz() {
-    const quizQuestions = this.data.questions;
+  startQuiz: function() {
+    var quizQuestions = this.data.questions;
     if (!quizQuestions || quizQuestions.length === 0) {
       wx.showToast({ title: '暂无练习', icon: 'none' });
       return;
+    }
+
+    var firstQ = quizQuestions[0];
+    var correctIdx = firstQ.answer;
+    if (typeof correctIdx === 'undefined') {
+      correctIdx = 0;
     }
 
     this.setData({
@@ -88,20 +110,23 @@ Page({
       score: 0,
       showResult: false,
       selectedIndex: -1,
-      currentQuestion: quizQuestions[0],
-      correctIndex: quizQuestions[0].answer || 0,
+      currentQuestion: firstQ,
+      correctIndex: correctIdx,
       progress: Math.round(1 / quizQuestions.length * 100)
     });
   },
 
-  selectOption(e) {
+  selectOption: function(e) {
     if (this.data.showResult) return;
 
-    const index = e.currentTarget.dataset.index;
-    const question = this.data.currentQuestion;
-    const correct = question.answer || 0;
-    const isCorrect = index === correct;
-    const newScore = this.data.score + (isCorrect ? 1 : 0);
+    var index = parseInt(e.currentTarget.dataset.index);
+    var question = this.data.currentQuestion;
+    var correct = question.answer;
+    if (typeof correct === 'undefined' || correct === null) {
+      correct = 0;
+    }
+    var isCorrect = index === correct;
+    var newScore = this.data.score + (isCorrect ? 1 : 0);
 
     this.setData({
       selectedIndex: index,
@@ -112,55 +137,69 @@ Page({
     });
   },
 
-  nextQuestion() {
-    const questions = this.data.questions;
-    const next = this.data.current;
+  nextQuestion: function() {
+    var questions = this.data.questions;
+    var next = this.data.current;
 
     if (next >= questions.length) {
       this.completeLesson();
       return;
     }
 
-    const quiz = questions[next];
+    var q = questions[next];
+    var correctIdx = q.answer;
+    if (typeof correctIdx === 'undefined') {
+      correctIdx = 0;
+    }
+
     this.setData({
       current: next + 1,
       showResult: false,
       selectedIndex: -1,
-      currentQuestion: quiz,
-      correctIndex: quiz.answer || 0,
+      currentQuestion: q,
+      correctIndex: correctIdx,
       progress: Math.round((next + 1) / questions.length * 100)
     });
   },
 
-  completeLesson() {
-    const progress = wx.getStorageSync('learningProgress') || {};
-    const completed = wx.getStorageSync('completedLessons') || [];
-    const lessonId = this.data.lessonId;
+  completeLesson: function() {
+    var lessonId = this.data.lessonId;
+    var completed = wx.getStorageSync('completedLessons') || [];
+    var progress = wx.getStorageSync('learningProgress') || {};
 
     if (completed.indexOf(lessonId) === -1) {
       completed.push(lessonId);
     }
 
-    const score = this.data.score;
-    const maxScore = this.data.questions.length;
-    const xpEarned = Math.round(score / Math.max(maxScore, 1) * 20);
-    const newExp = (progress.exp || 0) + xpEarned;
-    const newLevel = Math.floor(newExp / 100) + 1;
+    var score = this.data.score;
+    var maxScore = this.data.questions.length;
+    var divisor = maxScore > 0 ? maxScore : 1;
+    var xpEarned = Math.round(score / divisor * 20);
+    var newExp = (progress.exp || 0) + xpEarned;
+    var newLevel = Math.floor(newExp / 100) + 1;
+
+    var newProgress = {};
+    for (var key in progress) {
+      if (progress.hasOwnProperty(key)) {
+        newProgress[key] = progress[key];
+      }
+    }
+    newProgress.exp = newExp;
+    newProgress.level = newLevel;
+    newProgress.lessonsCompleted = completed.length;
+    newProgress.progress = Math.round(completed.length / lessons.length * 100);
 
     wx.setStorageSync('completedLessons', completed);
-    wx.setStorageSync('learningProgress', {
-      ...progress,
-      exp: newExp,
-      level: newLevel,
-      lessonsCompleted: completed.length,
-      progress: Math.round(completed.length / lessons.length * 100)
-    });
+    wx.setStorageSync('learningProgress', newProgress);
 
+    var that = this;
     wx.showModal({
       title: '课程完成',
-      content: `得分: ${score}/${maxScore}\n获得 ${xpEarned} XP`,
+      content: '得分: ' + score + '/' + maxScore + '\n获得 ' + xpEarned + ' XP',
       confirmText: '返回',
-      success: () => { wx.navigateBack(); }
+      success: function() {
+        wx.navigateBack();
+      }
     });
   }
 });

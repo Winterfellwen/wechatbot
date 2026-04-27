@@ -1,55 +1,55 @@
-<!--pages/aichat/aichat.wxml-->
-<view class="container">
+<view class="page">
   <view class="header">
     <text class="header-title">花子先生 · 智能老师</text>
   </view>
 
-  <scroll-view scroll-y class="chat-list" scroll-top="{{scrollTop}}">
+  <scroll-view class="chat-list" scroll-y enhanced scroll-with-animation scroll-top="{{scrollTop}}">
     <block wx:for="{{messages}}" wx:key="id">
-      <view class="message {{item.role}}">
-        <view class="avatar-text" wx:if="{{item.role === 'assistant'}}">花</view>
-        <view class="bubble {{item.role}}">
-          <text>{{item.content}}</text>
-        </view>
+      <view class="msg-wrap {{item.role === 'assistant' ? 'msg-left' : 'msg-right'}}">
+        <view wx:if="{{item.role === 'assistant'}}" class="avatar avatar-assist">花</view>
+        <view class="bubble {{item.role === 'assistant' ? 'bubble-assist' : 'bubble-user'}}">{{item.content}}</view>
+        <view wx:if="{{item.role === 'user'}}" class="avatar avatar-user">我</view>
       </view>
     </block>
-    <view wx:if="{{loading}}" class="message assistant">
-      <view class="avatar-text">花</view>
-      <view class="bubble assistant loading-dots">
-        <text>...</text>
+
+    <view wx:if="{{loading}}" class="msg-wrap msg-left">
+      <view class="avatar avatar-assist">花</view>
+      <view class="bubble bubble-assist loading-bubble">
+        <view class="dot-typing">
+          <view class="dot"></view>
+          <view class="dot"></view>
+          <view class="dot"></view>
+        </view>
       </view>
     </view>
   </scroll-view>
 
-  <view class="quick-asks" wx:if="{{messages.length <= 1}}">
-    <text class="quick-title">试试问我：</text>
-    <view class="quick-tags">
-      <text class="quick-tag" bindtap="quickAsk" data-q="日语五十音怎么学？">五十音怎么学</text>
-      <text class="quick-tag" bindtap="quickAsk" data-q="「は」和「が」的区别是什么？">は・が的区别</text>
-      <text class="quick-tag" bindtap="quickAsk" data-q="用日语怎么说'我今天很开心'？">日常会话翻译</text>
-      <text class="quick-tag" bindtap="quickAsk" data-q="N5考试要掌握多少个单词？">N5备考建议</text>
-      <text class="quick-tag" bindtap="quickAsk" data-q="请给我一段日语自我介绍">日语自我介绍</text>
-      <text class="quick-tag" bindtap="quickAsk" data-q="日语动词て形怎么变？">动词て形变化</text>
-    </view>
+  <view wx:if="{{messages.length <= 1}}" class="quick-section">
+    <view class="quick-tag" data-q="五十音怎么学" bindtap="quickAsk">五十音怎么学</view>
+    <view class="quick-tag" data-q="は・が区别" bindtap="quickAsk">は・が区别</view>
+    <view class="quick-tag" data-q="日常会话翻译" bindtap="quickAsk">日常会话翻译</view>
+    <view class="quick-tag" data-q="N5备考" bindtap="quickAsk">N5备考</view>
+    <view class="quick-tag" data-q="动词て形" bindtap="quickAsk">动词て形</view>
+    <view class="quick-tag" data-q="日语自我介绍" bindtap="quickAsk">日语自我介绍</view>
   </view>
 
-  <view class="input-area">
-    <input class="input" placeholder="问我任何日语问题..." bindinput="onInput" value="{{input}}" confirm-type="send" bindconfirm="sendMessage" />
-    <view class="send-btn" bindtap="sendMessage">发送</view>
+  <view class="input-bar">
+    <input class="inp" value="{{input}}" placeholder="输入问题..." bindinput="onInput" confirm-type="send" bindconfirm="sendMessage" />
+    <button class="btn-send" bindtap="sendMessage" disabled="{{loading}}">发送</button>
   </view>
 
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLesson">
-      <text class="nav-text">闯关</text>
+      <text class="nav-label">闯关</text>
     </view>
     <view class="nav-item" bindtap="goToCourse">
-      <text class="nav-text">课程</text>
+      <text class="nav-label">课程</text>
     </view>
-    <view class="nav-item active">
-      <text class="nav-text">智能老师</text>
+    <view class="nav-item active" bindtap="goToAI">
+      <text class="nav-label">智能老师</text>
     </view>
     <view class="nav-item" bindtap="goToRank">
-      <text class="nav-text">排行榜</text>
+      <text class="nav-label">排行榜</text>
     </view>
   </view>
 </view>

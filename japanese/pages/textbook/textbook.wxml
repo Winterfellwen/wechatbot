@@ -1,58 +1,38 @@
 <!--pages/textbook/textbook.wxml-->
 <view class="container">
   <view class="header">
-    <text class="header-title">课本</text>
-    <text class="header-desc">新编日语教程</text>
+    <view class="header-row">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="header-title">课本</text>
+      <view class="header-placeholder"></view>
+    </view>
   </view>
 
-  <!-- 课本列表 -->
   <view class="book-list">
-    <block wx:for="{{textbooks}}" wx:key="id">
-      <view class="book-card" bindtap="openBook" data-id="{{item.id}}">
-        <view class="book-cover">
-          <text class="book-num">{{item.name}}</text>
+    <block wx:for="{{books}}" wx:key="level">
+      <view class="book-card" bindtap="openBook" data-id="{{item.firstLessonId}}">
+        <view class="book-cover" style="background-color: {{item.color}}">
+          <text class="book-level-badge">{{item.level}}</text>
         </view>
         <view class="book-info">
           <view class="book-title">{{item.title}}</view>
-          <view class="book-progress">
+          <view class="book-meta">
+            <text class="book-lesson-count">{{item.lessonCount}}课</text>
+            <text class="book-completed">{{item.completedCount}}已完成</text>
+          </view>
+          <view class="progress-wrap">
             <view class="progress-bar">
-              <view class="progress-fill" style="width: {{item.progress}}%"></view>
+              <view class="progress-fill" style="width: {{item.progress}}%; background-color: {{item.color}}"></view>
             </view>
             <text class="progress-text">{{item.progress}}%</text>
           </view>
         </view>
-        <view class="book-action">
-          <text class="action-icon">📖</text>
+        <view class="book-arrow">
+          <text class="arrow-icon">›</text>
         </view>
       </view>
     </block>
-  </view>
-
-  <!-- 其他资源 -->
-  <view class="section">
-    <view class="section-title">其他学习资源</view>
-    <view class="resource-list">
-      <view class="resource-item" bindtap="openResource" data-type="words">
-        <text class="resource-icon">📝</text>
-        <view class="resource-info">
-          <view class="resource-title">新标日单词表</view>
-          <view class="resource-desc">2000+单词</view>
-        </view>
-      </view>
-      <view class="resource-item" bindtap="openResource" data-type="kanji">
-        <text class="resource-icon">✏️</text>
-        <view class="resource-info">
-          <view class="resource-title">日语常用汉字表</view>
-          <view class="resource-desc">2136汉字</view>
-        </view>
-      </view>
-      <view class="resource-item" bindtap="openResource" data-type="course">
-        <text class="resource-icon">🎬</text>
-        <view class="resource-info">
-          <view class="resource-title">标日课程</view>
-          <view class="resource-desc">视频课程</view>
-        </view>
-      </view>
-    </view>
   </view>
 </view>

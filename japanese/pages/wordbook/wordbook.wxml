@@ -1,18 +1,26 @@
 <!--pages/wordbook/wordbook.wxml-->
 <view class="container">
-  <!-- 搜索栏 -->
+  <view class="header">
+    <view class="header-row">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="header-title">单词本</text>
+      <view class="header-placeholder"></view>
+    </view>
+  </view>
+
   <view class="search-bar">
-    <input class="search-input" placeholder="搜索单词" bindinput="onSearch" value="{{searchKey}}" />
+    <input class="search-input" placeholder="搜索单词 / 释义 / 读音" bindinput="onSearch" value="{{searchKey}}" />
     <view wx:if="{{searchKey}}" class="clear-btn" bindtap="clearSearch">×</view>
   </view>
 
-  <!-- 统计栏 -->
   <view class="stats-bar">
     <view class="stat-item">
       <text class="stat-num">{{totalWords}}</text>
-      <text class="stat-label">总单词</text>
+      <text class="stat-label">总词汇</text>
     </view>
-    <view class="stat-item">
+    <view class="stat-item stat-divider">
       <text class="stat-num">{{masteredWords}}</text>
       <text class="stat-label">已掌握</text>
     </view>
@@ -22,23 +30,22 @@
     </view>
   </view>
 
-  <!-- 词表 -->
   <scroll-view scroll-y class="word-list">
     <block wx:for="{{filteredWords}}" wx:key="id">
       <view class="word-card">
         <view class="word-main">
-          <view class="word-japanese">{{item.word}}</view>
-          <view class="word-chinese">{{item.meaning}}</view>
-          <view wx:if="{{item.reading}}" class="word-reading">[{{item.reading}}]</view>
+          <view class="word-row">
+            <text class="word-japanese">{{item.word}}</text>
+            <text wx:if="{{item.reading}}" class="word-reading">[{{item.reading}}]</text>
+          </view>
+          <text class="word-meaning">{{item.meaning}}</text>
           <view wx:if="{{item.example}}" class="word-example">
             <text class="example-jp">{{item.example}}</text>
             <text class="example-cn">{{item.example_translation}}</text>
           </view>
         </view>
-        <view class="word-actions">
-          <view class="action-btn {{item.mastered ? 'mastered' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
-            {{item.mastered ? '✓' : '☆'}}
-          </view>
+        <view class="word-star {{item.mastered ? 'starred' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
+          <text class="star-icon">{{item.mastered ? '★' : '☆'}}</text>
         </view>
       </view>
     </block>

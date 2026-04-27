@@ -1,100 +1,59 @@
 /*pages/grammar/grammar.wxss*/
-.container {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
+.container { min-height: 100vh; background: #f5f5f5; padding-bottom: 20rpx; }
 
 .header {
-  padding: 30rpx;
-  background-color: #fff;
+  padding: 20rpx 30rpx; background: #fff;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
 }
-
-.header-title {
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #333;
+.header-row {
+  display: flex; align-items: center; justify-content: space-between;
 }
+.back-btn { width: 60rpx; height: 60rpx; display: flex; align-items: center; justify-content: center; }
+.back-icon { font-size: 40rpx; color: #333; font-weight: bold; }
+.header-title { font-size: 36rpx; font-weight: bold; color: #333; }
+.header-placeholder { width: 60rpx; }
 
-.category-tabs {
-  display: flex;
-  padding: 20rpx;
-  background-color: #fff;
-  margin-bottom: 10rpx;
-  flex-wrap: wrap;
-  gap: 16rpx;
+.level-tabs {
+  display: flex; padding: 20rpx; background: #fff;
+  margin-bottom: 2rpx; gap: 16rpx; flex-wrap: wrap;
 }
-
 .tab {
-  padding: 16rpx 32rpx;
-  font-size: 26rpx;
-  color: #666;
-  background-color: #f0f0f0;
-  border-radius: 32rpx;
+  padding: 14rpx 32rpx; font-size: 26rpx; color: #666;
+  background: #f0f0f0; border-radius: 32rpx;
 }
-
 .tab.active {
-  background-color: #58cc02;
+  background: linear-gradient(135deg, #FF9800, #FFB74D);
   color: #fff;
 }
 
-.grammar-list {
-  padding: 20rpx;
-  height: calc(100vh - 250rpx);
-}
+.grammar-list { padding: 20rpx; height: calc(100vh - 230rpx); }
 
 .grammar-card {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+  background: #fff; border-radius: 16rpx;
+  padding: 28rpx; margin-bottom: 20rpx;
 }
-
 .grammar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 16rpx;
 }
-
-.grammar-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
+.grammar-pattern { font-size: 32rpx; font-weight: bold; color: #333; }
+.grammar-level-badge {
+  font-size: 22rpx; color: #FF9800; background: #FFF3E0;
+  padding: 6rpx 16rpx; border-radius: 8rpx;
 }
 
-.grammar-level {
-  font-size: 24rpx;
-  color: #58cc02;
-  background-color: #e8f5e9;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-}
-
-.grammar-usage {
-  font-size: 28rpx;
-  color: #666;
-  margin-bottom: 20rpx;
-}
+.grammar-structure { font-size: 26rpx; color: #666; margin-bottom: 10rpx; }
+.grammar-structure .label { color: #999; }
+.grammar-explain { font-size: 26rpx; color: #666; margin-bottom: 10rpx; line-height: 1.6; }
+.grammar-explain .label { color: #999; }
 
 .grammar-example {
-  background-color: #f9f9f9;
-  border-radius: 12rpx;
-  padding: 20rpx;
+  background: #fff8e1; border-radius: 12rpx;
+  padding: 20rpx; border-left: 4rpx solid #FFB74D;
 }
-
 .example-label {
-  font-size: 24rpx;
-  color: #999;
-  margin-bottom: 10rpx;
+  font-size: 22rpx; color: #FFB74D;
+  margin-bottom: 8rpx; display: block;
 }
-
-.example-jp {
-  font-size: 30rpx;
-  color: #333;
-}
-
-.example-cn {
-  font-size: 26rpx;
-  color: #666;
-  margin-top: 8rpx;
-}
+.example-jp { font-size: 28rpx; color: #333; display: block; margin-bottom: 6rpx; }
+.example-cn { font-size: 24rpx; color: #999; display: block; }

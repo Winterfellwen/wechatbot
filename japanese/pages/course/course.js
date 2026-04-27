@@ -1,30 +1,43 @@
-const app = getApp();
+var app = getApp();
+var grammarData = require('../../data/grammar.js');
 
 Page({
   data: {
     currentTab: 'course',
     wordCount: 0,
     masteredCount: 0,
-    grammarCount: 264
+    grammarCount: 0
   },
 
-  onShow() {
-    const wordbook = wx.getStorageSync('wordbook');
+  onLoad: function() {
+    this.setData({ grammarCount: grammarData.length });
+  },
+
+  onShow: function() {
+    var wordbook = wx.getStorageSync('wordbook');
+    var wordCount = 0;
+    var masteredCount = 0;
     if (wordbook && wordbook.length) {
-      const mastered = wordbook.filter(w => w.mastered).length;
-      this.setData({
-        wordCount: wordbook.length,
-        masteredCount: mastered
-      });
+      wordCount = wordbook.length;
+      var i;
+      for (i = 0; i < wordbook.length; i++) {
+        if (wordbook[i].mastered) {
+          masteredCount = masteredCount + 1;
+        }
+      }
     }
+    this.setData({
+      wordCount: wordCount,
+      masteredCount: masteredCount
+    });
   },
 
-  goToTextbook() { wx.navigateTo({ url: '/japanese/pages/textbook/textbook' }); },
-  goToWordbook() { wx.navigateTo({ url: '/japanese/pages/wordbook/wordbook' }); },
-  goToGrammar() { wx.navigateTo({ url: '/japanese/pages/grammar/grammar' }); },
+  goToTextbook: function() { wx.navigateTo({ url: '/japanese/pages/textbook/textbook' }); },
+  goToWordbook: function() { wx.navigateTo({ url: '/japanese/pages/wordbook/wordbook' }); },
+  goToGrammar: function() { wx.navigateTo({ url: '/japanese/pages/grammar/grammar' }); },
 
-  goToLesson() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
-  goToCourse() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
-  goToAI() { wx.redirectTo({ url: '/japanese/pages/aichat/aichat' }); },
-  goToRank() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
+  goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
+  goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
+  goToAI: function() { wx.redirectTo({ url: '/japanese/pages/aichat/aichat' }); },
+  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
 });

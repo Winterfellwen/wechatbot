@@ -26,9 +26,9 @@
   </view>
 
   <scroll-view scroll-y class="lesson-path">
-    <block wx:for="{{units}}" wx:key="id">
-      <view wx:if="{{activeUnit === item.id}}" class="path-column">
-        <block wx:for="{{item.lessons}}" wx:key="id">
+    <block wx:for="{{units}}" wx:key="id" wx:for-item="unit">
+      <view wx:if="{{activeUnit === unit.id}}" class="path-column">
+        <block wx:for="{{unit.lessons}}" wx:key="id">
           <view class="path-step {{item.completed ? 'completed' : ''}} {{item.active ? 'active' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
             <view class="step-dot" style="background: {{item.completed ? '#58cc02' : (item.active ? '#ffd700' : '#e0e0e0')}}">
               <text wx:if="{{item.completed}}">✓</text>
@@ -39,7 +39,7 @@
               <text wx:if="{{item.completed}}" class="step-done">已完成</text>
             </view>
           </view>
-          <view wx:if="{{index < item.total - 1}}" class="path-line" style="background: {{item.completed ? '#58cc02' : '#e0e0e0'}}"></view>
+          <view wx:if="{{index < unit.total - 1}}" class="path-line" style="background: {{item.completed ? '#58cc02' : '#e0e0e0'}}"></view>
         </block>
       </view>
     </block>

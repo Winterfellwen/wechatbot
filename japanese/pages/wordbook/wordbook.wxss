@@ -1,124 +1,75 @@
 /*pages/wordbook/wordbook.wxss*/
-.container {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+.container { min-height: 100vh; background: #f5f5f5; padding-bottom: 20rpx; }
+
+.header {
+  padding: 20rpx 30rpx; background: #fff;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
 }
+.header-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.back-btn { width: 60rpx; height: 60rpx; display: flex; align-items: center; justify-content: center; }
+.back-icon { font-size: 40rpx; color: #333; font-weight: bold; }
+.header-title { font-size: 36rpx; font-weight: bold; color: #333; }
+.header-placeholder { width: 60rpx; }
 
 .search-bar {
-  padding: 20rpx;
-  background-color: #fff;
-  position: relative;
+  padding: 20rpx; background: #fff;
+  position: relative; margin-bottom: 2rpx;
 }
-
 .search-input {
-  height: 72rpx;
-  background-color: #f0f0f0;
-  border-radius: 36rpx;
-  padding: 0 40rpx;
-  font-size: 28rpx;
+  height: 72rpx; background: #f0f0f0; border-radius: 36rpx;
+  padding: 0 60rpx 0 40rpx; font-size: 28rpx;
 }
-
 .clear-btn {
-  position: absolute;
-  right: 40rpx;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48rpx;
-  height: 48rpx;
-  line-height: 48rpx;
-  text-align: center;
-  font-size: 32rpx;
-  color: #999;
+  position: absolute; right: 40rpx; top: 50%;
+  transform: translateY(-50%); width: 48rpx; height: 48rpx;
+  line-height: 44rpx; text-align: center; font-size: 36rpx; color: #ccc;
 }
 
 .stats-bar {
-  display: flex;
-  padding: 30rpx;
-  background-color: #58cc02;
-  margin: 20rpx;
+  display: flex; padding: 30rpx; margin: 20rpx;
+  background: linear-gradient(135deg, #2196F3, #42A5F5);
   border-radius: 16rpx;
 }
-
-.stat-item {
-  flex: 1;
-  text-align: center;
+.stat-item { flex: 1; text-align: center; }
+.stat-divider {
+  border-left: 1rpx solid rgba(255,255,255,0.3);
+  border-right: 1rpx solid rgba(255,255,255,0.3);
 }
+.stat-num { display: block; font-size: 40rpx; font-weight: bold; color: #fff; }
+.stat-label { font-size: 24rpx; color: rgba(255,255,255,0.85); margin-top: 4rpx; display: block; }
 
-.stat-num {
-  display: block;
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #fff;
-}
-
-.stat-label {
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.8);
-}
-
-.word-list {
-  padding: 20rpx;
-  height: calc(100vh - 280rpx);
-}
+.word-list { padding: 0 20rpx; height: calc(100vh - 350rpx); }
 
 .word-card {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  display: flex; align-items: flex-start;
+  background: #fff; border-radius: 16rpx;
+  padding: 24rpx; margin-bottom: 16rpx;
 }
 
-.word-main {
-  flex: 1;
-}
-
-.word-japanese {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.word-chinese {
-  font-size: 28rpx;
-  color: #666;
-  margin-top: 8rpx;
-}
-
+.word-main { flex: 1; }
+.word-row { display: flex; align-items: center; flex-wrap: wrap; }
+.word-japanese { font-size: 34rpx; font-weight: bold; color: #333; }
 .word-reading {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 4rpx;
+  font-size: 24rpx; color: #999; margin-left: 12rpx;
+}
+.word-meaning {
+  font-size: 28rpx; color: #666; margin-top: 8rpx;
 }
 
 .word-example {
-  margin-top: 10rpx;
-  padding: 10rpx 16rpx;
-  background-color: #f8f8f8;
-  border-radius: 8rpx;
-  border-left: 4rpx solid #58cc02;
+  margin-top: 12rpx; padding: 12rpx 16rpx;
+  background: #f8f8f8; border-radius: 8rpx;
+  border-left: 4rpx solid #2196F3;
 }
-.example-jp { font-size: 26rpx; color: #666; display: block; }
-.example-cn { font-size: 24rpx; color: #999; display: block; margin-top: 2rpx; }
+.example-jp { font-size: 24rpx; color: #666; display: block; }
+.example-cn { font-size: 22rpx; color: #999; display: block; margin-top: 2rpx; }
 
-.word-actions {
-  display: flex;
-  gap: 20rpx;
+.word-star {
+  width: 60rpx; height: 60rpx; display: flex;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; margin-left: 16rpx;
 }
-
-.action-btn {
-  width: 64rpx;
-  height: 64rpx;
-  line-height: 64rpx;
-  text-align: center;
-  font-size: 32rpx;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-  color: #999;
-}
-
-.action-btn.mastered {
-  background-color: #ffd700;
-  color: #fff;
-}
+.star-icon { font-size: 36rpx; color: #ccc; }
+.word-star.starred .star-icon { color: #FFB300; }

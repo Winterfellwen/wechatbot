@@ -1,4 +1,4 @@
-const grammarDB = require('../../data/grammar.js');
+var grammarDB = require('../../data/grammar.js');
 
 Page({
   data: {
@@ -7,18 +7,29 @@ Page({
     grammarList: []
   },
 
-  onLoad() {
+  onLoad: function() {
     this.loadGrammar();
   },
 
-  switchLevel(e) {
-    const level = e.currentTarget.dataset.level;
+  switchLevel: function(e) {
+    var level = e.currentTarget.dataset.level;
     this.setData({ currentLevel: level });
     this.loadGrammar();
   },
 
-  loadGrammar() {
-    const list = grammarDB.filter(g => g.level === this.data.currentLevel);
+  loadGrammar: function() {
+    var currentLevel = this.data.currentLevel;
+    var list = [];
+    var i;
+    for (i = 0; i < grammarDB.length; i++) {
+      if (grammarDB[i].level === currentLevel) {
+        list = list.concat([grammarDB[i]]);
+      }
+    }
     this.setData({ grammarList: list });
+  },
+
+  goBack: function() {
+    wx.navigateBack();
   }
 });

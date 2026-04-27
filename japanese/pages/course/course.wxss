@@ -14,6 +14,10 @@
   border-radius: 20rpx; padding: 36rpx 30rpx; color: #fff;
   display: flex; flex-direction: column; position: relative; overflow: hidden;
 }
+.hub-green { background: linear-gradient(135deg, #4CAF50, #81C784); }
+.hub-blue { background: linear-gradient(135deg, #2196F3, #64B5F6); }
+.hub-orange { background: linear-gradient(135deg, #FF9800, #FFB74D); }
+
 .hub-icon { font-size: 56rpx; margin-bottom: 10rpx; }
 .hub-name { font-size: 36rpx; font-weight: bold; }
 .hub-desc { font-size: 24rpx; opacity: 0.85; margin-top: 6rpx; }

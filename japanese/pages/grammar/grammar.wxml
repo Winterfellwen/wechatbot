@@ -1,33 +1,45 @@
 <!--pages/grammar/grammar.wxml-->
 <view class="container">
   <view class="header">
-    <text class="header-title">语法</text>
+    <view class="header-row">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="header-title">语法</text>
+      <view class="header-placeholder"></view>
+    </view>
   </view>
 
-  <view class="category-tabs">
-    <view 
-      wx:for="{{levels}}" 
-      wx:key="*this"
-      class="tab {{currentLevel === item ? 'active' : ''}}"
-      bindtap="switchLevel"
-      data-level="{{item}}">
-      {{item}}
-    </view>
+  <view class="level-tabs">
+    <block wx:for="{{levels}}" wx:key="*this">
+      <view
+        class="tab {{currentLevel === item ? 'active' : ''}}"
+        bindtap="switchLevel"
+        data-level="{{item}}">
+        {{item}}
+      </view>
+    </block>
   </view>
 
   <scroll-view scroll-y class="grammar-list">
     <block wx:for="{{grammarList}}" wx:key="id">
       <view class="grammar-card">
         <view class="grammar-header">
-          <text class="grammar-title">{{item.pattern}}</text>
-          <text class="grammar-level">{{item.level}}</text>
+          <text class="grammar-pattern">{{item.pattern}}</text>
+          <text class="grammar-level-badge">{{item.level}}</text>
         </view>
-        <view class="grammar-structure">{{item.structure}}</view>
-        <view class="grammar-usage">{{item.explanation}}</view>
+        <view class="grammar-structure">
+          <text class="label">结构：</text>
+          <text>{{item.structure}}</text>
+        </view>
+        <view class="grammar-explain">
+          <text class="label">说明：</text>
+          <text>{{item.explanation}}</text>
+        </view>
         <view class="grammar-example">
-          <view class="example-label">例句</view>
-          <view class="example-jp">{{item.example}}</view>
-          <view class="example-cn">{{item.translation}}</view>
+          <text class="example-label">例句</text>
+          <text class="example-jp">{{item.example}}</text>
+          <text class="example-cn">{{item.translation}}</text>
         </view>
       </view>
     </block>

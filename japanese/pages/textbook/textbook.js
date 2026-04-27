@@ -1,56 +1,98 @@
-const lessons = require('../../data/lessons.js');
+var lessons = require('../../data/lessons.js');
 
 Page({
   data: {
-    textbooks: [
-      { id: 1, title: '日语入门', subtitle: 'N5 (第1-20课)', level: 'N5', cover: '#4CAF50', lessons: [1,20], desc: '从五十音图到日常会话' },
-      { id: 2, title: '日语初级', subtitle: 'N4 (第21-38课)', level: 'N4', cover: '#2196F3', lessons: [21,38], desc: '旅行、文化、应用会话' },
-      { id: 3, title: '日语中级', subtitle: 'N3 (第39-56课)', level: 'N3', cover: '#FF9800', lessons: [39,56], desc: '语法深化、表达拓展' },
-      { id: 4, title: '日语高级', subtitle: 'N2 (第57-66课)', level: 'N2', cover: '#9C27B0', lessons: [57,66], desc: '商务日语、辩论、新闻阅读' },
-      { id: 5, title: '日语精通', subtitle: 'N1 (第67-76课)', level: 'N1', cover: '#F44336', lessons: [67,76], desc: '学术日语、翻译实践' }
-    ],
-    currentBook: 0,
-    bookLessons: []
+    books: []
   },
 
-  onLoad() {
-    this.loadProgress();
+  onLoad: function() {
+    this.buildBooks();
   },
 
-  onShow() {
-    this.loadProgress();
+  onShow: function() {
+    this.buildBooks();
   },
 
-  loadProgress() {
-    const bookProgress = wx.getStorageSync('bookProgress') || {};
-    const textbooks = this.data.textbooks.map(b => {
-      const levelLessons = lessons.filter(l => l.level === b.level);
-      const completed = levelLessons.filter(l => l.progress >= 100).length;
-      return { ...b, progress: Math.round(completed / levelLessons.length * 100) };
-    });
-    this.setData({ textbooks });
+  buildBooks: function() {
+    var completedLessons = wx.getStorageSync('completedLessons') || [];
+    var levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
+    var levelTitles = {
+      'N5': '日语N5 入门基础',
+      'N4': '日语N4 初级进阶',
+      'N3': '日语N3 中级深化',
+      'N2': '日语N2 高级应用',
+      'N1': '日语N1 精通掌握'
+    };
+    var levelColors = {
+      'N5': '#4CAF50',
+      'N4': '#2196F3',
+      'N3': '#FF9800',
+      'N2': '#9C27B0',
+      'N1': '#F44336'
+    };
+    var levelIds = {
+      'N5': 1,
+      'N4': 21,
+      'N3': 39,
+      'N2': 57,
+      'N1': 67
+    };
+
+    var books = [];
+    var i, j;
+    for (i = 0; i < levels.length; i++) {
+      var level = levels[i];
+      var levelLessons = [];
+      for (j = 0; j < lessons.length; j++) {
+        if (lessons[j].level === level) {
+          levelLessons = levelLessons.concat([lessons[j]]);
+        }
+      }
+
+      var completed = 0;
+      for (j = 0; j < levelLessons.length; j++) {
+        if (completedLessons.indexOf(levelLessons[j].id) !== -1) {
+          completed = completed + 1;
+        }
+      }
+      var progress = levelLessons.length > 0 ? Math.round(completed / levelLessons.length * 100) : 0;
+
+      var firstIncomplete = 0;
+      for (j = 0; j < levelLessons.length; j++) {
+        if (completedLessons.indexOf(levelLessons[j].id) === -1) {
+          firstIncomplete = levelLessons[j].id;
+          break;
+        }
+      }
+      if (firstIncomplete === 0 && levelLessons.length > 0) {
+        firstIncomplete = levelLessons[0].id;
+      }
+
+      var book = {
+        level: level,
+        title: levelTitles[level],
+        color: levelColors[level],
+        lessonCount: levelLessons.length,
+        completedCount: completed,
+        progress: progress,
+        firstLessonId: firstIncomplete
+      };
+      books = books.concat([book]);
+    }
+
+    this.setData({ books: books });
   },
 
-  openBook(e) {
-    const id = e.currentTarget.dataset.id;
-    const book = this.data.textbooks.find(b => b.id === id);
-    if (!book) return;
-    
-    const bookLessons = lessons.filter(l => l.level === book.level);
-    this.setData({ currentBook: id, bookLessons });
+  openBook: function(e) {
+    var lessonId = e.currentTarget.dataset.id;
+    if (lessonId > 0) {
+      wx.navigateTo({
+        url: '/japanese/pages/lesson/lesson?id=' + lessonId
+      });
+    }
   },
 
-  goBack() {
-    this.setData({ currentBook: 0, bookLessons: [] });
-  },
-
-  openLesson(e) {
-    const lessonId = e.currentTarget.dataset.id;
-    const lesson = lessons.find(l => l.id === lessonId);
-    if (!lesson) return;
-    
-    wx.navigateTo({
-      url: `/japanese/pages/lesson/lesson?id=${lessonId}&title=${lesson.title}&level=${lesson.level}`
-    });
+  goBack: function() {
+    wx.navigateBack();
   }
 });
