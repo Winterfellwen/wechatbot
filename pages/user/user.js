@@ -139,13 +139,16 @@ Page({
     wx.request({
       url: `${API_URL}/api/users/${userInfo.openid}`,
       method: 'DELETE',
+      header: { 'x-api-key': API_KEY },
       success: () => {
+        wx.removeStorageSync('openid');
         app.clearUserInfo();
         this.setData({ userInfo: null, isLoggedIn: false });
         wx.showToast({ title: '账号已注销', icon: 'success' });
       },
       fail: (res) => {
         if (res.statusCode === 404) {
+          wx.removeStorageSync('openid');
           app.clearUserInfo();
           this.setData({ userInfo: null, isLoggedIn: false });
           wx.showToast({ title: '账号已注销', icon: 'success' });
