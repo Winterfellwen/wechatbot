@@ -128,68 +128,77 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF with Chinese support using fpdf2 + embedded font"""
+    """Convert DOCX to PDF - tries PyMuPDF font first, then download"""
     from docx import Document
     from fpdf import FPDF
-    import io, zipfile
-
-    # Try to load a bundled font from this package
-    font_bytes = None
-    bundled = Path(__file__).parent / "NotoSansSC.ttf"
-    if bundled.exists():
-        font_bytes = bundled.read_bytes()
-    else:
-        # Download font once and cache
-        cache = Path("/tmp/NotoSansSC.ttf")
-        if cache.exists() and cache.stat().st_size > 50000:
-            font_bytes = cache.read_bytes()
-        else:
-            urls = [
-                "https://github.com/AimeeMao/Fonts/raw/main/NotoSansSC-Regular.ttf",
-                "https://raw.githubusercontent.com/AimeeMao/Fonts/main/NotoSansSC-Regular.ttf",
-            ]
-            for url in urls:
-                try:
-                    font_bytes = urllib.request.urlopen(url, timeout=30).read()
-                    if len(font_bytes) > 50000:
-                        cache.write_bytes(font_bytes)
-                        break
-                except:
-                    continue
 
     doc = Document(str(input_path))
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(True, margin=15)
     
-    if font_bytes and len(font_bytes) > 50000:
-        # Use the downloaded font
+    # Get CJK font bytes
+    font_bytes = _get_cjk_font()
+    
+    if font_bytes:
         pdf.add_font("CJK", "", font_bytes, uni=True)
         pdf.set_font("CJK", size=11)
         for para in doc.paragraphs:
             text = para.text.strip()
             if not text:
                 continue
-            try:
-                pdf.multi_cell(0, 7, text)
-                pdf.ln(2)
-            except:
-                continue
+            pdf.multi_cell(0, 7, text)
+            pdf.ln(2)
     else:
-        # No font available, fallback to ASCII
         pdf.set_font("Helvetica", size=11)
         for para in doc.paragraphs:
             text = para.text.strip()
-            if not text:
-                continue
-            ascii_text = text.encode("ascii", errors="replace").decode("ascii").replace("?", "")
-            if ascii_text.strip():
-                pdf.multi_cell(0, 7, ascii_text)
-                pdf.ln(2)
+            if text:
+                pdf.multi_cell(0, 7, text)
 
     output_path = input_path.with_suffix(".pdf")
     pdf.output(str(output_path))
     return output_path
+
+
+def _get_cjk_font() -> bytes:
+    """Get CJK font bytes, trying multiple sources"""
+    import json, hashlib
+    
+    cache_dir = Path("/tmp/font-cache")
+    cache_dir.mkdir(exist_ok=True)
+    cache_path = cache_dir / "cjk-font.ttf"
+    
+    if cache_path.exists() and cache_path.stat().st_size > 50000:
+        return cache_path.read_bytes()
+    
+    # Try to use any available system font with CJK support
+    system_paths = [
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    ]
+    for sp in system_paths:
+        if os.path.exists(sp):
+            return Path(sp).read_bytes()[:1000000]  # First 1MB should have enough glyphs
+    
+    # Download from multiple CDNs
+    urls = [
+        "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/SubsetOTF/CN/NotoSansSC-Regular.otf",
+        "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+    ]
+    for url in urls:
+        try:
+            data = urllib.request.urlopen(url, timeout=20).read()
+            if len(data) > 50000:
+                cache_path.write_bytes(data)
+                return data
+        except:
+            continue
+    
+    return None
 
 
 @app.get("/")
