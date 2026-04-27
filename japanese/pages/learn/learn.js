@@ -1,104 +1,102 @@
 var app = getApp();
 var lessons = require('../../data/lessons.js');
 
-var levelNames = { 'N5': '入门基础', 'N4': '初级进阶', 'N3': '中级语法', 'N2': '高级日语', 'N1': '精通' };
 var levelColors = { 'N5': '#4CAF50', 'N4': '#2196F3', 'N3': '#FF9800', 'N2': '#9C27B0', 'N1': '#F44336' };
+var levelNames = { 'N5': 'N5 入门', 'N4': 'N4 初级', 'N3': 'N3 中级', 'N2': 'N2 高级', 'N1': 'N1 精通' };
 
 Page({
   data: {
-    units: [],
-    activeUnit: 0,
-    currentTab: 'lesson',
+    pathNodes: [],
     level: 1,
     exp: 0,
-    overallProgress: 0
+    totalProgress: 0,
+    currentTab: 'lesson',
+    scrollToNode: 0
   },
 
   onShow: function() {
-    this.loadProgress();
+    this.buildPath();
   },
 
-  loadProgress: function() {
+  buildPath: function() {
     var completed = wx.getStorageSync('completedLessons') || [];
     var progress = wx.getStorageSync('learningProgress') || {};
     var exp = progress.exp || 0;
     var level = Math.floor(exp / 100) + 1;
 
-    var levelMap = {};
-    for (var i = 0; i < lessons.length; i++) {
-      var lv = lessons[i].level;
-      if (!levelMap[lv]) {
-        levelMap[lv] = [];
-      }
-      levelMap[lv].push(lessons[i]);
-    }
+    // Group lessons by level, then build path nodes
+    var lvOrder = ['N5', 'N4', 'N3', 'N2', 'N1'];
+    var nodes = [];
+    var totalDone = 0;
 
-    var levels = [];
-    for (var k in levelMap) {
-      if (levelMap.hasOwnProperty(k)) {
-        levels.push(k);
-      }
-    }
-    levels.sort();
-
-    var units = [];
-    for (var li = 0; li < levels.length; li++) {
-      var lv = levels[li];
-      var levelLessons = levelMap[lv];
-      var done = 0;
-      var firstIncompleteFound = false;
-      var lessonItems = [];
-
-      for (var j = 0; j < levelLessons.length; j++) {
-        var l = levelLessons[j];
-        var isCompleted = completed.indexOf(l.id) !== -1;
-        if (isCompleted) {
-          done++;
+    for (var li = 0; li < lvOrder.length; li++) {
+      var lv = lvOrder[li];
+      var lvLessons = [];
+      for (var i = 0; i < lessons.length; i++) {
+        if (lessons[i].level === lv) {
+          lvLessons.push(lessons[i]);
         }
-        var isActive = false;
-        if (!isCompleted && !firstIncompleteFound) {
-          isActive = true;
-          firstIncompleteFound = true;
+      }
+
+      // Unit header
+      nodes.push({
+        type: 'header',
+        id: 'h-' + lv,
+        label: levelNames[lv] || lv,
+        color: levelColors[lv] || '#58cc02',
+        lessonCount: lvLessons.length
+      });
+
+      for (var j = 0; j < lvLessons.length; j++) {
+        var ls = lvLessons[j];
+        var done = completed.indexOf(ls.id) !== -1;
+        if (done) totalDone++;
+
+        // Find the current one: first incomplete lesson
+        var isCurrent = false;
+        if (!done) {
+          // Check if this is the first incomplete overall
+          var allDone = true;
+          for (var k = 0; k < nodes.length; k++) {
+            if (nodes[k].type === 'node' && !nodes[k].done) {
+              allDone = false;
+              break;
+            }
+          }
+          if (allDone) isCurrent = true;
         }
-        lessonItems.push({
-          id: l.id,
-          title: l.title,
-          completed: isCompleted,
-          active: isActive
+
+        nodes.push({
+          type: 'node',
+          id: ls.id,
+          title: ls.title,
+          level: lv,
+          color: levelColors[lv] || '#58cc02',
+          done: done,
+          current: isCurrent,
+          number: j + 1,
+          words: ls.words_count || 0,
+          grammar: ls.grammar_count || 0
         });
       }
-
-      var unitProgress = levelLessons.length ? Math.round(done / levelLessons.length * 100) : 0;
-
-      units.push({
-        id: li + 1,
-        name: 'Unit ' + (li + 1),
-        subtitle: lv + ' ' + (levelNames[lv] || ''),
-        level: lv,
-        color: levelColors[lv] || '#58cc02',
-        lessons: lessonItems,
-        progress: unitProgress,
-        total: levelLessons.length
-      });
     }
 
-    var totalLessons = lessons.length;
-    var overallProgress = totalLessons ? Math.round(completed.length / totalLessons * 100) : 0;
+    var totalProgress = lessons.length ? Math.round(totalDone / lessons.length * 100) : 0;
+    var scrollTo = 0;
+    for (var n = 0; n < nodes.length; n++) {
+      if (nodes[n].type === 'node' && nodes[n].current) {
+        scrollTo = nodes[n].id;
+        break;
+      }
+    }
 
     this.setData({
-      units: units,
-      exp: exp,
+      pathNodes: nodes,
       level: level,
-      overallProgress: overallProgress,
-      activeUnit: units.length > 0 ? units[0].id : 0
+      exp: exp,
+      totalProgress: totalProgress,
+      scrollToNode: scrollTo
     });
-  },
-
-  switchUnit: function(e) {
-    var id = Number(e.currentTarget.dataset.id);
-    if (id > 0) {
-      this.setData({ activeUnit: id });
-    }
   },
 
   startLesson: function(e) {
@@ -106,19 +104,8 @@ Page({
     wx.navigateTo({ url: '/japanese/pages/lesson/lesson?id=' + id });
   },
 
-  goToLesson: function() {
-    wx.redirectTo({ url: '/japanese/pages/learn/learn' });
-  },
-
-  goToCourse: function() {
-    wx.redirectTo({ url: '/japanese/pages/course/course' });
-  },
-
-  goToAI: function() {
-    wx.redirectTo({ url: '/japanese/pages/aichat/aichat' });
-  },
-
-  goToRank: function() {
-    wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' });
-  }
+  goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
+  goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
+  goToAI: function() { wx.redirectTo({ url: '/japanese/pages/aichat/aichat' }); },
+  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
 });
