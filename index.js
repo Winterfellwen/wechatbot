@@ -131,15 +131,21 @@ app.delete('/api/users/:openid', async (req, res) => {
 
 app.post('/api/users/:openid/wx-login', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
     const { openid } = req.params;
-    const { code, deviceInfo } = req.body;
+    
+    const countResult = await pool.query('SELECT COUNT(*) FROM users');
+    const count = parseInt(countResult.rows[0].count) + 1;
+    const nickName = '微信用户' + String(count).padStart(3, '0');
     
     const result = await pool.query(
       `INSERT INTO users (openid, nickName, createdAt, updatedAt)
-       VALUES ($1, '微信用户', NOW(), NOW())
+       VALUES ($1, $2, NOW(), NOW())
        ON CONFLICT (openid) DO UPDATE SET updatedAt = NOW()
        RETURNING *`,
-      [openid]
+      [openid, nickName]
     );
     
     res.json({ user: result.rows[0] });
