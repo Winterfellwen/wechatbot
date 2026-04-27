@@ -5,8 +5,7 @@ Page({
     messages: [],
     input: '',
     loading: false,
-    scrollTop: 0,
-    apiMode: 'direct' // 'direct' or 'proxy'
+    scrollTop: 0
   },
 
   onLoad: function() {
@@ -44,39 +43,6 @@ Page({
       apiMessages.push({ role: messages[i].role, content: messages[i].content });
     }
 
-    // Try direct OpenRouter first
-    wx.request({
-      url: 'https://openrouter.ai/api/v1/chat/completions',
-      method: 'POST',
-      header: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer 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'
-      },
-      data: {
-        model: 'google/gemini-2.0-flash-001',
-        messages: apiMessages,
-        max_tokens: 800
-      },
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.choices && res.data.choices.length > 0) {
-          var choice = res.data.choices[0];
-          if (choice.message && choice.message.content) {
-            that.addMessage('assistant', choice.message.content);
-            return;
-          }
-        }
-        // Fallback: try backend proxy
-        that.tryProxy(apiMessages);
-      },
-      fail: function() {
-        // Fallback: try backend proxy
-        that.tryProxy(apiMessages);
-      }
-    });
-  },
-
-  tryProxy: function(apiMessages) {
-    var that = this;
     wx.request({
       url: 'https://wechatbot-api.onrender.com/api/chat',
       method: 'POST',
@@ -92,7 +58,7 @@ Page({
         that.addMessage('assistant', content);
       },
       fail: function() {
-        that.addMessage('assistant', '网络连接失败。请在微信公众平台后台把 openrouter.ai 加入 request 合法域名列表。');
+        that.addMessage('assistant', '网络连接失败，请稍后重试。');
       }
     });
   },
