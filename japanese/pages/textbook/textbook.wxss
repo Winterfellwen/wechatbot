@@ -1,53 +1,39 @@
 /*pages/textbook/textbook.wxss*/
-.container { min-height: 100vh; background: #f5f5f5; }
+.container { min-height: 100vh; background: #F0F9FF; }
 
-.header {
-  padding: 20rpx 30rpx; background: #fff;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
-}
-.header-row {
-  display: flex; align-items: center; justify-content: space-between;
-}
+.header { padding: 20rpx 30rpx; background: #fff; box-shadow: 0 2rpx 12rpx rgba(14,165,233,0.06); }
+.header-row { display: flex; align-items: center; justify-content: space-between; }
 .back-btn { width: 60rpx; height: 60rpx; display: flex; align-items: center; justify-content: center; }
-.back-icon { font-size: 40rpx; color: #333; font-weight: bold; }
-.header-title { font-size: 36rpx; font-weight: bold; color: #333; }
+.back-icon { font-size: 40rpx; color: #0EA5E9; font-weight: bold; }
+.header-title { font-size: 36rpx; font-weight: bold; color: #0F172A; }
 .header-placeholder { width: 60rpx; }
 
-.book-list { padding: 20rpx; }
+.book-list { padding: 24rpx; }
 
 .book-card {
-  display: flex; align-items: center;
-  background: #fff; border-radius: 16rpx;
-  padding: 24rpx; margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+  display: flex; align-items: center; background: #fff; border-radius: 20rpx;
+  padding: 28rpx; margin-bottom: 22rpx; box-shadow: 0 4rpx 16rpx rgba(14,165,233,0.06);
+  transition: box-shadow 0.2s;
 }
 
 .book-cover {
-  width: 100rpx; height: 100rpx; border-radius: 16rpx;
+  width: 108rpx; height: 108rpx; border-radius: 20rpx;
   display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
 }
-.book-level-badge {
-  font-size: 32rpx; font-weight: bold; color: #fff;
-}
+.book-level-badge { font-size: 34rpx; font-weight: bold; color: #fff; }
 
-.book-info { flex: 1; margin-left: 24rpx; }
-.book-title { font-size: 32rpx; font-weight: bold; color: #333; }
+.book-info { flex: 1; margin-left: 28rpx; }
+.book-title { font-size: 34rpx; font-weight: bold; color: #0F172A; }
 
-.book-meta {
-  display: flex; gap: 20rpx; margin-top: 8rpx;
-}
-.book-lesson-count { font-size: 24rpx; color: #666; }
-.book-completed { font-size: 24rpx; color: #4CAF50; }
+.book-meta { display: flex; gap: 24rpx; margin-top: 10rpx; }
+.book-lesson-count { font-size: 26rpx; color: #475569; }
+.book-completed { font-size: 26rpx; color: #22C55E; font-weight: 600; }
 
-.progress-wrap {
-  display: flex; align-items: center; margin-top: 12rpx;
-}
-.progress-bar {
-  flex: 1; height: 10rpx; background: #e0e0e0;
-  border-radius: 5rpx; overflow: hidden;
-}
-.progress-fill { height: 100%; border-radius: 5rpx; }
-.progress-text { margin-left: 16rpx; font-size: 22rpx; color: #999; min-width: 60rpx; }
+.progress-wrap { display: flex; align-items: center; margin-top: 14rpx; }
+.progress-bar { flex: 1; height: 12rpx; background: #E0F2FE; border-radius: 6rpx; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6rpx; transition: width 0.3s; }
+.progress-text { margin-left: 20rpx; font-size: 24rpx; color: #64748B; min-width: 64rpx; }
 
 .book-arrow { width: 40rpx; }
-.arrow-icon { font-size: 48rpx; color: #ccc; font-weight: bold; }
+.arrow-icon { font-size: 48rpx; color: #CBD5E1; font-weight: bold; }
