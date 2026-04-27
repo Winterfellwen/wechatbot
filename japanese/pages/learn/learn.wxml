@@ -30,8 +30,8 @@
           <view class="node-wrap {{item.done ? 'done' : ''}} {{item.current ? 'current' : ''}} {{!item.done && !item.current ? 'locked' : ''}}"
                 bindtap="startLesson" data-id="{{item.id}}">
             <view class="node-circle">
-              <text wx:if="{{item.done}}" class="node-icon check">&#10003;</text>
-              <text wx:if="{{!item.done && item.current}}" class="node-icon star">&#9733;</text>
+              <text wx:if="{{item.done}}" class="node-icon check">✓</text>
+              <text wx:if="{{!item.done && item.current}}" class="node-icon star">☆</text>
               <text wx:if="{{!item.done && !item.current}}" class="node-num">{{item.number}}</text>
             </view>
             <view class="node-info">
