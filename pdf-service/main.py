@@ -2,6 +2,7 @@ import os
 import base64
 import tempfile
 import uuid
+import urllib.request
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
@@ -73,19 +74,25 @@ async def pdf_to_docx(input_path: Path) -> Path:
 async def docx_to_pdf(input_path: Path) -> Path:
     from docx import Document
     from fpdf import FPDF
+    import urllib.request
 
     doc = Document(str(input_path))
     pdf = FPDF()
     pdf.add_page()
     
-    # Try CJK font
-    font_paths = [
-        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    ]
+    # Download CJK font if not present
+    font_path = Path("/tmp/NotoSansSC-Regular.ttf")
+    if not font_path.exists():
+        try:
+            url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf"
+            urllib.request.urlretrieve(url, str(font_path))
+        except:
+            pass
+    
     font_ok = False
-    for fp in font_paths:
+    for fp in [str(font_path), 
+               "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+               "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"]:
         if os.path.exists(fp):
             try:
                 pdf.add_font("Uni", "", fp, uni=True)
@@ -98,18 +105,14 @@ async def docx_to_pdf(input_path: Path) -> Path:
         text = para.text.strip()
         if not text:
             continue
-        style = para.style
-        size = 14 if style and "Head" in (style.name or "") else 11
-        
+        size = 11
         if font_ok:
             pdf.set_font("Uni", size=size)
         else:
             pdf.set_font("Helvetica", size=size)
-        
         try:
             pdf.multi_cell(0, 7, text)
         except:
-            # fallback: strip non-ascii
             safe = text.encode("ascii", errors="replace").decode("ascii")
             pdf.set_font("Helvetica", size=size)
             pdf.multi_cell(0, 7, safe)

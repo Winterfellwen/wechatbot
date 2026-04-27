@@ -59,32 +59,51 @@ Page({
         that.setData({ progressText: '转换中...' });
         if (res.statusCode === 200) {
           var data = {};
-          try { data = JSON.parse(res.data); } catch(e) {}
+          try { data = JSON.parse(res.data); } catch(e) { data = { error: res.data }; }
           if (data.url) {
             that.setData({ progressText: '下载中...' });
             wx.downloadFile({
               url: data.url,
               success: function(dl) {
-                that.setData({ converting: false, progressText: '' });
-                wx.openDocument({
-                  filePath: dl.tempFilePath,
-                  fileType: that.data.toFormat,
-                  showMenu: true,
-                  success: function() { wx.showToast({ title: '转换成功', icon: 'success' }); }
-                });
+                if (dl.statusCode === 200) {
+                  that.setData({ converting: false, progressText: '' });
+                  wx.openDocument({
+                    filePath: dl.tempFilePath,
+                    fileType: that.data.toFormat,
+                    showMenu: true,
+                    success: function() { wx.showToast({ title: '转换成功', icon: 'success' }); },
+                    fail: function(e) {
+                      wx.showModal({
+                        title: '无法打开',
+                        content: '转换完成但无法预览，文件已保存到临时目录',
+                        showCancel: false
+                      });
+                    }
+                  });
+                } else {
+                  that.setData({ converting: false, progressText: '' });
+                  wx.showToast({ title: '下载失败(' + dl.statusCode + ')', icon: 'none' });
+                }
               },
-              fail: function() {
+              fail: function(e) {
                 that.setData({ converting: false, progressText: '' });
-                wx.showToast({ title: '下载失败', icon: 'none' });
+                wx.showToast({ title: '下载失败: ' + (e.errMsg || '网络错误'), icon: 'none' });
               }
             });
           } else {
             that.setData({ converting: false, progressText: '' });
-            wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
+            var msg = data.error || data.detail || JSON.stringify(data);
+            if (msg.length > 40) msg = msg.substring(0, 40) + '...';
+            wx.showToast({ title: msg, icon: 'none', duration: 3000 });
           }
         } else {
           that.setData({ converting: false, progressText: '' });
-          wx.showToast({ title: '服务器错误(' + res.statusCode + ')，请重试', icon: 'none' });
+          var txt = (res.data || '').substring(0, 60);
+          wx.showModal({
+            title: '服务器错误 ' + res.statusCode,
+            content: txt || '请重试',
+            showCancel: false
+          });
         }
       },
       fail: function(err) {
