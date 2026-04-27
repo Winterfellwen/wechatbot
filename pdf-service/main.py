@@ -128,48 +128,79 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF with proper Chinese support - use fpdf2 with TTF font"""
+    """Convert DOCX to PDF with proper Chinese support using reportlab"""
     from docx import Document
-    from fpdf import FPDF
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     import os
-    
+
     output_path = input_path.with_suffix(".pdf")
     
-    # Get TTF font path (fpdf2 works better with TTF)
+    # Register Chinese TTF font
+    font_registered = False
     font_path = _get_cjk_ttf_font()
-    
-    doc = Document(str(input_path))
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
     
     if font_path and os.path.exists(font_path):
         try:
-            pdf.add_font("CJK", style="", fname=font_path)
-            pdf.set_font("CJK", size=11)
-            print(f"Using CJK font: {font_path}")
+            pdfmetrics.registerFont(TTFont('CJKFont', font_path))
+            font_registered = True
+            print(f"Registered CJK font: {font_path}")
         except Exception as e:
-            print(f"Failed to load CJK font: {e}")
-            pdf.set_font("Helvetica", size=11)
-    else:
-        print("Warning: No CJK TTF font found, using Helvetica")
-        pdf.set_font("Helvetica", size=11)
+            print(f"Failed to register font: {e}")
     
-    for para in doc.paragraphs:
+    # Create PDF
+    doc_template = SimpleDocTemplate(
+        str(output_path), 
+        pagesize=A4,
+        rightMargin=2*cm, 
+        leftMargin=2*cm,
+        topMargin=2*cm, 
+        bottomMargin=2*cm
+    )
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    
+    if font_registered:
+        # Use registered CJK font for all text (it supports Latin chars too)
+        normal_style = ParagraphStyle(
+            name='CJKNormal',
+            fontName='CJKFont',
+            fontSize=11,
+            leading=18,
+        )
+    else:
+        # Fallback
+        normal_style = styles['Normal']
+        print("Warning: No CJK font, using default")
+    
+    # Build content
+    story = []
+    docx_doc = Document(str(input_path))
+    
+    for para in docx_doc.paragraphs:
         text = para.text.strip()
         if not text:
-            pdf.ln(3)
+            story.append(Spacer(1, 0.3*cm))
             continue
         
         try:
-            # fpdf2 handles UTF-8 natively with added font
-            pdf.multi_cell(w=0, h=7, txt=text)
-            pdf.ln(2)
+            # Escape XML special chars for reportlab Paragraph
+            # But preserve spaces and handle mixed content
+            escaped_text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            p = Paragraph(escaped_text, normal_style)
+            story.append(p)
+            story.append(Spacer(1, 0.2*cm))
         except Exception as e:
-            print(f"Text rendering error: {e}")
+            print(f"Paragraph error: {e}")
             continue
     
-    pdf.output(str(output_path))
+    doc_template.build(story)
     return output_path
 
 
