@@ -31,6 +31,7 @@
 .rank-info { flex: 1; min-width: 0; overflow: hidden; }
 .rank-name { font-size: 28rpx; color: #0F172A; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-level { font-size: 22rpx; color: #94A3B8; }
+.rank-score { font-size: 26rpx; font-weight: bold; color: #0EA5E9; flex-shrink: 0; margin-left: 8rpx; }
 
 .my-stats { display: flex; padding: 24rpx; gap: 20rpx; }
 .stat-box {
