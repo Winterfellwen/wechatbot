@@ -26,19 +26,40 @@ Page({
   },
 
   login() {
+    wx.getUserProfile({
+      desc: '用于完善用户资料',
+      success: (res) => {
+        const userInfo = res.userInfo;
+        if (userInfo && userInfo.nickName) {
+          this.loginWithWxInfo(userInfo);
+        } else {
+          this.loginWithCode('', userInfo.avatarUrl);
+        }
+      },
+      fail: () => {
+        wx.showLoading({ title: '登录中...' });
+        wx.login({
+          success: (res) => {
+            if (res.code) {
+              this.loginWithCode(res.code, '');
+            }
+          }
+        });
+      }
+    });
+  },
+
+  loginWithWxInfo(wxUserInfo) {
     wx.showLoading({ title: '登录中...' });
     wx.login({
       success: (res) => {
         if (res.code) {
-          this.loginWithCode(res.code, '');
-        } else {
-          wx.hideLoading();
-          wx.showToast({ title: '登录失败', icon: 'none' });
+          this.loginWithCode(res.code, wxUserInfo.avatarUrl);
         }
       },
       fail: () => {
         wx.hideLoading();
-        wx.showToast({ title: '登录失败', icon: 'none' });
+        this.loginAfterSuccess({ openid: 'wx_' + Date.now(), nickName: wxUserInfo.nickName }, wxUserInfo.avatarUrl);
       }
     });
   },
@@ -101,6 +122,11 @@ Page({
   },
 
   loginWithCode(code, avatarUrl) {
+    let userWxInfo = null;
+    if (!code && avatarUrl && avatarUrl.includes('://')) {
+    } else if (avatarUrl && avatarUrl.includes('://')) {
+      userWxInfo = { avatarUrl: avatarUrl, nickName: '' };
+    }
     wx.request({
       url: `${API_URL}/api/wechat/openid?code=${code}`,
       method: 'GET',
@@ -108,37 +134,37 @@ Page({
         wx.hideLoading();
         if (res.data && res.data.openid) {
           wx.setStorageSync('openid', res.data.openid);
-          this.loginWithOpenid(res.data.openid, avatarUrl);
+          this.loginWithOpenid(res.data.openid, userWxInfo?.avatarUrl, userWxInfo?.nickName);
         } else {
-          this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl);
+          this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, userWxInfo?.avatarUrl || '');
         }
       },
       fail: () => {
         wx.hideLoading();
-        this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, avatarUrl);
+        this.loginAfterSuccess({ openid: 'wx_' + Date.now() }, userWxInfo?.avatarUrl || '');
       }
     });
   },
 
-  loginWithOpenid(openid, avatarUrl) {
+  loginWithOpenid(openid, avatarUrl, nickName) {
     wx.request({
       url: `${API_URL}/api/users/${openid}/wx-login`,
       method: 'POST',
       header: { 'x-api-key': API_KEY },
       data: {},
       success: (res) => {
-        this.loginAfterSuccess(res.data?.user || { openid: openid }, avatarUrl);
+        this.loginAfterSuccess(res.data?.user || { openid: openid }, avatarUrl, nickName);
       },
       fail: () => {
-        this.loginAfterSuccess({ openid: openid }, avatarUrl);
+        this.loginAfterSuccess({ openid: openid }, avatarUrl, nickName);
       }
     });
   },
 
-  loginAfterSuccess(userData, avatarUrl) {
+  loginAfterSuccess(userData, avatarUrl, nickName) {
     const userInfo = {
       openid: userData.openid,
-      nickName: userData.nickname || '',
+      nickName: nickName || userData.nickname || '',
       avatarUrl: avatarUrl || userData.avatarurl || ''
     };
     
@@ -149,7 +175,8 @@ Page({
     }
   },
 
-  showNicknameInput(userInfo) {
+  showNicknameInput(userInfo, defaultNick) {
+    const initial = defaultNick || userInfo.nickName || '';
     wx.showModal({
       title: '设置昵称',
       placeholderText: '请输入昵称',
@@ -158,12 +185,15 @@ Page({
         if (res.confirm && res.content && res.content.trim()) {
           userInfo.nickName = res.content.trim();
           this.saveAndCompleteLogin(userInfo);
+        } else if (defaultNick) {
+          userInfo.nickName = defaultNick;
+          this.saveAndCompleteLogin(userInfo);
         } else {
-          this.showNicknameInput(userInfo);
+          this.showNicknameInput(userInfo, defaultNick);
         }
       },
       fail: () => {
-        userInfo.nickName = '用户' + Date.now() % 10000;
+        userInfo.nickName = defaultNick || '用户' + Date.now() % 10000;
         this.saveAndCompleteLogin(userInfo);
       }
     });
@@ -174,6 +204,8 @@ Page({
     this.setData({ userInfo: userInfo, isLoggedIn: true });
     wx.showToast({ title: '登录成功', icon: 'success' });
   },
+
+  completeLogin(userInfo) {
 
   completeLogin(userInfo) {
     app.setUserInfo(userInfo);
