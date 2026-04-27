@@ -3,11 +3,11 @@
 
 .header {
   background: linear-gradient(135deg, #0EA5E9, #38BDF8); padding: 22rpx 32rpx;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; flex: none;
 }
 .header-title { font-size: 34rpx; font-weight: 600; color: #fff; }
 
-.chat-list { flex: 1; padding: 20rpx 24rpx 20rpx; box-sizing: border-box; }
+.chat-list { flex: 1; height: 0; padding: 16rpx 24rpx; box-sizing: border-box; overflow-y: scroll; }
 
 .msg-wrap { display: flex; margin-bottom: 24rpx; align-items: flex-start; gap: 16rpx; }
 .msg-left { justify-content: flex-start; }
@@ -33,7 +33,7 @@
 
 .quick-section {
   padding: 16rpx 24rpx; display: flex; flex-wrap: wrap; gap: 16rpx;
-  background: #F0F9FF; flex-shrink: 0;
+  background: #F0F9FF; flex-shrink: 0; flex: none;
 }
 .quick-tag {
   padding: 14rpx 26rpx; border: 2rpx solid #0EA5E9; border-radius: 36rpx;
@@ -42,7 +42,7 @@
 
 .input-bar {
   display: flex; align-items: center; padding: 16rpx 24rpx 24rpx;
-  background: #fff; border-top: 1rpx solid #E0F2FE; flex-shrink: 0;
+  background: #fff; border-top: 1rpx solid #E0F2FE; flex-shrink: 0; flex: none;
 }
 .inp { flex: 1; height: 76rpx; background: #F0F9FF; border-radius: 40rpx; padding: 0 28rpx; font-size: 30rpx; }
 .btn-send {
@@ -54,7 +54,7 @@
 
 .bottom-nav {
   display: flex; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-  box-shadow: 0 -4rpx 24rpx rgba(14,165,233,0.08); flex-shrink: 0;
+  box-shadow: 0 -4rpx 24rpx rgba(14,165,233,0.08); flex-shrink: 0; flex: none;
   padding: 12rpx 0 env(safe-area-inset-bottom, 12rpx);
 }
 .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10rpx 0 14rpx; }
