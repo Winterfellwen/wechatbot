@@ -196,6 +196,7 @@ app.post('/api/chat', async (req, res) => {
 
 // PDF conversion endpoint - proxies to Python service
 fs.mkdirSync('/tmp/uploads', { recursive: true });
+fs.mkdirSync('/tmp/serve', { recursive: true });
 const upload = multer({ dest: '/tmp/uploads/' });
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
