@@ -1,0 +1,47 @@
+<!--pdf/pages/convert/convert.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack">← 返回</view>
+    <text class="header-title">格式转换</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="file-display" wx:if="{{fileName}}">
+    <text class="file-label">当前文件</text>
+    <text class="file-value">{{fileName}}</text>
+  </view>
+  <view wx:else class="no-file">
+    <text>请先在主页上传文件</text>
+  </view>
+
+  <view class="convert-area">
+    <view class="format-section">
+      <text class="section-title">原格式</text>
+      <view class="format-tabs">
+        <view class="fmt-tab {{fromFormat === 'pdf' ? 'active' : ''}}" bindtap="switchFrom" data-f="pdf">PDF</view>
+        <view class="fmt-tab {{fromFormat === 'docx' ? 'active' : ''}}" bindtap="switchFrom" data-f="docx">DOCX</view>
+        <view class="fmt-tab {{fromFormat === 'doc' ? 'active' : ''}}" bindtap="switchFrom" data-f="doc">DOC</view>
+      </view>
+    </view>
+
+    <view class="arrow-big">↓</view>
+
+    <view class="format-section">
+      <text class="section-title">目标格式</text>
+      <view class="format-tabs">
+        <view class="fmt-tab {{toFormat === 'pdf' ? 'active' : ''}}" bindtap="switchTo" data-f="pdf">PDF</view>
+        <view class="fmt-tab {{toFormat === 'docx' ? 'active' : ''}}" bindtap="switchTo" data-f="docx">DOCX</view>
+        <view class="fmt-tab {{toFormat === 'doc' ? 'active' : ''}}" bindtap="switchTo" data-f="doc">DOC</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="convert-btn-wrap">
+    <view class="convert-btn {{converting ? 'disabled' : ''}}" bindtap="doConvert">{{converting ? '转换中...' : '开始转换'}}</view>
+  </view>
+
+  <view wx:if="{{resultUrl}}" class="result-section">
+    <text class="result-title">转换完成</text>
+    <view class="download-btn" bindtap="downloadResult">下载并打开文件</view>
+  </view>
+</view>

@@ -128,7 +128,7 @@ login() {
     } else if (type === 'german') {
       wx.showToast({ title: '德语学习开发中', icon: 'none' });
     } else if (type === 'pdf') {
-      wx.showToast({ title: 'PDF工具开发中', icon: 'none' });
+      wx.navigateTo({ url: '/pdf/pages/index/index' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
     }

@@ -1,0 +1,49 @@
+<!--pdf/pages/index/index.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="header-title">PDF 工具箱</text>
+    <text class="header-sub">上传文件，开始处理</text>
+  </view>
+
+  <view class="tool-cards">
+    <view class="tool-card card-green" bindtap="goToConvert">
+      <view class="tool-icon">⇄</view>
+      <view class="tool-name">格式转换</view>
+      <view class="tool-desc">PDF ↔ DOCX / DOC</view>
+    </view>
+    <view class="tool-card card-blue" bindtap="goToEdit">
+      <view class="tool-icon">✎</view>
+      <view class="tool-name">在线编辑</view>
+      <view class="tool-desc">添加文字 · 旋转 · 合并</view>
+    </view>
+  </view>
+
+  <view class="upload-section">
+    <view class="upload-btn" bindtap="uploadFile">
+      <text class="upload-icon">+</text>
+      <text class="upload-text">选择文件</text>
+      <text class="upload-hint">支持 PDF / DOC / DOCX</text>
+    </view>
+  </view>
+
+  <view wx:if="{{files.length > 0}}" class="file-list">
+    <text class="list-title">已上传文件</text>
+    <block wx:for="{{files}}" wx:key="name">
+      <view class="file-item">
+        <view class="file-info">
+          <text class="file-name">{{item.name}}</text>
+          <text class="file-meta">{{item.time}}</text>
+        </view>
+        <view class="file-actions">
+          <text class="file-action convert" bindtap="goToConvert" data-file="{{item}}">转换</text>
+          <text class="file-action edit" bindtap="goToEdit" data-file="{{item}}">编辑</text>
+          <text class="file-action del" catchtap="removeFile" data-idx="{{index}}">×</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-nav">
+    <view class="nav-item active"><text class="nav-text">PDF工具</text></view>
+  </view>
+</view>

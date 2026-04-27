@@ -1,6 +1,9 @@
 {
   "pages": [
     "pages/index/index",
+    "pdf/pages/index/index",
+    "pdf/pages/convert/convert",
+    "pdf/pages/edit/edit",
     "japanese/pages/learn/learn",
     "japanese/pages/lesson/lesson",
     "japanese/pages/course/course",
