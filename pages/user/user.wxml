@@ -2,7 +2,9 @@
 <view class="container">
   <view class="user-header" bindtap="handleUserTap">
     <view class="user-info">
-      <open-data type="userAvatarUrl" class="user-avatar"></open-data>
+      <button class="avatar-btn" bindtap="handleChooseAvatarTap">
+        <open-data type="userAvatarUrl" class="user-avatar"></open-data>
+      </button>
       <view class="user-detail">
         <open-data type="userNickName" class="user-nickname"></open-data>
         <text class="user-status">{{isLoggedIn ? '已登录' : '点击头像登录'}}</text>

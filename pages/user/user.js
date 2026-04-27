@@ -46,8 +46,6 @@ Page({
   handleUserTap() {
     if (!this.data.isLoggedIn) {
       this.login();
-    } else {
-      this.showNicknameInput({}, '');
     }
   },
 
@@ -143,17 +141,17 @@ Page({
   },
 
   loginAfterSuccess(userData, avatarUrl, nickName) {
+    const randomNick = '用户' + Math.floor(Math.random() * 9000 + 1000);
     const userInfo = {
       openid: userData.openid,
-      nickName: nickName || userData.nickname || '',
+      nickName: nickName || userData.nickname || randomNick,
       avatarUrl: avatarUrl || userData.avatarurl || ''
     };
     
-    if (!userInfo.nickName) {
-      this.showNicknameInput(userInfo);
-    } else {
-      this.completeLogin(userInfo);
-    }
+    app.setUserInfo(userInfo);
+    this.setData({ userInfo: userInfo, isLoggedIn: true });
+    wx.hideLoading();
+    wx.showToast({ title: '登录成功', icon: 'success' });
   },
 
   showNicknameInput(userInfo, defaultNick) {

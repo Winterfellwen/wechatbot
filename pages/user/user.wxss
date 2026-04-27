@@ -11,6 +11,17 @@
   align-items: center;
 }
 
+.avatar-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  line-height: 1;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
 .user-avatar {
   width: 100rpx;
   height: 100rpx;
