@@ -113,6 +113,22 @@ app.get('/api/users/:openid', async (req, res) => {
   }
 });
 
+app.delete('/api/users/:openid', async (req, res) => {
+  try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
+    const { openid } = req.params;
+    
+    await pool.query('DELETE FROM users WHERE openid = $1', [openid]);
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /api/users/:openid error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/users/:openid/wx-login', async (req, res) => {
   try {
     const { openid } = req.params;

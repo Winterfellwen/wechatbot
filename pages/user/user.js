@@ -112,6 +112,44 @@ Page({
     });
   },
 
+  handleDeleteAccount() {
+    wx.showModal({
+      title: '注销账号',
+      content: '确定要注销账号吗？此操作不可恢复！',
+      success: (res) => {
+        if (res.confirm) {
+          wx.showModal({
+            title: '确认注销',
+            content: '再次确认注销，所有数据将被清除',
+            success: (res2) => {
+              if (res2.confirm) {
+                this.deleteAccount();
+              }
+            }
+          });
+        }
+      }
+    });
+  },
+
+  deleteAccount() {
+    const userInfo = this.data.userInfo;
+    if (!userInfo || !userInfo.openid) return;
+    
+    wx.request({
+      url: `${API_URL}/api/users/${userInfo.openid}`,
+      method: 'DELETE',
+      success: () => {
+        app.clearUserInfo();
+        this.setData({ userInfo: null, isLoggedIn: false });
+        wx.showToast({ title: '账号已注销', icon: 'success' });
+      },
+      fail: () => {
+        wx.showToast({ title: '注销失败', icon: 'none' });
+      }
+    });
+  },
+
   loginWithCode(code, avatarUrl) {
     let userWxInfo = null;
     if (!code && avatarUrl && avatarUrl.includes('://')) {
