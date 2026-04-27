@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const multer = require('multer');
-const { PDFDocument } = require('pdf-lib');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
@@ -233,7 +233,7 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
       }
     } else if (op === 'watermark') {
       const pages = pdfDoc.getPages();
-      const helveticaFont = await pdfDoc.embedFont('Helvetica');
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
       for (const page of pages) {
         const { width, height } = page.getSize();
         page.drawText(text || 'WATERMARK', {
