@@ -39,9 +39,4 @@
   <view class="convert-btn-wrap">
     <view class="convert-btn {{converting ? 'disabled' : ''}}" bindtap="doConvert">{{converting ? '转换中...' : '开始转换'}}</view>
   </view>
-
-  <view wx:if="{{resultUrl}}" class="result-section">
-    <text class="result-title">转换完成</text>
-    <view class="download-btn" bindtap="downloadResult">下载并打开文件</view>
-  </view>
 </view>

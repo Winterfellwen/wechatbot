@@ -21,7 +21,7 @@ Page({
       return;
     }
     var that = this;
-    that.setData({ converting: true });
+    that.setData({ converting: true, resultUrl: '' });
 
     wx.uploadFile({
       url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
@@ -32,37 +32,43 @@ Page({
         to: that.data.toFormat
       },
       success: function(res) {
-        var data = {};
-        try { data = JSON.parse(res.data); } catch(e) {}
-        if (data.url) {
-          that.setData({ resultUrl: data.url, converting: false });
-          wx.showToast({ title: '转换成功', icon: 'success' });
-        } else {
+        var resultPath = wx.env.USER_DATA_PATH + '/converted.' + that.data.toFormat;
+        var fs = wx.getFileSystemManager();
+        
+        // The response is binary file data
+        try {
+          fs.writeFileSync(resultPath, res.data, 'utf8');
           that.setData({ converting: false });
-          wx.showToast({ title: data.error || '转换失败', icon: 'none' });
+          wx.showModal({
+            title: '转换成功',
+            content: '文件已保存，是否打开？',
+            success: function(modalRes) {
+              if (modalRes.confirm) {
+                wx.openDocument({
+                  filePath: resultPath,
+                  fileType: that.data.toFormat,
+                  showMenu: true
+                });
+              }
+            }
+          });
+        } catch(e) {
+          // Try arraybuffer
+          if (res.data instanceof ArrayBuffer) {
+            fs.writeFileSync(resultPath, res.data, 'binary');
+          }
+          that.setData({ converting: false });
+          wx.showToast({ title: '转换成功', icon: 'success' });
+          wx.openDocument({
+            filePath: resultPath,
+            fileType: that.data.toFormat,
+            showMenu: true
+          });
         }
       },
-      fail: function() {
+      fail: function(err) {
         that.setData({ converting: false });
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      }
-    });
-  },
-
-  downloadResult: function() {
-    if (!this.data.resultUrl) return;
-    wx.downloadFile({
-      url: this.data.resultUrl,
-      success: function(res) {
-        var ext = '.' + this.data.toFormat;
-        wx.openDocument({
-          filePath: res.tempFilePath,
-          showMenu: true,
-          fileType: this.data.toFormat
-        });
-      },
-      fail: function() {
-        wx.showToast({ title: '下载失败', icon: 'none' });
+        wx.showToast({ title: '转换失败: ' + (err.errMsg || '网络错误'), icon: 'none' });
       }
     });
   },
