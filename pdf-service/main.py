@@ -1,10 +1,12 @@
 import os
+import base64
 import tempfile
 import uuid
 from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 
 app = FastAPI()
@@ -14,35 +16,46 @@ UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-@app.post("/convert")
-async def convert(file: UploadFile = File(...), from_fmt: str = Form("pdf"), to_fmt: str = Form("docx")):
-    input_id = uuid.uuid4().hex
-    input_path = UPLOAD_DIR / f"{input_id}.{from_fmt}"
-    with open(input_path, "wb") as f:
-        f.write(await file.read())
+class ConvertRequest(BaseModel):
+    file_base64: str
+    filename: str
+    from_fmt: str = "pdf"
+    to_fmt: str = "docx"
 
+
+@app.post("/convert")
+async def convert(req: ConvertRequest):
+    input_id = uuid.uuid4().hex
+    input_path = UPLOAD_DIR / f"{input_id}.{req.from_fmt}"
+    
     try:
-        if from_fmt == "pdf" and to_fmt == "docx":
+        file_data = base64.b64decode(req.file_base64)
+        with open(input_path, "wb") as f:
+            f.write(file_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid base64 file data")
+    
+    try:
+        if req.from_fmt == "pdf" and req.to_fmt == "docx":
             output_path = await pdf_to_docx(input_path)
-        elif from_fmt in ("docx", "doc") and to_fmt == "pdf":
+        elif req.from_fmt in ("docx", "doc") and req.to_fmt == "pdf":
             output_path = await docx_to_pdf(input_path)
-        elif from_fmt == "pdf" and to_fmt == "doc":
-            # PDF → DOCX first, then rename to .doc (both are same structure)
+        elif req.from_fmt == "pdf" and req.to_fmt == "doc":
             output_path = await pdf_to_docx(input_path)
             new_path = output_path.with_suffix(".doc")
             output_path.rename(new_path)
             output_path = new_path
-        elif from_fmt == "doc" and to_fmt == "docx":
+        elif req.from_fmt == "doc" and req.to_fmt == "docx":
             import shutil
             output_path = input_path.with_suffix(".docx")
             shutil.copy(input_path, output_path)
         else:
-            return JSONResponse({"error": f"不支持 {from_fmt} → {to_fmt}"}, status_code=400)
-
-        return FileResponse(output_path, filename=f"converted.{to_fmt}",
-                           media_type="application/octet-stream")
+            raise HTTPException(status_code=400, detail=f"不支持 {req.from_fmt} → {req.to_fmt}")
+        
+        return FileResponse(output_path, filename=f"converted.{req.to_fmt}",
+                            media_type="application/octet-stream")
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         if input_path.exists():
             input_path.unlink(missing_ok=True)
@@ -52,32 +65,54 @@ async def pdf_to_docx(input_path: Path) -> Path:
     from pdf2docx import Converter
     output_path = input_path.with_suffix(".docx")
     cv = Converter(str(input_path))
-    cv.convert(str(output_path), start=0, end=None)
+    cv.convert(str(output_path))
     cv.close()
     return output_path
 
 
 async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF using python-docx + fpdf2 for layout preservation"""
     from docx import Document
     from fpdf import FPDF
 
     doc = Document(str(input_path))
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("SimSun", "", "C:/Windows/Fonts/simsun.ttc" if os.name == "nt" else "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc", uni=True)
-
+    
+    # Try CJK font
+    font_paths = [
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]
+    font_ok = False
+    for fp in font_paths:
+        if os.path.exists(fp):
+            try:
+                pdf.add_font("Uni", "", fp, uni=True)
+                font_ok = True
+                break
+            except:
+                pass
+    
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
         style = para.style
-        size = 12 if style and "Head" in (style.name or "") else 10
-        pdf.set_font("SimSun", size=size)
+        size = 14 if style and "Head" in (style.name or "") else 11
+        
+        if font_ok:
+            pdf.set_font("Uni", size=size)
+        else:
+            pdf.set_font("Helvetica", size=size)
+        
         try:
-            pdf.multi_cell(0, 8, text)
+            pdf.multi_cell(0, 7, text)
         except:
-            pdf.multi_cell(0, 8, text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
+            # fallback: strip non-ascii
+            safe = text.encode("ascii", errors="replace").decode("ascii")
+            pdf.set_font("Helvetica", size=size)
+            pdf.multi_cell(0, 7, safe)
         pdf.ln(2)
 
     output_path = input_path.with_suffix(".pdf")

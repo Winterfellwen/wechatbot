@@ -205,29 +205,32 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     }
     const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { from, to } = req.body;
-    
-    const FormData = require('form-data');
-    const form = new FormData();
-    form.append('file', fs.createReadStream(req.file.path), { filename: req.file.originalname });
-    form.append('from_fmt', from);
-    form.append('to_fmt', to);
 
-    const response = await fetch(pdfServiceUrl + '/convert', {
+    // Read file and send as base64 JSON
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+    const fileName = req.file.originalname || 'file.' + from;
+
+    const pyRes = await fetch(pdfServiceUrl + '/convert', {
       method: 'POST',
-      headers: form.getHeaders(),
-      body: form
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_base64: fileBase64,
+        filename: fileName,
+        from_fmt: from,
+        to_fmt: to
+      })
     });
 
-    if (!response.ok) {
-      const err = await response.json();
+    if (!pyRes.ok) {
+      const err = await pyRes.json();
       return res.status(400).json(err);
     }
 
-    const buffer = await response.buffer();
-    const ext = to;
+    const buffer = await pyRes.arrayBuffer();
     res.set('Content-Type', 'application/octet-stream');
-    res.set('Content-Disposition', 'attachment; filename=converted.' + ext);
-    res.send(buffer);
+    res.set('Content-Disposition', 'attachment; filename=converted.' + to);
+    res.send(Buffer.from(buffer));
     
     fs.unlinkSync(req.file.path);
   } catch (err) {
