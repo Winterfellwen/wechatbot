@@ -1,7 +1,7 @@
 <!--pages/leaderboard/leaderboard.wxml-->
 <view class="container">
   <view class="personal-card">
-    <view class="rank-number">#{{myRank}}</view>
+    <view class="rank-number">{{myRank === '-' ? '-' : '#' + myRank}}</view>
     <view class="user-info">
       <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
       <view class="user-detail">
@@ -26,7 +26,6 @@
           <view class="rank-name">{{item.nickName}}</view>
           <view class="rank-level">Lv.{{item.level}}</view>
         </view>
-        <view class="rank-score">{{item.score}}</view>
       </view>
     </block>
   </scroll-view>
@@ -47,17 +46,9 @@
   </view>
 
   <view class="bottom-nav">
-    <view class="nav-item" bindtap="goToLesson">
-      <text class="nav-text">闯关</text>
-    </view>
-    <view class="nav-item" bindtap="goToCourse">
-      <text class="nav-text">课程</text>
-    </view>
-    <view class="nav-item" bindtap="goToAI">
-      <text class="nav-text">智能老师</text>
-    </view>
-    <view class="nav-item active">
-      <text class="nav-text">排行榜</text>
-    </view>
+    <view class="nav-item" bindtap="goToLesson"><text class="nav-text">闯关</text></view>
+    <view class="nav-item" bindtap="goToCourse"><text class="nav-text">课程</text></view>
+    <view class="nav-item" bindtap="goToAI"><text class="nav-text">智能老师</text></view>
+    <view class="nav-item active"><text class="nav-text">排行榜</text></view>
   </view>
 </view>
