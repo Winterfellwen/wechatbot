@@ -206,19 +206,17 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { from, to } = req.body;
 
-    // Read file and send as base64 JSON
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
-    const fileName = req.file.originalname || 'file.' + from;
 
     const pyRes = await fetch(pdfServiceUrl + '/convert', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         file_base64: fileBase64,
-        filename: fileName,
-        from_fmt: from,
-        to_fmt: to
+        filename: req.file.originalname || 'file.' + (from || 'pdf'),
+        from_fmt: from || 'pdf',
+        to_fmt: to || 'docx'
       })
     });
 
@@ -229,10 +227,8 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 
     const buffer = await pyRes.arrayBuffer();
     res.set('Content-Type', 'application/octet-stream');
-    res.set('Content-Disposition', 'attachment; filename=converted.' + to);
+    res.set('Content-Disposition', 'attachment; filename=converted.' + (to || 'docx'));
     res.send(Buffer.from(buffer));
-    
-    fs.unlinkSync(req.file.path);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
