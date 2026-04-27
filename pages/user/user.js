@@ -206,8 +206,6 @@ Page({
   },
 
   completeLogin(userInfo) {
-
-  completeLogin(userInfo) {
     app.setUserInfo(userInfo);
     this.setData({ userInfo: userInfo, isLoggedIn: true });
     wx.showToast({ title: '登录成功', icon: 'success' });
