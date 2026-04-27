@@ -144,8 +144,14 @@ Page({
         this.setData({ userInfo: null, isLoggedIn: false });
         wx.showToast({ title: '账号已注销', icon: 'success' });
       },
-      fail: () => {
-        wx.showToast({ title: '注销失败', icon: 'none' });
+      fail: (res) => {
+        if (res.statusCode === 404) {
+          app.clearUserInfo();
+          this.setData({ userInfo: null, isLoggedIn: false });
+          wx.showToast({ title: '账号已注销', icon: 'success' });
+        } else {
+          wx.showToast({ title: '注销失败', icon: 'none' });
+        }
       }
     });
   },
