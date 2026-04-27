@@ -7,15 +7,14 @@ Page({
     level: 1,
     totalScore: 0,
     currentTab: 'score',
-    currentPageTab: 'rank',
     rankList: [],
     wordsLearned: 0,
     lessonsCompleted: 0,
-    streakDays: 0
+    streakDays: 0,
+    isRealData: false
   },
 
   onLoad: function() {
-    this.setData({ currentPageTab: 'rank' });
     this.loadData();
   },
 
@@ -27,17 +26,35 @@ Page({
     var userInfo = wx.getStorageSync('userInfo');
     var progress = wx.getStorageSync('learningProgress') || {};
     var completed = wx.getStorageSync('completedLessons') || [];
+    
+    // Count only mastered words, not all words
     var wordbook = wx.getStorageSync('wordbook') || [];
+    var masteredCount = 0;
+    for (var i = 0; i < wordbook.length; i++) {
+      if (wordbook[i].mastered) masteredCount++;
+    }
 
-    var leaderboard = wx.getStorageSync('leaderboard') || this.getSampleData();
+    // Check if real leaderboard data exists
+    var realData = wx.getStorageSync('leaderboard_real');
+    var isReal = false;
+    var leaderboard;
+    if (realData && realData.length) {
+      leaderboard = realData;
+      isReal = true;
+    } else {
+      leaderboard = this.getSampleData();
+      isReal = false;
+    }
+
     this.setData({
       userInfo: userInfo,
-      wordsLearned: wordbook.length,
+      wordsLearned: masteredCount,
       lessonsCompleted: completed.length,
       streakDays: progress.streakDays || 0,
       level: progress.level || 1,
       totalScore: progress.exp || 0,
-      rankList: leaderboard
+      rankList: leaderboard,
+      isRealData: isReal
     });
     this.calculateRank();
   },
@@ -74,12 +91,12 @@ Page({
 
   getSampleData: function() {
     return [
-      { openid: 'user1', nickName: '日语达人A', avatarUrl: '', level: 15, score: 12500, words: 1200, progress: 85 },
-      { openid: 'user2', nickName: 'N1过过过', avatarUrl: '', level: 12, score: 9800, words: 980, progress: 70 },
-      { openid: 'user3', nickName: '樱花酱', avatarUrl: '', level: 10, score: 7200, words: 850, progress: 60 },
-      { openid: 'user4', nickName: '日语小白', avatarUrl: '', level: 5, score: 2100, words: 350, progress: 30 },
-      { openid: 'user5', nickName: '学习爱好者', avatarUrl: '', level: 3, score: 900, words: 180, progress: 15 },
-      { openid: 'user6', nickName: '新手入门', avatarUrl: '', level: 1, score: 200, words: 50, progress: 5 }
+      { openid: 'sample1', nickName: '日语达人A', avatarUrl: '', level: 15, score: 12500, words: 1200, progress: 85 },
+      { openid: 'sample2', nickName: 'N1过过过', avatarUrl: '', level: 12, score: 9800, words: 980, progress: 70 },
+      { openid: 'sample3', nickName: '樱花酱', avatarUrl: '', level: 10, score: 7200, words: 850, progress: 60 },
+      { openid: 'sample4', nickName: '日语小白', avatarUrl: '', level: 5, score: 2100, words: 350, progress: 30 },
+      { openid: 'sample5', nickName: '学习爱好者', avatarUrl: '', level: 3, score: 900, words: 180, progress: 15 },
+      { openid: 'sample6', nickName: '新手入门', avatarUrl: '', level: 1, score: 200, words: 50, progress: 5 }
     ];
   },
 
