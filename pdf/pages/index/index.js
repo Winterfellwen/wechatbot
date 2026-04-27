@@ -65,25 +65,30 @@ Page({
             wx.downloadFile({
               url: data.url,
               success: function(dl) {
-                if (dl.statusCode === 200) {
-                  that.setData({ converting: false, progressText: '' });
-                  wx.openDocument({
-                    filePath: dl.tempFilePath,
-                    fileType: that.data.toFormat,
-                    showMenu: true,
-                    success: function() { wx.showToast({ title: '转换成功', icon: 'success' }); },
-                    fail: function(e) {
-                      wx.showModal({
-                        title: '无法打开',
-                        content: '转换完成但无法预览，文件已保存到临时目录',
-                        showCancel: false
+                that.setData({ converting: false, progressText: '' });
+                // Save to permanent storage
+                var fs = wx.getFileSystemManager();
+                var savedPath = wx.env.USER_DATA_PATH + '/converted.' + that.data.toFormat;
+                try {
+                  fs.saveFileSync(dl.tempFilePath, savedPath);
+                } catch(e) {
+                  savedPath = dl.tempFilePath;
+                }
+                wx.showModal({
+                  title: '转换完成',
+                  content: '文件已保存。是否立即打开？',
+                  confirmText: '打开文件',
+                  cancelText: '稍后查看',
+                  success: function(modalRes) {
+                    if (modalRes.confirm) {
+                      wx.openDocument({
+                        filePath: savedPath,
+                        fileType: that.data.toFormat,
+                        showMenu: true
                       });
                     }
-                  });
-                } else {
-                  that.setData({ converting: false, progressText: '' });
-                  wx.showToast({ title: '下载失败(' + dl.statusCode + ')', icon: 'none' });
-                }
+                  }
+                });
               },
               fail: function(e) {
                 that.setData({ converting: false, progressText: '' });
