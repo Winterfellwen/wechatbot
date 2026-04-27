@@ -52,7 +52,21 @@ Page({
   handleChooseAvatarTap() {
     if (!this.data.isLoggedIn) {
       this.login();
+      return;
     }
+    wx.getUserProfile({
+      desc: '用于设置头像',
+      success: (res) => {
+        const userInfo = res.userInfo;
+        const userData = { ...this.data.userInfo, avatarUrl: userInfo.avatarUrl };
+        app.setUserInfo(userData);
+        this.setData({ userInfo: userData });
+        wx.showToast({ title: '头像已更新', icon: 'success' });
+      },
+      fail: () => {
+        wx.showToast({ title: '需要授权头像', icon: 'none' });
+      }
+    });
   },
 
   handleNicknameTap() {
