@@ -227,9 +227,10 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     }
 
     const buffer = await pyRes.arrayBuffer();
-    res.set('Content-Type', 'application/octet-stream');
-    res.set('Content-Disposition', 'attachment; filename=converted.' + (to || 'docx'));
-    res.send(Buffer.from(buffer));
+    const outFile = '/tmp/serve/conv_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + (to || 'docx');
+    fs.writeFileSync(outFile, Buffer.from(buffer));
+    
+    res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
