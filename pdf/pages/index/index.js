@@ -7,7 +7,27 @@ Page({
     converting: false,
     targetOptions: [],
     files: [],
-    currentJobId: null
+    currentJobId: null,
+    resultFilePath: '',
+    resultFileName: '',
+    resultFormat: ''
+  },
+
+  onLoad: function() {
+    this._cleanupOldFiles();
+  },
+
+  _cleanupOldFiles: function() {
+    var fs = wx.getFileSystemManager();
+    var dir = wx.env.USER_DATA_PATH;
+    try {
+      var files = fs.readdirSync(dir);
+      for (var i = 0; i < files.length; i++) {
+        if (files[i].indexOf('pdf_convert_') === 0) {
+          try { fs.unlinkSync(dir + '/' + files[i]); } catch(e) {}
+        }
+      }
+    } catch(e) {}
   },
 
   uploadFile: function() {
@@ -159,22 +179,26 @@ Page({
     pollTimer = setTimeout(doPoll, 2000);
   },
 
-  // 下载并打开结果
+  // 下载到小程序缓存，展示结果卡片
   _downloadResult: function(url, jobId) {
     var that = this;
     wx.downloadFile({
       url: url,
       success: function(dl) {
-        that.setData({ converting: false, progressText: '', currentJobId: null });
+        if (dl.statusCode !== 200) {
+          that.setData({ converting: false, progressText: '', currentJobId: null });
+          wx.showToast({ title: '下载失败', icon: 'none' });
+          return;
+        }
         var fs = wx.getFileSystemManager();
-        var savedPath = wx.env.USER_DATA_PATH + '/converted.' + that.data.toFormat;
+        var baseName = that.data.fileName.replace(/\.[^.]+$/, '');
+        var ext = that.data.toFormat === 'doc' ? 'doc' : that.data.toFormat;
+        var savedName = 'pdf_convert_' + Date.now() + '.' + ext;
+        var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
         try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
-        wx.showModal({
-          title: '转换完成',
-          content: '文件已保存。是否立即打开？',
-          confirmText: '打开',
-          cancelText: '稍后',
-          success: function(r) { if (r.confirm) wx.openDocument({ filePath: savedPath, fileType: that.data.toFormat, showMenu: true }); }
+        that.setData({
+          converting: false, progressText: '', currentJobId: null,
+          resultFilePath: savedPath, resultFileName: baseName + '.' + ext, resultFormat: ext
         });
       },
       fail: function() {
@@ -184,7 +208,55 @@ Page({
     });
   },
 
+  previewResult: function() {
+    var path = this.data.resultFilePath;
+    var fmt = this.data.resultFormat;
+    if (!path) return;
+    wx.openDocument({ filePath: path, fileType: fmt, showMenu: true });
+  },
+
+  saveResult: function() {
+    var path = this.data.resultFilePath;
+    var name = this.data.resultFileName;
+    if (!path) return;
+    if (wx.saveFileToDisk) {
+      wx.saveFileToDisk({
+        filePath: path,
+        success: function() { wx.showToast({ title: '已保存', icon: 'success' }); },
+        fail: function() { wx.showToast({ title: '保存失败', icon: 'none' }); }
+      });
+    } else {
+      wx.openDocument({
+        filePath: path,
+        fileType: this.data.resultFormat,
+        showMenu: true,
+        success: function() { wx.showToast({ title: '请点击右上角菜单保存', icon: 'none' }); }
+      });
+    }
+  },
+
+  shareResult: function() {
+    var path = this.data.resultFilePath;
+    var name = this.data.resultFileName;
+    if (!path) return;
+    wx.shareFileMessage({
+      filePath: path,
+      fileName: name,
+      success: function() {},
+      fail: function() { wx.showToast({ title: '转发失败', icon: 'none' }); }
+    });
+  },
+
+  clearResult: function() {
+    var path = this.data.resultFilePath;
+    if (path) {
+      try { wx.getFileSystemManager().unlinkSync(path); } catch(e) {}
+    }
+    this.setData({ resultFilePath: '', resultFileName: '', resultFormat: '' });
+  },
+
   clearFile: function() {
+    this.clearResult();
     this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], currentJobId: null, converting: false, progressText: '' });
   }
 });

@@ -40,6 +40,22 @@
     </view>
   </view>
 
+  <!-- 转换结果 -->
+  <view wx:if="{{resultFilePath}}" class="result-section">
+    <view class="result-card">
+      <view class="result-header">
+        <text class="result-icon">✓</text>
+        <text class="result-title">转换完成</text>
+      </view>
+      <text class="result-file">{{resultFileName}}</text>
+      <view class="result-actions">
+        <view class="result-btn preview" bindtap="previewResult"><text>查看文件</text></view>
+        <view class="result-btn save" bindtap="saveResult"><text>保存到手机</text></view>
+        <view class="result-btn share" bindtap="shareResult"><text>转发</text></view>
+      </view>
+    </view>
+  </view>
+
   <view class="bottom-nav">
     <view class="nav-item active"><text class="nav-text">PDF工具</text></view>
   </view>
