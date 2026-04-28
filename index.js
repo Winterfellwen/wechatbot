@@ -326,3 +326,48 @@ app.get('/api/pdf/download/:filename', (req, res) => {
   }
 });
 
+// Word import: receive .docx, unzip with zlib, return document.xml text
+app.post('/api/word/import', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请上传文件' });
+  try {
+    const buf = fs.readFileSync(req.file.path);
+    fs.unlinkSync(req.file.path);
+    const zip = parseZip(buf);
+    const docXml = zip['word/document.xml'];
+    if (!docXml) return res.status(400).json({ error: '无效的 DOCX 文件' });
+    // Return raw XML text as string
+    res.json({ xml: docXml });
+  } catch (err) {
+    console.error('Word import error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Minimal ZIP parser using Node zlib
+function parseZip(buf) {
+  const files = {};
+  let offset = 0;
+  const zlib = require('zlib');
+  while (offset < buf.length) {
+    if (buf[offset] !== 0x50 || buf[offset + 1] !== 0x4B) { offset++; continue; }
+    const sig = buf.readUInt16LE(offset + 2);
+    if (sig === 0x0403) {
+      const nameLen = buf.readUInt16LE(offset + 26);
+      const extraLen = buf.readUInt16LE(offset + 28);
+      const compSize = buf.readUInt32LE(offset + 18);
+      const compMethod = buf.readUInt16LE(offset + 8);
+      const name = buf.toString('utf8', offset + 30, offset + 30 + nameLen);
+      const dataStart = offset + 30 + nameLen + extraLen;
+      const compressed = buf.slice(dataStart, dataStart + compSize);
+      const uncompressed = compMethod === 0 ? compressed : zlib.inflateSync(compressed);
+      files[name] = uncompressed.toString('utf8');
+      offset = dataStart + compSize;
+    } else if (sig === 0x0201 || sig === 0x0505) {
+      break;
+    } else {
+      offset++;
+    }
+  }
+  return files;
+}
+
