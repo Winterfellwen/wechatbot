@@ -200,66 +200,82 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// PDF conversion endpoint - proxies to Python service
+// PDF conversion endpoint - submit job, return job_id immediately (client polls)
 fs.mkdirSync('/tmp/uploads', { recursive: true });
 fs.mkdirSync('/tmp/serve', { recursive: true });
 const upload = multer({ dest: '/tmp/uploads/' });
+const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请上传文件' });
+  const { from, to } = req.body;
+  const toFmt = to || 'docx';
+
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: '请上传文件' });
-    }
-    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
-    const { from, to } = req.body;
-
-    // Pre-wake Python service
-    try { await fetch(pdfServiceUrl + '/', { signal: AbortSignal.timeout(10000) }).catch(() => {}); } catch(e) {}
-
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
+    // Submit job to Python (returns job_id immediately)
+    const submitRes = await fetch(pdfServiceUrl + '/convert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_base64: fileBase64,
+        filename: req.file.originalname || 'file.' + (from || 'pdf'),
+        from_fmt: from || 'pdf',
+        to_fmt: toFmt
+      })
+    });
+    fs.unlinkSync(req.file.path);
 
-    try {
-      const pyRes = await fetch(pdfServiceUrl + '/convert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          file_base64: fileBase64,
-          filename: req.file.originalname || 'file.' + (from || 'pdf'),
-          from_fmt: from || 'pdf',
-          to_fmt: to || 'docx'
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
-
-      if (!pyRes.ok) {
-        const errText = await pyRes.text().catch(() => 'Unknown error');
-        let errMsg = errText;
-        try { errMsg = JSON.parse(errText).detail || errText; } catch(e) {}
-        return res.status(400).json({ error: errMsg.substring(0, 200) });
-      }
-
-      const buffer = await pyRes.arrayBuffer();
-      const outFile = '/tmp/serve/conv_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + (to || 'docx');
-      fs.mkdirSync('/tmp/serve', { recursive: true });
-      fs.writeFileSync(outFile, Buffer.from(buffer));
-      res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
-      fs.unlinkSync(req.file.path);
-    } catch(fetchErr) {
-      clearTimeout(timeout);
-      throw fetchErr;
+    if (!submitRes.ok) {
+      const errText = await submitRes.text().catch(() => 'Unknown error');
+      let errMsg = errText;
+      try { errMsg = JSON.parse(errText).detail || errText; } catch(e) {}
+      return res.status(400).json({ error: errMsg.substring(0, 200) });
     }
+
+    const { job_id } = await submitRes.json();
+    // Return job_id immediately; client polls /api/pdf/status/:job_id
+    return res.json({ job_id: job_id, status_url: '/api/pdf/status/' + job_id });
   } catch (err) {
     console.error('Convert error:', err.message);
-    if (err.name === 'AbortError') {
-      res.status(504).json({ error: '转换超时，请重试。服务器正在启动中...' });
-    } else {
-      res.status(500).json({ error: err.message.substring(0, 200) });
+    res.status(500).json({ error: err.message.substring(0, 200) });
+  }
+});
+
+// Poll job status from Python, download result when ready
+app.get('/api/pdf/status/:jobId', async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    const statusRes = await fetch(pdfServiceUrl + '/status/' + jobId);
+    if (!statusRes.ok) {
+      const errText = await statusRes.text().catch(() => 'Unknown error');
+      return res.status(502).json({ error: '查询失败: ' + errText.substring(0, 100) });
     }
+
+    const status = await statusRes.json();
+    if (status.status === 'pending' || status.status === 'processing') {
+      return res.json({ status: 'processing' });
+    } else if (status.status === 'done') {
+      // Download result from Python and cache locally
+      const dlRes = await fetch(pdfServiceUrl + '/download/' + status.result);
+      if (!dlRes.ok) return res.status(502).json({ error: '下载转换结果失败' });
+
+      const buffer = await dlRes.arrayBuffer();
+      const outFile = '/tmp/serve/conv_' + jobId;
+      fs.writeFileSync(outFile, Buffer.from(buffer));
+      return res.json({
+        status: 'done',
+        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile)
+      });
+    } else if (status.status === 'error') {
+      return res.json({ status: 'error', error: status.error || '转换失败' });
+    }
+    return res.json(status);
+  } catch (err) {
+    console.error('Status poll error:', err.message);
+    res.status(500).json({ error: err.message.substring(0, 200) });
   }
 });
 

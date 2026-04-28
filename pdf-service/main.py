@@ -4,6 +4,9 @@ import tempfile
 import uuid
 import urllib.request
 import ssl
+import threading
+import time
+import atexit
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -21,134 +24,155 @@ FONT_CACHE_DIR = Path("/tmp/font-cache")
 FONT_CACHE_DIR.mkdir(exist_ok=True)
 CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 
+# ── Job queue ──────────────────────────────────────────────────────────────────
+jobs = {}           # job_id -> {"status": "pending"|"done"|"error", "result": ..., "error": ...}
+jobs_lock = threading.Lock()
+OUTPUT_DIR = Path("/tmp/pdf-outputs")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
-def download_cjk_font():
-    """Download Noto Sans SC TTF font with multiple fallback sources"""
-    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
-        print("Font already cached: " + str(CJK_FONT_PATH))
-        return str(CJK_FONT_PATH)
-    
-    # Create SSL context that doesn't verify certificates (for restricted networks)
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-    
-    urls = [
-        # jsDelivr CDN (most reliable in China)
-        "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
-        # GitHub raw
-        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
-        # Alternative CDN
-        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
-    ]
-    
-    for url in urls:
-        try:
-            print("Downloading font from " + url)
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
-            data = response.read()
-            if len(data) > 50000:
-                CJK_FONT_PATH.write_bytes(data)
-                print("Downloaded font: " + str(len(data)) + " bytes")
-                return str(CJK_FONT_PATH)
-        except Exception as e:
-            print("Download failed from " + url + ": " + str(e))
-            continue
-    
-    print("WARNING: All font download attempts failed")
-    return None
+def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to_fmt: str):
+    """Background conversion worker (runs in thread)."""
+    input_path = UPLOAD_DIR / f"{job_id}_in.{from_fmt}"
+    try:
+        input_path.write_bytes(file_data)
+
+        if from_fmt == "pdf" and to_fmt in ("docx", "doc"):
+            output_path = _pdf_to_docx(input_path, to_fmt)
+        elif from_fmt in ("docx", "doc") and to_fmt == "pdf":
+            output_path = _docx_to_pdf(input_path)
+        elif from_fmt == "doc" and to_fmt == "docx":
+            output_path = input_path.with_suffix(".docx")
+            import shutil
+            shutil.copy(input_path, output_path)
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported: {from_fmt} -> {to_fmt}")
+
+        # Move output to persistent dir with job_id
+        out_name = f"{job_id}.{to_fmt}"
+        final_path = OUTPUT_DIR / out_name
+        final_path.write_bytes(output_path.read_bytes())
+
+        with jobs_lock:
+            jobs[job_id] = {"status": "done", "result": out_name}
+    except HTTPException as e:
+        with jobs_lock:
+            jobs[job_id] = {"status": "error", "error": e.detail}
+    except Exception as e:
+        with jobs_lock:
+            jobs[job_id] = {"status": "error", "error": str(e)}
+    finally:
+        if input_path.exists():
+            input_path.unlink(missing_ok=True)
 
 
+# ── /convert → submit job, return job_id immediately ──────────────────────────
 class ConvertRequest(BaseModel):
     file_base64: str
     filename: str
     from_fmt: str = "pdf"
     to_fmt: str = "docx"
 
-
 @app.post("/convert")
 async def convert(req: ConvertRequest):
-    input_id = uuid.uuid4().hex
-    input_path = UPLOAD_DIR / f"{input_id}.{req.from_fmt}"
-
     try:
         file_data = base64.b64decode(req.file_base64)
-        with open(input_path, "wb") as f:
-            f.write(file_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid base64 data: " + str(e))
 
-    try:
-        if req.from_fmt == "pdf" and req.to_fmt == "docx":
-            output_path = await pdf_to_docx(input_path)
-        elif req.from_fmt in ("docx", "doc") and req.to_fmt == "pdf":
-            output_path = await docx_to_pdf(input_path)
-        elif req.from_fmt == "pdf" and req.to_fmt == "doc":
-            output_path = await pdf_to_docx(input_path)
-            new_path = output_path.with_suffix(".doc")
-            output_path.rename(new_path)
-            output_path = new_path
-        elif req.from_fmt == "doc" and req.to_fmt == "docx":
-            import shutil
-            output_path = input_path.with_suffix(".docx")
-            shutil.copy(input_path, output_path)
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported conversion: {req.from_fmt} -> {req.to_fmt}")
+    job_id = uuid.uuid4().hex
+    with jobs_lock:
+        jobs[job_id] = {"status": "pending", "result": None}
 
-        return FileResponse(output_path, filename=f"converted.{req.to_fmt}",
-                            media_type="application/octet-stream")
-    except HTTPException:
-        raise
-    except Exception as e:
-        print("Conversion error:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if input_path.exists():
-            input_path.unlink(missing_ok=True)
+    thread = threading.Thread(target=_run_convert, args=(
+        job_id, file_data, req.filename, req.from_fmt, req.to_fmt))
+    thread.daemon = True
+    thread.start()
+
+    return {"job_id": job_id, "status": "pending"}
 
 
+# ── /status/{job_id} ──────────────────────────────────────────────────────────
+@app.get("/status/{job_id}")
+async def get_status(job_id: str):
+    with jobs_lock:
+        job = jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+# ── /download/{filename} ─────────────────────────────────────────────────────
+@app.get("/download/{filename}")
+async def download(filename: str):
+    path = OUTPUT_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    fmt = path.suffix[1:]   # e.g. "docx"
+    return FileResponse(path, filename=f"converted.{fmt}",
+                        media_type="application/octet-stream")
+
+
+# ── /edit → edit job (watermark / rotate) ─────────────────────────────────────
 @app.post("/edit")
 async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = Form(""), angle: str = Form("90")):
-    input_id = uuid.uuid4().hex
-    input_path = UPLOAD_DIR / f"{input_id}.pdf"
-
     try:
         file_data = base64.b64decode(file_base64)
-        with open(input_path, "wb") as f:
-            f.write(file_data)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 data")
 
-    try:
-        if op == "watermark":
-            output_path = await pdf_watermark(input_path, text)
-        elif op == "rotate":
-            output_path = await pdf_rotate(input_path, int(angle))
-        else:
-            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
+    job_id = uuid.uuid4().hex
+    with jobs_lock:
+        jobs[job_id] = {"status": "pending"}
 
-        return FileResponse(output_path, filename="edited.pdf",
-                            media_type="application/octet-stream")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if input_path.exists():
-            input_path.unlink(missing_ok=True)
+    def _run_edit():
+        input_path = UPLOAD_DIR / f"{job_id}_in.pdf"
+        input_path.write_bytes(file_data)
+        try:
+            if op == "watermark":
+                output_path = _pdf_watermark(input_path, text)
+            elif op == "rotate":
+                output_path = _pdf_rotate(input_path, int(angle))
+            else:
+                raise HTTPException(status_code=400, detail=f"Unknown op: {op}")
+
+            out_name = f"{job_id}.pdf"
+            final_path = OUTPUT_DIR / out_name
+            final_path.write_bytes(output_path.read_bytes())
+
+            with jobs_lock:
+                jobs[job_id] = {"status": "done", "result": out_name}
+        except HTTPException as e:
+            with jobs_lock:
+                jobs[job_id] = {"status": "error", "error": e.detail}
+        except Exception as e:
+            with jobs_lock:
+                jobs[job_id] = {"status": "error", "error": str(e)}
+        finally:
+            if input_path.exists():
+                input_path.unlink(missing_ok=True)
+
+    thread = threading.Thread(target=_run_edit)
+    thread.daemon = True
+    thread.start()
+
+    return {"job_id": job_id, "status": "pending"}
 
 
-async def pdf_to_docx(input_path: Path) -> Path:
+# ── Conversion helpers (sync, called from thread) ────────────────────────────
+def _pdf_to_docx(input_path: Path, to_fmt: str) -> Path:
     from pdf2docx import Converter
     output_path = input_path.with_suffix(".docx")
     cv = Converter(str(input_path))
     cv.convert(str(output_path))
     cv.close()
+    if to_fmt == "doc":
+        doc_path = input_path.with_suffix(".doc")
+        output_path.rename(doc_path)
+        return doc_path
     return output_path
 
 
-async def pdf_watermark(input_path: Path, text: str) -> Path:
+def _pdf_watermark(input_path: Path, text: str) -> Path:
     import fitz
     doc = fitz.open(str(input_path))
     for page in doc:
@@ -164,7 +188,7 @@ async def pdf_watermark(input_path: Path, text: str) -> Path:
     return output_path
 
 
-async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
+def _pdf_rotate(input_path: Path, angle: int = 90) -> Path:
     import fitz
     doc = fitz.open(str(input_path))
     for page in doc:
@@ -175,50 +199,80 @@ async def pdf_rotate(input_path: Path, angle: int = 90) -> Path:
     return output_path
 
 
-async def docx_to_pdf(input_path: Path) -> Path:
-    """Convert DOCX to PDF using fpdf2 with CJK TTF font"""
+def download_cjk_font():
+    """Download Noto Sans SC TTF font with multiple fallback sources"""
+    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
+        print("Font already cached: " + str(CJK_FONT_PATH))
+        return str(CJK_FONT_PATH)
+
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    urls = [
+        "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+    ]
+
+    for url in urls:
+        try:
+            print("Downloading font from " + url)
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
+            data = response.read()
+            if len(data) > 50000:
+                CJK_FONT_PATH.write_bytes(data)
+                print("Downloaded font: " + str(len(data)) + " bytes")
+                return str(CJK_FONT_PATH)
+        except Exception as e:
+            print("Download failed from " + url + ": " + str(e))
+            continue
+
+    print("WARNING: All font download attempts failed")
+    return None
+
+
+def _docx_to_pdf(input_path: Path) -> Path:
     from docx import Document
     from fpdf import FPDF
-    
+
     output_path = input_path.with_suffix(".pdf")
-    
-    # Get CJK font
+
     font_path = download_cjk_font()
     if not font_path:
         raise Exception("Failed to download CJK font. Please check network connectivity.")
-    
+
     doc = Document(str(input_path))
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
-    
-    # Add and set CJK font
+
     pdf.add_font("CJK", style="", fname=font_path)
     pdf.set_font("CJK", size=11)
     print("Using CJK font: " + font_path)
-    
+
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             pdf.ln(3)
             continue
-        
         try:
             pdf.multi_cell(w=0, h=7, txt=text)
             pdf.ln(2)
         except Exception as e:
             print("Text error: " + str(e))
             continue
-    
+
     pdf.output(str(output_path))
     print("PDF generated: " + str(output_path))
     return output_path
 
 
+# ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def health():
     return {"status": "ok", "service": "PDF Converter"}
-
 
 @app.get("/health")
 def health_check():
