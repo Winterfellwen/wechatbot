@@ -61,7 +61,7 @@ async def convert(req: ConvertRequest):
 
     try:
         file_data = base64.b64decode(req.file_base64)
-        with open(input_path, "wb") as f:
+        with open(input_path, \"wb\") as f:
             f.write(file_data)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 data")
@@ -99,7 +99,7 @@ async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = For
 
     try:
         file_data = base64.b64decode(file_base64)
-        with open(input_path, "wb") as f:
+        with open(input_path, \"wb\") as f:
             f.write(file_data)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 data")
