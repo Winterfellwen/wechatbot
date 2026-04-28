@@ -8,6 +8,8 @@
       <view class="tool-btn {{fmt.underline ? 'active' : ''}}" bindtap="toggleUnderline"><text class="tool-label underline">U</text></view>
       <view class="tool-btn {{fmt.strike ? 'active' : ''}}" bindtap="toggleStrike"><text class="tool-label strike">S</text></view>
       <view class="tool-divider"></view>
+      <view class="tool-btn" bindtap="importDocx"><text class="tool-label" style="font-size:20rpx">导入</text></view>
+      <view class="tool-divider"></view>
       <view class="tool-btn {{fmt.header === 1 ? 'active' : ''}}" bindtap="formatHeader" data-level="1"><text class="tool-label">H1</text></view>
       <view class="tool-btn {{fmt.header === 2 ? 'active' : ''}}" bindtap="formatHeader" data-level="2"><text class="tool-label">H2</text></view>
       <view class="tool-btn {{fmt.header === 3 ? 'active' : ''}}" bindtap="formatHeader" data-level="3"><text class="tool-label">H3</text></view>

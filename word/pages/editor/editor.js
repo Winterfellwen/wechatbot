@@ -118,6 +118,146 @@ Page({
     });
   },
 
+  importDocx: function () {
+    var that = this;
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      extension: ['docx', 'doc'],
+      success: function (res) {
+        var file = res.tempFiles[0];
+        wx.showLoading({ title: '解析中...' });
+        wx.getFileSystemManager().readFile({
+          filePath: file.path,
+          success: function (readRes) {
+            wx.hideLoading();
+            var buf = wx.base64ToArrayBuffer(readRes.data);
+            var files = that._unzip(buf);
+            var docXml = files['word/document.xml'];
+            if (!docXml) {
+              wx.showToast({ title: '无效的 DOCX 文件', icon: 'none' });
+              return;
+            }
+            var xmlStr = that._bytesToStr(docXml);
+            var html = that._parseDocXml(xmlStr);
+            if (that.editorCtx) {
+              that.editorCtx.setContents({ html: html });
+              that.setData({ title: file.name.replace(/\.[^.]+$/, '') });
+              wx.showToast({ title: '导入成功', icon: 'success' });
+            }
+          },
+          fail: function () {
+            wx.hideLoading();
+            wx.showToast({ title: '读取文件失败', icon: 'none' });
+          }
+        });
+      },
+      fail: function () {}
+    });
+  },
+
+  _unzip: function (buf) {
+    var view = new Uint8Array(buf);
+    var files = {};
+    var off = 0;
+    while (off < view.length - 4) {
+      if (view[off] !== 0x50 || view[off + 1] !== 0x4B) { off++; continue; }
+      var sig = view[off + 2] | (view[off + 3] << 8);
+      if (sig === 0x0403) {
+        var cm = view[off + 8] | (view[off + 9] << 8);
+        var csize = view[off + 18] | (view[off + 19] << 8) | (view[off + 20] << 16) | (view[off + 21] << 24);
+        var usize = view[off + 22] | (view[off + 23] << 8) | (view[off + 24] << 16) | (view[off + 25] << 24);
+        var nl = view[off + 26] | (view[off + 27] << 8);
+        var el = view[off + 28] | (view[off + 29] << 8);
+        var name = '';
+        for (var i = 0; i < nl; i++) name += String.fromCharCode(view[off + 30 + i]);
+        var dataOff = off + 30 + nl + el;
+        var compressed = view.slice(dataOff, dataOff + csize);
+        files[name] = cm === 0 ? compressed : that._inflate(compressed);
+        off = dataOff + csize;
+      } else if (sig === 0x0201 || sig === 0x0505) {
+        break;
+      } else {
+        off++;
+      }
+    }
+    return files;
+  },
+
+  _inflate: function (data) {
+    var pos = 0;
+    var bitBuf = 0, bitLen = 0;
+    function bits(n) {
+      while (bitLen < n && pos < data.length) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
+      var v = bitBuf & ((1 << n) - 1); bitBuf >>= n; bitLen -= n; return v;
+    }
+    var T = [];
+    for (var i = 0; i < 288; i++) T[i] = i <= 143 ? 7 : i <= 255 ? 8 : i <= 279 ? 7 : 8;
+    var tbl = new Array(512).fill(-1);
+    var code = 0;
+    for (var l = 1; l <= 9; l++) {
+      for (var i = 0; i < 288; i++) {
+        if (T[i] === l) { tbl[code] = i; code++; }
+      }
+      code <<= 1;
+    }
+    var out = [];
+    while (true) {
+      var bFinal = bits(1), bType = bits(2);
+      while (bitLen < 9) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
+      var sym = tbl[bitBuf & 511];
+      if (sym < 0) sym = bits(9); else { bitBuf >>= T[sym]; bitLen -= T[sym]; }
+      if (sym < 256) { out.push(sym); continue; }
+      if (sym === 256) break;
+      if (sym > 256) {
+        var L = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258][sym - 257];
+        var el = sym > 264 ? [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5][sym - 265] : 0;
+        var len = L + (el ? bits(el) : 0);
+        var ds = bits(5);
+        var DB = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577][ds];
+        var ed = ds > 3 ? [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13][ds - 4] : 0;
+        var dist = DB + (ed ? bits(ed) : 0);
+        for (var j = 0; j < len; j++) out.push(out[out.length - dist]);
+      }
+    }
+    return new Uint8Array(out);
+  },
+
+  _bytesToStr: function (bytes) {
+    var s = '';
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return decodeURIComponent(escape(s));
+  },
+
+  _parseDocXml: function (xmlText) {
+    var html = '';
+    var paraMatches = xmlText.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || [];
+    for (var pi = 0; pi < paraMatches.length; pi++) {
+      var pXml = paraMatches[pi];
+      var styleMatch = pXml.match(/<w:pStyle w:val="([^"]+)"/);
+      var style = styleMatch ? styleMatch[1] : '';
+      var isH = /^Heading/.test(style) || /^h[1-6]$/i.test(style);
+      var alignMatch = pXml.match(/<w:jc w:val="([^"]+)"/);
+      var align = alignMatch ? alignMatch[1] : '';
+      var isList = /<w:numPr/.test(pXml);
+      var text = '';
+      var runs = pXml.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g) || [];
+      for (var ri = 0; ri < runs.length; ri++) {
+        var run = runs[ri];
+        var m = run.match(/<w:t[^>]*>([\s\S]*)/);
+        if (m) text += m[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+      }
+      text = text.trim();
+      if (!text) continue;
+      var level = style === 'Heading1' ? 1 : style === 'Heading2' ? 2 : style === 'Heading3' ? 3 : 0;
+      var openTag = isH ? '<h' + level + '>' : isList ? '<li>' : '<p>';
+      var closeTag = openTag.replace('<', '</');
+      if (align === 'center' || align === 'right') openTag = openTag.replace('>', ' style="text-align:' + align + '">');
+      html += openTag + text + closeTag;
+    }
+    return html || '<p></p>';
+  },
+
   // ---- 导出 DOCX（纯前端，无 npm 依赖） ----
   exportDocx: function () {
     if (this.data.exporting) return;
