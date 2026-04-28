@@ -200,11 +200,19 @@ def _pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 
 def download_cjk_font():
-    """Download Noto Sans SC TTF font with multiple fallback sources"""
+    """Return path to CJK font, preferring bundled > cached > download."""
+    # 1. Bundled font (shipped with Docker image)
+    bundled = Path(__file__).parent / "fonts" / "NotoSansSC-Regular.otf"
+    if bundled.exists() and bundled.stat().st_size > 50000:
+        print("Using bundled font: " + str(bundled))
+        return str(bundled)
+
+    # 2. Runtime cache
     if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
         print("Font already cached: " + str(CJK_FONT_PATH))
         return str(CJK_FONT_PATH)
 
+    # 3. Download from network (may fail on restricted Render free tier)
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -212,7 +220,6 @@ def download_cjk_font():
     urls = [
         "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
         "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
-        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
     ]
 
     for url in urls:
