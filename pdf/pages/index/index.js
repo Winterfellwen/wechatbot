@@ -9,6 +9,7 @@ Page({
     files: [],
     currentJobId: null,
     resultFilePath: '',
+    resultTempPath: '',
     resultFileName: '',
     resultFormat: ''
   },
@@ -198,7 +199,9 @@ Page({
         try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
         that.setData({
           converting: false, progressText: '', currentJobId: null,
-          resultFilePath: savedPath, resultFileName: baseName + '.' + ext, resultFormat: ext
+          resultFilePath: savedPath,
+          resultTempPath: dl.tempFilePath,
+          resultFileName: baseName + '.' + ext, resultFormat: ext
         });
       },
       fail: function() {
@@ -216,34 +219,38 @@ Page({
   },
 
   saveResult: function() {
-    var path = this.data.resultFilePath;
-    var name = this.data.resultFileName;
-    if (!path) return;
+    var that = this;
+    var tempPath = that.data.resultTempPath || that.data.resultFilePath;
+    var savedPath = that.data.resultFilePath;
+    if (!savedPath) return;
     if (wx.saveFileToDisk) {
       wx.saveFileToDisk({
-        filePath: path,
-        success: function() { wx.showToast({ title: '已保存', icon: 'success' }); },
-        fail: function() { wx.showToast({ title: '保存失败', icon: 'none' }); }
+        filePath: tempPath,
+        success: function() { wx.showToast({ title: '已保存到手机', icon: 'success' }); },
+        fail: function() {
+          wx.showToast({ title: '请点右上角「…」保存文件', icon: 'none', duration: 3000 });
+          wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
+        }
       });
     } else {
-      wx.openDocument({
-        filePath: path,
-        fileType: this.data.resultFormat,
-        showMenu: true,
-        success: function() { wx.showToast({ title: '请点击右上角菜单保存', icon: 'none' }); }
-      });
+      wx.showToast({ title: '请点右上角「…」保存文件', icon: 'none', duration: 3000 });
+      wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
     }
   },
 
   shareResult: function() {
-    var path = this.data.resultFilePath;
-    var name = this.data.resultFileName;
-    if (!path) return;
+    var that = this;
+    var tempPath = that.data.resultTempPath || that.data.resultFilePath;
+    var savedPath = that.data.resultFilePath;
+    if (!savedPath) return;
     wx.shareFileMessage({
-      filePath: path,
-      fileName: name,
+      filePath: tempPath,
+      fileName: that.data.resultFileName,
       success: function() {},
-      fail: function() { wx.showToast({ title: '转发失败', icon: 'none' }); }
+      fail: function() {
+        wx.showToast({ title: '请点右上角「…」转发文件', icon: 'none', duration: 3000 });
+        wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
+      }
     });
   },
 
@@ -252,7 +259,7 @@ Page({
     if (path) {
       try { wx.getFileSystemManager().unlinkSync(path); } catch(e) {}
     }
-    this.setData({ resultFilePath: '', resultFileName: '', resultFormat: '' });
+    this.setData({ resultFilePath: '', resultTempPath: '', resultFileName: '', resultFormat: '' });
   },
 
   clearFile: function() {
