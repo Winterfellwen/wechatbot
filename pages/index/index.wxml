@@ -27,7 +27,12 @@
       </view>
 
       <view class="entry-card" bindtap="handleEntryTap" data-type="word">
-        <text class="entry-icon-text">📝</text>
+        <view class="icon-word">
+          <view class="icon-word-body">
+            <view class="icon-word-fold"></view>
+            <text class="icon-word-letter">W</text>
+          </view>
+        </view>
         <text class="entry-title">Word在线编辑</text>
         <text class="entry-desc">文档编辑工具</text>
       </view>
