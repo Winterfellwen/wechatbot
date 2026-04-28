@@ -87,7 +87,7 @@ Page({
 
   _unzipDocx: function (data) {
     var files = {};
-    var view = new DataView(data.buffer);
+    var that = this;
     var offset = 0;
     while (offset < data.length) {
       if (data[offset] === 0x50 && data[offset + 1] === 0x4B) {
