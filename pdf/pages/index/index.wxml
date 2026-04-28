@@ -40,16 +40,15 @@
     </view>
   </view>
 
-  <!-- 转换结果 -->
-  <view wx:if="{{resultFilePath}}" class="result-section">
-    <view class="result-card">
+  <!-- 转换结果列表 -->
+  <view wx:if="{{results.length > 0}}" class="result-section">
+    <view class="result-card" wx:for="{{results}}" wx:key="time">
       <view class="result-header">
         <text class="result-icon">✓</text>
-        <text class="result-title">转换完成</text>
+        <text class="result-title">{{item.name}}</text>
+        <text class="result-del" data-idx="{{index}}" bindtap="removeResult">×</text>
       </view>
-      <text class="result-file">{{resultFileName}}</text>
-      <view class="result-btn open" bindtap="openResult">查看文件</view>
-      <text class="result-hint">打开后点右上角「…」可保存到手机或转发</text>
+      <view class="result-btn open" data-idx="{{index}}" bindtap="openResult">查看文件</view>
     </view>
   </view>
 

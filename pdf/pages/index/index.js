@@ -8,9 +8,7 @@ Page({
     targetOptions: [],
     files: [],
     currentJobId: null,
-    resultFilePath: '',
-    resultFileName: '',
-    resultFormat: ''
+    results: []
   },
 
   onLoad: function() {
@@ -18,19 +16,19 @@ Page({
   },
 
   _restoreResult: function() {
-    var info = wx.getStorageSync('pdf_convert_result');
-    if (!info || !info.path) return;
+    var list = wx.getStorageSync('pdf_convert_results');
+    if (!list || !list.length) return;
     var fs = wx.getFileSystemManager();
-    try {
-      fs.accessSync(info.path);
-      this.setData({ resultFilePath: info.path, resultFileName: info.name, resultFormat: info.format });
-    } catch(e) {
-      wx.removeStorageSync('pdf_convert_result');
+    var valid = [];
+    for (var i = 0; i < list.length; i++) {
+      try { fs.accessSync(list[i].path); valid.push(list[i]); } catch(e) {}
     }
+    this.setData({ results: valid });
+    if (valid.length < list.length) wx.setStorageSync('pdf_convert_results', valid);
   },
 
-  _saveResultInfo: function(path, name, format) {
-    wx.setStorageSync('pdf_convert_result', { path: path, name: name, format: format });
+  _saveResults: function() {
+    wx.setStorageSync('pdf_convert_results', this.data.results);
   },
 
   uploadFile: function() {
@@ -199,12 +197,18 @@ Page({
         var savedName = 'pdf_convert_' + Date.now() + '.' + ext;
         var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
         try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
-        that.setData({
-          converting: false, progressText: '', currentJobId: null,
-          resultFilePath: savedPath,
-          resultFileName: baseName + '.' + ext, resultFormat: ext
-        });
-        that._saveResultInfo(savedPath, baseName + '.' + ext, ext);
+        var item = { path: savedPath, name: baseName + '.' + ext, format: ext, time: Date.now() };
+        var results = that.data.results.slice();
+        results.push(item);
+        if (results.length > 10) {
+          var removed = results.splice(0, results.length - 10);
+          var rmFs = wx.getFileSystemManager();
+          for (var i = 0; i < removed.length; i++) {
+            try { rmFs.unlinkSync(removed[i].path); } catch(e) {}
+          }
+        }
+        that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
+        that._saveResults();
       },
       fail: function() {
         that.setData({ converting: false, progressText: '', currentJobId: null });
@@ -213,24 +217,25 @@ Page({
     });
   },
 
-  openResult: function() {
-    var path = this.data.resultFilePath;
-    var fmt = this.data.resultFormat;
-    if (!path) return;
-    wx.openDocument({ filePath: path, fileType: fmt, showMenu: true });
+  openResult: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var item = this.data.results[idx];
+    if (!item) return;
+    wx.openDocument({ filePath: item.path, fileType: item.format, showMenu: true });
   },
 
-  clearResult: function() {
-    var path = this.data.resultFilePath;
-    if (path) {
-      try { wx.getFileSystemManager().unlinkSync(path); } catch(e) {}
-    }
-    wx.removeStorageSync('pdf_convert_result');
-    this.setData({ resultFilePath: '', resultFileName: '', resultFormat: '' });
+  removeResult: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var item = this.data.results[idx];
+    if (!item) return;
+    try { wx.getFileSystemManager().unlinkSync(item.path); } catch(e) {}
+    var results = this.data.results.slice();
+    results.splice(idx, 1);
+    this.setData({ results: results });
+    this._saveResults();
   },
 
   clearFile: function() {
-    this.clearResult();
     this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], currentJobId: null, converting: false, progressText: '' });
   }
 });
