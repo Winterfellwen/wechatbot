@@ -129,6 +129,7 @@ Page({
         wx.showLoading({ title: '解析中...' });
         wx.getFileSystemManager().readFile({
           filePath: file.path,
+          encoding: 'base64',
           success: function (readRes) {
             wx.hideLoading();
             var buf = wx.base64ToArrayBuffer(readRes.data);
