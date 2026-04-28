@@ -5,12 +5,7 @@
     "minified": true,
     "uglifyFileName": false,
     "enhance": true,
-    "packNpmRelationList": [
-      {
-        "packageJsonPath": "./package.json",
-        "miniprogramNpmDistDir": "./"
-      }
-    ],
+    "packNpmRelationList": [],
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
@@ -20,7 +15,7 @@
     "minifyWXML": true,
     "compileWorklet": false,
     "uploadWithSourceMap": true,
-    "packNpmManually": true,
+    "packNpmManually": false,
     "minifyWXSS": true,
     "localPlugins": false,
     "disableUseStrict": false,
