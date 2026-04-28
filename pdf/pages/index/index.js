@@ -9,26 +9,28 @@ Page({
     files: [],
     currentJobId: null,
     resultFilePath: '',
-    resultTempPath: '',
     resultFileName: '',
     resultFormat: ''
   },
 
   onLoad: function() {
-    this._cleanupOldFiles();
+    this._restoreResult();
   },
 
-  _cleanupOldFiles: function() {
+  _restoreResult: function() {
+    var info = wx.getStorageSync('pdf_convert_result');
+    if (!info || !info.path) return;
     var fs = wx.getFileSystemManager();
-    var dir = wx.env.USER_DATA_PATH;
     try {
-      var files = fs.readdirSync(dir);
-      for (var i = 0; i < files.length; i++) {
-        if (files[i].indexOf('pdf_convert_') === 0) {
-          try { fs.unlinkSync(dir + '/' + files[i]); } catch(e) {}
-        }
-      }
-    } catch(e) {}
+      fs.accessSync(info.path);
+      this.setData({ resultFilePath: info.path, resultFileName: info.name, resultFormat: info.format });
+    } catch(e) {
+      wx.removeStorageSync('pdf_convert_result');
+    }
+  },
+
+  _saveResultInfo: function(path, name, format) {
+    wx.setStorageSync('pdf_convert_result', { path: path, name: name, format: format });
   },
 
   uploadFile: function() {
@@ -200,9 +202,9 @@ Page({
         that.setData({
           converting: false, progressText: '', currentJobId: null,
           resultFilePath: savedPath,
-          resultTempPath: dl.tempFilePath,
           resultFileName: baseName + '.' + ext, resultFormat: ext
         });
+        that._saveResultInfo(savedPath, baseName + '.' + ext, ext);
       },
       fail: function() {
         that.setData({ converting: false, progressText: '', currentJobId: null });
@@ -211,47 +213,11 @@ Page({
     });
   },
 
-  previewResult: function() {
+  openResult: function() {
     var path = this.data.resultFilePath;
     var fmt = this.data.resultFormat;
     if (!path) return;
     wx.openDocument({ filePath: path, fileType: fmt, showMenu: true });
-  },
-
-  saveResult: function() {
-    var that = this;
-    var tempPath = that.data.resultTempPath || that.data.resultFilePath;
-    var savedPath = that.data.resultFilePath;
-    if (!savedPath) return;
-    if (wx.saveFileToDisk) {
-      wx.saveFileToDisk({
-        filePath: tempPath,
-        success: function() { wx.showToast({ title: '已保存到手机', icon: 'success' }); },
-        fail: function() {
-          wx.showToast({ title: '请点右上角「…」保存文件', icon: 'none', duration: 3000 });
-          wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
-        }
-      });
-    } else {
-      wx.showToast({ title: '请点右上角「…」保存文件', icon: 'none', duration: 3000 });
-      wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
-    }
-  },
-
-  shareResult: function() {
-    var that = this;
-    var tempPath = that.data.resultTempPath || that.data.resultFilePath;
-    var savedPath = that.data.resultFilePath;
-    if (!savedPath) return;
-    wx.shareFileMessage({
-      filePath: tempPath,
-      fileName: that.data.resultFileName,
-      success: function() {},
-      fail: function() {
-        wx.showToast({ title: '请点右上角「…」转发文件', icon: 'none', duration: 3000 });
-        wx.openDocument({ filePath: savedPath, fileType: that.data.resultFormat, showMenu: true });
-      }
-    });
   },
 
   clearResult: function() {
@@ -259,7 +225,8 @@ Page({
     if (path) {
       try { wx.getFileSystemManager().unlinkSync(path); } catch(e) {}
     }
-    this.setData({ resultFilePath: '', resultTempPath: '', resultFileName: '', resultFormat: '' });
+    wx.removeStorageSync('pdf_convert_result');
+    this.setData({ resultFilePath: '', resultFileName: '', resultFormat: '' });
   },
 
   clearFile: function() {

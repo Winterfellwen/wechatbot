@@ -48,11 +48,8 @@
         <text class="result-title">转换完成</text>
       </view>
       <text class="result-file">{{resultFileName}}</text>
-      <view class="result-actions">
-        <view class="result-btn preview" bindtap="previewResult"><text>查看文件</text></view>
-        <view class="result-btn save" bindtap="saveResult"><text>保存到手机</text></view>
-        <view class="result-btn share" bindtap="shareResult"><text>转发</text></view>
-      </view>
+      <view class="result-btn open" bindtap="openResult">查看文件</view>
+      <text class="result-hint">打开后点右上角「…」可保存到手机或转发</text>
     </view>
   </view>
 
