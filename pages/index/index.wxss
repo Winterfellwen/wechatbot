@@ -64,7 +64,10 @@
   margin-bottom: 20rpx;
 }
 
-.entry-title {
+.entry-card.disabled { opacity: 0.5; }
+.entry-card.disabled .entry-title { color: #999; }
+.entry-icon.gray { filter: grayscale(100%); }
+.entry-icon-text { font-size: 80rpx; margin-bottom: 20rpx; }
   font-size: 30rpx;
   font-weight: bold;
   color: #333;

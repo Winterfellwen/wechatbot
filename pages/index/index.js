@@ -127,6 +127,8 @@ login() {
       wx.navigateTo({ url: '/japanese/pages/learn/learn' });
     } else if (type === 'german') {
       wx.showToast({ title: '德语学习开发中', icon: 'none' });
+    } else if (type === 'word') {
+      wx.showToast({ title: 'Word编辑开发中', icon: 'none' });
     } else if (type === 'pdf') {
       wx.navigateTo({ url: '/pdf/pages/index/index' });
     } else if (type === 'developing') {
