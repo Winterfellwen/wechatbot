@@ -24,7 +24,7 @@ CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 def download_cjk_font():
     """Download Noto Sans SC TTF font"""
     if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
-        print(f"Font already cached: {CJK_FONT_PATH}")
+        print("Font already cached: " + str(CJK_FONT_PATH))
         return str(CJK_FONT_PATH)
     
     urls = [
@@ -34,14 +34,14 @@ def download_cjk_font():
     
     for url in urls:
         try:
-            print(f"Downloading font from {url}")
+            print("Downloading font from " + url)
             data = urllib.request.urlopen(url, timeout=60).read()
             if len(data) > 50000:
                 CJK_FONT_PATH.write_bytes(data)
-                print(f"Downloaded font: {len(data)} bytes")
+                print("Downloaded font: " + str(len(data)) + " bytes")
                 return str(CJK_FONT_PATH)
         except Exception as e:
-            print(f"Download failed: {e}")
+            print("Download failed: " + str(e))
             continue
     
     return None
@@ -177,7 +177,7 @@ async def docx_to_pdf(input_path: Path) -> Path:
     # Add and set CJK font
     pdf.add_font("CJK", style="", fname=font_path)
     pdf.set_font("CJK", size=11)
-    print(f"Using CJK font: {font_path}")
+    print("Using CJK font: " + font_path)
     
     for para in doc.paragraphs:
         text = para.text.strip()
@@ -189,11 +189,11 @@ async def docx_to_pdf(input_path: Path) -> Path:
             pdf.multi_cell(w=0, h=7, txt=text)
             pdf.ln(2)
         except Exception as e:
-            print(f"Text error: {e}")
+            print("Text error: " + str(e))
             continue
     
     pdf.output(str(output_path))
-    print(f"PDF generated: {output_path}")
+    print("PDF generated: " + str(output_path))
     return output_path
 
 
