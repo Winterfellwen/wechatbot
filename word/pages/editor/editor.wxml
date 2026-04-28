@@ -1,0 +1,79 @@
+<!--word/pages/editor/editor.wxml-->
+<view class="editor-page">
+  <!-- 顶部工具栏 -->
+  <view class="toolbar">
+    <view class="tool-row">
+      <view class="tool-btn {{fmt.bold ? 'active' : ''}}" bindtap="toggleBold"><text class="tool-label">B</text></view>
+      <view class="tool-btn {{fmt.italic ? 'active' : ''}}" bindtap="toggleItalic"><text class="tool-label italic">I</text></view>
+      <view class="tool-btn {{fmt.underline ? 'active' : ''}}" bindtap="toggleUnderline"><text class="tool-label underline">U</text></view>
+      <view class="tool-btn {{fmt.strike ? 'active' : ''}}" bindtap="toggleStrike"><text class="tool-label strike">S</text></view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn {{fmt.header === 1 ? 'active' : ''}}" bindtap="formatHeader" data-level="1"><text class="tool-label">H1</text></view>
+      <view class="tool-btn {{fmt.header === 2 ? 'active' : ''}}" bindtap="formatHeader" data-level="2"><text class="tool-label">H2</text></view>
+      <view class="tool-btn {{fmt.header === 3 ? 'active' : ''}}" bindtap="formatHeader" data-level="3"><text class="tool-label">H3</text></view>
+    </view>
+    <view class="tool-row">
+      <view class="tool-btn {{fmt.align === 'left' ? 'active' : ''}}" bindtap="setAlign" data-align="left">
+        <text class="tool-icon">⫷</text>
+      </view>
+      <view class="tool-btn {{fmt.align === 'center' ? 'active' : ''}}" bindtap="setAlign" data-align="center">
+        <text class="tool-icon">⫸</text>
+      </view>
+      <view class="tool-btn {{fmt.align === 'right' ? 'active' : ''}}" bindtap="setAlign" data-align="right">
+        <text class="tool-icon">⫸</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn {{fmt.list === 'ordered' ? 'active' : ''}}" bindtap="setList" data-list="ordered">
+        <text class="tool-label" style="font-size:22rpx">1.</text>
+      </view>
+      <view class="tool-btn {{fmt.list === 'bullet' ? 'active' : ''}}" bindtap="setList" data-list="bullet">
+        <text class="tool-icon">•</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn" bindtap="pickColor" data-target="color">
+        <view class="color-dot" style="background:{{fmt.color || '#000000'}}"></view>
+      </view>
+      <view class="tool-btn" bindtap="pickColor" data-target="backgroundColor">
+        <view class="color-dot highlight" style="background:{{fmt.backgroundColor || '#ffff00'}}"></view>
+      </view>
+    </view>
+    <view class="tool-row">
+      <view class="tool-btn" bindtap="undo"><text class="tool-label" style="font-size:20rpx">撤销</text></view>
+      <view class="tool-btn" bindtap="redo"><text class="tool-label" style="font-size:20rpx">重做</text></view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn" bindtap="clearFormat"><text class="tool-label" style="font-size:20rpx">清除</text></view>
+    </view>
+  </view>
+
+  <!-- 标题编辑 -->
+  <view class="title-bar">
+    <input class="title-input" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" bindblur="saveDoc" />
+  </view>
+
+  <!-- 编辑区 -->
+  <view class="editor-wrap">
+    <editor
+      id="editor"
+      class="editor"
+      placeholder="开始输入内容..."
+      show-img-size
+      show-img-toolbar
+      bindstatuschange="onStatusChange"
+      bindready="onEditorReady"
+      bindinput="onEditorInput"
+    ></editor>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="save-status">{{saveStatus}}</view>
+    <view class="bottom-actions">
+      <view class="bottom-btn export-btn" bindtap="exportDocx">
+        <text>导出 DOCX</text>
+      </view>
+      <view class="bottom-btn back-btn" bindtap="goBack">
+        <text>返回</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,39 @@
+<!--word/pages/index/index.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="header-title">Word 文档</text>
+    <text class="header-sub">在线编辑，随时导出</text>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="new-btn" bindtap="createDoc">
+    <text class="new-icon">+</text>
+    <text class="new-text">新建文档</text>
+  </view>
+
+  <!-- 最近文档列表 -->
+  <view wx:if="{{docs.length > 0}}" class="doc-section">
+    <text class="section-title">最近文档</text>
+    <view class="doc-list">
+      <view class="doc-card" wx:for="{{docs}}" wx:key="id">
+        <view class="doc-info" bindtap="openDoc" data-id="{{item.id}}">
+          <view class="doc-icon-wrap">
+            <text class="doc-icon">W</text>
+          </view>
+          <view class="doc-detail">
+            <text class="doc-name">{{item.title}}</text>
+            <text class="doc-time">{{item.timeStr}}</text>
+          </view>
+        </view>
+        <view class="doc-actions">
+          <text class="action-btn export" data-id="{{item.id}}" bindtap="exportDoc">导出</text>
+          <text class="action-btn del" data-id="{{item.id}}" bindtap="deleteDoc">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{docs.length === 0}}" class="empty">
+    <text class="empty-text">暂无文档，点击上方新建</text>
+  </view>
+</view>

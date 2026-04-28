@@ -1,0 +1,154 @@
+/* word/pages/editor/editor.wxss */
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f0f0f0;
+}
+
+/* 工具栏 */
+.toolbar {
+  background: #fff;
+  border-bottom: 1rpx solid #e5e5e5;
+  flex-shrink: 0;
+}
+
+.tool-row {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  margin: 4rpx;
+  transition: background 0.15s;
+}
+
+.tool-btn.active {
+  background: rgba(43, 87, 151, 0.12);
+}
+
+.tool-label {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.tool-label.italic {
+  font-style: italic;
+  font-family: Georgia, serif;
+}
+
+.tool-label.underline {
+  text-decoration: underline;
+}
+
+.tool-label.strike {
+  text-decoration: line-through;
+}
+
+.tool-icon {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.tool-divider {
+  width: 1rpx;
+  height: 40rpx;
+  background: #e5e5e5;
+  margin: 0 8rpx;
+}
+
+.color-dot {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #ddd;
+}
+
+.color-dot.highlight {
+  border-radius: 6rpx;
+  height: 28rpx;
+  width: 36rpx;
+}
+
+/* 标题栏 */
+.title-bar {
+  background: #fff;
+  padding: 16rpx 30rpx;
+  border-bottom: 1rpx solid #eee;
+  flex-shrink: 0;
+}
+
+.title-input {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+/* 编辑区 */
+.editor-wrap {
+  flex: 1;
+  overflow: hidden;
+  padding: 20rpx 24rpx;
+}
+
+.editor {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  min-height: 100%;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  font-size: 30rpx;
+  line-height: 1.8;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  background: #fff;
+  border-top: 1rpx solid #e5e5e5;
+  padding: 16rpx 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.save-status {
+  font-size: 22rpx;
+  color: #bbb;
+}
+
+.bottom-actions {
+  display: flex;
+}
+
+.bottom-btn {
+  padding: 12rpx 32rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.export-btn {
+  background: #2b5797;
+  color: #fff;
+}
+
+.export-btn:active {
+  opacity: 0.85;
+}
+
+.back-btn {
+  background: #f5f5f5;
+  color: #666;
+  margin-left: 16rpx;
+}

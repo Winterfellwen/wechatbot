@@ -1,0 +1,160 @@
+/* word/pages/index/index.wxss */
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 30rpx;
+}
+
+.header {
+  padding: 30rpx 0 20rpx;
+}
+
+.header-title {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+
+.header-sub {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+}
+
+.new-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2b5797;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(43, 87, 151, 0.25);
+}
+
+.new-btn:active {
+  opacity: 0.85;
+}
+
+.new-icon {
+  font-size: 40rpx;
+  color: #fff;
+  margin-right: 12rpx;
+  font-weight: 300;
+}
+
+.new-text {
+  font-size: 30rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.doc-section {
+  margin-top: 10rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.doc-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #2b5797, #1a3a6b);
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.doc-icon {
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: bold;
+  font-family: Georgia, serif;
+}
+
+.doc-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.doc-name {
+  font-size: 28rpx;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-time {
+  font-size: 22rpx;
+  color: #bbb;
+  margin-top: 6rpx;
+}
+
+.doc-actions {
+  display: flex;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+}
+
+.action-btn.export {
+  color: #2b5797;
+  background: rgba(43, 87, 151, 0.08);
+}
+
+.action-btn.del {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.08);
+  margin-left: 12rpx;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  padding: 100rpx 0;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #ccc;
+}

@@ -12,6 +12,8 @@
     "japanese/pages/aichat/aichat",
     "japanese/pages/textbook/textbook",
     "japanese/pages/leaderboard/leaderboard",
+    "word/pages/index/index",
+    "word/pages/editor/editor",
     "pages/user/user"
   ],
   "window": {
