@@ -61,7 +61,7 @@ async def convert(req: ConvertRequest):
 
     try:
         file_data = base64.b64decode(req.file_base64)
-        with open(input_path, \"wb\") as f:
+        with open(input_path, "wb") as f:
             f.write(file_data)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 data")
@@ -81,7 +81,7 @@ async def convert(req: ConvertRequest):
             output_path = input_path.with_suffix(".docx")
             shutil.copy(input_path, output_path)
         else:
-            raise HTTPException(status_code=400, detail=f"Unsupported {req.from_fmt} -> {req.to_fmt}")
+            raise HTTPException(status_code=400, detail="Unsupported conversion")
 
         return FileResponse(output_path, filename=f"converted.{req.to_fmt}",
                             media_type="application/octet-stream")
@@ -99,7 +99,7 @@ async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = For
 
     try:
         file_data = base64.b64decode(file_base64)
-        with open(input_path, \"wb\") as f:
+        with open(input_path, "wb") as f:
             f.write(file_data)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 data")
@@ -110,7 +110,7 @@ async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = For
         elif op == "rotate":
             output_path = await pdf_rotate(input_path, int(angle))
         else:
-            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
+            raise HTTPException(status_code=400, detail="Unknown operation")
 
         return FileResponse(output_path, filename="edited.pdf",
                             media_type="application/octet-stream")
