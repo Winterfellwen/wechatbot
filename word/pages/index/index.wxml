@@ -5,10 +5,16 @@
     <text class="header-sub">在线编辑，随时导出</text>
   </view>
 
-  <!-- 新建按钮 -->
-  <view class="new-btn" bindtap="createDoc">
-    <text class="new-icon">+</text>
-    <text class="new-text">新建文档</text>
+  <!-- 操作按钮 -->
+  <view class="btn-row">
+    <view class="new-btn" bindtap="createDoc">
+      <text class="new-icon">+</text>
+      <text class="new-text">新建文档</text>
+    </view>
+    <view class="import-btn" bindtap="importDoc">
+      <text class="import-icon">↑</text>
+      <text class="import-text">导入 Word</text>
+    </view>
   </view>
 
   <!-- 最近文档列表 -->

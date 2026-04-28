@@ -560,35 +560,40 @@ Page({
   // ---- Delta → HTML ----
   _deltaToHtml: function (content) {
     if (!content) return '';
+    // 去掉 JSON 包装（存储时用了 JSON.stringify）
     try {
-      if (content.charAt(0) === '<') return content;
-      var delta = JSON.parse(content);
-      if (Array.isArray(delta)) {
-        var html = '';
-        for (var i = 0; i < delta.length; i++) {
-          var op = delta[i];
-          if (typeof op.insert === 'string') {
-            var attrs = op.attributes || {};
-            var tag = '';
-            if (attrs.bold) tag += '<b>';
-            if (attrs.italic) tag += '<i>';
-            if (attrs.underline) tag += '<u>';
-            if (attrs.strike) tag += '<s>';
-            if (attrs.header) tag += '<h' + attrs.header + '>';
-            var t = op.insert.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            html += tag + t + '</' + (attrs.header ? 'h' + attrs.header : 's') + '>';
-            if (attrs.strike) html += '</s>';
-            if (attrs.underline) html += '</u>';
-            if (attrs.italic) html += '</i>';
-            if (attrs.bold) html += '</b>';
+      var parsed = JSON.parse(content);
+      if (typeof parsed === 'string') content = parsed;
+      else if (typeof parsed === 'object' && parsed !== null) {
+        // 真正的 delta 格式
+        if (Array.isArray(parsed.ops)) {
+          var html = '';
+          for (var i = 0; i < parsed.ops.length; i++) {
+            var op = parsed.ops[i];
+            if (typeof op.insert === 'string') {
+              var attrs = op.attributes || {};
+              var tag = '';
+              if (attrs.bold) tag += '<b>';
+              if (attrs.italic) tag += '<i>';
+              if (attrs.underline) tag += '<u>';
+              if (attrs.strike) tag += '<s>';
+              if (attrs.header) tag += '<h' + attrs.header + '>';
+              var t = op.insert.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              html += tag + t + (attrs.header ? '</h' + attrs.header + '>' : '</s>');
+              if (attrs.strike) html += '</s>';
+              if (attrs.underline) html += '</u>';
+              if (attrs.italic) html += '</i>';
+              if (attrs.bold) html += '</b>';
+            }
           }
+          return html;
         }
-        return html;
       }
-      return content;
-    } catch (e) {
-      return content || '';
-    }
+    } catch (e) { /* 不是 JSON，走下面判断 */ }
+    // 已经是 HTML（直接存或从 JSON.parse 还原的）
+    var trimmed = content.trim();
+    if (trimmed.charAt(0) === '<') return trimmed;
+    return content || '';
   },
 
   goBack: function () {

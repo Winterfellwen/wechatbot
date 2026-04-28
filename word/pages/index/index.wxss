@@ -23,14 +23,22 @@
   display: block;
 }
 
+/* 操作按钮行 */
+.btn-row {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+/* 新建文档按钮 */
 .new-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #2b5797;
   border-radius: 16rpx;
   padding: 28rpx;
-  margin-bottom: 30rpx;
   box-shadow: 0 4rpx 12rpx rgba(43, 87, 151, 0.25);
 }
 
@@ -48,6 +56,34 @@
 .new-text {
   font-size: 30rpx;
   color: #fff;
+  font-weight: 500;
+}
+
+/* 导入按钮 */
+.import-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  border: 2rpx solid #dcdfe6;
+}
+
+.import-btn:active {
+  background: #f5f7fa;
+}
+
+.import-icon {
+  font-size: 34rpx;
+  color: #666;
+  margin-right: 10rpx;
+}
+
+.import-text {
+  font-size: 30rpx;
+  color: #333;
   font-weight: 500;
 }
 
