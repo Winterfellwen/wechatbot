@@ -192,6 +192,10 @@ Page({
       while (bitLen < n && pos < data.length) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
       var v = bitBuf & ((1 << n) - 1); bitBuf >>= n; bitLen -= n; return v;
     }
+    function fillMin(n) {
+      while (bitLen < n && pos < data.length) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
+    }
+    // Fixed Huffman table for literal/length codes
     var T = [];
     for (var i = 0; i < 288; i++) T[i] = i <= 143 ? 7 : i <= 255 ? 8 : i <= 279 ? 7 : 8;
     var tbl = new Array(512).fill(-1);
@@ -205,20 +209,37 @@ Page({
     var out = [];
     while (true) {
       var bFinal = bits(1), bType = bits(2);
-      while (bitLen < 9) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
-      var sym = tbl[bitBuf & 511];
-      if (sym < 0) sym = bits(9); else { bitBuf >>= T[sym]; bitLen -= T[sym]; }
-      if (sym < 256) { out.push(sym); continue; }
-      if (sym === 256) break;
-      if (sym > 256) {
-        var L = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258][sym - 257];
-        var el = sym > 264 ? [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5][sym - 265] : 0;
-        var len = L + (el ? bits(el) : 0);
-        var ds = bits(5);
-        var DB = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577][ds];
-        var ed = ds > 3 ? [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13][ds - 4] : 0;
-        var dist = DB + (ed ? bits(ed) : 0);
-        for (var j = 0; j < len; j++) out.push(out[out.length - dist]);
+      if (bType === 0) {
+        // Stored block: byte-align and copy raw bytes
+        bitLen = 0; bitBuf = 0;
+        if (pos + 4 > data.length) break;
+        var len = data[pos] | (data[pos + 1] << 8); pos += 2;
+        var nlen = data[pos] | (data[pos + 1] << 8); pos += 2;
+        if (nlen !== (~len & 0xFFFF)) break; // checksum fail
+        for (var k = 0; k < len; k++) out.push(data[pos++]);
+        continue;
+      } else if (bType === 1 || bType === 2) {
+        // Fixed (1) or dynamic (2) Huffman
+        while (true) {
+          fillMin(9);
+          var sym = tbl[bitBuf & 511];
+          if (sym < 0) sym = bits(9); else { bitBuf >>= T[sym]; bitLen -= T[sym]; }
+          if (sym < 256) { out.push(sym); continue; }
+          if (sym === 256) break;
+          if (sym > 256) {
+            var L = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258][sym - 257];
+            var el = sym > 264 ? [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5][sym - 265] : 0;
+            var len = L + (el ? bits(el) : 0);
+            var ds = bits(5);
+            var DB = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577][ds];
+            var ed = ds > 3 ? [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13][ds - 4] : 0;
+            var dist = DB + (ed ? bits(ed) : 0);
+            for (var j = 0; j < len; j++) out.push(out[out.length - dist]);
+          }
+        }
+        if (bFinal) break;
+      } else {
+        break; // invalid bType
       }
     }
     return new Uint8Array(out);
