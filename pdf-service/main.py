@@ -3,6 +3,7 @@ import base64
 import tempfile
 import uuid
 import urllib.request
+import ssl
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -22,28 +23,40 @@ CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 
 
 def download_cjk_font():
-    """Download Noto Sans SC TTF font"""
+    """Download Noto Sans SC TTF font with multiple fallback sources"""
     if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
         print("Font already cached: " + str(CJK_FONT_PATH))
         return str(CJK_FONT_PATH)
     
+    # Create SSL context that doesn't verify certificates (for restricted networks)
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    
     urls = [
-        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        # jsDelivr CDN (most reliable in China)
         "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        # GitHub raw
+        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        # Alternative CDN
+        "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
     ]
     
     for url in urls:
         try:
             print("Downloading font from " + url)
-            data = urllib.request.urlopen(url, timeout=60).read()
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
+            data = response.read()
             if len(data) > 50000:
                 CJK_FONT_PATH.write_bytes(data)
                 print("Downloaded font: " + str(len(data)) + " bytes")
                 return str(CJK_FONT_PATH)
         except Exception as e:
-            print("Download failed: " + str(e))
+            print("Download failed from " + url + ": " + str(e))
             continue
     
+    print("WARNING: All font download attempts failed")
     return None
 
 
@@ -63,8 +76,8 @@ async def convert(req: ConvertRequest):
         file_data = base64.b64decode(req.file_base64)
         with open(input_path, "wb") as f:
             f.write(file_data)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid base64 data")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid base64 data: " + str(e))
 
     try:
         if req.from_fmt == "pdf" and req.to_fmt == "docx":
@@ -81,11 +94,14 @@ async def convert(req: ConvertRequest):
             output_path = input_path.with_suffix(".docx")
             shutil.copy(input_path, output_path)
         else:
-            raise HTTPException(status_code=400, detail="Unsupported conversion")
+            raise HTTPException(status_code=400, detail=f"Unsupported conversion: {req.from_fmt} -> {req.to_fmt}")
 
         return FileResponse(output_path, filename=f"converted.{req.to_fmt}",
                             media_type="application/octet-stream")
+    except HTTPException:
+        raise
     except Exception as e:
+        print("Conversion error:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         if input_path.exists():
@@ -110,10 +126,12 @@ async def edit(file_base64: str = Form(...), op: str = Form(""), text: str = For
         elif op == "rotate":
             output_path = await pdf_rotate(input_path, int(angle))
         else:
-            raise HTTPException(status_code=400, detail="Unknown operation")
+            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
 
         return FileResponse(output_path, filename="edited.pdf",
                             media_type="application/octet-stream")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -167,7 +185,7 @@ async def docx_to_pdf(input_path: Path) -> Path:
     # Get CJK font
     font_path = download_cjk_font()
     if not font_path:
-        raise Exception("Failed to download CJK font")
+        raise Exception("Failed to download CJK font. Please check network connectivity.")
     
     doc = Document(str(input_path))
     pdf = FPDF()
@@ -200,6 +218,11 @@ async def docx_to_pdf(input_path: Path) -> Path:
 @app.get("/")
 def health():
     return {"status": "ok", "service": "PDF Converter"}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "PDF Converter", "timestamp": __import__('datetime').datetime.now().isoformat()}
 
 
 if __name__ == "__main__":

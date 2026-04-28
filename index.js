@@ -266,6 +266,7 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: '请上传文件' });
+    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
     const { op, text, angle } = req.body;
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
