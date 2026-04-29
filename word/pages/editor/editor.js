@@ -4,7 +4,7 @@
 
 var STORAGE_KEY = 'word_docs';
 var autoSaveTimer = null;
-var pako = require('../../../miniprogram_npm/pako/index.js');
+var pako = require('../../../miniprogram_npm/pako/dist/pako.es5.js');
 
 Page({
   data: {
