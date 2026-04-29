@@ -359,7 +359,7 @@ function parseZip(buf) {
       const name = buf.toString('utf8', offset + 30, offset + 30 + nameLen);
       const dataStart = offset + 30 + nameLen + extraLen;
       const compressed = buf.slice(dataStart, dataStart + compSize);
-      const uncompressed = compMethod === 0 ? compressed : zlib.inflateSync(compressed);
+      const uncompressed = compMethod === 0 ? compressed : zlib.inflateRawSync(compressed);
       files[name] = uncompressed.toString('utf8');
       offset = dataStart + compSize;
     } else if (sig === 0x0201 || sig === 0x0505) {

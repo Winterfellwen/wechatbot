@@ -200,7 +200,7 @@ Page({
   // _inflate: 用 pako 替换手写 inflate（处理 ZLIB 封装，自动处理 header/adler32）
   _inflate: function (data) {
     try {
-      return pako.inflate(data);
+      return pako.inflate(data, { raw: true });
     } catch (e) {
       console.error('[inflate error]', e.message);
       return new Uint8Array(0);
