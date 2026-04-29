@@ -4,6 +4,7 @@
 
 var STORAGE_KEY = 'word_docs';
 var autoSaveTimer = null;
+var pako = require('miniprogram_npm/pako');
 
 Page({
   data: {
@@ -185,7 +186,7 @@ Page({
         for (var i = 0; i < nl; i++) name += String.fromCharCode(view[off + 30 + i]);
         var dataOff = off + 30 + nl + el;
         var compressed = view.slice(dataOff, dataOff + csize);
-        files[name] = cm === 0 ? compressed : that._inflate(compressed);
+        files[name] = cm === 0 ? compressed : this._inflate(compressed);
         off = dataOff + csize;
       } else if (sig === 0x0201 || sig === 0x0505) {
         break;
@@ -196,192 +197,14 @@ Page({
     return files;
   },
 
-  // ---- inflate：完整实现，支持固定哈夫曼+动态哈夫曼 ----
+  // _inflate: 用 pako 替换手写 inflate（处理 ZLIB 封装，自动处理 header/adler32）
   _inflate: function (data) {
-    // RFC 1951 inflate
-    var out = [];
-    var pos = 0;
-    var bitBuf = 0, bitLen = 0;
-    function bits(n) {
-      while (bitLen < n && pos < data.length) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
-      var v = bitBuf & ((1 << n) - 1); bitBuf >>>= n; bitLen -= n; return v;
+    try {
+      return pako.inflate(data);
+    } catch (e) {
+      console.error('[inflate error]', e.message);
+      return new Uint8Array(0);
     }
-    function fillMin(n) {
-      while (bitLen < n && pos < data.length) { bitBuf |= data[pos++] << bitLen; bitLen += 8; }
-    }
-
-    // Build fixed literal/length table
-    var LL_CODE = [], LL_LEN = [];
-    for (var i = 0; i <= 143; i++) { LL_CODE.push(48 + i); LL_LEN.push(8); }
-    for (var i = 144; i <= 255; i++) { LL_CODE.push(400 + i - 144); LL_LEN.push(9); }
-    for (var i = 256; i <= 279; i++) { LL_CODE.push(0 + i - 256); LL_LEN.push(7); }
-    for (var i = 280; i <= 287; i++) { LL_CODE.push(192 + i - 280); LL_LEN.push(8); }
-
-    // Build fixed distance table
-    var DIST_CODE = [], DIST_LEN = [];
-    for (var i = 0; i <= 31; i++) { DIST_CODE.push(i); DIST_LEN.push(5); }
-
-    function buildTable(codes, lens, maxBits) {
-      var size = 1 << maxBits;
-      var table = new Array(size).fill(-1);
-      var code = 0;
-      for (var l = 0; l <= maxBits; l++) {
-        var nextCode = code + (1 << l);
-        for (var i = 0; i < codes.length; i++) {
-          if (lens[i] === l) {
-            var rev = 0;
-            for (var j = 0; j < l; j++) rev = (rev << 1) | ((code >> j) & 1);
-            for (var k = rev; k < size; k += 1 << l) table[k] = codes[i];
-            code++;
-          }
-        }
-        code <<= 1;
-      }
-      return table;
-    }
-
-    function decodeSymbols(tbl, maxBits, extraFn) {
-      fillMin(maxBits);
-      var sym = tbl[bitBuf & ((1 << maxBits) - 1)];
-      if (sym < 0) sym = bits(maxBits);
-      if (sym < 256) { bitBuf >>>= maxBits; bitLen -= maxBits; return sym; }
-      if (sym === 256) return 256;
-      var extra = extraFn ? extraFn(sym) : 0;
-      if (extra) { fillMin(extra); bitBuf >>>= maxBits; bitLen -= maxBits; }
-      return sym;
-    }
-
-    var fixedLitTable = buildTable(LL_CODE, LL_LEN, 9);
-    var fixedDistTable = buildTable(DIST_CODE, DIST_LEN, 5);
-
-    var lenCodes = [], lenLens = [];
-    var order = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-    function getLenCode(sym) {
-      if (sym < 264) return LL_CODE[sym - 257];
-      if (sym < 268) return 280 + (sym - 264) * 2;
-      if (sym < 270) return [1488,1536][sym - 268];
-      if (sym < 272) return 1792;
-      if (sym < 274) return 2432;
-      if (sym < 276) return 3072;
-      if (sym < 278) return 3840;
-      if (sym < 280) return 5376;
-      if (sym < 282) return 6144;
-      if (sym < 284) return 7680;
-      if (sym < 286) return 10240;
-      return 12288;
-    }
-    function getLenExtra(sym) {
-      return [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5][sym - 257] || 0;
-    }
-
-    while (true) {
-      var bFinal = bits(1), bType = bits(2);
-      if (bType === 0) {
-        bitLen = 0; bitBuf = 0;
-        if (pos + 4 > data.length) break;
-        var len = data[pos] | (data[pos + 1] << 8); pos += 2;
-        var nlen = data[pos] | (data[pos + 1] << 8); pos += 2;
-        if (nlen !== (~len & 0xFFFF)) break;
-        for (var k = 0; k < len; k++) out.push(data[pos++]);
-        if (bFinal) break;
-        continue;
-      } else if (bType === 1) {
-        // Fixed Huffman
-        while (true) {
-          fillMin(9);
-          var sym = fixedLitTable[bitBuf & 511];
-          if (sym < 0) sym = bits(9); else { bitBuf >>>= LL_LEN[LL_CODE.indexOf(sym)] || 9; bitLen -= LL_LEN[LL_CODE.indexOf(sym)] || 9; }
-          if (sym < 256) { out.push(sym); continue; }
-          if (sym === 256) { bFinal = 1; break; }
-          if (sym > 256) {
-            var L = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258][sym - 257];
-            var el = sym > 264 ? [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5][sym - 265] : 0;
-            var len = L + (el ? bits(el) : 0);
-            fillMin(5);
-            var ds = bitBuf & 31; bitBuf >>>= 5; bitLen -= 5;
-            var DB = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577][ds];
-            var ed = ds > 3 ? [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13][ds - 4] : 0;
-            var dist = DB + (ed ? bits(ed) : 0);
-            for (var j = 0; j < len; j++) out.push(out[out.length - dist]);
-          }
-        }
-        if (bFinal) break;
-      } else if (bType === 2) {
-        // Dynamic Huffman: read code lengths
-        var nLit = bits(5) + 257;
-        var nDist = bits(5) + 1;
-        var nCodeLen = bits(4) + 4;
-        var codeLens = new Array(19).fill(0);
-        for (var i = 0; i < nCodeLen; i++) codeLens[order[i]] = bits(3);
-        // Build code length table
-        var clCount = new Array(8).fill(0);
-        for (var i = 0; i < 19; i++) if (codeLens[i] > 0) clCount[codeLens[i]]++;
-        clCount[0] = 0;
-        var clCode = 0, clNext = 1;
-        for (var i = 1; i < 8; i++) { clNext <<= 1; clCode += clCount[i] * (1 << (i - 1)); }
-        var clTable = new Array(512).fill(-1);
-        for (var i = 0; i < 19; i++) {
-          if (codeLens[i] === 0) continue;
-          var l = codeLens[i], bits_i = l;
-          var rev = 0;
-          for (var j = 0; j < l; j++) rev = (rev << 1) | ((clCode >> j) & 1);
-          for (var k = rev; k < 512; k += 1 << l) clTable[k] = i;
-          clCode += 1 << (7 - l);
-        }
-        // Read literal/length + distance code lengths
-        var syms = [];
-        while (syms.length < nLit + nDist) {
-          fillMin(9);
-          var csym = clTable[bitBuf & 511];
-          if (csym < 0) csym = bits(9); else { bitBuf >>>= 9; bitLen -= 9; }
-          if (csym < 16) {
-            syms.push(csym);
-          } else if (csym === 16) {
-            var repeat = bits(2) + 3;
-            for (var r = 0; r < repeat; r++) syms.push(syms[syms.length - 1]);
-          } else if (csym === 17) {
-            var repeat = bits(3) + 3;
-            for (var r = 0; r < repeat; r++) syms.push(0);
-          } else {
-            var repeat = bits(7) + 11;
-            for (var r = 0; r < repeat; r++) syms.push(0);
-          }
-        }
-        // Build literal/length and distance tables
-        var litCodes = syms.slice(0, nLit);
-        var distCodes = syms.slice(nLit, nLit + nDist);
-        var litMax = 0; for (var i = 0; i < litCodes.length; i++) if (litCodes[i] > 0) litMax = Math.max(litMax, litCodes[i]);
-        var litBits = 1; while ((1 << litBits) <= litMax) litBits++;
-        var distMax = 0; for (var i = 0; i < distCodes.length; i++) if (distCodes[i] > 0) distMax = Math.max(distMax, distCodes[i]);
-        var distBits = 1; while ((1 << distBits) <= distMax) distBits++;
-        var litTable = buildTable(litCodes, [], litBits);
-        var distTable = buildTable(distCodes, [], distBits);
-        // Decode
-        while (true) {
-          fillMin(litBits);
-          var sym = litTable[bitBuf & ((1 << litBits) - 1)];
-          if (sym < 0) sym = bits(litBits); else { bitBuf >>>= litBits; bitLen -= litBits; }
-          if (sym < 256) { out.push(sym); continue; }
-          if (sym === 256) break;
-          if (sym > 256) {
-            var L = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258][sym - 257];
-            var el = sym > 264 ? [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5][sym - 265] : 0;
-            var len = L + (el ? bits(el) : 0);
-            fillMin(distBits);
-            var d = distTable[bitBuf & ((1 << distBits) - 1)];
-            if (d < 0) d = bits(distBits); else { bitBuf >>>= distBits; bitLen -= distBits; }
-            var DB = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577][d];
-            var ed = d > 3 ? [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13][d - 4] : 0;
-            var dist = DB + (ed ? bits(ed) : 0);
-            for (var j = 0; j < len; j++) out.push(out[out.length - dist]);
-          }
-        }
-        if (bFinal) break;
-      } else {
-        break;
-      }
-    }
-    return new Uint8Array(out);
   },
 
   _bytesToStr: function (bytes) {
