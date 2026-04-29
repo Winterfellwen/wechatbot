@@ -1,9 +1,9 @@
-/* word/pages/editor/editor.wxss */
+/* word/pages/editor/editor.wxss - 现代化样式 */
 .editor-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f0f0f0;
+  background: #f8f9fa;
 }
 
 /* 工具栏 */
@@ -11,72 +11,88 @@
   background: #fff;
   border-bottom: 1rpx solid #e5e5e5;
   flex-shrink: 0;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
 }
 
 .tool-row {
   display: flex;
   align-items: center;
-  padding: 8rpx 16rpx;
+  padding: 12rpx 16rpx;
   flex-wrap: wrap;
 }
 
 .tool-btn {
-  width: 64rpx;
+  min-width: 80rpx;
   height: 64rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8rpx;
-  margin: 4rpx;
-  transition: background 0.15s;
+  margin: 4rpx 6rpx;
+  transition: all 0.15s;
+  background: #fafafa;
+}
+
+.tool-btn:active {
+  background: #e9ecef;
 }
 
 .tool-btn.active {
-  background: rgba(43, 87, 151, 0.12);
+  background: #2b5797;
+}
+
+.tool-btn.active .tool-label {
+  color: #fff;
 }
 
 .tool-label {
   font-size: 26rpx;
   color: #333;
   font-weight: 500;
+  padding: 0 8rpx;
 }
 
-.tool-label.italic {
-  font-style: italic;
-  font-family: Georgia, serif;
-}
+.tool-label.bold { font-weight: bold; }
+.tool-label.italic { font-style: italic; }
+.tool-label.underline { text-decoration: underline; }
+.tool-label.strike { text-decoration: line-through; }
 
-.tool-label.underline {
-  text-decoration: underline;
-}
-
-.tool-label.strike {
-  text-decoration: line-through;
+.font-name {
+  font-size: 22rpx;
+  max-width: 120rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-icon {
-  font-size: 28rpx;
-  color: #333;
+  font-size: 22rpx;
+  color: #555;
 }
 
 .tool-divider {
   width: 1rpx;
   height: 40rpx;
   background: #e5e5e5;
-  margin: 0 8rpx;
+  margin: 0 12rpx;
 }
 
-.color-dot {
+.color-swatch {
   width: 36rpx;
   height: 36rpx;
-  border-radius: 50%;
+  border-radius: 6rpx;
   border: 2rpx solid #ddd;
 }
 
-.color-dot.highlight {
-  border-radius: 6rpx;
+.color-swatch.highlight {
+  border-radius: 4rpx;
   height: 28rpx;
   width: 36rpx;
+}
+
+.import-btn .tool-label {
+  color: #2b5797;
+  font-weight: 500;
 }
 
 /* 标题栏 */
@@ -91,6 +107,7 @@
   font-size: 34rpx;
   font-weight: 600;
   color: #222;
+  width: 100%;
 }
 
 /* 编辑区 */
@@ -98,6 +115,7 @@
   flex: 1;
   overflow: hidden;
   padding: 20rpx 24rpx;
+  background: #f8f9fa;
 }
 
 .editor {
@@ -105,7 +123,7 @@
   border-radius: 12rpx;
   padding: 24rpx;
   min-height: 100%;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
   font-size: 30rpx;
   line-height: 1.8;
 }
@@ -124,7 +142,7 @@
 
 .save-status {
   font-size: 22rpx;
-  color: #bbb;
+  color: #999;
 }
 
 .bottom-actions {
@@ -132,23 +150,33 @@
 }
 
 .bottom-btn {
-  padding: 12rpx 32rpx;
-  border-radius: 10rpx;
-  font-size: 26rpx;
+  padding: 16rpx 36rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
   font-weight: 500;
+  margin-left: 16rpx;
 }
 
 .export-btn {
-  background: #2b5797;
+  background: linear-gradient(135deg, #2b5797, #3a6bb8);
   color: #fff;
 }
 
 .export-btn:active {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .back-btn {
   background: #f5f5f5;
   color: #666;
-  margin-left: 16rpx;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.editor-page {
+  animation: fadeIn 0.3s ease;
 }
