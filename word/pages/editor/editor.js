@@ -178,6 +178,8 @@ Page({
       var sig = view[off + 2] | (view[off + 3] << 8);
       if (sig === 0x0403) {
         var cm = view[off + 8] | (view[off + 9] << 8);
+        var flags = view[off + 6] | (view[off + 7] << 8); // general purpose bit flag
+        var hasDataDescriptor = (flags & 0x0008) !== 0;
         var csize = view[off + 18] | (view[off + 19] << 8) | (view[off + 20] << 16) | (view[off + 21] << 24);
         var usize = view[off + 22] | (view[off + 23] << 8) | (view[off + 24] << 16) | (view[off + 25] << 24);
         var nl = view[off + 26] | (view[off + 27] << 8);
@@ -185,9 +187,36 @@ Page({
         var name = '';
         for (var i = 0; i < nl; i++) name += String.fromCharCode(view[off + 30 + i]);
         var dataOff = off + 30 + nl + el;
-        var compressed = view.slice(dataOff, dataOff + csize);
+        var compressed;
+        var newOff;
+        if (hasDataDescriptor) {
+          // Find the data descriptor signature (0x08074b50) after the file data
+          let searchStart = dataOff;
+          // Safety limit to avoid infinite loop
+          const maxSearch = Math.min(view.length, searchStart + 1024 * 1024); // 1MB max search
+          let descSigPos = -1;
+          for (let i = searchStart; i <= maxSearch - 4; i++) {
+            if (view[i] === 0x50 && view[i + 1] === 0x4B && view[i + 2] === 0x07 && view[i + 3] === 0x08) {
+              descSigPos = i;
+              break;
+            }
+          }
+          if (descSigPos === -1) {
+            // Fallback: assume csize is correct (should not happen)
+            compressed = view.slice(dataOff, dataOff + csize);
+            newOff = dataOff + csize;
+          } else {
+            // compressed data is from dataOff up to descriptor signature
+            compressed = view.slice(dataOff, descSigPos);
+            // skip descriptor: signature (4) + crc (4) + compressed size (4) + uncompressed size (4)
+            newOff = descSigPos + 4 + 4 + 4 + 4;
+          }
+        } else {
+          compressed = view.slice(dataOff, dataOff + csize);
+          newOff = dataOff + csize;
+        }
         files[name] = cm === 0 ? compressed : this._inflate(compressed);
-        off = dataOff + csize;
+        off = newOff;
       } else if (sig === 0x0201 || sig === 0x0505) {
         break;
       } else {

@@ -356,12 +356,41 @@ function parseZip(buf) {
       const extraLen = buf.readUInt16LE(offset + 28);
       const compSize = buf.readUInt32LE(offset + 18);
       const compMethod = buf.readUInt16LE(offset + 8);
+      const flags = buf.readUInt16LE(offset + 6); // general purpose bit flag
+      const hasDataDescriptor = (flags & 0x0008) !== 0;
       const name = buf.toString('utf8', offset + 30, offset + 30 + nameLen);
       const dataStart = offset + 30 + nameLen + extraLen;
-      const compressed = buf.slice(dataStart, dataStart + compSize);
+      let compressed;
+      let newOffset;
+      if (hasDataDescriptor) {
+        // Find the data descriptor signature (0x08074b50) after the file data
+        let searchStart = dataStart;
+        // Safety limit to avoid infinite loop
+        const maxSearch = Math.min(buf.length, searchStart + 1024 * 1024); // 1MB max search
+        let descSigPos = -1;
+        for (let i = searchStart; i <= maxSearch - 4; i++) {
+          if (buf[i] === 0x50 && buf[i + 1] === 0x4B && buf[i + 2] === 0x07 && buf[i + 3] === 0x08) {
+            descSigPos = i;
+            break;
+          }
+        }
+        if (descSigPos === -1) {
+          // Fallback: assume compSize is correct (should not happen)
+          compressed = buf.slice(dataStart, dataStart + compSize);
+          newOffset = dataStart + compSize;
+        } else {
+          // compressed data is from dataStart up to descriptor signature
+          compressed = buf.slice(dataStart, descSigPos);
+          // skip descriptor: signature (4) + crc (4) + compressed size (4) + uncompressed size (4)
+          newOffset = descSigPos + 4 + 4 + 4 + 4;
+        }
+      } else {
+        compressed = buf.slice(dataStart, dataStart + compSize);
+        newOffset = dataStart + compSize;
+      }
       const uncompressed = compMethod === 0 ? compressed : zlib.inflateRawSync(compressed);
       files[name] = uncompressed.toString('utf8');
-      offset = dataStart + compSize;
+      offset = newOffset;
     } else if (sig === 0x0201 || sig === 0x0505) {
       break;
     } else {
