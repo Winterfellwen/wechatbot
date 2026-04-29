@@ -86,12 +86,32 @@ Page({
   pickColor: function (e) {
     var target = e.currentTarget.dataset.target;
     var that = this;
-    wx.chooseColor({
-      success: function (res) {
-        that.editorCtx && that.editorCtx.format(target, res.color);
-        var fmtUpdate = {};
-        fmtUpdate[target] = res.color;
-        that.setData({ fmt: Object.assign({}, that.data.fmt, fmtUpdate) });
+    // Define common colors for the picker
+    var colors = [
+      '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
+      '#FFFF00', '#FF00FF', '#00FFFF', '#808080', '#800000',
+      '#008000', '#000080', '#808000', '#800080', '#008080',
+      '#FFA500', '#FFC0CB', '#A52A2A', '#DEB887', '#5F9EA0'
+    ];
+
+    // Convert to format for showActionSheet
+    var colorItems = colors.map(function(color) {
+      return color;
+    });
+
+    wx.showActionSheet({
+      itemList: colorItems,
+      success: function(res) {
+        if (!res.cancel) {
+          var selectedColor = colors[res.tapIndex];
+          that.editorCtx && that.editorCtx.format(target, selectedColor);
+          var fmtUpdate = {};
+          fmtUpdate[target] = selectedColor;
+          that.setData({ fmt: Object.assign({}, that.data.fmt, fmtUpdate) });
+        }
+      },
+      fail: function(res) {
+        console.log(res.errMsg);
       }
     });
   },
@@ -290,8 +310,22 @@ Page({
     var that = this;
     this.editorCtx.getContents({
       success: function (res) {
-        var html = res.html || '';
-        var paragraphs = that._htmlToDocxParagraphs(html);
+        var paragraphs = [];
+        // Try to get Delta format first for better formatting preservation
+        if (res.delta) {
+          try {
+            var delta = typeof res.delta === 'string' ? JSON.parse(res.delta) : res.delta;
+            paragraphs = that._deltaToDocxParagraphs(delta);
+          } catch (e) {
+            console.warn('Failed to parse delta, falling back to HTML:', e);
+            var html = res.html || '';
+            paragraphs = that._htmlToDocxParagraphs(html);
+          }
+        } else {
+          // Fallback to HTML parsing
+          var html = res.html || '';
+          paragraphs = that._htmlToDocxParagraphs(html);
+        }
         var docxBase64 = that._buildDocx(paragraphs);
         var fileName = (that.data.title || '未命名文档') + '.docx';
         var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
@@ -326,29 +360,74 @@ Page({
     });
   },
 
-  // ---- HTML → paragraphs ----
-  _htmlToDocxParagraphs: function (html) {
-    if (!html) return [{ type: 'p', text: '' }];
+  // ---- Delta → paragraphs with formatting ----
+  _deltaToDocxParagraphs: function (delta) {
+    if (!delta) return [{ type: 'p', text: '', format: {} }];
+
     var paragraphs = [];
-    html = html.replace(/<br\s*\/?>/gi, '\n');
-    var parts = html.split(/<\/?(p|h[1-6]|div|section|li|ul|ol)[^>]*>/i);
-    for (var i = 0; i < parts.length; i++) {
-      var raw = parts[i].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
-      // 判断标题级别
-      var hMatch = parts[i].match(/<h([1-6])/i);
-      // 判断是否列表项
-      var liMatch = parts[i].match(/<li/i);
-      var lines = raw.split('\n');
-      for (var j = 0; j < lines.length; j++) {
-        var line = lines[j].trim();
-        if (!line) continue;
-        var pType = 'p';
-        if (hMatch) pType = 'h' + hMatch[1];
-        else if (liMatch) pType = 'li';
-        paragraphs.push({ type: pType, text: line });
+    var currentPara = { type: 'p', text: '', format: {} };
+
+    // Parse Delta format
+    var ops = delta.ops || [];
+
+    for (var i = 0; i < ops.length; i++) {
+      var op = ops[i];
+      if (op.insert) {
+        if (typeof op.insert === 'string') {
+          // Text insert
+          var text = op.insert;
+          var attrs = op.attributes || {};
+
+          // Handle newline as paragraph break
+          if (text === '\n') {
+            if (currentPara.text || Object.keys(currentPara.format).length > 0) {
+              paragraphs.push(currentPara);
+            }
+            currentPara = { type: 'p', text: '', format: {} };
+            continue;
+          }
+
+          // Determine paragraph type from header attribute
+          var pType = 'p';
+          if (attrs.header) {
+            pType = 'h' + attrs.header;
+          }
+
+          // Check for list attributes (simplified)
+          // In a real implementation, we'd need to track list state
+
+          // Add text to current paragraph
+          currentPara.text += text;
+
+          // Merge formatting (later ops override earlier ones for same property)
+          if (attrs.bold) currentPara.format.bold = true;
+          if (attrs.italic) currentPara.format.italic = true;
+          if (attrs.underline) currentPara.format.underline = true;
+          if (attrs.strike) currentPara.format.strike = true;
+          if (attrs.color) currentPara.format.color = attrs.color;
+
+          // Update paragraph type if header is set (last wins)
+          if (attrs.header) {
+            currentPara.type = 'h' + attrs.header;
+          }
+        } else if (typeof op.insert === 'object') {
+          // Object insert (like image, etc.) - skip for now
+          // In a full implementation, we'd handle embedded objects
+        }
       }
     }
-    return paragraphs.length > 0 ? paragraphs : [{ type: 'p', text: '' }];
+
+    // Don't forget the last paragraph
+    if (currentPara.text || Object.keys(currentPara.format).length > 0) {
+      paragraphs.push(currentPara);
+    }
+
+    // If we ended up with no paragraphs, return a default empty one
+    if (paragraphs.length === 0) {
+      paragraphs = [{ type: 'p', text: '', format: {} }];
+    }
+
+    return paragraphs;
   },
 
   // ---- 构建 DOCX（纯 base64，无外部依赖） ----
@@ -357,11 +436,13 @@ Page({
     var bodyXml = '';
     for (var i = 0; i < paragraphs.length; i++) {
       var p = paragraphs[i];
-      if (p.type === 'h1') bodyXml += that._makeParagraph(p.text, 'Heading1');
-      else if (p.type === 'h2') bodyXml += that._makeParagraph(p.text, 'Heading2');
-      else if (p.type === 'h3') bodyXml += that._makeParagraph(p.text, 'Heading3');
-      else if (p.type === 'li') bodyXml += that._makeParagraph(p.text, 'ListParagraph', true);
-      else bodyXml += that._makeParagraph(p.text, 'Normal');
+      var bullet = p.type === 'li';
+      var styleId = 'Normal';
+      if (p.type === 'h1') styleId = 'Heading1';
+      else if (p.type === 'h2') styleId = 'Heading2';
+      else if (p.type === 'h3') styleId = 'Heading3';
+      // For list items, we keep styleId as 'Normal' but set bullet=true
+      bodyXml += that._makeParagraph(p.text, styleId, bullet, p.format || {});
     }
 
     var docXml = [
@@ -498,7 +579,7 @@ Page({
     return zip.generate();
   },
 
-  _makeParagraph: function (text, styleId, bullet) {
+  _makeParagraph: function (text, styleId, bullet, format) {
     var xml = '<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">';
     xml += '<w:pPr><w:pStyle w:val="' + styleId + '"/>';
     if (bullet) xml += '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>';
@@ -508,6 +589,15 @@ Page({
       xml += '<w:rFonts w:ascii="微软雅黑" w:hAnsi="微软雅黑" w:eastAsia="微软雅黑"/>';
       xml += '<w:b/>';
     }
+    // Add formatting from the format object
+    if (format.color && format.color.startsWith('#')) {
+      var hexColor = format.color.substring(1); // Remove # prefix
+      xml += '<w:color w:val="' + hexColor + '"/>';
+    }
+    if (format.bold) xml += '<w:b/>';
+    if (format.italic) xml += '<w:i/>';
+    if (format.underline) xml += '<w:u/>';
+    if (format.strike) xml += '<w:strike/>';
     xml += '</w:rPr><w:t>' + this._xmlEscape(text) + '</w:t></w:r></w:p>';
     return xml;
   },
