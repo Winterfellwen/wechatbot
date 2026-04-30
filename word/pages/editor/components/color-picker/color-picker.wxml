@@ -1,0 +1,38 @@
+<!--word/pages/editor/components/color-picker/color-picker.wxml-->
+<view class="picker-mask" wx:if="{{show}}" bindtap="onMaskTap">
+  <view class="picker-popup" catchtap="noop">
+    <view class="picker-header">
+      <text class="picker-title">选择颜色</text>
+      <text class="picker-close" bindtap="onClose">取消</text>
+    </view>
+
+    <view class="color-grid">
+      <view
+        wx:for="{{presetColors}}"
+        wx:key="*this"
+        class="color-cell {{item === currentColor ? 'active' : ''}}"
+        style="background:{{item}}"
+        bindtap="onColorTap"
+        data-color="{{item}}"
+      ></view>
+    </view>
+
+    <view class="custom-row">
+      <text class="custom-label">当前颜色:</text>
+      <view class="current-swatch" style="background:{{currentColor || '#000000'}}"></view>
+      <text class="custom-hex">{{currentColor || '#000000'}}</text>
+    </view>
+
+    <view class="custom-input-row">
+      <text class="custom-label">自定义:</text>
+      <input
+        class="custom-input"
+        placeholder="#000000"
+        value="{{customColor}}"
+        bindinput="onCustomInput"
+        maxlength="7"
+      />
+      <view class="custom-apply-btn" bindtap="onCustomApply">确定</view>
+    </view>
+  </view>
+</view>
