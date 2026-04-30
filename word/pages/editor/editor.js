@@ -24,7 +24,12 @@ Page({
     exporting: false,
     tablePicker: false,
     tableRows: 2,
-    tableCols: 2
+    tableCols: 2,
+    fontSizes: [10, 12, 14, 16, 18, 24, 36],
+    fontFamilies: ['微软雅黑', '宋体', '黑体', '楷体', 'Arial', 'Times New Roman'],
+    toolbarExpanded: false,
+    showColorPicker: false,
+    colorTarget: 'color'
   },
 
   editorCtx: null,
@@ -132,6 +137,42 @@ Page({
 
   cancelTable: function () {
     this.setData({ tablePicker: false });
+  },
+
+  setFontSize: function (e) {
+    var size = e.currentTarget.dataset.size;
+    this.editorCtx && this.editorCtx.format('fontSize', size);
+  },
+
+  setFontFamily: function (e) {
+    var family = e.currentTarget.dataset.family;
+    this.editorCtx && this.editorCtx.format('fontFamily', family);
+  },
+
+  toggleExpand: function () {
+    this.setData({ toolbarExpanded: !this.data.toolbarExpanded });
+  },
+
+  pickColor: function (e) {
+    if (!this.editorCtx) return;
+    var target = e.currentTarget.dataset.target;
+    this.setData({
+      showColorPicker: true,
+      colorTarget: target
+    });
+  },
+
+  onColorPick: function (e) {
+    var detail = e.detail;
+    if (!this.editorCtx) return;
+    this.editorCtx.format(detail.target, detail.color);
+    var fmtUpdate = {};
+    fmtUpdate[detail.target] = detail.color;
+    this.setData({ fmt: Object.assign({}, this.data.fmt, fmtUpdate) });
+  },
+
+  onColorClose: function () {
+    this.setData({ showColorPicker: false });
   },
 
   insertImage: function () {
