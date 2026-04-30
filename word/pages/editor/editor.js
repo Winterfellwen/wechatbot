@@ -92,6 +92,41 @@ Page({
   undo: function () { this.editorCtx && this.editorCtx.undo(); },
   redo: function () { this.editorCtx && this.editorCtx.redo(); },
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
+  insertImage: function () {
+    var that = this;
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: function (res) {
+        var tempFilePath = res.tempFilePaths[0];
+        wx.getImageInfo({
+          src: tempFilePath,
+          success: function (imgInfo) {
+            var maxWidth = 600;
+            var width = imgInfo.width;
+            var height = imgInfo.height;
+            if (width > maxWidth) {
+              height = Math.round(height * maxWidth / width);
+              width = maxWidth;
+            }
+            that.editorCtx && that.editorCtx.insertImage({
+              src: tempFilePath,
+              width: width + 'px',
+              height: height + 'px'
+            });
+          },
+          fail: function () {
+            that.editorCtx && that.editorCtx.insertImage({
+              src: tempFilePath,
+              width: '300px',
+              height: 'auto'
+            });
+          }
+        });
+      }
+    });
+  },
 
   saveDoc: function () {
     if (!this._loaded) return;
