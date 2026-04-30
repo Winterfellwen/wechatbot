@@ -126,7 +126,7 @@ login() {
     if (type === 'japanese') {
       wx.navigateTo({ url: '/japanese/pages/learn/learn' });
     } else if (type === 'german') {
-      wx.showToast({ title: '德语学习开发中', icon: 'none' });
+      wx.navigateTo({ url: '/german/pages/learn/learn' });
     } else if (type === 'word') {
       wx.navigateTo({ url: '/word/pages/index/index' });
     } else if (type === 'pdf') {
