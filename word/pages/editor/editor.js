@@ -3,8 +3,7 @@
 // DOCX = zip( [Content_Types].xml, _rels/.rels, word/document.xml, word/_rels/document.xml.rels )
 
 var STORAGE_KEY = 'word_docs';
-var autoSaveTimer = null;
-var pako = require('../../../miniprogram_npm/pako/dist/pako.es5.js');
+var pako = require('./pako.es5');
 
 Page({
   data: {
@@ -21,7 +20,7 @@ Page({
       color: '#000000',
       backgroundColor: ''
     },
-    saveStatus: '已保存',
+    saveStatus: '未保存',
     exporting: false
   },
 
@@ -45,9 +44,6 @@ Page({
         that.editorCtx.setContents({ html: html });
       }
       that._loaded = true;
-      if (that.data.autoExport) {
-        setTimeout(function () { that.exportDocx(); }, 500);
-      }
     }).exec();
   },
 
@@ -57,9 +53,7 @@ Page({
 
   onEditorInput: function () {
     this._dirty = true;
-    this.setData({ saveStatus: '编辑中...' });
-    if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(function () { this.saveDoc(); }.bind(this), 1500);
+    this.setData({ saveStatus: '未保存' });
   },
 
   onTitleInput: function (e) {
