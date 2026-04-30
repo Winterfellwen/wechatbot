@@ -1,9 +1,54 @@
-/* word/pages/editor/editor.wxss - 现代化样式 */
+/* word/pages/editor/editor.wxss - 全面重构版 */
 .editor-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f8f9fa;
+  background: #f5f6f8;
+}
+
+/* 顶部导航栏 */
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 24rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #e5e5e5;
+  flex-shrink: 0;
+  padding-top: calc(12rpx + env(safe-area-inset-top));
+}
+
+.title-input-top {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+  padding: 8rpx 0;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.save-btn-top {
+  background: linear-gradient(135deg, #2b5797, #3a6bb8);
+  color: #fff;
+  padding: 12rpx 32rpx;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.save-btn-top.disabled {
+  opacity: 0.6;
+}
+
+.close-btn {
+  font-size: 36rpx;
+  color: #999;
+  padding: 8rpx 16rpx;
+  margin-left: 8rpx;
 }
 
 /* 工具栏 */
@@ -11,26 +56,27 @@
   background: #fff;
   border-bottom: 1rpx solid #e5e5e5;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
 }
 
 .tool-row {
   display: flex;
   align-items: center;
-  padding: 12rpx 16rpx;
+  padding: 10rpx 16rpx;
   flex-wrap: wrap;
 }
 
 .tool-btn {
-  min-width: 80rpx;
-  height: 64rpx;
+  min-width: 64rpx;
+  height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8rpx;
   margin: 4rpx 6rpx;
-  transition: all 0.15s;
+  padding: 0 12rpx;
   background: #fafafa;
+  transition: all 0.15s;
 }
 
 .tool-btn:active {
@@ -41,7 +87,8 @@
   background: #2b5797;
 }
 
-.tool-btn.active .tool-label {
+.tool-btn.active .tool-label,
+.tool-btn.active .tool-icon {
   color: #fff;
 }
 
@@ -49,65 +96,174 @@
   font-size: 26rpx;
   color: #333;
   font-weight: 500;
-  padding: 0 8rpx;
 }
 
-.tool-label.bold { font-weight: bold; }
+.tool-label.bold { font-weight: bold; font-size: 28rpx; }
 .tool-label.italic { font-style: italic; }
 .tool-label.underline { text-decoration: underline; }
 .tool-label.strike { text-decoration: line-through; }
 
-.font-name {
-  font-size: 22rpx;
-  max-width: 120rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.tool-icon {
+  font-size: 24rpx;
+  color: #555;
 }
 
-.tool-icon {
-  font-size: 22rpx;
+.tool-icon-sm {
+  font-size: 20rpx;
   color: #555;
+  margin-right: 4rpx;
 }
 
 .tool-divider {
   width: 1rpx;
   height: 40rpx;
   background: #e5e5e5;
-  margin: 0 12rpx;
+  margin: 0 8rpx;
 }
 
 .color-swatch {
-  width: 36rpx;
-  height: 36rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 6rpx;
   border: 2rpx solid #ddd;
+  position: relative;
 }
 
 .color-swatch.highlight {
-  border-radius: 4rpx;
-  height: 28rpx;
-  width: 36rpx;
+  height: 24rpx;
+  width: 32rpx;
 }
 
-.import-btn .tool-label {
-  color: #2b5797;
-  font-weight: 500;
+/* 展开行 */
+.expand-row {
+  justify-content: center;
+  padding: 6rpx 16rpx;
+  border-top: 1rpx solid #f0f0f0;
 }
 
-/* 标题栏 */
-.title-bar {
+.expand-label {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.expanded-row {
+  background: #fafbfc;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+/* 字号/字体选择器 */
+.size-selector,
+.font-selector {
+  display: flex;
+  align-items: center;
+  margin: 4rpx 6rpx;
+}
+
+.select-options {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 8rpx;
+}
+
+.select-opt {
+  padding: 6rpx 14rpx;
+  font-size: 22rpx;
+  color: #555;
+  background: #f0f0f0;
+  border-radius: 6rpx;
+  margin: 2rpx 4rpx;
+}
+
+.select-opt.active {
+  background: #2b5797;
+  color: #fff;
+}
+
+/* 表格选择器弹窗 */
+.table-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-popup {
+  width: 80%;
   background: #fff;
-  padding: 16rpx 30rpx;
-  border-bottom: 1rpx solid #eee;
-  flex-shrink: 0;
+  border-radius: 16rpx;
+  padding: 40rpx;
 }
 
-.title-input {
-  font-size: 34rpx;
+.table-title {
+  font-size: 32rpx;
   font-weight: 600;
-  color: #222;
-  width: 100%;
+  color: #333;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+.table-row-selector,
+.table-col-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.table-label {
+  font-size: 28rpx;
+  color: #555;
+  width: 100rpx;
+}
+
+.num-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  color: #333;
+  margin: 0 16rpx;
+}
+
+.num-display {
+  font-size: 28rpx;
+  color: #333;
+  min-width: 40rpx;
+  text-align: center;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30rpx;
+  gap: 16rpx;
+}
+
+.table-btn {
+  padding: 14rpx 36rpx;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+}
+
+.table-btn.cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.table-btn.confirm {
+  background: #2b5797;
+  color: #fff;
+}
+
+/* 标题栏（隐藏，标题已移到顶部） */
+.title-bar {
+  display: none;
 }
 
 /* 编辑区 */
@@ -115,68 +271,29 @@
   flex: 1;
   overflow: hidden;
   padding: 20rpx 24rpx;
-  background: #f8f9fa;
+  background: #f5f6f8;
 }
 
 .editor {
   background: #fff;
-  border-radius: 12rpx;
-  padding: 24rpx;
+  border-radius: 16rpx;
+  padding: 32rpx;
   min-height: 100%;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
   font-size: 30rpx;
   line-height: 1.8;
 }
 
-/* 底部操作栏 */
+/* 底部状态栏 */
 .bottom-bar {
   background: #fff;
   border-top: 1rpx solid #e5e5e5;
-  padding: 16rpx 30rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 12rpx 30rpx;
   flex-shrink: 0;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
 }
 
 .save-status {
   font-size: 22rpx;
   color: #999;
-}
-
-.bottom-actions {
-  display: flex;
-}
-
-.bottom-btn {
-  padding: 16rpx 36rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-  margin-left: 16rpx;
-}
-
-.export-btn {
-  background: linear-gradient(135deg, #2b5797, #3a6bb8);
-  color: #fff;
-}
-
-.export-btn:active {
-  opacity: 0.9;
-}
-
-.back-btn {
-  background: #f5f5f5;
-  color: #666;
-}
-
-/* 动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.editor-page {
-  animation: fadeIn 0.3s ease;
 }
