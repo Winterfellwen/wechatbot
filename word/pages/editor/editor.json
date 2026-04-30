@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "编辑文档",
-  "usingComponents": {}
+  "usingComponents": {
+    "color-picker": "./components/color-picker/color-picker"
+  }
 }
