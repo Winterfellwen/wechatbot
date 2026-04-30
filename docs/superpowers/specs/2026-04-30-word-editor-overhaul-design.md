@@ -21,13 +21,13 @@ word/pages/
 │   └── index.json
 ├── editor/         # 文档编辑器（全面重构）
 │   ├── editor.js   # 精简：移除自动保存、自动导出；添加图片/表格插入
-│   ├── editor.wxml # Word风格功能区工具栏
+│   ├── editor.wxml # 可折叠工具栏（基础+高级两段）
 │   ├── editor.wxss # 现代UI
 │   ├── editor.json
 │   ├── pako.es5.js
 │   └── components/
 │       ├── color-picker/   # 可复用颜色选择器弹窗
-│       └── ribbon/         # Word风格可折叠功能区
+│       └── toolbar/         # 可折叠工具栏（非完整Word功能区，仅展开/折叠两段工具栏）
 └── components/
     └── doc-card/    # 可复用文档卡片
 ```
@@ -75,6 +75,8 @@ word/pages/
 字号: [12▼] | 字体: [微软雅黑▼]
 [插入图片] [插入表格] [清除格式] [撤销] [重做]
 ```
+- **字号选项：** 10, 12, 14, 16, 18, 24, 36（通过 `editorCtx.format('fontSize', size)` 实现）
+- **字体选项：** 微软雅黑、宋体、黑体、楷体、Arial、Times New Roman（通过 `editorCtx.format('fontFamily', font)` 实现）
 
 **工具栏行为：**
 - 激活的格式按钮高亮显示（`background: #2b5797; color: #fff`）
@@ -174,7 +176,7 @@ word/pages/
 
 ### 3.6 导入流程调整
 
-当前首页导入依赖服务器。改为纯前端解析（复用编辑器中的 `_unzip` 和 `_parseDocXml` 方法）：
+**移除**当前首页对服务器的依赖（`https://wechatbot-g6ez.onrender.com/api/word/import`），改为纯前端解析（复用编辑器中的 `_unzip` 和 `_parseDocXml` 方法）：
 
 ```
 chooseMessageFile 选择docx
@@ -201,7 +203,7 @@ _parseDocXml(xmlStr) → 转为HTML
 │ [B][I][U][S]│[H1][H2][H3]│  ← 工具栏第一行
 │ [左][中][右]│[1.][•]│🎨🖌│
 ├──────────────────────────────┤
-│ [更多▼]                     │  ← 可展开区域
+│ [更多▼]                     │  ← 可展开区域（字号、字体、图片、表格）
 │  字号:[12▼] 字体:[微软雅黑▼]│
 │  [插入图片] [插入表格]       │
 │  [清除格式] [撤销] [重做]    │
