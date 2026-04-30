@@ -21,7 +21,10 @@ Page({
       backgroundColor: ''
     },
     saveStatus: '未保存',
-    exporting: false
+    exporting: false,
+    tablePicker: false,
+    tableRows: 2,
+    tableCols: 2
   },
 
   editorCtx: null,
@@ -92,6 +95,45 @@ Page({
   undo: function () { this.editorCtx && this.editorCtx.undo(); },
   redo: function () { this.editorCtx && this.editorCtx.redo(); },
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
+
+  insertTable: function () {
+    this.setData({ tablePicker: true });
+  },
+
+  confirmTable: function () {
+    var rows = this.data.tableRows;
+    var cols = this.data.tableCols;
+    var html = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
+    for (var r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (var c = 0; c < cols; c++) {
+        html += '<td style="border:1px solid #ddd;padding:8px;min-width:60px;">' +
+                (r === 0 ? '<strong>列' + (c + 1) + '</strong>' : '内容') +
+                '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</table>';
+    this.editorCtx && this.editorCtx.insertHTML(html);
+    this.setData({ tablePicker: false });
+  },
+
+  changeTableRows: function (e) {
+    var delta = parseInt(e.currentTarget.dataset.delta);
+    var newVal = Math.min(6, Math.max(2, this.data.tableRows + delta));
+    this.setData({ tableRows: newVal });
+  },
+
+  changeTableCols: function (e) {
+    var delta = parseInt(e.currentTarget.dataset.delta);
+    var newVal = Math.min(6, Math.max(2, this.data.tableCols + delta));
+    this.setData({ tableCols: newVal });
+  },
+
+  cancelTable: function () {
+    this.setData({ tablePicker: false });
+  },
+
   insertImage: function () {
     var that = this;
     wx.chooseImage({
