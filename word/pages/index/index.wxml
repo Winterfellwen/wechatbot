@@ -63,7 +63,7 @@
       </view>
       <view class="doc-actions">
         <text class="action-btn edit" data-id="{{item.id}}" bindtap="openDoc">编辑</text>
-        <text class="action-btn export" data-id="{{item.id}}" bindtap="exportDoc">导出</text>
+        <text class="action-btn save" data-id="{{item.id}}" bindtap="exportDoc">保存</text>
         <text class="action-btn del" data-id="{{item.id}}" bindtap="deleteDoc">删除</text>
       </view>
     </view>

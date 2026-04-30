@@ -612,6 +612,7 @@ Page({
   // ---- 纯 JS ZIP 生成器（DEFLATE 压缩） ----
   _createZip: function () {
     var files = {};
+    var self = this;
     return {
       add: function (name, content) { files[name] = content; },
       generate: function () {
@@ -622,7 +623,7 @@ Page({
         var names = Object.keys(files).sort();
         for (var i = 0; i < names.length; i++) {
           offsets.push(totalOffset);
-          var data = that._strToBytes(files[names[i]]);
+          var data = self._strToBytes(files[names[i]]);
           parts.push(data);
           totalOffset += data.length;
         }
@@ -632,10 +633,10 @@ Page({
         var localTotal = 0;
         for (var j = 0; j < names.length; j++) {
           localOffsets.push(localTotal);
-          var nameBytes = that._strToBytes(names[j]);
-          var dataBytes = that._deflate(parts[j]);
-          var crc = that._crc32(parts[j]);
-          var header = that._makeLocalHeader(names[j], dataBytes.length, crc, parts[j].length);
+          var nameBytes = self._strToBytes(names[j]);
+          var dataBytes = self._deflate(parts[j]);
+          var crc = self._crc32(parts[j]);
+          var header = self._makeLocalHeader(names[j], dataBytes.length, crc, parts[j].length);
           localParts.push(header);
           localParts.push(dataBytes);
           localTotal += header.length + dataBytes.length;
@@ -644,14 +645,14 @@ Page({
         var cdParts = [];
         var cdOffset = localTotal;
         for (var k = 0; k < names.length; k++) {
-          var nameB = that._strToBytes(names[k]);
-          var dataB = that._deflate(parts[k]);
-          var crcB = that._crc32(parts[k]);
-          cdParts.push(that._makeCdEntry(names[k], dataB.length, crcB, parts[k].length, localOffsets[k]));
+          var nameB = self._strToBytes(names[k]);
+          var dataB = self._deflate(parts[k]);
+          var crcB = self._crc32(parts[k]);
+          cdParts.push(self._makeCdEntry(names[k], dataB.length, crcB, parts[k].length, localOffsets[k]));
           cdOffset += cdParts[k].length;
         }
         // end of central directory
-        var eocd = that._makeEocd(names.length, cdParts, cdOffset);
+        var eocd = self._makeEocd(names.length, cdParts, cdOffset);
         // 拼接
         var result = new Uint8Array(localTotal + cdOffset + eocd.length);
         var pos = 0;
@@ -662,7 +663,7 @@ Page({
           result.set(cdParts[y], pos); pos += cdParts[y].length;
         }
         result.set(eocd, pos);
-        return that._base64Encode(result);
+        return self._base64Encode(result);
       }
     };
   },

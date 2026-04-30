@@ -1,0 +1,69 @@
+<!--pages/textbook/textbook.wxml-->
+<view class="container">
+  <!-- Level 1: Book list -->
+  <view wx:if="{{!currentBook}}">
+    <view class="header">
+      <view class="header-row">
+        <view class="back-btn" bindtap="goBack"><text class="back-icon">←</text></view>
+        <text class="header-title">课本</text>
+        <view class="header-placeholder"></view>
+      </view>
+    </view>
+
+    <view class="book-list">
+      <block wx:for="{{books}}" wx:key="level">
+        <view class="book-card" bindtap="openBook" data-level="{{item.level}}">
+          <view class="book-cover" style="background-color: {{item.color}}">
+            <text class="book-level-badge">{{item.level}}</text>
+          </view>
+          <view class="book-info">
+            <view class="book-title">{{item.title}}</view>
+            <view class="book-meta">
+              <text class="book-lesson-count">{{item.lessonCount}}课</text>
+              <text class="book-completed">{{item.completedCount}}已完成</text>
+            </view>
+            <view class="progress-wrap">
+              <view class="progress-bar">
+                <view class="progress-fill" style="width: {{item.progress}}%; background-color: {{item.color}}"></view>
+              </view>
+              <text class="progress-text">{{item.progress}}%</text>
+            </view>
+          </view>
+          <view class="book-arrow"><text class="arrow-icon">›</text></view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- Level 2: Lessons within a book -->
+  <view wx:if="{{currentBook}}">
+    <view class="header">
+      <view class="header-row">
+        <view class="back-btn" bindtap="closeBook"><text class="back-icon">←</text></view>
+        <text class="header-title">{{currentBook.title}}</text>
+        <view class="header-placeholder"></view>
+      </view>
+    </view>
+
+    <view class="book-detail-header" style="background: {{currentBook.color}}">
+      <text class="detail-level">{{currentBook.level}}</text>
+      <text class="detail-count">{{currentBookLessons.length}}节课</text>
+    </view>
+
+    <view class="lesson-list">
+      <block wx:for="{{currentBookLessons}}" wx:key="id">
+        <view class="lesson-row {{item.done ? 'done' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
+          <view class="lesson-num-circle" style="border-color: {{item.done ? '#22C55E' : '#CBD5E1'}}">
+            <text wx:if="{{item.done}}" style="color:#22C55E;font-size:32rpx">✓</text>
+            <text wx:else style="color:#94A3B8;font-size:28rpx">{{item.number}}</text>
+          </view>
+          <view class="lesson-info">
+            <text class="lesson-title">{{item.title}}</text>
+            <text class="lesson-meta">{{item.words}}词 · {{item.grammar}}语法</text>
+          </view>
+          <text class="lesson-arrow">→</text>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

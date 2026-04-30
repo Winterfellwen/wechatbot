@@ -400,3 +400,59 @@ function parseZip(buf) {
   return files;
 }
 
+// Azure TTS API for German pronunciation
+app.post('/api/tts', async (req, res) => {
+  try {
+    const { text, lang } = req.body;
+    const subscriptionKey = process.env.AZURE_SPEECH_KEY;
+    if (!subscriptionKey) {
+      return res.status(500).json({ error: 'Azure speech key not configured' });
+    }
+    const region = 'eastasia';
+    
+    // Use German voice
+    const voiceName = lang === 'de-DE' ? 'de-DE-ConradNeural' : 'de-DE-ConradNeural';
+    
+    const response = await fetch(`https://${region}.api.cognitive.microsoft.com/cognitiveservices/v3.0/tts`, {
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': subscriptionKey,
+        'Content-Type': 'application/ssml+xml'
+      },
+      body: `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang || 'de-DE'}'>
+        <voice name='${voiceName}'>
+          ${text}
+        </voice>
+      </speak>`
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('TTS API error:', error);
+      return res.status(500).json({ error: 'TTS error: ' + error });
+    }
+
+    const audioBuffer = await response.arrayBuffer();
+    const fileName = 'tts_' + Date.now() + '.mp3';
+    const filePath = '/tmp/serve/' + fileName;
+    fs.mkdirSync('/tmp/serve', { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(audioBuffer));
+
+    res.json({ 
+      audioUrl: 'https://wechatbot-g6ez.onrender.com/api/tts/download/' + fileName 
+    });
+  } catch (err) {
+    console.error('TTS error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/tts/download/:filename', (req, res) => {
+  const filePath = '/tmp/serve/' + req.params.filename;
+  if (fs.existsSync(filePath)) {
+    res.download(filePath);
+  } else {
+    res.status(404).json({ error: 'File not found' });
+  }
+});
+

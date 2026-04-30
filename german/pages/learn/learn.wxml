@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="header">
+    <text class="title">德语学习</text>
+    <text class="progress">{{totalProgress}}% 完成</text>
+  </view>
+
+  <scroll-view scroll-y class="path-scroll" scroll-into-view="{{scrollToNode}}">
+    <view class="path-node" wx:for="{{pathNodes}}" wx:key="id">
+      <view wx:if="{{item.type === 'header'}}" class="level-header" style="background: {{item.color}}">
+        {{item.label}} ({{item.lessonCount}}课)
+      </view>
+      <view wx:else class="lesson-node {{item.done ? 'done' : ''}} {{item.current ? 'current' : ''}}"
+            bindtap="startLesson" data-id="{{item.id}}">
+        <view class="node-circle" style="background: {{item.color}}">
+          {{item.done ? '✓' : item.number}}
+        </view>
+        <text class="node-title">{{item.title}}</text>
+        <text class="node-info">{{item.words}}词 · {{item.grammar}}语法</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="tab-bar">
+    <view class="tab" bindtap="goToCourse">
+      <text>教材</text>
+    </view>
+    <view class="tab active">
+      <text>学习</text>
+    </view>
+    <view class="tab" bindtap="goToAI">
+      <text>AI</text>
+    </view>
+  </view>
+</view>
