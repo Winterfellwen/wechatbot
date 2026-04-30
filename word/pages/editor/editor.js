@@ -96,19 +96,46 @@ Page({
   saveDoc: function () {
     if (!this._loaded) return;
     var that = this;
-    this.editorCtx.getContents({
+    that.setData({ saveStatus: '保存中...' });
+    that.editorCtx.getContents({
       success: function (res) {
-        var content = JSON.stringify(res.html || res.delta || '');
+        var html = res.html || '';
+        var content = JSON.stringify(html || '');
         var list = that._getList();
         var idx = list.findIndex(function (d) { return d.id === that.data.docId; });
+        var now = Date.now();
         if (idx >= 0) {
           list[idx].title = that.data.title || '未命名文档';
           list[idx].content = content;
-          list[idx].updatedAt = Date.now();
+          list[idx].updatedAt = now;
         }
         wx.setStorageSync(STORAGE_KEY, list);
-        that.setData({ saveStatus: '已保存' });
-        that._dirty = false;
+
+        // 生成并保存 docx 文件
+        var paragraphs = that._htmlToDocxParagraphs(html);
+        var docxBase64 = that._buildDocx(paragraphs);
+        var fileName = (that.data.title || '未命名文档') + '_' + now + '.docx';
+        var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
+        var buffer = wx.base64ToArrayBuffer(docxBase64);
+        wx.getFileSystemManager().writeFile({
+          filePath: filePath,
+          data: buffer,
+          encoding: 'binary',
+          success: function () {
+            that.setData({ saveStatus: '已保存并导出' });
+            that._dirty = false;
+            wx.showToast({ title: '已保存并导出', icon: 'success' });
+          },
+          fail: function (err) {
+            that.setData({ saveStatus: '保存失败' });
+            wx.showToast({ title: '文件保存失败', icon: 'none' });
+            console.error('writeFile fail:', err);
+          }
+        });
+      },
+      fail: function () {
+        that.setData({ saveStatus: '保存失败' });
+        wx.showToast({ title: '读取内容失败', icon: 'none' });
       }
     });
   },
@@ -267,57 +294,7 @@ Page({
 
   // ---- 导出 DOCX（纯前端，无 npm 依赖） ----
   exportDocx: function () {
-    if (this.data.exporting) return;
-    this.setData({ exporting: true });
-    var that = this;
-    if (!this._loaded) {
-      var t = setInterval(function () {
-        if (that._loaded) { clearInterval(t); that._doExport(); }
-      }, 200);
-      setTimeout(function () { clearInterval(t); }, 5000);
-      return;
-    }
-    this._doExport();
-  },
-
-  _doExport: function () {
-    var that = this;
-    this.editorCtx.getContents({
-      success: function (res) {
-        var html = res.html || '';
-        var paragraphs = that._htmlToDocxParagraphs(html);
-        var docxBase64 = that._buildDocx(paragraphs);
-        var fileName = (that.data.title || '未命名文档') + '.docx';
-        var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
-        var buffer = wx.base64ToArrayBuffer(docxBase64);
-        wx.getFileSystemManager().writeFile({
-          filePath: filePath,
-          data: buffer,
-          encoding: 'binary',
-          success: function () {
-            that.setData({ exporting: false });
-            wx.openDocument({
-              filePath: filePath,
-              fileType: 'docx',
-              showMenu: true,
-              fail: function (err) {
-                wx.showToast({ title: '打开失败', icon: 'none' });
-                console.error('openDocument fail:', err);
-              }
-            });
-          },
-          fail: function (err) {
-            that.setData({ exporting: false });
-            wx.showToast({ title: '保存失败', icon: 'none' });
-            console.error('writeFile fail:', err);
-          }
-        });
-      },
-      fail: function () {
-        that.setData({ exporting: false });
-        wx.showToast({ title: '读取内容失败', icon: 'none' });
-      }
-    });
+    this.saveDoc();
   },
 
   // ---- HTML → paragraphs ----
