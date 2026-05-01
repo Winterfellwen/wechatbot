@@ -243,6 +243,13 @@ Page({
             that.setData({ saveStatus: '已保存并导出' });
             that._dirty = false;
             wx.showToast({ title: '已保存并导出', icon: 'success' });
+            wx.openDocument({
+              filePath: filePath,
+              showMenu: true,
+              fail: function (err) {
+                console.error('openDocument fail:', err);
+              }
+            });
           },
           fail: function (err) {
             that.setData({ saveStatus: '保存失败' });
