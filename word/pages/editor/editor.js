@@ -52,10 +52,18 @@ Page({
     wx.removeStorageSync('word_pending_table');
     var that = this;
     if (pending.index >= 0 && pending.index < this._tableStore.length) {
-      // Edit existing table — just update data, placeholder stays
+      // Edit existing table — update data and regenerate table image
       this._tableStore[pending.index] = pending.data;
       this._dirty = true;
       this.setData({ saveStatus: '未保存' });
+      if (this.editorCtx && this._loaded) {
+        var editIdx = pending.index;
+        this._renderTableAsImage(editIdx, function(imgPath) {
+          if (imgPath) {
+            that.editorCtx.insertImage({ src: imgPath, width: '100%', height: 'auto' });
+          }
+        });
+      }
       wx.showToast({ title: '表格已更新', icon: 'success' });
     } else {
       // New table — add data and insert table image into editor
@@ -65,7 +73,7 @@ Page({
         // First insert marker, then insert table image on top
         that.editorCtx.getContents({
           success: function (res) {
-            var html = (res.html || '') + '<p>〓表格' + (idx + 1) + '〓</p>';
+            var html = (res.html || '') + '<p>[▶' + (idx + 1) + '◀]</p>';
             that.editorCtx.setContents({ html: html });
             // After content set, insert the table image
             setTimeout(function () {
@@ -196,7 +204,7 @@ Page({
       this.editorCtx.getContents({
         success: function (res) {
           var html = res.html || '';
-          // Replace 【表格N】 placeholders with real table HTML for display
+          // Replace [▶N◀] placeholders with real table HTML for display
           html = that._renderTablesInHtml(html);
           that.setData({ previewMode: true, previewNodes: html });
         }
@@ -207,9 +215,9 @@ Page({
   },
 
   _renderTablesInHtml: function (html) {
-    // Replace 【表格N】 placeholders with actual <table> HTML for rich-text preview
+    // Replace [▶N◀] placeholders with actual <table> HTML for rich-text preview
     var store = this._tableStore;
-    return html.replace(/〓表格(\d+)〓/g, function (match, num) {
+    return html.replace(/\[▶(\d+)◀\]/g, function (match, num) {
       var idx = parseInt(num) - 1;
       if (idx >= 0 && idx < store.length) {
         var t = store[idx];
