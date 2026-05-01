@@ -58,13 +58,14 @@ Page({
       this.setData({ saveStatus: '未保存' });
       wx.showToast({ title: '表格已更新', icon: 'success' });
     } else {
-      // New table — add data and insert placeholder
+      // New table — add data and insert visible table text + marker
       var idx = this._tableStore.length;
       this._tableStore.push(pending.data);
       if (this.editorCtx && this._loaded) {
         this.editorCtx.getContents({
           success: function (res) {
-            var html = (res.html || '') + '<p>【表格' + (idx + 1) + '】</p>';
+            var tableHtml = that._renderTableAsText(idx) + '<p>〓表格' + (idx + 1) + '〓</p>';
+            var html = (res.html || '') + tableHtml;
             that.editorCtx.setContents({ html: html });
             that._dirty = true;
             that.setData({ saveStatus: '未保存' });
@@ -198,9 +199,9 @@ Page({
   },
 
   _renderTablesInHtml: function (html) {
-    // Replace 【表格N】 placeholders with actual <table> HTML
+    // Replace 【表格N】 placeholders with actual <table> HTML for rich-text preview
     var store = this._tableStore;
-    return html.replace(/【表格(\d+)】/g, function (match, num) {
+    return html.replace(/〓表格(\d+)〓/g, function (match, num) {
       var idx = parseInt(num) - 1;
       if (idx >= 0 && idx < store.length) {
         var t = store[idx];
@@ -222,6 +223,26 @@ Page({
       }
       return match;
     });
+  },
+
+  // Render table data as visible formatted text for the editor
+  _renderTableAsText: function (tableIdx) {
+    var t = this._tableStore[tableIdx];
+    if (!t) return '';
+    var n = tableIdx + 1;
+    var html = '<p style="background-color:#e8e8e8;text-align:center;padding:4px 0;">▦ 表格' + n + ' (' + t.rows + '×' + t.cols + ')</p>';
+    for (var r = 0; r < t.rows; r++) {
+      var rowBg = r === 0 ? '#eef2f7' : '#fff';
+      var rowHtml = '';
+      for (var c = 0; c < t.cols; c++) {
+        var cell = (t.cells[r] && t.cells[r][c]) || '';
+        if (c > 0) rowHtml += ' │ ';
+        rowHtml += r === 0 ? '<b>' + cell + '</b>' : cell;
+      }
+      html += '<p style="background-color:' + rowBg + ';padding:4px 8px;margin:0;">' + rowHtml + '</p>';
+    }
+    html += '<p style="background-color:#e8e8e8;text-align:center;padding:2px 0;font-size:small;color:#888;">✎ 点击上方编辑表格</p>';
+    return html;
   },
 
   pickColor: function (e) {

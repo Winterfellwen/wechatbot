@@ -59,7 +59,7 @@ function getImageInfos(html) {
 function htmlToBlocks(html, tableStore) {
   if (!html || !html.trim()) return [{ type: 'p', runs: [] }];
 
-  // Replace 【表格N】 placeholders with table blocks (before other parsing)
+  // Replace 〓表格N〓 placeholders with table blocks (before other parsing)
   // We'll handle these in the main processing loop after splitBlocks
   var tablePlaceholders = tableStore || [];
   var hasPlaceholders = tablePlaceholders.length > 0;
@@ -127,9 +127,9 @@ function htmlToBlocks(html, tableStore) {
       continue;
     }
 
-    // Check for 【表格N】 placeholder — convert to table block from tableStore
+    // Check for 〓表格N〓 placeholder — convert to table block from tableStore
     if (hasPlaceholders) {
-      var tblRe = /【表格(\d+)】/;
+      var tblRe = /〓表格(\d+)〓/;
       var tblMatch = inner.trim().match(tblRe);
       if (tblMatch) {
         var tblIdx = parseInt(tblMatch[1]) - 1;
