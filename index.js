@@ -46,6 +46,19 @@ const pool = DATABASE_URL ? new Pool({
 const APP_ID = process.env.WECHAT_APP_ID;
 const APP_SECRET = process.env.WECHAT_APP_SECRET;
 
+console.log('WECHAT_APP_ID:', APP_ID ? APP_ID.substring(0, 6) + '...' : 'NOT SET');
+console.log('WECHAT_APP_SECRET:', APP_SECRET ? 'set (length=' + APP_SECRET.length + ')' : 'NOT SET');
+
+app.get('/api/debug/env', (req, res) => {
+  res.json({
+    appIdSet: !!APP_ID,
+    appIdLen: APP_ID ? APP_ID.length : 0,
+    appSecretSet: !!APP_SECRET,
+    appSecretLen: APP_SECRET ? APP_SECRET.length : 0,
+    dbSet: !!DATABASE_URL
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
