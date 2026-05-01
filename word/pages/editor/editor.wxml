@@ -95,9 +95,6 @@
       <view class="tool-btn" bindtap="insertImage">
         <text class="tool-label">🖼图片</text>
       </view>
-      <view class="tool-btn" bindtap="insertTable">
-        <text class="tool-label">⊞表格</text>
-      </view>
       <view class="tool-btn" bindtap="clearFormat">
         <text class="tool-label">清除格式</text>
       </view>
@@ -106,29 +103,6 @@
       </view>
       <view class="tool-btn" bindtap="redo">
         <text class="tool-label">重做</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 表格选择器弹窗 -->
-  <view class="table-mask" wx:if="{{tablePicker}}" bindtap="cancelTable">
-    <view class="table-popup" catchtap="noop">
-      <view class="table-title">插入表格</view>
-      <view class="table-row-selector">
-        <text class="table-label">行数:</text>
-        <view class="num-btn" bindtap="changeTableRows" data-delta="-1">-</view>
-        <text class="num-display">{{tableRows}}</text>
-        <view class="num-btn" bindtap="changeTableRows" data-delta="1">+</view>
-      </view>
-      <view class="table-col-selector">
-        <text class="table-label">列数:</text>
-        <view class="num-btn" bindtap="changeTableCols" data-delta="-1">-</view>
-        <text class="num-display">{{tableCols}}</text>
-        <view class="num-btn" bindtap="changeTableCols" data-delta="1">+</view>
-      </view>
-      <view class="table-actions">
-        <view class="table-btn cancel" bindtap="cancelTable">取消</view>
-        <view class="table-btn confirm" bindtap="confirmTable">确定</view>
       </view>
     </view>
   </view>

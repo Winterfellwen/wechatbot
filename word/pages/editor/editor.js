@@ -23,9 +23,6 @@ Page({
     },
     saveStatus: '未保存',
     exporting: false,
-    tablePicker: false,
-    tableRows: 2,
-    tableCols: 2,
     fontSizes: [10, 12, 14, 16, 18, 24, 36],
     fontFamilies: ['微软雅黑', '宋体', '黑体', '楷体', 'Arial', 'Times New Roman'],
     toolbarExpanded: false,
@@ -102,53 +99,6 @@ Page({
   undo: function () { this.editorCtx && this.editorCtx.undo(); },
   redo: function () { this.editorCtx && this.editorCtx.redo(); },
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
-
-  insertTable: function () {
-    this.setData({ tablePicker: true });
-  },
-
-  confirmTable: function () {
-    var that = this;
-    var rows = this.data.tableRows;
-    var cols = this.data.tableCols;
-    var tableHtml = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
-    for (var r = 0; r < rows; r++) {
-      tableHtml += '<tr>';
-      for (var c = 0; c < cols; c++) {
-        tableHtml += '<td style="border:1px solid #ddd;padding:8px;min-width:60px;">' +
-                (r === 0 ? '<strong>列' + (c + 1) + '</strong>' : '内容') +
-                '</td>';
-      }
-      tableHtml += '</tr>';
-    }
-    tableHtml += '</table>';
-    if (!this.editorCtx) { this.setData({ tablePicker: false }); return; }
-    this.editorCtx.getContents({
-      success: function (res) {
-        var existing = res.html || '';
-        that.editorCtx.setContents({ html: existing + tableHtml });
-      }
-    });
-    this.setData({ tablePicker: false });
-  },
-
-  changeTableRows: function (e) {
-    var delta = parseInt(e.currentTarget.dataset.delta);
-    var newVal = Math.min(6, Math.max(2, this.data.tableRows + delta));
-    this.setData({ tableRows: newVal });
-  },
-
-  changeTableCols: function (e) {
-    var delta = parseInt(e.currentTarget.dataset.delta);
-    var newVal = Math.min(6, Math.max(2, this.data.tableCols + delta));
-    this.setData({ tableCols: newVal });
-  },
-
-  cancelTable: function () {
-    this.setData({ tablePicker: false });
-  },
-
-  noop: function () {},
 
   setFontSize: function (e) {
     var size = e.currentTarget.dataset.size;
