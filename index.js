@@ -400,10 +400,65 @@ function parseZip(buf) {
   return files;
 }
 
-// Serve Quill editor HTML page for WeChat web-view
+// --- Quill web-view editor ---
+
+// In-memory temp store for web-view content exchange
+var tempStore = {};
+
+function makeTempId() {
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var id = '';
+  for (var i = 0; i < 12; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+// Serve Quill editor HTML page
 app.get('/word/editor', (req, res) => {
   res.sendFile(path.join(__dirname, 'word', 'quill-editor', 'index.html'));
 });
+
+// POST: store content, return temp ID
+app.post('/api/word/temp', express.json(), (req, res) => {
+  var id = makeTempId();
+  tempStore[id] = {
+    title: req.body.title || '',
+    html: req.body.html || '',
+    createdAt: Date.now()
+  };
+  res.json({ id: id });
+});
+
+// GET: retrieve stored content
+app.get('/api/word/temp/:id', (req, res) => {
+  var data = tempStore[req.params.id];
+  if (!data) return res.status(404).json({ error: 'Not found' });
+  res.json({ title: data.title, html: data.html });
+});
+
+// PUT: update stored content
+app.put('/api/word/temp/:id', express.json(), (req, res) => {
+  if (!tempStore[req.params.id]) return res.status(404).json({ error: 'Not found' });
+  tempStore[req.params.id].title = req.body.title || '';
+  tempStore[req.params.id].html = req.body.html || '';
+  res.json({ ok: true });
+});
+
+// DELETE: clean up
+app.delete('/api/word/temp/:id', (req, res) => {
+  delete tempStore[req.params.id];
+  res.json({ ok: true });
+});
+
+// Periodic cleanup of expired temp entries (older than 1 hour)
+setInterval(function () {
+  var now = Date.now();
+  var keys = Object.keys(tempStore);
+  for (var i = 0; i < keys.length; i++) {
+    if (now - tempStore[keys[i]].createdAt > 3600000) {
+      delete tempStore[keys[i]];
+    }
+  }
+}, 600000);
 
 // Azure TTS API for German pronunciation
 app.post('/api/tts', async (req, res) => {

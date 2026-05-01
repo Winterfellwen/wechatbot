@@ -97,25 +97,35 @@ function base64Decode(str) {
   return decodeURIComponent(result);
 }
 
-// --- Load content from URL hash ---
+// --- Load content from server temp API ---
+var tempId = (window.location.search || '').match(/[?&]id=([^&]+)/);
+tempId = tempId ? tempId[1] : '';
 var docTitle = '未命名文档';
 var initialHtml = '';
-try {
-  var hash = window.location.hash.substring(1);
-  if (hash) {
-    var decoded = base64Decode(hash);
-    var data = JSON.parse(decoded);
-    docTitle = data.title || '未命名文档';
-    initialHtml = data.html || '';
+
+function loadContent() {
+  if (!tempId) {
+    document.getElementById('status').textContent = '缺少文档ID';
+    return;
   }
-} catch(e) {
-  console.error('Parse hash error:', e);
-  document.getElementById('status').textContent = '加载失败: ' + e.message;
+  fetch('/api/word/temp/' + tempId)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      docTitle = data.title || '未命名文档';
+      initialHtml = data.html || '';
+      document.getElementById('docTitle').textContent = docTitle;
+      if (initialHtml && quill) {
+        try { quill.clipboard.dangerouslyPasteHTML(initialHtml); } catch(e) { quill.root.innerHTML = initialHtml; }
+      }
+      document.getElementById('status').textContent = '已就绪';
+    })
+    .catch(function(e) {
+      console.error('Load content error:', e);
+      document.getElementById('status').textContent = '加载失败: ' + e.message;
+    });
 }
-document.getElementById('docTitle').textContent = docTitle;
-if (initialHtml && quill) {
-  try { quill.clipboard.dangerouslyPasteHTML(initialHtml); } catch(e) { quill.root.innerHTML = initialHtml; }
-}
+
+loadContent();
 
 // --- Save ---
 function save() {
@@ -123,11 +133,21 @@ function save() {
   var title = document.getElementById('docTitle').textContent || '未命名文档';
   document.getElementById('status').textContent = '保存中...';
 
+  // Update content on server
+  if (tempId) {
+    fetch('/api/word/temp/' + tempId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, html: html })
+    }).catch(function() {});
+  }
+
   try {
     wx.miniProgram.postMessage({
       data: {
         html: html,
-        title: title
+        title: title,
+        tempId: tempId
       }
     });
   } catch(e) {
