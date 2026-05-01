@@ -585,7 +585,7 @@ Page({
     ].join('');
 
     var zip = that._createZip();
-    zip.add('__rels/.rels', relsXml);
+    zip.add('_rels/.rels', relsXml);
     zip.add('[Content_Types].xml', contentTypesXml);
     zip.add('word/document.xml', docXml);
     zip.add('word/_rels/document.xml.rels', docRelsXml);
@@ -616,61 +616,84 @@ Page({
       .replace(/"/g, '&quot;');
   },
 
-  // ---- 纯 JS ZIP 生成器（DEFLATE 压缩） ----
+  // ---- ZIP generator (stored, no compression) ----
   _createZip: function () {
     var files = {};
     var self = this;
     return {
       add: function (name, content) { files[name] = content; },
       generate: function () {
-        // 按 UTF-8 拼接所有文件内容
-        var parts = [];
-        var offsets = [];
-        var totalOffset = 0;
         var names = Object.keys(files).sort();
-        for (var i = 0; i < names.length; i++) {
-          offsets.push(totalOffset);
-          var data = self._strToBytes(files[names[i]]);
-          parts.push(data);
-          totalOffset += data.length;
-        }
-        // local file headers + data
-        var localParts = [];
-        var localOffsets = [];
+        var entries = [];
         var localTotal = 0;
-        for (var j = 0; j < names.length; j++) {
-          localOffsets.push(localTotal);
-          var nameBytes = self._strToBytes(names[j]);
-          var dataBytes = self._deflate(parts[j]);
-          var crc = self._crc32(parts[j]);
-          var header = self._makeLocalHeader(names[j], dataBytes.length, crc, parts[j].length);
-          localParts.push(header);
-          localParts.push(dataBytes);
-          localTotal += header.length + dataBytes.length;
+        for (var i = 0; i < names.length; i++) {
+          var nameStr = names[i];
+          var nb = self._strToBytes(nameStr);
+          var db = self._strToBytes(files[nameStr]);
+          var crc = self._crc32(db);
+          entries.push({ name: nameStr, nameBytes: nb, data: db, crc: crc, localOffset: localTotal });
+          localTotal += 30 + nb.length + db.length;
         }
-        // central directory
-        var cdParts = [];
+        var zipLen = localTotal;
+        var cdSize = 0;
+        for (var k = 0; k < entries.length; k++) {
+          cdSize += 46 + entries[k].nameBytes.length;
+        }
+        zipLen += cdSize;
+        zipLen += 22;
+        var zip = new Uint8Array(zipLen);
+        for (var j = 0; j < entries.length; j++) {
+          var e = entries[j];
+          var hdr = new Uint8Array(30 + e.nameBytes.length);
+          hdr[0]=0x50; hdr[1]=0x4B; hdr[2]=0x03; hdr[3]=0x04;
+          hdr[4]=20; hdr[5]=0;
+          hdr[6]=0; hdr[7]=0;
+          hdr[8]=0; hdr[9]=0;
+          hdr[10]=0; hdr[11]=0;
+          hdr[12]=0; hdr[13]=0;
+          hdr[14]=e.crc & 0xFF; hdr[15]=(e.crc>>8)&0xFF; hdr[16]=(e.crc>>16)&0xFF; hdr[17]=(e.crc>>24)&0xFF;
+          hdr[18]=e.data.length & 0xFF; hdr[19]=(e.data.length>>8)&0xFF; hdr[20]=(e.data.length>>16)&0xFF; hdr[21]=(e.data.length>>24)&0xFF;
+          hdr[22]=e.data.length & 0xFF; hdr[23]=(e.data.length>>8)&0xFF; hdr[24]=(e.data.length>>16)&0xFF; hdr[25]=(e.data.length>>24)&0xFF;
+          hdr[26]=e.nameBytes.length & 0xFF; hdr[27]=(e.nameBytes.length>>8)&0xFF;
+          hdr[28]=0; hdr[29]=0;
+          hdr.set(e.nameBytes, 30);
+          zip.set(hdr, e.localOffset);
+          zip.set(e.data, e.localOffset + 30 + e.nameBytes.length);
+        }
         var cdOffset = localTotal;
-        for (var k = 0; k < names.length; k++) {
-          var nameB = self._strToBytes(names[k]);
-          var dataB = self._deflate(parts[k]);
-          var crcB = self._crc32(parts[k]);
-          cdParts.push(self._makeCdEntry(names[k], dataB.length, crcB, parts[k].length, localOffsets[k]));
-          cdOffset += cdParts[k].length;
+        var cdPos = cdOffset;
+        for (var m = 0; m < entries.length; m++) {
+          var e2 = entries[m];
+          var cd = new Uint8Array(46 + e2.nameBytes.length);
+          cd[0]=0x50; cd[1]=0x4B; cd[2]=0x01; cd[3]=0x02;
+          cd[4]=20; cd[5]=0;
+          cd[6]=20; cd[7]=0;
+          cd[8]=0; cd[9]=0;
+          cd[10]=0; cd[11]=0;
+          cd[12]=0; cd[13]=0;
+          cd[14]=e2.crc & 0xFF; cd[15]=(e2.crc>>8)&0xFF; cd[16]=(e2.crc>>16)&0xFF; cd[17]=(e2.crc>>24)&0xFF;
+          cd[18]=e2.data.length & 0xFF; cd[19]=(e2.data.length>>8)&0xFF; cd[20]=(e2.data.length>>16)&0xFF; cd[21]=(e2.data.length>>24)&0xFF;
+          cd[22]=e2.data.length & 0xFF; cd[23]=(e2.data.length>>8)&0xFF; cd[24]=(e2.data.length>>16)&0xFF; cd[25]=(e2.data.length>>24)&0xFF;
+          cd[26]=e2.nameBytes.length & 0xFF; cd[27]=(e2.nameBytes.length>>8)&0xFF;
+          cd[28]=0; cd[29]=0;
+          cd[30]=0; cd[31]=0; cd[32]=0; cd[33]=0;
+          cd[34]=0; cd[35]=0; cd[36]=0; cd[37]=0;
+          cd[38]=e2.localOffset & 0xFF; cd[39]=(e2.localOffset>>8)&0xFF; cd[40]=(e2.localOffset>>16)&0xFF; cd[41]=(e2.localOffset>>24)&0xFF;
+          cd.set(e2.nameBytes, 42);
+          zip.set(cd, cdPos);
+          cdPos += cd.length;
         }
-        // end of central directory
-        var eocd = self._makeEocd(names.length, cdParts, cdOffset);
-        // 拼接
-        var result = new Uint8Array(localTotal + cdOffset + eocd.length);
-        var pos = 0;
-        for (var x = 0; x < localParts.length; x++) {
-          result.set(localParts[x], pos); pos += localParts[x].length;
-        }
-        for (var y = 0; y < cdParts.length; y++) {
-          result.set(cdParts[y], pos); pos += cdParts[y].length;
-        }
-        result.set(eocd, pos);
-        return self._base64Encode(result);
+        var eocd = new Uint8Array(22);
+        eocd[0]=0x50; eocd[1]=0x4B; eocd[2]=0x05; eocd[3]=0x06;
+        eocd[4]=0; eocd[5]=0;
+        eocd[6]=0; eocd[7]=0;
+        eocd[8]=entries.length & 0xFF; eocd[9]=(entries.length>>8)&0xFF;
+        eocd[10]=entries.length & 0xFF; eocd[11]=(entries.length>>8)&0xFF;
+        eocd[12]=cdSize & 0xFF; eocd[13]=(cdSize>>8)&0xFF; eocd[14]=(cdSize>>16)&0xFF; eocd[15]=(cdSize>>24)&0xFF;
+        eocd[16]=cdOffset & 0xFF; eocd[17]=(cdOffset>>8)&0xFF; eocd[18]=(cdOffset>>16)&0xFF; eocd[19]=(cdOffset>>24)&0xFF;
+        eocd[20]=0; eocd[21]=0;
+        zip.set(eocd, cdPos);
+        return self._base64Encode(zip);
       }
     };
   },
@@ -682,36 +705,7 @@ Page({
     return arr;
   },
 
-  _deflate: function (data) {
-    // 使用 Raw Deflate（无 header），与 Python zipfile 兼容
-    var MAX_BLOCK = 65535;
-    var blocks = [];
-    var pos = 0;
-    while (pos < data.length) {
-      var chunk = data.slice(pos, pos + MAX_BLOCK);
-      pos += chunk.length;
-      var isLast = pos >= data.length;
-      var header = new Uint8Array(5);
-      header[0] = isLast ? 1 : 0;
-      header[1] = chunk.length & 0xFF;
-      header[2] = (chunk.length >> 8) & 0xFF;
-      header[3] = (~chunk.length) & 0xFF;
-      header[4] = ((~chunk.length) >> 8) & 0xFF;
-      blocks.push(header);
-      blocks.push(chunk);
-    }
-    // 拼接所有块
-    var totalLen = 0;
-    for (var i = 0; i < blocks.length; i++) totalLen += blocks[i].length;
-    var result = new Uint8Array(totalLen);
-    var off = 0;
-    for (var j = 0; j < blocks.length; j++) {
-      result.set(blocks[j], off); off += blocks[j].length;
-    }
-    return result;
-  },
-
-  _crc32: function (data) {
+_crc32: function (data) {
     var crc = 0xFFFFFFFF;
     var table = this._crcTable || (this._crcTable = this._makeCrcTable());
     for (var i = 0; i < data.length; i++) {
@@ -732,65 +726,7 @@ Page({
     return table;
   },
 
-  _makeLocalHeader: function (name, compressedSize, crc, uncompressedSize) {
-    var nameBytes = this._strToBytes(name);
-    var buf = new Uint8Array(30 + nameBytes.length);
-    buf[0] = 0x50; buf[1] = 0x4B; buf[2] = 0x03; buf[3] = 0x04; // local file header
-    buf[4] = 20; buf[5] = 0; // version needed
-    buf[6] = 0; buf[7] = 0; // flags, compression method (stored=0)
-    buf[8] = 0; buf[9] = 0; // mod time, date
-    buf[10] = crc & 0xFF; buf[11] = (crc >> 8) & 0xFF; buf[12] = (crc >> 16) & 0xFF; buf[13] = (crc >> 24) & 0xFF;
-    buf[14] = compressedSize & 0xFF; buf[15] = (compressedSize >> 8) & 0xFF;
-    buf[16] = (compressedSize >> 16) & 0xFF; buf[17] = (compressedSize >> 24) & 0xFF;
-    buf[18] = uncompressedSize & 0xFF; buf[19] = (uncompressedSize >> 8) & 0xFF;
-    buf[20] = (uncompressedSize >> 16) & 0xFF; buf[21] = (uncompressedSize >> 24) & 0xFF;
-    buf[22] = nameBytes.length & 0xFF; buf[23] = (nameBytes.length >> 8) & 0xFF;
-    buf[24] = 0; buf[25] = 0; // extra field length
-    buf.set(nameBytes, 26);
-    return buf;
-  },
-
-  _makeCdEntry: function (name, compressedSize, crc, uncompressedSize, localOffset) {
-    var nameBytes = this._strToBytes(name);
-    var buf = new Uint8Array(46 + nameBytes.length);
-    buf[0] = 0x50; buf[1] = 0x4B; buf[2] = 0x01; buf[3] = 0x02; // central dir header
-    buf[4] = 20; buf[5] = 0; // version made by
-    buf[6] = 20; buf[7] = 0; // version needed
-    buf[8] = 0; buf[9] = 0; // flags, compression
-    buf[10] = 0; buf[11] = 0; // mod time/date
-    buf[12] = crc & 0xFF; buf[13] = (crc >> 8) & 0xFF; buf[14] = (crc >> 16) & 0xFF; buf[15] = (crc >> 24) & 0xFF;
-    buf[16] = compressedSize & 0xFF; buf[17] = (compressedSize >> 8) & 0xFF;
-    buf[18] = (compressedSize >> 16) & 0xFF; buf[19] = (compressedSize >> 24) & 0xFF;
-    buf[20] = uncompressedSize & 0xFF; buf[21] = (uncompressedSize >> 8) & 0xFF;
-    buf[22] = (uncompressedSize >> 16) & 0xFF; buf[23] = (uncompressedSize >> 24) & 0xFF;
-    buf[24] = nameBytes.length & 0xFF; buf[25] = (nameBytes.length >> 8) & 0xFF;
-    buf[26] = 0; buf[27] = 0; // extra field, comment
-    buf[28] = 0; buf[29] = 0; // disk start, internal attr
-    buf[30] = 0; buf[31] = 0; buf[32] = 0; buf[33] = 0; // external attr, local offset
-    buf[34] = localOffset & 0xFF; buf[35] = (localOffset >> 8) & 0xFF;
-    buf[36] = (localOffset >> 16) & 0xFF; buf[37] = (localOffset >> 24) & 0xFF;
-    buf.set(nameBytes, 38);
-    return buf;
-  },
-
-  _makeEocd: function (numFiles, cdParts, cdOffset) {
-    var cdSize = 0;
-    for (var i = 0; i < cdParts.length; i++) cdSize += cdParts[i].length;
-    var buf = new Uint8Array(22);
-    buf[0] = 0x50; buf[1] = 0x4B; buf[2] = 0x05; buf[3] = 0x06; // end of central dir
-    buf[4] = 0; buf[5] = 0; // disk numbers
-    buf[6] = 0; buf[7] = 0;
-    buf[8] = numFiles & 0xFF; buf[9] = (numFiles >> 8) & 0xFF;
-    buf[10] = numFiles & 0xFF; buf[11] = (numFiles >> 8) & 0xFF;
-    buf[12] = cdSize & 0xFF; buf[13] = (cdSize >> 8) & 0xFF;
-    buf[14] = (cdSize >> 16) & 0xFF; buf[15] = (cdSize >> 24) & 0xFF;
-    buf[16] = cdOffset & 0xFF; buf[17] = (cdOffset >> 8) & 0xFF;
-    buf[18] = (cdOffset >> 16) & 0xFF; buf[19] = (cdOffset >> 24) & 0xFF;
-    buf[20] = 0; buf[21] = 0; // comment length
-    return buf;
-  },
-
-  _base64Encode: function (bytes) {
+_base64Encode: function (bytes) {
     var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     var result = '';
     var i;
