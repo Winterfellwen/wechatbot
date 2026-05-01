@@ -58,15 +58,23 @@ Page({
       this.setData({ saveStatus: '未保存' });
       wx.showToast({ title: '表格已更新', icon: 'success' });
     } else {
-      // New table — add data and insert visible table text + marker
+      // New table — add data and insert table image into editor
       var idx = this._tableStore.length;
       this._tableStore.push(pending.data);
       if (this.editorCtx && this._loaded) {
-        this.editorCtx.getContents({
+        // First insert marker, then insert table image on top
+        that.editorCtx.getContents({
           success: function (res) {
-            var tableHtml = that._renderTableAsText(idx) + '<p>〓表格' + (idx + 1) + '〓</p>';
-            var html = (res.html || '') + tableHtml;
+            var html = (res.html || '') + '<p>〓表格' + (idx + 1) + '〓</p>';
             that.editorCtx.setContents({ html: html });
+            // After content set, insert the table image
+            setTimeout(function () {
+              that._renderTableAsImage(idx, function (imgPath) {
+                if (imgPath) {
+                  that.editorCtx.insertImage({ src: imgPath, width: '100%', height: 'auto' });
+                }
+              });
+            }, 200);
             that._dirty = true;
             that.setData({ saveStatus: '未保存' });
           }
@@ -225,12 +233,59 @@ Page({
     });
   },
 
-  // Render table as a compact placeholder in editor (full table visible in preview mode)
-  _renderTableAsText: function (tableIdx) {
+  // Render table as image on hidden canvas, insert into editor
+  _renderTableAsImage: function (tableIdx, callback) {
     var t = this._tableStore[tableIdx];
-    if (!t) return '';
-    var n = tableIdx + 1;
-    return '<p style="background-color:#f0f0f0;text-align:center;">▦ 表格' + n + ' (' + t.rows + '行×' + t.cols + '列) — 预览模式查看完整表格</p>';
+    if (!t) { callback && callback(''); return; }
+    var that = this;
+    var cellW = 160, cellH = 36, headerH = 40;
+    var padX = 8, padY = 8;
+    var totalW = t.cols * cellW + 2;
+    var totalH = t.rows * cellH + 2;
+
+    var ctx = wx.createCanvasContext('tableCanvas');
+    ctx.setFillStyle('#ffffff');
+    ctx.fillRect(0, 0, totalW, totalH);
+
+    // Grid lines
+    ctx.setStrokeStyle('#cccccc');
+    ctx.setLineWidth(1);
+    for (var r = 0; r <= t.rows; r++) { ctx.moveTo(0, r * cellH); ctx.lineTo(totalW, r * cellH); }
+    for (var c = 0; c <= t.cols; c++) { ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, totalH); }
+    ctx.stroke();
+
+    // Cells
+    ctx.setFontSize(12);
+    for (var r2 = 0; r2 < t.rows; r2++) {
+      for (var c2 = 0; c2 < t.cols; c2++) {
+        var cellText = (t.cells[r2] && t.cells[r2][c2]) || '';
+        if (r2 === 0) {
+          ctx.setFillStyle('#e8ecf1');
+          ctx.fillRect(c2 * cellW + 1, r2 * cellH + 1, cellW - 1, cellH - 1);
+          ctx.setFillStyle('#222222');
+        } else {
+          ctx.setFillStyle(r2 % 2 === 1 ? '#f9f9f9' : '#ffffff');
+          ctx.fillRect(c2 * cellW + 1, r2 * cellH + 1, cellW - 1, cellH - 1);
+          ctx.setFillStyle('#333333');
+        }
+        var maxChars = Math.floor((cellW - padX * 2) / 7);
+        var displayText = cellText.length > maxChars ? cellText.substring(0, maxChars - 1) + '…' : cellText;
+        ctx.fillText(displayText, c2 * cellW + padX, r2 * cellH + 24);
+      }
+    }
+    ctx.draw(false, function () {
+      wx.canvasToTempFilePath({
+        canvasId: 'tableCanvas',
+        width: totalW,
+        height: totalH,
+        success: function (res) {
+          callback && callback(res.tempFilePath);
+        },
+        fail: function () {
+          callback && callback('');
+        }
+      });
+    });
   },
 
   pickColor: function (e) {

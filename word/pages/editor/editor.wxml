@@ -126,6 +126,9 @@
     bind:close="onColorClose"
   />
 
+  <!-- 隐藏 canvas 用于表格渲染 -->
+  <canvas canvas-id="tableCanvas" style="position:fixed;left:-9999px;width:600px;height:400px;"></canvas>
+
   <!-- 标题编辑（保留以兼容） -->
   <view class="title-bar" style="display:none;">
     <input class="title-input" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" bindblur="saveDoc" />
