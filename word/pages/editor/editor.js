@@ -108,20 +108,27 @@ Page({
   },
 
   confirmTable: function () {
+    var that = this;
     var rows = this.data.tableRows;
     var cols = this.data.tableCols;
-    var html = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
+    var tableHtml = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
     for (var r = 0; r < rows; r++) {
-      html += '<tr>';
+      tableHtml += '<tr>';
       for (var c = 0; c < cols; c++) {
-        html += '<td style="border:1px solid #ddd;padding:8px;min-width:60px;">' +
+        tableHtml += '<td style="border:1px solid #ddd;padding:8px;min-width:60px;">' +
                 (r === 0 ? '<strong>列' + (c + 1) + '</strong>' : '内容') +
                 '</td>';
       }
-      html += '</tr>';
+      tableHtml += '</tr>';
     }
-    html += '</table>';
-    this.editorCtx && this.editorCtx.insertHTML(html);
+    tableHtml += '</table>';
+    if (!this.editorCtx) { this.setData({ tablePicker: false }); return; }
+    this.editorCtx.getContents({
+      success: function (res) {
+        var existing = res.html || '';
+        that.editorCtx.setContents({ html: existing + tableHtml });
+      }
+    });
     this.setData({ tablePicker: false });
   },
 
