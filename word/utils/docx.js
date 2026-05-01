@@ -37,6 +37,21 @@ function htmlToDocx(html) {
   return buildDocx(blocks);
 }
 
+function htmlToDocxWithImages(html, imageDatas) {
+  var blocks = htmlToBlocks(html);
+  return buildDocx(blocks, imageDatas);
+}
+
+function getImageInfos(html) {
+  var infos = [];
+  if (!html) return infos;
+  html.replace(/<img\s[^>]*?>/gi, function(match) {
+    infos.push(parseImageAttrs(match));
+    return '';
+  });
+  return infos;
+}
+
 // ---------------------------------------------------------------------------
 // HTML Parser
 // ---------------------------------------------------------------------------
@@ -56,6 +71,14 @@ function htmlToBlocks(html) {
   html = html.replace(/<table[\s\S]*?<\/table>/gi, function(match) {
     tables.push(parseTable(match));
     return '\x01TABLE_' + (tables.length - 1) + '\x01';
+  });
+
+  // Extract images, replace with placeholder tokens
+  var images = [];
+  html = html.replace(/<img\s[^>]*?>/gi, function(match) {
+    var info = parseImageAttrs(match);
+    images.push(info);
+    return '\x02IMAGE_' + (images.length - 1) + '\x02';
   });
 
   // Split remaining HTML into block elements
@@ -189,7 +212,23 @@ function parseInlineRuns(innerHtml) {
     if (t.type === 'text') {
       var text = decodeEntities(t.raw);
       // Check for line break placeholder within text
-      if (text.indexOf('\x00') >= 0) {
+      // Check for image placeholder
+      if (text.indexOf('\x02') >= 0) {
+        var imgRe = /\x02IMAGE_(\d+)\x02/g;
+        var imgMatch;
+        var imgLastIdx = 0;
+        while ((imgMatch = imgRe.exec(text)) !== null) {
+          if (imgMatch.index > imgLastIdx) {
+            var beforeText = text.substring(imgLastIdx, imgMatch.index);
+            runs.push(createRun(beforeText, state, false));
+          }
+          runs.push(createImageRun(parseInt(imgMatch[1])));
+          imgLastIdx = imgMatch.index + imgMatch[0].length;
+        }
+        if (imgLastIdx < text.length) {
+          runs.push(createRun(text.substring(imgLastIdx), state, false));
+        }
+      } else if (text.indexOf('\x00') >= 0) {
         var segments = text.split('\x00');
         for (var s = 0; s < segments.length; s++) {
           if (s > 0) {
@@ -348,6 +387,28 @@ function createRun(text, state, lineBreak) {
   };
 }
 
+function createImageRun(imageId) {
+  return {
+    text: '', bold: false, italic: false, underline: false, strike: false,
+    color: '', backgroundColor: '', fontSize: 0, fontFamily: '',
+    lineBreak: false, imageId: imageId
+  };
+}
+
+function parseImageAttrs(imgTag) {
+  var info = { src: '', width: 0, height: 0 };
+  var srcMatch = imgTag.match(/src\s*=\s*"([^"]*)"/i);
+  if (!srcMatch) srcMatch = imgTag.match(/src\s*=\s*'([^']*)'/i);
+  if (srcMatch) info.src = srcMatch[1];
+  var wMatch = imgTag.match(/width\s*=\s*"?(\d+)(px)?"?/i);
+  if (wMatch) info.width = parseInt(wMatch[1]);
+  var hMatch = imgTag.match(/height\s*=\s*"?(\d+)(px)?"?/i);
+  if (hMatch && hMatch[1].toLowerCase() !== 'auto') info.height = parseInt(hMatch[1]);
+  if (!info.width) info.width = 300;
+  if (!info.height) info.height = 200;
+  return info;
+}
+
 function coalesceRuns(runs) {
   var merged = [];
   for (var i = 0; i < runs.length; i++) {
@@ -374,7 +435,10 @@ function coalesceRuns(runs) {
 // OOXML Generators
 // ---------------------------------------------------------------------------
 
-function makeRunXml(run) {
+function makeRunXml(run, imageInfos) {
+  if (run.imageId !== undefined) {
+    return makeImageRunXml(run.imageId, imageInfos);
+  }
   var xml = '<w:r>';
   var needRPr = run.bold || run.italic || run.underline || run.strike ||
                 run.color || run.backgroundColor || run.fontSize || run.fontFamily;
@@ -399,7 +463,31 @@ function makeRunXml(run) {
   return xml;
 }
 
-function makeParagraphXml(para) {
+// EMU = pixels * 9525 (at 96 DPI)
+function pxToEmu(px) { return Math.round(px * 9525); }
+
+function makeImageRunXml(imageId, imageInfos) {
+  var info = (imageInfos && imageInfos[imageId]) || { width: 300, height: 200, ext: 'png' };
+  var cx = pxToEmu(info.width);
+  var cy = pxToEmu(info.height);
+  var rId = 'rIdImg' + (imageId + 1);
+  var name = 'image' + (imageId + 1) + '.' + (info.ext || 'png');
+
+  var xml = '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">';
+  xml += '<wp:extent cx="' + cx + '" cy="' + cy + '"/>';
+  xml += '<wp:docPr id="' + (imageId + 1) + '" name="' + name + '"/>';
+  xml += '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+  xml += '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">';
+  xml += '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">';
+  xml += '<pic:nvPicPr><pic:cNvPr id="' + (imageId + 1) + '" name="' + name + '"/><pic:cNvPicPr/></pic:nvPicPr>';
+  xml += '<pic:blipFill><a:blip r:embed="' + rId + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>';
+  xml += '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm>';
+  xml += '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>';
+  xml += '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+  return xml;
+}
+
+function makeParagraphXml(para, imageInfos) {
   var styleMap = { h1: 'Heading1', h2: 'Heading2', h3: 'Heading3', li: 'ListParagraph', p: 'Normal' };
   var styleId = styleMap[para.type] || 'Normal';
   var xml = '<w:p>';
@@ -415,7 +503,7 @@ function makeParagraphXml(para) {
 
   if (para.runs && para.runs.length > 0) {
     for (var i = 0; i < para.runs.length; i++) {
-      xml += makeRunXml(para.runs[i]);
+      xml += makeRunXml(para.runs[i], imageInfos);
     }
   } else {
     xml += '<w:r><w:t></w:t></w:r>';
@@ -424,7 +512,7 @@ function makeParagraphXml(para) {
   return xml;
 }
 
-function makeTableXml(table) {
+function makeTableXml(table, imageInfos) {
   var colCount = (table.rows && table.rows[0] && table.rows[0].cells) ? table.rows[0].cells.length : 1;
   var colWidth = Math.floor(9000 / colCount);
 
@@ -452,7 +540,7 @@ function makeTableXml(table) {
       var cell = table.rows[r].cells[c2];
       xml += '<w:tc><w:tcPr><w:tcW w:w="' + colWidth + '" w:type="dxa"/></w:tcPr>';
       if (cell.runs && cell.runs.length > 0) {
-        xml += makeParagraphXml({ type: 'p', runs: cell.runs, align: '', bullet: false });
+        xml += makeParagraphXml({ type: 'p', runs: cell.runs, align: '', bullet: false }, imageInfos);
       } else {
         xml += '<w:p><w:r><w:t></w:t></w:r></w:p>';
       }
@@ -464,14 +552,16 @@ function makeTableXml(table) {
   return xml;
 }
 
-function buildDocx(blocks) {
+function buildDocx(blocks, imageDatas) {
+  var imageInfos = imageDatas || [];
+
   var bodyXml = '';
   for (var i = 0; i < blocks.length; i++) {
     var block = blocks[i];
     if (block.type === 'table') {
-      bodyXml += makeTableXml(block);
+      bodyXml += makeTableXml(block, imageInfos);
     } else {
-      bodyXml += makeParagraphXml(block);
+      bodyXml += makeParagraphXml(block, imageInfos);
     }
   }
 
@@ -549,15 +639,26 @@ function buildDocx(blocks) {
     '</w:styles>'
   ].join('');
 
-  var contentTypesXml = [
+  // Content Types — add image extensions if present
+  var ctParts = [
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
-    '<Default Extension="xml" ContentType="application/xml"/>',
-    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>',
-    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>',
-    '</Types>'
-  ].join('');
+    '<Default Extension="xml" ContentType="application/xml"/>'
+  ];
+  var seenExt = {};
+  for (var ei = 0; ei < imageInfos.length; ei++) {
+    var ext = (imageInfos[ei].ext || 'png').toLowerCase();
+    if (!seenExt[ext]) {
+      seenExt[ext] = true;
+      var mime = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+      ctParts.push('<Default Extension="' + ext + '" ContentType="' + mime + '"/>');
+    }
+  }
+  ctParts.push('<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>');
+  ctParts.push('<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>');
+  ctParts.push('</Types>');
+  var contentTypesXml = ctParts.join('');
 
   var relsXml = [
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
@@ -566,12 +667,19 @@ function buildDocx(blocks) {
     '</Relationships>'
   ].join('');
 
-  var docRelsXml = [
+  // Document relationships — include image relationships
+  var drParts = [
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">',
-    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>',
-    '</Relationships>'
-  ].join('');
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+  ];
+  for (var dj = 0; dj < imageInfos.length; dj++) {
+    var imgExt = (imageInfos[dj].ext || 'png').toLowerCase();
+    var imgName = 'image' + (dj + 1) + '.' + imgExt;
+    drParts.push('<Relationship Id="rIdImg' + (dj + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/' + imgName + '"/>');
+  }
+  drParts.push('</Relationships>');
+  var docRelsXml = drParts.join('');
 
   var zip = createZip();
   zip.add('_rels/.rels', relsXml);
@@ -579,6 +687,16 @@ function buildDocx(blocks) {
   zip.add('word/document.xml', docXml);
   zip.add('word/_rels/document.xml.rels', docRelsXml);
   zip.add('word/styles.xml', stylesXml);
+
+  // Add image files to ZIP (skip images with null data)
+  for (var ii = 0; ii < imageInfos.length; ii++) {
+    var imgInfo = imageInfos[ii];
+    var imgExt2 = (imgInfo.ext || 'png').toLowerCase();
+    var imgPath = 'word/media/image' + (ii + 1) + '.' + imgExt2;
+    if (imgInfo.data && imgInfo.data.byteLength > 0) {
+      zip.add(imgPath, imgInfo.data);
+    }
+  }
 
   return zip.generate();
 }
@@ -610,7 +728,8 @@ function createZip() {
       for (var i = 0; i < names.length; i++) {
         var nameStr = names[i];
         var nb = strToBytes(nameStr);
-        var db = strToBytes(files[nameStr]);
+        var raw = files[nameStr];
+        var db = (raw instanceof ArrayBuffer) ? new Uint8Array(raw) : strToBytes(raw);
         var crc = crc32(db);
         entries.push({ name: nameStr, nameBytes: nb, data: db, crc: crc, localOffset: localTotal });
         localTotal += 30 + nb.length + db.length;
@@ -731,6 +850,8 @@ function base64Encode(bytes) {
 
 module.exports = {
   htmlToDocx: htmlToDocx,
+  htmlToDocxWithImages: htmlToDocxWithImages,
+  getImageInfos: getImageInfos,
   htmlToBlocks: htmlToBlocks,
   buildDocx: buildDocx,
   parseInlineRuns: parseInlineRuns,

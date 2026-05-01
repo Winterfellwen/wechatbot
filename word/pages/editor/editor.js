@@ -140,6 +140,8 @@ Page({
     this.setData({ tablePicker: false });
   },
 
+  noop: function () {},
+
   setFontSize: function (e) {
     var size = e.currentTarget.dataset.size;
     this.editorCtx && this.editorCtx.format('fontSize', size);
@@ -230,33 +232,74 @@ Page({
         }
         wx.setStorageSync(STORAGE_KEY, list);
 
-        // 生成并保存 docx 文件
-        var docxBase64 = docxLib.htmlToDocx(html);
-        var fileName = (that.data.title || '未命名文档') + '_' + now + '.docx';
-        var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
-        var buffer = wx.base64ToArrayBuffer(docxBase64);
-        wx.getFileSystemManager().writeFile({
-          filePath: filePath,
-          data: buffer,
-          encoding: 'binary',
-          success: function () {
-            that.setData({ saveStatus: '已保存并导出' });
-            that._dirty = false;
-            wx.showToast({ title: '已保存并导出', icon: 'success' });
-            wx.shareFileMessage({
-              filePath: filePath,
-              fileName: fileName,
-              fail: function (err) {
-                console.error('shareFileMessage fail:', err);
-              }
-            });
-          },
-          fail: function (err) {
-            that.setData({ saveStatus: '保存失败' });
-            wx.showToast({ title: '文件保存失败', icon: 'none' });
-            console.error('writeFile fail:', err);
+        // 提取图片信息并读取图片文件
+        var imageInfos = docxLib.getImageInfos(html);
+        if (imageInfos.length > 0) {
+          var imageDatas = [];
+          var loaded = 0;
+          var thatSave = that;
+          function tryGenerate() {
+            loaded++;
+            if (loaded === imageInfos.length) {
+              generateAndSave(imageDatas);
+            }
           }
-        });
+          for (var ii = 0; ii < imageInfos.length; ii++) {
+            (function (idx) {
+              var info = imageInfos[idx];
+              if (info.src && info.src.indexOf('wxfile') >= 0) {
+                wx.getFileSystemManager().readFile({
+                  filePath: info.src,
+                  success: function (readRes) {
+                    var ext = (info.src.match(/\.(\w+)$/) || [])[1] || 'png';
+                    imageDatas[idx] = { data: readRes.data, ext: ext, width: info.width, height: info.height };
+                    tryGenerate();
+                  },
+                  fail: function () {
+                    imageDatas[idx] = { data: null, ext: 'png', width: info.width, height: info.height };
+                    tryGenerate();
+                  }
+                });
+              } else {
+                imageDatas[idx] = { data: null, ext: 'png', width: info.width, height: info.height };
+                tryGenerate();
+              }
+            })(ii);
+          }
+        } else {
+          generateAndSave([]);
+        }
+
+        function generateAndSave(imageDatas) {
+          var docxBase64 = imageDatas.length > 0
+            ? docxLib.htmlToDocxWithImages(html, imageDatas)
+            : docxLib.htmlToDocx(html);
+          var fileName = (that.title || '未命名文档') + '_' + now + '.docx';
+          var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
+          var buffer = wx.base64ToArrayBuffer(docxBase64);
+          wx.getFileSystemManager().writeFile({
+            filePath: filePath,
+            data: buffer,
+            encoding: 'binary',
+            success: function () {
+              that.setData({ saveStatus: '已保存并导出' });
+              that._dirty = false;
+              wx.showToast({ title: '已保存并导出', icon: 'success' });
+              wx.shareFileMessage({
+                filePath: filePath,
+                fileName: fileName,
+                fail: function (err) {
+                  console.error('shareFileMessage fail:', err);
+                }
+              });
+            },
+            fail: function (err) {
+              that.setData({ saveStatus: '保存失败' });
+              wx.showToast({ title: '文件保存失败', icon: 'none' });
+              console.error('writeFile fail:', err);
+            }
+          });
+        }
       },
       fail: function () {
         that.setData({ saveStatus: '保存失败' });
