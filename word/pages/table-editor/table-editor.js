@@ -13,10 +13,11 @@ Page({
   onLoad: function (options) {
     if (options.idx !== undefined) {
       this.tableIndex = parseInt(options.idx);
-      // Load existing table data
-      var tables = this._getTables(options.id || '');
-      if (tables[this.tableIndex]) {
-        var t = tables[this.tableIndex];
+      // Load existing table data from editor handoff
+      var editData = wx.getStorageSync('word_edit_table');
+      wx.removeStorageSync('word_edit_table');
+      if (editData && editData.tables && editData.tables[this.tableIndex]) {
+        var t = editData.tables[this.tableIndex];
         this.setData({ rows: t.rows, cols: t.cols, grid: t.cells });
       }
     }
@@ -74,10 +75,4 @@ Page({
     wx.navigateBack();
   },
 
-  _getTables: function (docId) {
-    if (!docId) return [];
-    var key = 'word_tables_' + docId;
-    var raw = wx.getStorageSync(key);
-    return Array.isArray(raw) ? raw : [];
-  }
 });

@@ -45,19 +45,20 @@ Page({
   },
 
   onShow: function () {
-    // Check for pending table data from table-editor page
     var pending = wx.getStorageSync('word_pending_table');
     if (!pending) return;
     wx.removeStorageSync('word_pending_table');
     var that = this;
     if (pending.index >= 0 && pending.index < this._tableStore.length) {
-      // Edit existing table
+      // Edit existing table — just update data, placeholder stays
       this._tableStore[pending.index] = pending.data;
+      this._dirty = true;
+      this.setData({ saveStatus: '未保存' });
+      wx.showToast({ title: '表格已更新', icon: 'success' });
     } else {
-      // New table
+      // New table — add data and insert placeholder
       var idx = this._tableStore.length;
       this._tableStore.push(pending.data);
-      // Insert placeholder into editor
       if (this.editorCtx && this._loaded) {
         this.editorCtx.getContents({
           success: function (res) {
@@ -131,8 +132,34 @@ Page({
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
 
   insertTable: function () {
+    // Pass current table store so table-editor can load existing data
+    wx.setStorageSync('word_edit_table', { tables: this._tableStore, index: -1 });
     wx.navigateTo({
       url: '/word/pages/table-editor/table-editor?id=' + this.data.docId
+    });
+  },
+
+  editTable: function () {
+    var that = this;
+    if (this._tableStore.length === 0) {
+      wx.showToast({ title: '暂无表格', icon: 'none' });
+      return;
+    }
+    var items = [];
+    for (var i = 0; i < this._tableStore.length; i++) {
+      var t = this._tableStore[i];
+      items.push('表格' + (i + 1) + ' (' + t.rows + '×' + t.cols + ')');
+    }
+    wx.showActionSheet({
+      itemList: items,
+      success: function (res) {
+        var idx = res.tapIndex;
+        // Save table data before navigating
+        wx.setStorageSync('word_edit_table', { tables: that._tableStore, index: idx });
+        wx.navigateTo({
+          url: '/word/pages/table-editor/table-editor?id=' + that.data.docId + '&idx=' + idx
+        });
+      }
     });
   },
 
