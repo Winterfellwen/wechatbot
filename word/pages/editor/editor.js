@@ -247,15 +247,16 @@ Page({
           for (var ii = 0; ii < imageInfos.length; ii++) {
             (function (idx) {
               var info = imageInfos[idx];
-              if (info.src && info.src.indexOf('wxfile') >= 0) {
+              if (info.src) {
                 wx.getFileSystemManager().readFile({
                   filePath: info.src,
                   success: function (readRes) {
-                    var ext = (info.src.match(/\.(\w+)$/) || [])[1] || 'png';
+                    var ext = (info.src.match(/\.(\w+)(\?|$)/) || [])[1] || 'png';
                     imageDatas[idx] = { data: readRes.data, ext: ext, width: info.width, height: info.height };
                     tryGenerate();
                   },
-                  fail: function () {
+                  fail: function (err) {
+                    console.error('[saveDoc] read image fail:', info.src, err);
                     imageDatas[idx] = { data: null, ext: 'png', width: info.width, height: info.height };
                     tryGenerate();
                   }
