@@ -23,6 +23,13 @@ Page({
     loginLib.login().then(function (data) {
       wx.hideLoading();
       that.setData({ isLoggedIn: true, userInfo: data.user });
+      // Auto-prompt new users to set nickname
+      var nick = data.user.nickName || '';
+      if (!nick || nick.indexOf('微信用户') === 0) {
+        setTimeout(function () {
+          that.showNickInput();
+        }, 500);
+      }
       wx.showToast({ title: '登录成功', icon: 'success' });
     }).catch(function (err) {
       wx.hideLoading();
