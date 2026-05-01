@@ -26,6 +26,14 @@
     </view>
   </view>
 
+  <!-- 编辑模式说明 -->
+  <view class="mode-hint">
+    <text class="hint-local">本地</text><text class="hint-desc">：WeChat原生，轻量快速</text>
+    <text class="hint-limit">（不支持表格、部分格式可能丢失）</text>
+    <text class="hint-divider">|</text>
+    <text class="hint-online">在线</text><text class="hint-desc">：完整功能，支持表格/图片/所有格式</text>
+  </view>
+
   <!-- 排序和视图切换 -->
   <view class="toolbar-row" wx:if="{{filteredDocs.length > 0}}">
     <text class="section-title">全部文档 ({{filteredDocs.length}})</text>
@@ -62,7 +70,8 @@
         </view>
       </view>
       <view class="doc-actions">
-        <text class="action-btn edit" data-id="{{item.id}}" bindtap="openDoc">编辑</text>
+        <text class="action-btn edit" data-id="{{item.id}}" bindtap="openDoc">本地</text>
+        <text class="action-btn online" data-id="{{item.id}}" bindtap="openDocOnline">在线</text>
         <text class="action-btn save" data-id="{{item.id}}" bindtap="exportDoc">保存</text>
         <text class="action-btn del" data-id="{{item.id}}" bindtap="deleteDoc">删除</text>
       </view>

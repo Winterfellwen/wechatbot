@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Word Editor</title>
+<link href="https://unpkg.com/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://unpkg.com/quill@2.0.3/dist/quill.js"></script>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #fff; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; }
+.header .title { font-size: 16px; font-weight: bold; color: #333; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header .save-btn { padding: 8px 20px; background: #07c160; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.editor-wrap { height: calc(100vh - 52px); overflow-y: auto; }
+.ql-toolbar.ql-snow { position: sticky; top: 52px; z-index: 99; background: #fff; border-left: 0; border-right: 0; display: flex; flex-wrap: wrap; padding: 8px 12px; gap: 2px; }
+.ql-toolbar.ql-snow .ql-formats { margin-right: 4px; }
+.ql-container.ql-snow { border: 0; font-size: 16px; min-height: calc(100vh - 140px); }
+.ql-editor { padding: 20px 24px; }
+.ql-editor table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+.ql-editor table td { border: 1px solid #ccc; padding: 8px; min-width: 60px; }
+.status { text-align: center; padding: 6px; font-size: 12px; color: #999; background: #fff; border-top: 1px solid #eee; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title" id="docTitle">未命名文档</div>
+  <button class="save-btn" onclick="save()">保存</button>
+</div>
+
+<div id="toolbar">
+  <span class="ql-formats">
+    <select class="ql-header"><option value="1">H1</option><option value="2">H2</option><option value="3">H3</option><option selected>正文</option></select>
+  </span>
+  <span class="ql-formats">
+    <button class="ql-bold"></button><button class="ql-italic"></button>
+    <button class="ql-underline"></button><button class="ql-strike"></button>
+  </span>
+  <span class="ql-formats">
+    <select class="ql-color"></select><select class="ql-background"></select>
+  </span>
+  <span class="ql-formats">
+    <button class="ql-align" value=""></button><button class="ql-align" value="center"></button><button class="ql-align" value="right"></button>
+  </span>
+  <span class="ql-formats">
+    <button class="ql-list" value="ordered"></button><button class="ql-list" value="bullet"></button>
+  </span>
+  <span class="ql-formats">
+    <button class="ql-table"></button>
+    <button class="ql-image"></button>
+  </span>
+  <span class="ql-formats">
+    <button class="ql-undo"></button><button class="ql-redo"></button>
+    <button class="ql-clean"></button>
+  </span>
+</div>
+
+<div class="editor-wrap">
+  <div id="editor"></div>
+</div>
+<div class="status" id="status">加载中...</div>
+
+<script>
+// --- Quill modules ---
+var Table = Quill.import('modules/table');
+Quill.register(Table, true);
+
+// Embed blot for table support
+var BlockEmbed = Quill.import('blots/block/embed');
+var Container = Quill.import('blots/container');
+var TableBlock = Quill.import('formats/table');
+
+var quill = new Quill('#editor', {
+  theme: 'snow',
+  modules: {
+    toolbar: '#toolbar',
+    table: true,
+    keyboard: { bindings: { tab: false, 'list autofill': false } }
+  },
+  placeholder: '开始输入...'
+});
+
+// --- Load content from URL hash ---
+var docTitle = '未命名文档';
+var initialHtml = '';
+try {
+  var hash = window.location.hash.substring(1);
+  if (hash) {
+    var decoded = decodeURIComponent(escape(atob(hash)));
+    var data = JSON.parse(decoded);
+    docTitle = data.title || '未命名文档';
+    initialHtml = data.html || '';
+  }
+} catch(e) {
+  console.error('Parse hash error:', e);
+}
+document.getElementById('docTitle').textContent = docTitle;
+if (initialHtml) {
+  quill.clipboard.dangerouslyPasteHTML(initialHtml);
+}
+document.getElementById('status').textContent = '已就绪';
+
+// --- Save ---
+function save() {
+  var html = quill.root.innerHTML;
+  var title = document.getElementById('docTitle').textContent || '未命名文档';
+  document.getElementById('status').textContent = '保存中...';
+
+  try {
+    wx.miniProgram.postMessage({
+      data: {
+        html: html,
+        title: title
+      }
+    });
+  } catch(e) {
+    console.error('postMessage error:', e);
+  }
+
+  setTimeout(function() {
+    wx.miniProgram.navigateBack({ delta: 1 });
+  }, 200);
+}
+</script>
+</body>
+</html>

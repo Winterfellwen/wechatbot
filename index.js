@@ -400,6 +400,11 @@ function parseZip(buf) {
   return files;
 }
 
+// Serve Quill editor HTML page for WeChat web-view
+app.get('/word/editor', (req, res) => {
+  res.sendFile(path.join(__dirname, 'word', 'quill-editor', 'index.html'));
+});
+
 // Azure TTS API for German pronunciation
 app.post('/api/tts', async (req, res) => {
   try {

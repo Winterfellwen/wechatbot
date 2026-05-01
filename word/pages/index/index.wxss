@@ -173,16 +173,44 @@
   border-radius: 8rpx;
 }
 
+.action-btn.edit {
+  color: #333;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.action-btn.online {
+  color: #fff;
+  background: #07c160;
+  margin-left: 8rpx;
+}
+
 .action-btn.export {
   color: #2b5797;
   background: rgba(43, 87, 151, 0.08);
+  margin-left: 8rpx;
 }
 
 .action-btn.del {
   color: #e74c3c;
   background: rgba(231, 76, 60, 0.08);
-  margin-left: 12rpx;
+  margin-left: 8rpx;
 }
+
+/* 编辑模式说明 */
+.mode-hint {
+  padding: 16rpx 20rpx;
+  margin-bottom: 16rpx;
+  background: #fffbe6;
+  border-radius: 10rpx;
+  border: 1rpx solid #ffe58f;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+.hint-local { color: #333; font-weight: bold; }
+.hint-online { color: #07c160; font-weight: bold; }
+.hint-desc { color: #666; }
+.hint-limit { color: #e74c3c; font-size: 20rpx; }
+.hint-divider { color: #ddd; margin: 0 8rpx; }
 
 .empty {
   display: flex;
