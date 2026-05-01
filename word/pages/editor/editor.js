@@ -243,11 +243,11 @@ Page({
             that.setData({ saveStatus: '已保存并导出' });
             that._dirty = false;
             wx.showToast({ title: '已保存并导出', icon: 'success' });
-            wx.openDocument({
+            wx.shareFileMessage({
               filePath: filePath,
-              showMenu: true,
+              fileName: fileName,
               fail: function (err) {
-                console.error('openDocument fail:', err);
+                console.error('shareFileMessage fail:', err);
               }
             });
           },

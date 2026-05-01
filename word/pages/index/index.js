@@ -230,11 +230,6 @@ Page({
     if (!html) { wx.showToast({ title: '文档内容为空', icon: 'none' }); return; }
     wx.showLoading({ title: '生成中...' });
     var docxBase64 = docxLib.htmlToDocx(html);
-    console.log('[export] html length:', (html || '').length, 'paragraphs length:', (paragraphs || []).length, 'docxBase64 length:', (docxBase64 || '').length);
-    if (!docxBase64 || docxBase64.length < 100) {
-      wx.showModal({ title: '调试信息', content: 'html长度:' + (html || '').length + ' paragraphs:' + (paragraphs || []).length + ' docxBase64长度:' + (docxBase64 || '').length + ' 前50字符:' + (docxBase64 || '').substring(0, 50), showCancel: false });
-      return;
-    }
     var fileName = (doc.title || '未命名文档') + '.docx';
     var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
     var buffer = wx.base64ToArrayBuffer(docxBase64);
@@ -244,27 +239,11 @@ Page({
       encoding: 'binary',
       success: function () {
         wx.hideLoading();
-        // Optionally verify written file
-        wx.getFileSystemManager().readFile({
+        wx.shareFileMessage({
           filePath: filePath,
-          success: function (readRes) {
-            var view = new Uint8Array(readRes.data);
-            var header = '';
-            for (var i = 0; i < Math.min(4, view.length); i++) {
-              header += view[i].toString(16).padStart(2, '0');
-            }
-            console.log('[written] first 4 bytes:', header, 'length:', readRes.data.byteLength);
-          },
-          fail: function (err) {
-            console.error('[written] read back failed:', err);
-          }
-        });
-        wx.openDocument({
-          filePath: filePath,
-          fileType: 'docx',
-          showMenu: true,
+          fileName: fileName,
           success: function () { wx.showToast({ title: '已保存', icon: 'success' }); },
-          fail: function () { wx.showToast({ title: '打开失败', icon: 'none' }); }
+          fail: function () { wx.showToast({ title: '分享失败', icon: 'none' }); }
         });
       },
       fail: function (err) {
