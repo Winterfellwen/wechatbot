@@ -72,9 +72,11 @@ app.post('/api/auth/login', async (req, res) => {
 
     var user, token;
     if (userResult.rows.length > 0) {
+      var existing = userResult.rows[0];
+      if (existing.deleted) return res.status(403).json({ error: '该账号已注销' });
       token = generateToken();
       await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
-      user = userResult.rows[0];
+      user = existing;
     } else {
       var countResult = await pool.query('SELECT COUNT(*) FROM users');
       var count = parseInt(countResult.rows[0].count) + 1;
@@ -125,7 +127,7 @@ app.put('/api/users/me', requireAuth, async (req, res) => {
 
 app.delete('/api/users/me', requireAuth, async (req, res) => {
   try {
-    await pool.query('DELETE FROM users WHERE openid = $1', [req.user.openid]);
+    await pool.query('UPDATE users SET deleted = true, token = NULL WHERE openid = $1', [req.user.openid]);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -150,8 +152,8 @@ app.get('/api/init', async (req, res) => {
         updatedAt TIMESTAMP DEFAULT NOW()
       )
     `);
-    // Add token column to existing tables that don't have it
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
     res.json({ status: 'ok', message: 'Users table ready' });
   } catch (err) {
     res.status(500).json({ error: err.message });
