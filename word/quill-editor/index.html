@@ -63,24 +63,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div class="status" id="status">加载中...</div>
 
 <script>
-// --- Quill modules ---
-var Table = Quill.import('modules/table');
-Quill.register(Table, true);
-
-// Embed blot for table support
-var BlockEmbed = Quill.import('blots/block/embed');
-var Container = Quill.import('blots/container');
-var TableBlock = Quill.import('formats/table');
-
-var quill = new Quill('#editor', {
-  theme: 'snow',
-  modules: {
-    toolbar: '#toolbar',
-    table: true,
-    keyboard: { bindings: { tab: false, 'list autofill': false } }
-  },
-  placeholder: '开始输入...'
-});
+// --- Initialize Quill ---
+var quill;
+try {
+  quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: '#toolbar',
+      keyboard: { bindings: { tab: false } }
+    },
+    placeholder: '开始输入...'
+  });
+  document.getElementById('status').textContent = '已就绪';
+} catch(e) {
+  document.getElementById('status').textContent = 'Quill加载失败: ' + e.message;
+  console.error('Quill init error:', e);
+}
 
 // --- URL-safe base64 decode ---
 function base64Decode(str) {
@@ -115,14 +113,13 @@ try {
   document.getElementById('status').textContent = '加载失败: ' + e.message;
 }
 document.getElementById('docTitle').textContent = docTitle;
-if (initialHtml) {
-  quill.clipboard.dangerouslyPasteHTML(initialHtml);
+if (initialHtml && quill) {
+  try { quill.clipboard.dangerouslyPasteHTML(initialHtml); } catch(e) { quill.root.innerHTML = initialHtml; }
 }
-document.getElementById('status').textContent = '已就绪';
 
 // --- Save ---
 function save() {
-  var html = quill.root.innerHTML;
+  var html = quill ? quill.root.innerHTML : '';
   var title = document.getElementById('docTitle').textContent || '未命名文档';
   document.getElementById('status').textContent = '保存中...';
 
