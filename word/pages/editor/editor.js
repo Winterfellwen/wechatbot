@@ -34,11 +34,41 @@ Page({
   _loaded: false,
   _dirty: false,
   _imageStore: {},
+  _tableStore: [],
 
   onLoad: function (options) {
     this.setData({ docId: options.id || '' });
     var doc = this._findDoc(options.id);
     if (doc) this.setData({ title: doc.title });
+    // Load existing tables for this document
+    if (doc && doc.tables) this._tableStore = doc.tables.slice();
+  },
+
+  onShow: function () {
+    // Check for pending table data from table-editor page
+    var pending = wx.getStorageSync('word_pending_table');
+    if (!pending) return;
+    wx.removeStorageSync('word_pending_table');
+    var that = this;
+    if (pending.index >= 0 && pending.index < this._tableStore.length) {
+      // Edit existing table
+      this._tableStore[pending.index] = pending.data;
+    } else {
+      // New table
+      var idx = this._tableStore.length;
+      this._tableStore.push(pending.data);
+      // Insert placeholder into editor
+      if (this.editorCtx && this._loaded) {
+        this.editorCtx.getContents({
+          success: function (res) {
+            var html = (res.html || '') + '<p>【表格' + (idx + 1) + '】</p>';
+            that.editorCtx.setContents({ html: html });
+            that._dirty = true;
+            that.setData({ saveStatus: '未保存' });
+          }
+        });
+      }
+    }
   },
 
   onEditorReady: function () {
@@ -99,6 +129,12 @@ Page({
   undo: function () { this.editorCtx && this.editorCtx.undo(); },
   redo: function () { this.editorCtx && this.editorCtx.redo(); },
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
+
+  insertTable: function () {
+    wx.navigateTo({
+      url: '/word/pages/table-editor/table-editor?id=' + this.data.docId
+    });
+  },
 
   setFontSize: function (e) {
     var size = e.currentTarget.dataset.size;
@@ -203,6 +239,7 @@ Page({
           list[idx].title = that.data.title || '未命名文档';
           list[idx].content = content;
           list[idx].updatedAt = now;
+          list[idx].tables = that._tableStore.slice();
         }
         wx.setStorageSync(STORAGE_KEY, list);
 
@@ -271,8 +308,8 @@ Page({
 
         function generateAndSave(imageDatas) {
           var docxBase64 = imageDatas.length > 0
-            ? docxLib.htmlToDocxWithImages(html, imageDatas)
-            : docxLib.htmlToDocx(html);
+            ? docxLib.htmlToDocxWithImages(html, imageDatas, that._tableStore)
+            : docxLib.htmlToDocx(html, that._tableStore);
           var fileName = (that.title || '未命名文档') + '_' + now + '.docx';
           var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
           var buffer = wx.base64ToArrayBuffer(docxBase64);

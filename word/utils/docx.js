@@ -32,13 +32,13 @@ var TAG_DISPATCH = {
 // Public API
 // ---------------------------------------------------------------------------
 
-function htmlToDocx(html) {
-  var blocks = htmlToBlocks(html);
+function htmlToDocx(html, tableStore) {
+  var blocks = htmlToBlocks(html, tableStore);
   return buildDocx(blocks);
 }
 
-function htmlToDocxWithImages(html, imageDatas) {
-  var blocks = htmlToBlocks(html);
+function htmlToDocxWithImages(html, imageDatas, tableStore) {
+  var blocks = htmlToBlocks(html, tableStore);
   return buildDocx(blocks, imageDatas);
 }
 
@@ -56,8 +56,13 @@ function getImageInfos(html) {
 // HTML Parser
 // ---------------------------------------------------------------------------
 
-function htmlToBlocks(html) {
+function htmlToBlocks(html, tableStore) {
   if (!html || !html.trim()) return [{ type: 'p', runs: [] }];
+
+  // Replace 【表格N】 placeholders with table blocks (before other parsing)
+  // We'll handle these in the main processing loop after splitBlocks
+  var tablePlaceholders = tableStore || [];
+  var hasPlaceholders = tablePlaceholders.length > 0;
 
   // Normalize: <br> to placeholder, <div>/<section> to <p>
   html = html.replace(/<br\s*\/?>/gi, '\x00');
@@ -100,32 +105,49 @@ function htmlToBlocks(html) {
     }
 
     if (tableMatches.length > 0) {
-      // Process inner in segments: text segments become paragraphs, placeholders become tables
       var parentAlign = extractAlign(part.attrs || '');
       var lastPos = 0;
       for (var ti = 0; ti < tableMatches.length; ti++) {
         var tMatch = tableMatches[ti];
-        // Text before this placeholder
         if (tMatch.pos > lastPos) {
           var textBefore = inner.substring(lastPos, tMatch.pos).trim();
           if (textBefore) {
-            var beforeRuns = parseInlineRuns(textBefore);
-            blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: beforeRuns });
+            blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: parseInlineRuns(textBefore) });
           }
         }
-        // The table
         blocks.push(tables[tMatch.idx]);
         lastPos = tMatch.pos + tMatch.len;
       }
-      // Text after last placeholder
       if (lastPos < inner.length) {
         var textAfter = inner.substring(lastPos).trim();
         if (textAfter) {
-          var afterRuns = parseInlineRuns(textAfter);
-          blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: afterRuns });
+          blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: parseInlineRuns(textAfter) });
         }
       }
       continue;
+    }
+
+    // Check for 【表格N】 placeholder — convert to table block from tableStore
+    if (hasPlaceholders) {
+      var tblRe = /【表格(\d+)】/;
+      var tblMatch = inner.trim().match(tblRe);
+      if (tblMatch) {
+        var tblIdx = parseInt(tblMatch[1]) - 1;
+        if (tblIdx >= 0 && tblIdx < tablePlaceholders.length) {
+          var tblData = tablePlaceholders[tblIdx];
+          var tblBlock = { type: 'table', rows: [] };
+          for (var rr = 0; rr < tblData.rows; rr++) {
+            var rowCells = [];
+            for (var cc = 0; cc < tblData.cols; cc++) {
+              var cellText = (tblData.cells[rr] && tblData.cells[rr][cc]) || '';
+              rowCells.push({ runs: [{ text: cellText, bold: rr === 0, italic: false, underline: false, strike: false, color: '', backgroundColor: '', fontSize: 0, fontFamily: '', lineBreak: false }] });
+            }
+            tblBlock.rows.push({ cells: rowCells });
+          }
+          blocks.push(tblBlock);
+          continue;
+        }
+      }
     }
 
     var align = extractAlign(part.attrs || '');
