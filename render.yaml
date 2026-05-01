@@ -9,6 +9,10 @@ services:
         value: "20"
       - key: DATABASE_URL
         sync: false
+      - key: WECHAT_APP_ID
+        value: "wx2510f82943d7741e"
+      - key: WECHAT_APP_SECRET
+        sync: false
       - key: OPENROUTER_KEY
         sync: false
       - key: PDF_SERVICE_URL
