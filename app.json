@@ -22,7 +22,6 @@
     "german/pages/leaderboard/leaderboard",
     "word/pages/index/index",
     "word/pages/editor/editor",
-    "word/pages/quill-editor/quill-editor",
     "word/pages/table-editor/table-editor",
     "pages/user/user"
   ],

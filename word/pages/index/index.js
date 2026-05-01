@@ -201,11 +201,6 @@ Page({
     wx.navigateTo({ url: '/word/pages/editor/editor?id=' + id });
   },
 
-  openDocOnline: function (e) {
-    var id = e.currentTarget.dataset.id;
-    wx.navigateTo({ url: '/word/pages/quill-editor/quill-editor?id=' + id });
-  },
-
   deleteDoc: function (e) {
     var id = e.currentTarget.dataset.id;
     var that = this;

@@ -225,24 +225,12 @@ Page({
     });
   },
 
-  // Render table data as visible formatted text for the editor
+  // Render table as a compact placeholder in editor (full table visible in preview mode)
   _renderTableAsText: function (tableIdx) {
     var t = this._tableStore[tableIdx];
     if (!t) return '';
     var n = tableIdx + 1;
-    var html = '<p style="background-color:#e8e8e8;text-align:center;padding:4px 0;">▦ 表格' + n + ' (' + t.rows + '×' + t.cols + ')</p>';
-    for (var r = 0; r < t.rows; r++) {
-      var rowBg = r === 0 ? '#eef2f7' : '#fff';
-      var rowHtml = '';
-      for (var c = 0; c < t.cols; c++) {
-        var cell = (t.cells[r] && t.cells[r][c]) || '';
-        if (c > 0) rowHtml += ' │ ';
-        rowHtml += r === 0 ? '<b>' + cell + '</b>' : cell;
-      }
-      html += '<p style="background-color:' + rowBg + ';padding:4px 8px;margin:0;">' + rowHtml + '</p>';
-    }
-    html += '<p style="background-color:#e8e8e8;text-align:center;padding:2px 0;font-size:small;color:#888;">✎ 点击上方编辑表格</p>';
-    return html;
+    return '<p style="background-color:#f0f0f0;text-align:center;">▦ 表格' + n + ' (' + t.rows + '行×' + t.cols + '列) — 预览模式查看完整表格</p>';
   },
 
   pickColor: function (e) {
