@@ -27,7 +27,9 @@ Page({
     fontFamilies: ['微软雅黑', '宋体', '黑体', '楷体', 'Arial', 'Times New Roman'],
     toolbarExpanded: false,
     showColorPicker: false,
-    colorTarget: 'color'
+    colorTarget: 'color',
+    previewMode: false,
+    previewNodes: ''
   },
 
   editorCtx: null,
@@ -175,6 +177,51 @@ Page({
 
   toggleExpand: function () {
     this.setData({ toolbarExpanded: !this.data.toolbarExpanded });
+  },
+
+  togglePreview: function () {
+    var that = this;
+    if (!this.data.previewMode) {
+      // Switch to preview: get editor content, build preview HTML
+      if (!this.editorCtx) return;
+      this.editorCtx.getContents({
+        success: function (res) {
+          var html = res.html || '';
+          // Replace 【表格N】 placeholders with real table HTML for display
+          html = that._renderTablesInHtml(html);
+          that.setData({ previewMode: true, previewNodes: html });
+        }
+      });
+    } else {
+      this.setData({ previewMode: false });
+    }
+  },
+
+  _renderTablesInHtml: function (html) {
+    // Replace 【表格N】 placeholders with actual <table> HTML
+    var store = this._tableStore;
+    return html.replace(/【表格(\d+)】/g, function (match, num) {
+      var idx = parseInt(num) - 1;
+      if (idx >= 0 && idx < store.length) {
+        var t = store[idx];
+        var tbl = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
+        for (var r = 0; r < t.rows; r++) {
+          tbl += '<tr>';
+          for (var c = 0; c < t.cols; c++) {
+            var cellText = (t.cells[r] && t.cells[r][c]) || '';
+            if (r === 0) {
+              tbl += '<th style="border:1px solid #999;padding:8px;background:#f0f0f0;">' + cellText + '</th>';
+            } else {
+              tbl += '<td style="border:1px solid #ccc;padding:8px;">' + cellText + '</td>';
+            }
+          }
+          tbl += '</tr>';
+        }
+        tbl += '</table>';
+        return tbl;
+      }
+      return match;
+    });
   },
 
   pickColor: function (e) {

@@ -2,8 +2,12 @@
 <view class="editor-page">
   <!-- 顶部导航栏 -->
   <view class="top-bar">
-    <input class="title-input-top" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" />
+    <input class="title-input-top" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" wx:if="{{!previewMode}}" />
+    <text class="title-text" wx:if="{{previewMode}}">{{title}}</text>
     <view class="top-actions">
+      <view class="mode-btn" bindtap="togglePreview">
+        <text>{{previewMode ? '✎编辑' : '👁预览'}}</text>
+      </view>
       <view class="save-btn-top {{saveStatus === '保存中...' ? 'disabled' : ''}}" bindtap="saveDoc">
         <text>{{saveStatus === '保存中...' ? '保存中...' : '保存'}}</text>
       </view>
@@ -11,8 +15,8 @@
     </view>
   </view>
 
-  <!-- 工具栏（折叠状态） -->
-  <view class="toolbar">
+  <!-- 工具栏 - 仅编辑模式 -->
+  <view class="toolbar" wx:if="{{!previewMode}}">
     <view class="tool-row">
       <view class="tool-btn {{fmt.bold ? 'active' : ''}}" bindtap="toggleBold">
         <text class="tool-label bold">B</text>
@@ -98,6 +102,9 @@
       <view class="tool-btn" bindtap="insertTable">
         <text class="tool-label">⊞表格</text>
       </view>
+      <view class="tool-btn" bindtap="editTable">
+        <text class="tool-label">✎表格</text>
+      </view>
       <view class="tool-btn" bindtap="clearFormat">
         <text class="tool-label">清除格式</text>
       </view>
@@ -125,7 +132,7 @@
   </view>
 
   <!-- 编辑区 -->
-  <view class="editor-wrap">
+  <view class="editor-wrap" wx:if="{{!previewMode}}">
     <editor
       id="editor"
       class="editor"
@@ -136,6 +143,11 @@
       bindready="onEditorReady"
       bindinput="onEditorInput"
     ></editor>
+  </view>
+
+  <!-- 预览区 -->
+  <view class="preview-wrap" wx:if="{{previewMode}}">
+    <rich-text nodes="{{previewNodes}}" class="preview-content"></rich-text>
   </view>
 
   <!-- 底部状态栏 -->
