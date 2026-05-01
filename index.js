@@ -11,6 +11,28 @@ app.use(express.json());
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
+// --- Auth helpers ---
+function generateToken() {
+  var chars = 'abcdef0123456789';
+  var token = '';
+  for (var i = 0; i < 32; i++) token += chars[Math.floor(Math.random() * chars.length)];
+  return token;
+}
+
+async function requireAuth(req, res, next) {
+  var authHeader = req.headers.authorization || '';
+  var token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!token || !pool) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    var result = await pool.query('SELECT * FROM users WHERE token = $1', [token]);
+    if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid token' });
+    req.user = result.rows[0];
+    next();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 console.log('DATABASE_URL:', DATABASE_URL ? 'set' : 'NOT SET');
 
 if (!DATABASE_URL) {
@@ -21,28 +43,88 @@ const pool = DATABASE_URL ? new Pool({
   connectionString: DATABASE_URL,
 }) : null;
 
-const APP_ID = 'wx2510f82943d7741e';
-const APP_SECRET = '2ebc324a6ee1d9baabf7223511006366';
+const APP_ID = process.env.WECHAT_APP_ID;
+const APP_SECRET = process.env.WECHAT_APP_SECRET;
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/wechat/openid', async (req, res) => {
+// --- Auth routes ---
+
+app.post('/api/auth/login', async (req, res) => {
+  if (!pool) return res.status(503).json({ error: 'Database not available' });
   try {
-    const { code } = req.query;
-    if (!code) {
-      return res.status(400).json({ error: 'Missing code' });
+    var code = req.body.code;
+    if (!code) return res.status(400).json({ error: 'Missing code' });
+
+    var wxRes = await fetch(
+      'https://api.weixin.qq.com/sns/jscode2session?appid=' + APP_ID +
+      '&secret=' + APP_SECRET + '&js_code=' + code + '&grant_type=authorization_code'
+    );
+    var wxData = await wxRes.json();
+    if (wxData.errcode) return res.status(400).json({ error: wxData.errmsg });
+    var openid = wxData.openid;
+
+    var userResult = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
+
+    var user, token;
+    if (userResult.rows.length > 0) {
+      token = generateToken();
+      await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
+      user = userResult.rows[0];
+    } else {
+      var countResult = await pool.query('SELECT COUNT(*) FROM users');
+      var count = parseInt(countResult.rows[0].count) + 1;
+      var nickName = '微信用户' + String(count).padStart(3, '0');
+      token = generateToken();
+      var insertResult = await pool.query(
+        'INSERT INTO users (openid, nickName, token, createdAt, updatedAt) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+        [openid, nickName, token]
+      );
+      user = insertResult.rows[0];
     }
-    
-    const response = await fetch(`https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${APP_SECRET}&js_code=${code}&grant_type=authorization_code`);
-    const data = await response.json();
-    
-    if (data.errcode) {
-      return res.status(400).json({ error: data.errmsg });
-    }
-    
-    res.json({ openid: data.openid, session_key: data.session_key });
+
+    res.json({
+      token: token,
+      user: { openid: user.openid, nickName: user.nickname, avatarUrl: user.avatarurl || '' }
+    });
+  } catch (err) {
+    console.error('POST /api/auth/login error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/logout', requireAuth, async (req, res) => {
+  try {
+    await pool.query('UPDATE users SET token = NULL WHERE openid = $1', [req.user.openid]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/users/me', requireAuth, async (req, res) => {
+  res.json({ openid: req.user.openid, nickName: req.user.nickname, avatarUrl: req.user.avatarurl || '' });
+});
+
+app.put('/api/users/me', requireAuth, async (req, res) => {
+  try {
+    var result = await pool.query(
+      'UPDATE users SET nickName = COALESCE($1, nickName), avatarUrl = COALESCE($2, avatarUrl), updatedAt = NOW() WHERE openid = $3 RETURNING *',
+      [req.body.nickName || null, req.body.avatarUrl || null, req.user.openid]
+    );
+    var u = result.rows[0];
+    res.json({ openid: u.openid, nickName: u.nickname, avatarUrl: u.avatarurl || '' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/users/me', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE openid = $1', [req.user.openid]);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -56,6 +138,7 @@ app.get('/api/init', async (req, res) => {
         openid VARCHAR(255) PRIMARY KEY,
         nickName VARCHAR(255),
         avatarUrl TEXT,
+        token VARCHAR(64),
         gender INTEGER,
         country VARCHAR(100),
         province VARCHAR(100),
@@ -65,95 +148,10 @@ app.get('/api/init', async (req, res) => {
         updatedAt TIMESTAMP DEFAULT NOW()
       )
     `);
-    res.json({ status: 'ok', message: 'Users table created' });
+    // Add token column to existing tables that don't have it
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
+    res.json({ status: 'ok', message: 'Users table ready' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/users/:openid', async (req, res) => {
-  try {
-    if (!pool) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-    const { openid } = req.params;
-    const { nickName, avatarUrl } = req.body;
-    
-    const result = await pool.query(
-      `INSERT INTO users (openid, nickName, avatarUrl, createdAt, updatedAt)
-       VALUES ($1, $2, $3, NOW(), NOW())
-       ON CONFLICT (openid) DO UPDATE SET
-         nickName = COALESCE(EXCLUDED.nickName, users.nickName),
-         avatarUrl = COALESCE(EXCLUDED.avatarUrl, users.avatarUrl),
-         updatedAt = NOW()
-       RETURNING *`,
-      [openid, nickName, avatarUrl || null]
-    );
-    
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('POST /api/users/:openid error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/users/:openid', async (req, res) => {
-  try {
-    if (!pool) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-    const { openid } = req.params;
-    const result = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('GET /api/users/:openid error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.delete('/api/users/:openid', async (req, res) => {
-  try {
-    if (!pool) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-    const { openid } = req.params;
-    
-    await pool.query('DELETE FROM users WHERE openid = $1', [openid]);
-    
-    res.json({ success: true });
-  } catch (err) {
-    console.error('DELETE /api/users/:openid error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/users/:openid/wx-login', async (req, res) => {
-  try {
-    if (!pool) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-    const { openid } = req.params;
-    
-    const countResult = await pool.query('SELECT COUNT(*) FROM users');
-    const count = parseInt(countResult.rows[0].count) + 1;
-    const nickName = '微信用户' + String(count).padStart(3, '0');
-    
-    const result = await pool.query(
-      `INSERT INTO users (openid, nickName, createdAt, updatedAt)
-       VALUES ($1, $2, NOW(), NOW())
-       ON CONFLICT (openid) DO UPDATE SET updatedAt = NOW()
-       RETURNING *`,
-      [openid, nickName]
-    );
-    
-    res.json({ user: result.rows[0] });
-  } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
