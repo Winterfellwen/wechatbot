@@ -36,6 +36,7 @@ Page({
   editorCtx: null,
   _loaded: false,
   _dirty: false,
+  _imageStore: {},
 
   onLoad: function (options) {
     this.setData({ docId: options.id || '' });
@@ -186,29 +187,45 @@ Page({
       sourceType: ['album', 'camera'],
       success: function (res) {
         var tempFilePath = res.tempFilePaths[0];
-        wx.getImageInfo({
-          src: tempFilePath,
-          success: function (imgInfo) {
-            var maxWidth = 600;
-            var width = imgInfo.width;
-            var height = imgInfo.height;
-            if (width > maxWidth) {
-              height = Math.round(height * maxWidth / width);
-              width = maxWidth;
-            }
-            that.editorCtx && that.editorCtx.insertImage({
-              src: tempFilePath,
-              width: width + 'px',
-              height: height + 'px'
-            });
+        // Read image data immediately while temp file is guaranteed valid
+        wx.getFileSystemManager().readFile({
+          filePath: tempFilePath,
+          success: function (readRes) {
+            var ext = (tempFilePath.match(/\.(\w+)(\?|$)/) || [])[1] || 'png';
+            that._imageStore[tempFilePath] = { data: readRes.data, ext: ext };
+            that._insertImageToEditor(tempFilePath);
           },
           fail: function () {
-            that.editorCtx && that.editorCtx.insertImage({
-              src: tempFilePath,
-              width: '300px',
-              height: 'auto'
-            });
+            that._insertImageToEditor(tempFilePath);
           }
+        });
+      }
+    });
+  },
+
+  _insertImageToEditor: function (tempFilePath) {
+    var that = this;
+    wx.getImageInfo({
+      src: tempFilePath,
+      success: function (imgInfo) {
+        var maxWidth = 600;
+        var width = imgInfo.width;
+        var height = imgInfo.height;
+        if (width > maxWidth) {
+          height = Math.round(height * maxWidth / width);
+          width = maxWidth;
+        }
+        that.editorCtx && that.editorCtx.insertImage({
+          src: tempFilePath,
+          width: width + 'px',
+          height: height + 'px'
+        });
+      },
+      fail: function () {
+        that.editorCtx && that.editorCtx.insertImage({
+          src: tempFilePath,
+          width: '300px',
+          height: 'auto'
         });
       }
     });
@@ -232,12 +249,20 @@ Page({
         }
         wx.setStorageSync(STORAGE_KEY, list);
 
-        // 提取图片信息并读取图片文件
+        // 提取图片信息并组装图片数据
         var imageInfos = docxLib.getImageInfos(html);
+        console.log('[saveDoc] imageInfos count:', imageInfos.length, 'html length:', html.length);
+        if (imageInfos.length > 0) {
+          for (var dbg = 0; dbg < imageInfos.length; dbg++) {
+            console.log('[saveDoc] image ' + dbg + ':', JSON.stringify(imageInfos[dbg]));
+          }
+          // Try to use cached image data from insertImage
+          var cachedKeys = Object.keys(that._imageStore);
+          console.log('[saveDoc] cached images:', cachedKeys.length);
+        }
         if (imageInfos.length > 0) {
           var imageDatas = [];
           var loaded = 0;
-          var thatSave = that;
           function tryGenerate() {
             loaded++;
             if (loaded === imageInfos.length) {
@@ -247,7 +272,23 @@ Page({
           for (var ii = 0; ii < imageInfos.length; ii++) {
             (function (idx) {
               var info = imageInfos[idx];
-              if (info.src) {
+              // Try cache lookup by src first
+              var cached = that._imageStore[info.src];
+              if (!cached) {
+                // Try suffix match (editor may normalize paths)
+                var keys = Object.keys(that._imageStore);
+                for (var ki = 0; ki < keys.length; ki++) {
+                  if (info.src.indexOf(keys[ki]) >= 0 || keys[ki].indexOf(info.src) >= 0) {
+                    cached = that._imageStore[keys[ki]];
+                    break;
+                  }
+                }
+              }
+              if (cached) {
+                imageDatas[idx] = { data: cached.data, ext: cached.ext, width: info.width, height: info.height };
+                tryGenerate();
+              } else if (info.src) {
+                // Fallback: try reading the file directly
                 wx.getFileSystemManager().readFile({
                   filePath: info.src,
                   success: function (readRes) {
