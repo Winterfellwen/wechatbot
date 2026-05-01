@@ -43,8 +43,8 @@ const pool = DATABASE_URL ? new Pool({
   connectionString: DATABASE_URL,
 }) : null;
 
-const APP_ID = process.env.WECHAT_APP_ID || process.env.WECHAT_APPID;
-const APP_SECRET = process.env.WECHAT_APP_SECRET || process.env.WECHAT_APPSECRET;
+const APP_ID = process.env.WECHAT_APP_ID;
+const APP_SECRET = process.env.WECHAT_APP_SECRET;
 
 console.log('WECHAT_APP_ID:', APP_ID ? APP_ID.substring(0, 6) + '...' : 'NOT SET');
 console.log('WECHAT_APP_SECRET:', APP_SECRET ? 'set (length=' + APP_SECRET.length + ')' : 'NOT SET');
