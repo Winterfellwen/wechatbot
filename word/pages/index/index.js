@@ -239,11 +239,12 @@ Page({
       encoding: 'binary',
       success: function () {
         wx.hideLoading();
-        wx.shareFileMessage({
+        wx.openDocument({
           filePath: filePath,
-          fileName: fileName,
+          fileType: 'docx',
+          showMenu: true,
           success: function () { wx.showToast({ title: '已保存', icon: 'success' }); },
-          fail: function () { wx.showToast({ title: '分享失败', icon: 'none' }); }
+          fail: function () { wx.showToast({ title: '打开失败', icon: 'none' }); }
         });
       },
       fail: function (err) {

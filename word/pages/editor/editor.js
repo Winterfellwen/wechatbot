@@ -327,11 +327,12 @@ Page({
               that.setData({ saveStatus: '已保存并导出' });
               that._dirty = false;
               wx.showToast({ title: '已保存并导出', icon: 'success' });
-              wx.shareFileMessage({
+              wx.openDocument({
                 filePath: filePath,
-                fileName: fileName,
+                fileType: 'docx',
+                showMenu: true,
                 fail: function (err) {
-                  console.error('shareFileMessage fail:', err);
+                  console.error('openDocument fail:', err);
                 }
               });
             },
