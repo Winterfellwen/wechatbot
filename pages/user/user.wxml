@@ -1,45 +1,44 @@
-<view class="container">
-  <view class="user-header" bindtap="handleUserTap">
-    <view class="user-info">
-      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" wx:if="{{isLoggedIn}}">
-        <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
-      </button>
-      <image wx:else class="user-avatar" src="/images/avatar-default.png" mode="aspectFill"></image>
-      <view class="user-detail">
-        <text class="user-nickname">{{userInfo.nickName || '游客'}}</text>
-        <text class="user-status">{{isLoggedIn ? '已登录' : '点击头像登录'}}</text>
-      </view>
-    </view>
+<!--pages/user/user.wxml-->
+<view class="page">
+  <!-- Not logged in -->
+  <view class="login-section" wx:if="{{!isLoggedIn}}">
+    <image class="avatar-lg" src="/images/avatar-default.png" mode="aspectFill"></image>
+    <text class="login-desc">微信一键登录，同步文档数据</text>
+    <button class="login-btn" bindtap="handleLogin">微信一键登录</button>
   </view>
 
-  <view class="user-content">
-    <view class="btn-group" wx:if="{{!isLoggedIn}}">
-      <button class="btn-primary" bindtap="login">微信一键登录</button>
+  <!-- Logged in -->
+  <view class="profile-section" wx:if="{{isLoggedIn}}">
+    <!-- Avatar -->
+    <view class="avatar-row">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar-lg" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+      </button>
     </view>
 
-    <view class="info-card" wx:if="{{isLoggedIn}}">
-      <view class="info-item" bindtap="handleNicknameTap">
-        <text class="info-label">昵称</text>
-        <view class="info-value-wrap">
-          <text class="info-value">{{userInfo.nickName || '-'}}</text>
-          <text class="info-arrow">></text>
-        </view>
-      </view>
-      <view class="info-item" bindtap="handleChooseAvatarTap">
-        <text class="info-label">头像</text>
-        <text class="info-value">{{userInfo.avatarUrl ? '已设置' : '点击设置'}}</text>
-      </view>
-      <view class="info-item">
-        <text class="info-label">状态</text>
-        <text class="info-value">已登录</text>
+    <!-- Nickname -->
+    <view class="nick-row" wx:if="{{!showNickInput}}">
+      <text class="nickname">{{userInfo.nickName || '微信用户'}}</text>
+      <text class="edit-link" bindtap="showNickInput">修改昵称</text>
+    </view>
+    <view class="nick-input-row" wx:if="{{showNickInput}}">
+      <input class="nick-input" type="nickname" placeholder="请输入昵称" value="{{nickName}}" bindinput="onNickInput" focus="{{true}}" />
+      <view class="nick-actions">
+        <text class="btn-cancel" bindtap="cancelNickname">取消</text>
+        <text class="btn-confirm" bindtap="confirmNickname">确定</text>
       </view>
     </view>
 
-    <view class="btn-group">
-      <button class="btn-primary" bindtap="handleLogout" wx:if="{{isLoggedIn}}">退出登录</button>
-    </view>
-    <view class="btn-group">
-      <button class="btn-danger" bindtap="handleDeleteAccount" wx:if="{{isLoggedIn}}">注销账号</button>
+    <view class="divider"></view>
+
+    <!-- Danger zone -->
+    <view class="danger-zone">
+      <view class="danger-item" bindtap="handleLogout">
+        <text class="danger-text">退出登录</text>
+      </view>
+      <view class="danger-item" bindtap="handleDeleteAccount">
+        <text class="danger-text">注销账号</text>
+      </view>
     </view>
   </view>
 </view>
