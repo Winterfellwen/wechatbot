@@ -66,8 +66,47 @@ function htmlToBlocks(html) {
       blocks.push(tables[part.tableIdx]);
       continue;
     }
+
+    // Check if inner HTML contains table placeholders (e.g. <p> wraps a table)
+    var inner = part.inner || '';
+    var tableRe = /\x01TABLE_(\d+)\x01/g;
+    var tableMatches = [];
+    var tm;
+    while ((tm = tableRe.exec(inner)) !== null) {
+      tableMatches.push({ idx: parseInt(tm[1]), pos: tm.index, len: tm[0].length });
+    }
+
+    if (tableMatches.length > 0) {
+      // Process inner in segments: text segments become paragraphs, placeholders become tables
+      var parentAlign = extractAlign(part.attrs || '');
+      var lastPos = 0;
+      for (var ti = 0; ti < tableMatches.length; ti++) {
+        var tMatch = tableMatches[ti];
+        // Text before this placeholder
+        if (tMatch.pos > lastPos) {
+          var textBefore = inner.substring(lastPos, tMatch.pos).trim();
+          if (textBefore) {
+            var beforeRuns = parseInlineRuns(textBefore);
+            blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: beforeRuns });
+          }
+        }
+        // The table
+        blocks.push(tables[tMatch.idx]);
+        lastPos = tMatch.pos + tMatch.len;
+      }
+      // Text after last placeholder
+      if (lastPos < inner.length) {
+        var textAfter = inner.substring(lastPos).trim();
+        if (textAfter) {
+          var afterRuns = parseInlineRuns(textAfter);
+          blocks.push({ type: 'p', align: parentAlign, bullet: false, runs: afterRuns });
+        }
+      }
+      continue;
+    }
+
     var align = extractAlign(part.attrs || '');
-    var runs = parseInlineRuns(part.inner || '');
+    var runs = parseInlineRuns(inner);
     var type = part.tag || 'p';
     if (type === 'h1' || type === 'h2' || type === 'h3') {
       blocks.push({ type: type, align: align, runs: runs });
