@@ -36,59 +36,11 @@ Page({
   _loaded: false,
   _dirty: false,
   _imageStore: {},
-  _tableStore: [],
 
   onLoad: function (options) {
     this.setData({ docId: options.id || '' });
     var doc = this._findDoc(options.id);
     if (doc) this.setData({ title: doc.title });
-    // Load existing tables for this document
-    if (doc && doc.tables) this._tableStore = doc.tables.slice();
-  },
-
-  onShow: function () {
-    var pending = wx.getStorageSync('word_pending_table');
-    if (!pending) return;
-    wx.removeStorageSync('word_pending_table');
-    var that = this;
-    if (pending.index >= 0 && pending.index < this._tableStore.length) {
-      // Edit existing table — update data and regenerate table image
-      this._tableStore[pending.index] = pending.data;
-      this._dirty = true;
-      this.setData({ saveStatus: '未保存' });
-      if (this.editorCtx && this._loaded) {
-        var editIdx = pending.index;
-        this._renderTableAsImage(editIdx, function(imgPath) {
-          if (imgPath) {
-            that.editorCtx.insertImage({ src: imgPath, width: '100%', height: 'auto' });
-          }
-        });
-      }
-      wx.showToast({ title: '表格已更新', icon: 'success' });
-    } else {
-      // New table — add data and insert table image into editor
-      var idx = this._tableStore.length;
-      this._tableStore.push(pending.data);
-      if (this.editorCtx && this._loaded) {
-        // First insert marker, then insert table image on top
-        that.editorCtx.getContents({
-          success: function (res) {
-            var html = (res.html || '') + '<p>[▶' + (idx + 1) + '◀]</p>';
-            that.editorCtx.setContents({ html: html });
-            // After content set, insert the table image
-            setTimeout(function () {
-              that._renderTableAsImage(idx, function (imgPath) {
-                if (imgPath) {
-                  that.editorCtx.insertImage({ src: imgPath, width: '100%', height: 'auto' });
-                }
-              });
-            }, 200);
-            that._dirty = true;
-            that.setData({ saveStatus: '未保存' });
-          }
-        });
-      }
-    }
   },
 
   onEditorReady: function () {
@@ -150,38 +102,6 @@ Page({
   redo: function () { this.editorCtx && this.editorCtx.redo(); },
   clearFormat: function () { this.editorCtx && this.editorCtx.removeFormat(); },
 
-  insertTable: function () {
-    // Pass current table store so table-editor can load existing data
-    wx.setStorageSync('word_edit_table', { tables: this._tableStore, index: -1 });
-    wx.navigateTo({
-      url: '/word/pages/table-editor/table-editor?id=' + this.data.docId
-    });
-  },
-
-  editTable: function () {
-    var that = this;
-    if (this._tableStore.length === 0) {
-      wx.showToast({ title: '暂无表格', icon: 'none' });
-      return;
-    }
-    var items = [];
-    for (var i = 0; i < this._tableStore.length; i++) {
-      var t = this._tableStore[i];
-      items.push('表格' + (i + 1) + ' (' + t.rows + '×' + t.cols + ')');
-    }
-    wx.showActionSheet({
-      itemList: items,
-      success: function (res) {
-        var idx = res.tapIndex;
-        // Save table data before navigating
-        wx.setStorageSync('word_edit_table', { tables: that._tableStore, index: idx });
-        wx.navigateTo({
-          url: '/word/pages/table-editor/table-editor?id=' + that.data.docId + '&idx=' + idx
-        });
-      }
-    });
-  },
-
   setFontSize: function (e) {
     var size = e.currentTarget.dataset.size;
     this.editorCtx && this.editorCtx.format('fontSize', size);
@@ -204,8 +124,6 @@ Page({
       this.editorCtx.getContents({
         success: function (res) {
           var html = res.html || '';
-          // Replace [▶N◀] placeholders with real table HTML for display
-          html = that._renderTablesInHtml(html);
           that.setData({ previewMode: true, previewNodes: html });
         }
       });
@@ -213,89 +131,6 @@ Page({
       this.setData({ previewMode: false });
     }
   },
-
-  _renderTablesInHtml: function (html) {
-    // Replace [▶N◀] placeholders with actual <table> HTML for rich-text preview
-    var store = this._tableStore;
-    return html.replace(/\[▶(\d+)◀\]/g, function (match, num) {
-      var idx = parseInt(num) - 1;
-      if (idx >= 0 && idx < store.length) {
-        var t = store[idx];
-        var tbl = '<table style="border-collapse:collapse;width:100%;margin:10px 0;">';
-        for (var r = 0; r < t.rows; r++) {
-          tbl += '<tr>';
-          for (var c = 0; c < t.cols; c++) {
-            var cellText = (t.cells[r] && t.cells[r][c]) || '';
-            if (r === 0) {
-              tbl += '<th style="border:1px solid #999;padding:8px;background:#f0f0f0;">' + cellText + '</th>';
-            } else {
-              tbl += '<td style="border:1px solid #ccc;padding:8px;">' + cellText + '</td>';
-            }
-          }
-          tbl += '</tr>';
-        }
-        tbl += '</table>';
-        return tbl;
-      }
-      return match;
-    });
-  },
-
-  // Render table as image on hidden canvas, insert into editor
-  _renderTableAsImage: function (tableIdx, callback) {
-    var t = this._tableStore[tableIdx];
-    if (!t) { callback && callback(''); return; }
-    var that = this;
-    var cellW = 160, cellH = 36, headerH = 40;
-    var padX = 8, padY = 8;
-    var totalW = t.cols * cellW + 2;
-    var totalH = t.rows * cellH + 2;
-
-    var ctx = wx.createCanvasContext('tableCanvas');
-    ctx.setFillStyle('#ffffff');
-    ctx.fillRect(0, 0, totalW, totalH);
-
-    // Grid lines
-    ctx.setStrokeStyle('#cccccc');
-    ctx.setLineWidth(1);
-    for (var r = 0; r <= t.rows; r++) { ctx.moveTo(0, r * cellH); ctx.lineTo(totalW, r * cellH); }
-    for (var c = 0; c <= t.cols; c++) { ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, totalH); }
-    ctx.stroke();
-
-    // Cells
-    ctx.setFontSize(12);
-    for (var r2 = 0; r2 < t.rows; r2++) {
-      for (var c2 = 0; c2 < t.cols; c2++) {
-        var cellText = (t.cells[r2] && t.cells[r2][c2]) || '';
-        if (r2 === 0) {
-          ctx.setFillStyle('#e8ecf1');
-          ctx.fillRect(c2 * cellW + 1, r2 * cellH + 1, cellW - 1, cellH - 1);
-          ctx.setFillStyle('#222222');
-        } else {
-          ctx.setFillStyle(r2 % 2 === 1 ? '#f9f9f9' : '#ffffff');
-          ctx.fillRect(c2 * cellW + 1, r2 * cellH + 1, cellW - 1, cellH - 1);
-          ctx.setFillStyle('#333333');
-        }
-        var maxChars = Math.floor((cellW - padX * 2) / 7);
-        var displayText = cellText.length > maxChars ? cellText.substring(0, maxChars - 1) + '…' : cellText;
-        ctx.fillText(displayText, c2 * cellW + padX, r2 * cellH + 24);
-      }
-    }
-    ctx.draw(false, function () {
-      wx.canvasToTempFilePath({
-        canvasId: 'tableCanvas',
-        width: totalW,
-        height: totalH,
-        success: function (res) {
-          callback && callback(res.tempFilePath);
-        },
-        fail: function () {
-          callback && callback('');
-        }
-      });
-    });
-  },
-
   pickColor: function (e) {
     if (!this.editorCtx) return;
     var target = e.currentTarget.dataset.target;
@@ -385,7 +220,6 @@ Page({
           list[idx].title = that.data.title || '未命名文档';
           list[idx].content = content;
           list[idx].updatedAt = now;
-          list[idx].tables = that._tableStore.slice();
         }
         wx.setStorageSync(STORAGE_KEY, list);
 
@@ -454,8 +288,8 @@ Page({
 
         function generateAndSave(imageDatas) {
           var docxBase64 = imageDatas.length > 0
-            ? docxLib.htmlToDocxWithImages(html, imageDatas, that._tableStore)
-            : docxLib.htmlToDocx(html, that._tableStore);
+            ? docxLib.htmlToDocxWithImages(html, imageDatas)
+            : docxLib.htmlToDocx(html);
           var fileName = (that.title || '未命名文档') + '_' + now + '.docx';
           var filePath = wx.env.USER_DATA_PATH + '/' + fileName;
           var buffer = wx.base64ToArrayBuffer(docxBase64);

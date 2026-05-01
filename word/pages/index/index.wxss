@@ -23,6 +23,16 @@
   display: block;
 }
 
+/* 提示 */
+.notice {
+  background: #fffbe6;
+  border: 1rpx solid #ffe58f;
+  border-radius: 10rpx;
+  padding: 14rpx 20rpx;
+  margin-bottom: 20rpx;
+}
+.notice-text { font-size: 24rpx; color: #ad6800; }
+
 /* 操作按钮行 */
 .btn-row {
   display: flex;

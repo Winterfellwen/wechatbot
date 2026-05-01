@@ -32,13 +32,13 @@ var TAG_DISPATCH = {
 // Public API
 // ---------------------------------------------------------------------------
 
-function htmlToDocx(html, tableStore) {
-  var blocks = htmlToBlocks(html, tableStore);
+function htmlToDocx(html) {
+  var blocks = htmlToBlocks(html);
   return buildDocx(blocks);
 }
 
-function htmlToDocxWithImages(html, imageDatas, tableStore) {
-  var blocks = htmlToBlocks(html, tableStore);
+function htmlToDocxWithImages(html, imageDatas) {
+  var blocks = htmlToBlocks(html);
   return buildDocx(blocks, imageDatas);
 }
 
@@ -56,13 +56,8 @@ function getImageInfos(html) {
 // HTML Parser
 // ---------------------------------------------------------------------------
 
-function htmlToBlocks(html, tableStore) {
+function htmlToBlocks(html) {
   if (!html || !html.trim()) return [{ type: 'p', runs: [] }];
-
-  // Replace [▶N◀] table markers with table blocks (before other parsing)
-  // We'll handle these in the main processing loop after splitBlocks
-  var tablePlaceholders = tableStore || [];
-  var hasPlaceholders = tablePlaceholders.length > 0;
 
   // Normalize: <br> to placeholder, <div>/<section> to <p>
   html = html.replace(/<br\s*\/?>/gi, '\x00');
@@ -125,29 +120,6 @@ function htmlToBlocks(html, tableStore) {
         }
       }
       continue;
-    }
-
-    // Check for [▶N◀] marker — convert to table block from tableStore
-    if (hasPlaceholders) {
-      var tblRe = /\[▶(\d+)◀\]/;
-      var tblMatch = inner.trim().match(tblRe);
-      if (tblMatch) {
-        var tblIdx = parseInt(tblMatch[1]) - 1;
-        if (tblIdx >= 0 && tblIdx < tablePlaceholders.length) {
-          var tblData = tablePlaceholders[tblIdx];
-          var tblBlock = { type: 'table', rows: [] };
-          for (var rr = 0; rr < tblData.rows; rr++) {
-            var rowCells = [];
-            for (var cc = 0; cc < tblData.cols; cc++) {
-              var cellText = (tblData.cells[rr] && tblData.cells[rr][cc]) || '';
-              rowCells.push({ runs: [{ text: cellText, bold: rr === 0, italic: false, underline: false, strike: false, color: '', backgroundColor: '', fontSize: 0, fontFamily: '', lineBreak: false }] });
-            }
-            tblBlock.rows.push({ cells: rowCells });
-          }
-          blocks.push(tblBlock);
-          continue;
-        }
-      }
     }
 
     var align = extractAlign(part.attrs || '');

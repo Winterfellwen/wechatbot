@@ -99,12 +99,6 @@
       <view class="tool-btn" bindtap="insertImage">
         <text class="tool-label">🖼图片</text>
       </view>
-      <view class="tool-btn" bindtap="insertTable">
-        <text class="tool-label">⊞表格</text>
-      </view>
-      <view class="tool-btn" bindtap="editTable">
-        <text class="tool-label">✎表格</text>
-      </view>
       <view class="tool-btn" bindtap="clearFormat">
         <text class="tool-label">清除格式</text>
       </view>
@@ -125,9 +119,6 @@
     bind:colorpick="onColorPick"
     bind:close="onColorClose"
   />
-
-  <!-- 隐藏 canvas 用于表格渲染 -->
-  <canvas canvas-id="tableCanvas" style="position:fixed;left:-9999px;width:600px;height:400px;"></canvas>
 
   <!-- 标题编辑（保留以兼容） -->
   <view class="title-bar" style="display:none;">

@@ -5,6 +5,10 @@
     <text class="header-sub">在线编辑，随时保存并导出</text>
   </view>
 
+  <view class="notice">
+    <text class="notice-text">⚠ Word 编辑功能仅供临时急用，不支持表格功能。</text>
+  </view>
+
   <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input-wrap">
