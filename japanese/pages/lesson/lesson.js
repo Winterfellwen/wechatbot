@@ -250,7 +250,11 @@ Page({
   startAgain: function() { this.startQuiz(); },
 
   playAudio: function(e) {
-    var word = e.currentTarget.dataset.word;
+    var word = e && e.currentTarget && e.currentTarget.dataset.word;
+    if (!word) {
+      var q = this.data.currentQuestion;
+      if (q && q.audio) word = q.audio;
+    }
     if (word) {
       var that = this;
       that.setData({ isPlayingAudio: true });
