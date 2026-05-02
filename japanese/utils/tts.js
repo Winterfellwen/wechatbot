@@ -50,7 +50,7 @@ function speak(text, lang) {
     const voiceName = langCode === 'ja-JP' ? 'ja-JP-NanamiNeural' : 'ja-JP-NanamiNeural';
 
     const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langCode}'>
-      <voice name='${voiceName}' speed="115">
+      <voice name='${voiceName}'>
         ${text}
       </voice>
     </speak>`;

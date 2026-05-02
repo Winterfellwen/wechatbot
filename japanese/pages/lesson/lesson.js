@@ -251,7 +251,11 @@ Page({
   playAudio: function(e) {
     var word = e.currentTarget.dataset.word;
     if (word) {
-      tts.speak(word);
+      var that = this;
+      that.setData({ isPlayingAudio: true });
+      tts.speak(word).finally(function() {
+        that.setData({ isPlayingAudio: false });
+      });
     }
   }
 });
