@@ -2,6 +2,7 @@ var lessons = require('../../data/lessons.js');
 var grammarData = require('../../data/grammar.js');
 var wordsIndex = require('../../data/words/index.js');
 var textsData = require('../../data/texts.js');
+var tts = require('../../utils/tts');
 
 function buildQuiz(lessonId) {
   var words = wordsIndex.byLesson(lessonId).slice(0, 10);
@@ -231,5 +232,12 @@ Page({
     this.setData({ showComplete: true, xpEarned: xp });
   },
 
-  startAgain: function() { this.startQuiz(); }
+  startAgain: function() { this.startQuiz(); },
+
+  playAudio: function(e) {
+    var word = e.currentTarget.dataset.word;
+    if (word) {
+      tts.speak(word);
+    }
+  }
 });

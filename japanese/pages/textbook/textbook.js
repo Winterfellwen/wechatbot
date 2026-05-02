@@ -1,4 +1,5 @@
 var lessons = require('../../data/lessons.js');
+var tts = require('../../utils/tts');
 
 Page({
   data: {
@@ -100,6 +101,13 @@ Page({
       this.closeBook();
     } else {
       wx.navigateBack();
+    }
+  },
+
+  playAudio: function(e) {
+    var word = e.currentTarget.dataset.word;
+    if (word) {
+      tts.speak(word);
     }
   }
 });
