@@ -179,9 +179,18 @@ Page({
       selectedIndex: idx, correctIndex: q.answer, showResult: true,
       isCorrect: isRight, score: this.data.score + (isRight ? 1 : 0),
       streak: isRight ? this.data.streak + 1 : 0,
-      combo: isRight ? this.data.combo + 1 : 0
+      combo: isRight ? this.data.combo + 1 : 0,
+      showFirework: isRight, showShake: !isRight
     });
     if (!isRight) this.setData({ combo: 0 });
+    if (!isRight) {
+      var that = this;
+      setTimeout(function() { that.setData({ showShake: false }); }, 500);
+    }
+    if (isRight) {
+      var that = this;
+      setTimeout(function() { that.setData({ showFirework: false }); }, 1500);
+    }
   },
 
   onFillInput: function(e) { this.setData({ fillAnswer: e.detail.value }); },

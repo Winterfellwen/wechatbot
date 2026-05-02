@@ -75,13 +75,19 @@
       <view class="question-prompt">{{currentQuestion.prompt}}</view>
       <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big" bindtap="playAudio">🔊</view>
 
-      <view wx:if="{{currentQuestion.options}}" class="options-list">
+      <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">
         <block wx:for="{{currentQuestion.options}}" wx:key="index">
           <view class="option-btn {{showResult && index === correctIndex ? 'correct' : ''}} {{showResult && index === selectedIndex && index !== correctIndex ? 'wrong' : ''}}" bindtap="selectOption" data-index="{{index}}">
             <view class="option-badge">{{['A','B','C','D'][index]}}</view>
             <text class="option-text">{{item}}</text>
           </view>
         </block>
+      </view>
+
+      <view wx:if="{{showFirework}}" class="firework-overlay">
+        <view class="firework firework-1"></view>
+        <view class="firework firework-2"></view>
+        <view class="firework firework-3"></view>
       </view>
 
       <view wx:if="{{!currentQuestion.options}}" class="fill-section">

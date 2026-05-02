@@ -134,3 +134,22 @@
   from { opacity: 0; transform: translateY(20rpx); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10rpx); }
+  20%, 40%, 60%, 80% { transform: translateX(10rpx); }
+}
+.shake-anim { animation: shake 0.5s ease-in-out; }
+
+.firework-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1000; overflow: hidden; }
+.firework { position: absolute; width: 20rpx; height: 20rpx; border-radius: 50%; animation: firework 1s ease-out forwards; }
+.firework-1 { background: #FF6B6B; left: 20%; top: 30%; animation-delay: 0s; }
+.firework-2 { background: #4ECDC4; left: 50%; top: 25%; animation-delay: 0.2s; }
+.firework-3 { background: #FFE66D; left: 80%; top: 35%; animation-delay: 0.4s; }
+
+@keyframes firework {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(3); opacity: 0.8; }
+  100% { transform: scale(5); opacity: 0; }
+}
