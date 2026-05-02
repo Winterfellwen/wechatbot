@@ -50,9 +50,10 @@ function buildQuiz(lessonId) {
 
   for (var pi = 0; pi < words.length && pi < 2; pi++) {
     var pw = words[pi];
+    if (pw.word === pw.reading) continue;
     var pd = [];
     for (var pd2 = 0; pd2 < words.length && pd.length < 3; pd2++) {
-      if (pd2 !== pi) pd.push(words[pd2].reading);
+      if (pd2 !== pi && words[pd2].word !== words[pd2].reading) pd.push(words[pd2].reading);
     }
     while (pd.length < 3) pd.push('?');
     var pops = [pw.reading].concat(pd);
