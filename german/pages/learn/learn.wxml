@@ -46,7 +46,7 @@
           bindtap="startChallenge"
           data-index="{{index + 1}}">
           <text class="level-btn-num">{{index + 1}}</text>
-          <text class="level-btn-status" wx:if="{{index + 1 < currentLevelIndex}}">✓</text>
+          <text class="level-btn-status" wx:if="{{index + 1 < currentLevelIndex}}">✅</text>
           <text class="level-btn-status" wx:elif="{{index + 1 == currentLevelIndex}}">进行中</text>
         </view>
       </block>

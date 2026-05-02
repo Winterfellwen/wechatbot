@@ -4,7 +4,7 @@
   <view wx:if="{{!currentBook}}">
     <view class="header">
       <view class="header-row">
-        <view class="back-btn" bindtap="goBack"><text class="back-icon">←</text></view>
+        <view class="back-btn" bindtap="goBack"><text class="back-icon">◀</text></view>
         <text class="header-title">课本</text>
         <view class="header-placeholder"></view>
       </view>
@@ -29,7 +29,7 @@
               <text class="progress-text">{{item.progress}}%</text>
             </view>
           </view>
-          <view class="book-arrow"><text class="arrow-icon">›</text></view>
+          <view class="book-arrow"><text class="arrow-icon">▶</text></view>
         </view>
       </block>
     </view>
@@ -39,7 +39,7 @@
   <view wx:if="{{currentBook}}">
     <view class="header">
       <view class="header-row">
-        <view class="back-btn" bindtap="closeBook"><text class="back-icon">←</text></view>
+        <view class="back-btn" bindtap="closeBook"><text class="back-icon">◀</text></view>
         <text class="header-title">{{currentBook.title}}</text>
         <view class="header-placeholder"></view>
       </view>
@@ -54,7 +54,7 @@
       <block wx:for="{{currentBookLessons}}" wx:key="id">
         <view class="lesson-row {{item.done ? 'done' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
           <view class="lesson-num-circle" style="border-color: {{item.done ? '#22C55E' : '#CBD5E1'}}">
-            <text wx:if="{{item.done}}" style="color:#22C55E;font-size:32rpx">✓</text>
+            <text wx:if="{{item.done}}" style="color:#22C55E;font-size:32rpx">✅</text>
             <text wx:else style="color:#94A3B8;font-size:28rpx">{{item.number}}</text>
           </view>
           <view class="lesson-info">

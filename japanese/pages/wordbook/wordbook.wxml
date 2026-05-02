@@ -3,7 +3,7 @@
   <view class="header">
     <view class="header-row">
       <view class="back-btn" bindtap="goBack">
-        <text class="back-icon">←</text>
+        <text class="back-icon">◀</text>
       </view>
       <text class="header-title">单词本</text>
       <view class="header-placeholder"></view>
@@ -45,7 +45,7 @@
           </view>
         </view>
         <view class="word-star {{item.mastered ? 'starred' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
-          <text class="star-icon">{{item.mastered ? '★' : '☆'}}</text>
+          <text class="star-icon">{{item.mastered ? '⭐' : '☆'}}</text>
         </view>
       </view>
     </block>

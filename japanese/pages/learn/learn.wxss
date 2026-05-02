@@ -93,6 +93,8 @@
   padding: 12rpx 0 env(safe-area-inset-bottom, 12rpx);
   z-index: 999;
 }
-.nav-item { flex: 1; padding: 10rpx 0 14rpx; text-align: center; }
-.nav-text { font-size: 26rpx; color: #94A3B8; transition: color 0.2s; }
+.nav-item { flex: 1; padding: 10rpx 0 14rpx; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.nav-icon { font-size: 40rpx; margin-bottom: 4rpx; }
+.nav-text { font-size: 24rpx; color: #94A3B8; transition: color 0.2s; }
 .nav-item.active .nav-text { color: #0EA5E9; font-weight: bold; }
+.nav-item.active .nav-icon { transform: scale(1.1); }

@@ -3,7 +3,7 @@
   <!-- Study mode: words, grammar, text -->
   <view wx:if="{{mode === 'study'}}" class="study-container">
     <view class="study-header">
-      <view class="exit-btn" bindtap="goBack">← 返回</view>
+      <view class="exit-btn" bindtap="goBack">◀ 返回</view>
       <text class="study-title">{{lessonTitle}}</text>
       <view class="level-tag">{{level}}</view>
     </view>
@@ -62,7 +62,7 @@
   <!-- Quiz mode -->
   <view wx:if="{{mode === 'quiz' && !showComplete && currentQuestion}}" class="quiz-container">
     <view class="quiz-header">
-      <view class="exit-btn" bindtap="goBack">←</view>
+      <view class="exit-btn" bindtap="goBack">◀</view>
       <view class="progress-wrap">
         <view class="progress-bar">
           <view class="progress-fill" style="width: {{progress}}%"></view>
@@ -92,7 +92,7 @@
     </view>
 
     <view wx:if="{{showResult}}" class="result-bar">
-      <view wx:if="{{isCorrect}}" class="result-correct"><text class="result-big">✓</text><text class="result-sub">正确! {{combo > 1 ? '连续' + combo + '题!' : ''}}</text></view>
+      <view wx:if="{{isCorrect}}" class="result-correct"><text class="result-big">🎉</text><text class="result-sub">正确! {{combo > 1 ? '连续' + combo + '题!' : ''}}</text></view>
       <view wx:else class="result-wrong"><text class="result-big">✗</text><text class="result-sub" wx:if="{{currentQuestion.options}}">正确答案: {{currentQuestion.options[correctIndex]}}</text><text class="result-sub" wx:else>正确答案: {{currentQuestion.answer}}</text></view>
       <view class="next-btn" bindtap="nextQuestion">{{current < total ? '继续' : '完成!'}}</view>
     </view>
