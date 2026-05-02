@@ -89,11 +89,11 @@
 .option-btn.wrong .option-badge { background: #EF4444; color: #fff; box-shadow: 0 4rpx 12rpx rgba(239,68,68,0.3); }
 .option-text { flex: 1; font-size: 34rpx; color: #0F172A; line-height: 1.4; font-weight: 500; }
 
-.fill-hint { font-size: 28rpx; color: #64748B; margin-bottom: 16rpx; padding: 12rpx 20rpx; background: #F1F5F9; border-radius: 12rpx; display: inline-block; }
+.fill-hint { font-size: 28rpx; color: #64748B; margin-bottom: 16rpx; padding: 12rpx 20rpx; background: #F1F5F9; border-radius: 12rpx; display: block; }
 
 .fill-input {
-  width: 100%; padding: 32rpx 28rpx; border-radius: 20rpx; border: 3rpx solid #E0F2FE;
-  background: #fff; font-size: 36rpx; line-height: 1.4; box-shadow: 0 4rpx 12rpx rgba(14,165,233,0.06);
+  width: 100%; padding: 0 28rpx; border-radius: 20rpx; border: 3rpx solid #E0F2FE;
+  background: #fff; font-size: 36rpx; line-height: 100rpx; box-shadow: 0 4rpx 12rpx rgba(14,165,233,0.06);
   box-sizing: border-box; height: 100rpx;
 }
 .fill-input:focus { border-color: #0EA5E9; }
