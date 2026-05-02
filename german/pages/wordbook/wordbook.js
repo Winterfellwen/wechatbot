@@ -1,66 +1,106 @@
-// german/pages/wordbook/wordbook.js
+const storage = require('../../utils/storage');
+const tts = require('../../utils/tts');
+const algorithm = require('../../utils/algorithm');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    wordList: [],
+    currentTab: 'list',
+    currentCard: 0,
+    showAnswer: false,
+    isEmpty: true
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function() {
+    this.loadWordBook();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  onShow: function() {
+    this.loadWordBook();
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  loadWordBook: function() {
+    const words = storage.getWordBook();
+    this.setData({
+      wordList: words,
+      isEmpty: words.length === 0
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  switchTab: function(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ 
+      currentTab: tab,
+      currentCard: 0,
+      showAnswer: false
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  playAudio: function(e) {
+    const word = e.currentTarget.dataset.word;
+    tts.speak(word);
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
+  removeWord: function(e) {
+    const word = e.currentTarget.dataset.word;
+    storage.removeFromWordBook(word);
+    this.loadWordBook();
+    wx.showToast({ title: '已删除', icon: 'success' });
   },
 
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
+  startReview: function() {
+    if (this.data.wordList.length === 0) {
+      wx.showToast({ title: '生词本为空', icon: 'none' });
+      return;
+    }
+    this.setData({
+      currentTab: 'review',
+      currentCard: 0,
+      showAnswer: false
+    });
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
+  toggleAnswer: function() {
+    this.setData({ showAnswer: !this.data.showAnswer });
+  },
 
+  markKnown: function() {
+    const { currentCard, wordList } = this.data;
+    if (currentCard >= wordList.length - 1) {
+      wx.showToast({ title: '复习完成！', icon: 'success' });
+      this.setData({ currentTab: 'list' });
+    } else {
+      this.setData({
+        currentCard: currentCard + 1,
+        showAnswer: false
+      });
+    }
+  },
+
+  markUnknown: function() {
+    const { currentCard, wordList } = this.data;
+    const word = wordList[currentCard];
+    storage.addWrongWord(word);
+    
+    if (currentCard >= wordList.length - 1) {
+      wx.showToast({ title: '复习完成！', icon: 'success' });
+      this.setData({ currentTab: 'list' });
+    } else {
+      this.setData({
+        currentCard: currentCard + 1,
+        showAnswer: false
+      });
+    }
+  },
+
+  goBack: function() {
+    this.setData({ currentTab: 'list' });
+  },
+
+  onShareAppMessage: function() {
+    return {
+      title: '德语生词本',
+      path: '/german/pages/wordbook/wordbook'
+    };
   }
-})
+});

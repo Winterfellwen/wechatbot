@@ -1,1 +1,211 @@
-/* german/pages/course/course.wxss */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+
+.tabs {
+  display: flex;
+  background: #fff;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+  padding: 16rpx 0;
+  position: relative;
+}
+
+.tab.active {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background: #1890ff;
+  border-radius: 2rpx;
+}
+
+.content {
+  flex: 1;
+  padding: 20rpx;
+}
+
+.vocab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.vocab-item {
+  width: 48%;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.vocab-word {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.audio-icon {
+  font-size: 32rpx;
+}
+
+.vocab-translation {
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.vocab-phonetic {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.vocab-actions {
+  margin-top: 12rpx;
+}
+
+.action-btn {
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  background: #e6f7ff;
+  color: #1890ff;
+  border-radius: 8rpx;
+  border: none;
+}
+
+.grammar-list, .text-list {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.grammar-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.grammar-item:last-child {
+  border-bottom: none;
+}
+
+.grammar-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.grammar-content {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.grammar-examples {
+  margin-top: 16rpx;
+  padding: 16rpx;
+  background: #f9f9f9;
+  border-radius: 8rpx;
+}
+
+.example-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.example-item {
+  font-size: 26rpx;
+  color: #333;
+  padding: 8rpx 0;
+}
+
+.pronunciation-list {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.pronunciation-item {
+  padding: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.pronunciation-item:last-child {
+  border-bottom: none;
+}
+
+.pronunciation-rule {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.pronunciation-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.pronunciation-example {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #999;
+  display: flex;
+  align-items: center;
+}
+
+.example-words {
+  color: #1890ff;
+  margin: 0 8rpx;
+}
+
+.text-item {
+  padding: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.text-item:last-child {
+  border-bottom: none;
+}
+
+.text-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.text-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 12rpx;
+}
+
+.text-translation {
+  font-size: 26rpx;
+  color: #666;
+}

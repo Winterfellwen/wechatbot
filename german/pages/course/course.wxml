@@ -1,2 +1,67 @@
-<!--german/pages/course/course.wxml-->
-<text>german/pages/course/course.wxml</text>
+<view class="container">
+  <view class="tabs">
+    <view class="tab {{currentTab === 'vocab' ? 'active' : ''}}" bindtap="switchTab" data-tab="vocab">单词</view>
+    <view class="tab {{currentTab === 'grammar' ? 'active' : ''}}" bindtap="switchTab" data-tab="grammar">语法</view>
+    <view class="tab {{currentTab === 'pronunciation' ? 'active' : ''}}" bindtap="switchTab" data-tab="pronunciation">发音</view>
+    <view class="tab {{currentTab === 'text' ? 'active' : ''}}" bindtap="switchTab" data-tab="text">课文</view>
+  </view>
+
+  <!-- 单词 -->
+  <scroll-view wx:if="{{currentTab === 'vocab'}}" class="content" scroll-y>
+    <view class="vocab-list">
+      <view class="vocab-item" wx:for="{{vocabList}}" wx:key="index">
+        <view class="vocab-word" bindtap="playAudio" data-word="{{item.word}}">
+          <text>{{item.word}}</text>
+          <text class="audio-icon">🔊</text>
+        </view>
+        <view class="vocab-translation">{{item.translation}}</view>
+        <view class="vocab-phonetic" wx:if="{{item.phonetic}}">/{{item.phonetic}}/</view>
+        <view class="vocab-actions">
+          <button class="action-btn" bindtap="addToWordBook" data-word="{{item}}">加入生词本</button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 语法 -->
+  <scroll-view wx:if="{{currentTab === 'grammar'}}" class="content" scroll-y>
+    <view class="grammar-list">
+      <view class="grammar-item" wx:for="{{grammarList}}" wx:key="index">
+        <view class="grammar-title">{{item.title}}</view>
+        <view class="grammar-content">{{item.content}}</view>
+        <view class="grammar-examples" wx:if="{{item.examples}}">
+          <view class="example-label">例句：</view>
+          <view class="example-item" wx:for="{{item.examples}}" wx:for-item="ex" wx:key="*this">
+            {{ex}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 发音 -->
+  <scroll-view wx:if="{{currentTab === 'pronunciation'}}" class="content" scroll-y>
+    <view class="pronunciation-list">
+      <view class="pronunciation-item" wx:for="{{pronunciationList}}" wx:key="index">
+        <view class="pronunciation-rule">{{item.rule}}</view>
+        <view class="pronunciation-desc">{{item.description}}</view>
+        <view class="pronunciation-example">
+          <text>示例：</text>
+          <text class="example-words" bindtap="playAudio" data-word="{{item.example}}">{{item.example}}</text>
+          <text class="audio-icon">🔊</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 课文 -->
+  <scroll-view wx:if="{{currentTab === 'text'}}" class="content" scroll-y>
+    <view class="text-list">
+      <view class="text-item" wx:for="{{textList}}" wx:key="index" bindtap="goToLesson" data-index="{{index}}">
+        <view class="text-title">{{item.title}}</view>
+        <view class="text-content">{{item.content}}</view>
+        <view class="text-translation">{{item.translation}}</view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

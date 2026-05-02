@@ -1,66 +1,66 @@
-// german/pages/course/course.js
+const storage = require('../../utils/storage');
+const tts = require('../../utils/tts');
+const a1Vocab = require('../../data/a1/vocab.js');
+const a1Grammar = require('../../data/a1/grammar.js');
+const a1Pronunciation = require('../../data/a1/pronunciation.js');
+const a1Texts = require('../../data/a1/texts.js');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    currentTab: 'vocab',
+    level: 'a1',
+    vocabList: [],
+    grammarList: [],
+    pronunciationList: [],
+    textList: [],
+    searchKeyword: ''
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function(options) {
+    this.loadData();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  loadData: function() {
+    this.setData({
+      vocabList: a1Vocab,
+      grammarList: a1Grammar,
+      pronunciationList: a1Pronunciation,
+      textList: a1Texts
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  switchTab: function(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ currentTab: tab });
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  playAudio: function(e) {
+    const word = e.currentTarget.dataset.word;
+    tts.speak(word);
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  addToWordBook: function(e) {
+    const word = e.currentTarget.dataset.word;
+    storage.addToWordBook(word);
+    wx.showToast({ title: '已加入生词本', icon: 'success' });
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
+  onSearch: function(e) {
+    const keyword = e.detail.value;
+    this.setData({ searchKeyword: keyword });
   },
 
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
+  goToLesson: function(e) {
+    const index = e.currentTarget.dataset.index;
+    wx.navigateTo({
+      url: `/german/pages/lesson/lesson?index=${index}`
+    });
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  onShareAppMessage: function() {
+    return {
+      title: '德语课程学习',
+      path: '/german/pages/course/course'
+    };
   }
-})
+});
