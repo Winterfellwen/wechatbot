@@ -29,6 +29,9 @@
       "root": "german",
       "pages": [
         "pages/learn/learn",
+        "pages/learn/challenge",
+        "pages/learn/result",
+        "pages/learn/review",
         "pages/lesson/lesson",
         "pages/course/course",
         "pages/wordbook/wordbook",

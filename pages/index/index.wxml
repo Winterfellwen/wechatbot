@@ -20,8 +20,8 @@
         <text class="entry-desc">日语学习好帮手</text>
       </view>
 
-      <view class="entry-card disabled" bindtap="handleEntryTap" data-type="german">
-        <image class="entry-icon gray" src="/images/icon-german.png" mode="aspectFit"></image>
+      <view class="entry-card" bindtap="handleEntryTap" data-type="german">
+        <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
         <text class="entry-title">德语学习机器人</text>
         <text class="entry-desc">德语学习好帮手</text>
       </view>
