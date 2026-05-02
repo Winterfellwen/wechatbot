@@ -1,13 +1,41 @@
-const TTS_API_URL = 'https://wechatbot-g6ez.onrender.com/api/tts';
+const TTS_KEY_URL = 'https://wechatbot-g6ez.onrender.com/api/tts/key';
+const TTS_API_BASE = 'https://eastasia.api.cognitive.microsoft.com/cognitiveservices/v3.0/tts';
 
 let audioContext = null;
 let currentAudio = null;
+let apiKey = null;
+let region = 'eastasia';
 
 function getAudioContext() {
   if (!audioContext) {
     audioContext = wx.createInnerAudioContext();
   }
   return audioContext;
+}
+
+function initApiKey() {
+  return new Promise((resolve, reject) => {
+    if (apiKey) {
+      resolve();
+      return;
+    }
+
+    wx.request({
+      url: TTS_KEY_URL,
+      success: function(res) {
+        if (res.statusCode === 200 && res.data && res.data.key) {
+          apiKey = res.data.key;
+          region = res.data.region || 'eastasia';
+          resolve();
+        } else {
+          reject(new Error('Failed to get API key'));
+        }
+      },
+      fail: function(err) {
+        reject(err);
+      }
+    });
+  });
 }
 
 function speak(text, lang) {
@@ -18,46 +46,59 @@ function speak(text, lang) {
     }
 
     const langCode = lang || 'de-DE';
+    const voiceName = langCode === 'de-DE' ? 'de-DE-ConradNeural' : 'de-DE-ConradNeural';
 
-    wx.request({
-      url: TTS_API_URL,
-      method: 'POST',
-      header: {
-        'Content-Type': 'application/json'
-      },
-      data: {
-        text: text,
-        lang: langCode
-      },
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.audioUrl) {
-          const audioUrl = res.data.audioUrl;
-          const audio = getAudioContext();
-          currentAudio = audio;
-          audio.src = audioUrl;
-          audio.stopped = false;
+    initApiKey()
+      .then(() => {
+        const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langCode}'>
+          <voice name='${voiceName}'>
+            ${text}
+          </voice>
+        </speak>`;
 
-          audio.play();
+        wx.request({
+          url: TTS_API_BASE,
+          method: 'POST',
+          header: {
+            'Ocp-Apim-Subscription-Key': apiKey,
+            'Content-Type': 'application/ssml+xml'
+          },
+          data: ssml,
+          responseType: 'arraybuffer',
+          success: function(res) {
+            if (res.statusCode === 200) {
+              const audioBuffer = res.data;
+              const base64 = wx.arrayBufferToBase64(audioBuffer);
+              const audioUrl = 'data:audio/mpeg;base64,' + base64;
 
-          audio.onEnded(function() {
-            audio.stopped = true;
-            resolve();
-          });
+              const audio = getAudioContext();
+              currentAudio = audio;
+              audio.src = audioUrl;
+              audio.stopped = false;
 
-          audio.onError(function(err) {
-            audio.stopped = true;
-            console.error('Audio play error:', err);
+              audio.play();
+
+              audio.onEnded(function() {
+                audio.stopped = true;
+                resolve();
+              });
+
+              audio.onError(function(err) {
+                audio.stopped = true;
+                console.error('Audio play error:', err);
+                reject(err);
+              });
+            } else {
+              reject(new Error('TTS API error: ' + res.statusCode));
+            }
+          },
+          fail: function(err) {
+            console.error('TTS request error:', err);
             reject(err);
-          });
-        } else {
-          reject(new Error('TTS API error: ' + (res.data && res.data.error)));
-        }
-      },
-      fail: function(err) {
-        console.error('TTS request error:', err);
-        reject(err);
-      }
-    });
+          }
+        });
+      })
+      .catch(reject);
   });
 }
 

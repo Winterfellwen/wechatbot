@@ -402,6 +402,15 @@ function parseZip(buf) {
   return files;
 }
 
+// Azure TTS API - Get API key for frontend
+app.get('/api/tts/key', (req, res) => {
+  const key = process.env.TTS_API_AZURE;
+  if (!key) {
+    return res.status(500).json({ error: 'API key not configured' });
+  }
+  res.json({ key: key, region: 'eastasia' });
+});
+
 // Azure TTS API for German pronunciation
 app.post('/api/tts', async (req, res) => {
   try {
