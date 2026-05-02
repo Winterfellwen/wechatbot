@@ -1,10 +1,9 @@
 const TTS_KEY_URL = 'https://wechatbot-g6ez.onrender.com/api/tts/key';
-const TTS_API_BASE = 'https://eastasia.api.cognitive.microsoft.com/cognitiveservices/v3.0/tts';
+const TTS_API_BASE = 'https://eastasia.tts.speech.microsoft.com/cognitiveservices/v1';
 
 let audioContext = null;
 let currentAudio = null;
 let apiKey = null;
-let region = 'eastasia';
 
 function getAudioContext() {
   if (!audioContext) {
@@ -25,7 +24,6 @@ function initApiKey() {
       success: function(res) {
         if (res.statusCode === 200 && res.data && res.data.key) {
           apiKey = res.data.key;
-          region = res.data.region || 'eastasia';
           resolve();
         } else {
           reject(new Error('Failed to get API key'));
@@ -48,20 +46,21 @@ function speak(text, lang) {
     const langCode = lang || 'de-DE';
     const voiceName = langCode === 'de-DE' ? 'de-DE-ConradNeural' : 'de-DE-ConradNeural';
 
+    const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langCode}'>
+      <voice name='${voiceName}'>
+        ${text}
+      </voice>
+    </speak>`;
+
     initApiKey()
       .then(() => {
-        const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langCode}'>
-          <voice name='${voiceName}'>
-            ${text}
-          </voice>
-        </speak>`;
-
         wx.request({
           url: TTS_API_BASE,
           method: 'POST',
           header: {
             'Ocp-Apim-Subscription-Key': apiKey,
-            'Content-Type': 'application/ssml+xml'
+            'Content-Type': 'application/ssml+xml',
+            'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
           },
           data: ssml,
           responseType: 'arraybuffer',
