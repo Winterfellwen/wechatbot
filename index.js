@@ -406,7 +406,7 @@ function parseZip(buf) {
 app.post('/api/tts', async (req, res) => {
   try {
     const { text, lang } = req.body;
-    const subscriptionKey = process.env.AZURE_SPEECH_KEY;
+    const subscriptionKey = process.env.TTS_API_AZURE;
     if (!subscriptionKey) {
       return res.status(500).json({ error: 'Azure speech key not configured' });
     }
