@@ -1,13 +1,13 @@
 const texts = [
   // ==================== N5: Lesson 1 (五十音図) ====================
-  { id: 1, lesson: 1, title: 'はじめまして', dialogue: [
-    { speaker: 'A', text: 'はじめまして。私は田中です。', translation: '初次见面，我是田中。' },
-    { speaker: 'B', text: 'はじめまして。私は李です。どうぞよろしくお願いします。', translation: '初次见面，我是李。请多关照。' },
-    { speaker: 'A', text: 'よろしくお願いします。こちらこそ。', translation: '请多关照，我才是。' },
+  { id: 1, lesson: 1, title: '初次见面', subtitle: '自我介绍', dialogue: [
+    { speaker: 'A', text: 'はじめまして。我是田中です。', translation: '初次见面，我是田中。' },
+    { speaker: 'B', text: 'はじめまして。我是李です。どうぞよろしくお願いいたします。', translation: '初次见面，我是李。请多关照。' },
+    { speaker: 'A', text: 'よろしくお願いいたします。こちらこそ。', translation: '请多关照，我才是。' },
     { speaker: 'B', text: '李さんは学生ですか。', translation: '小李是学生吗？' },
     { speaker: 'A', text: 'はい、東京大学の学生です。', translation: '是的，是东京大学的学生。' },
   ]},
-  { id: 2, lesson: 1, title: 'あいさつ', dialogue: [
+  { id: 2, lesson: 1, title: '日常问候', subtitle: '寒暄对话', dialogue: [
     { speaker: 'A', text: 'おはようございます。', translation: '早上好。' },
     { speaker: 'B', text: 'おはようございます。今日はいい天気ですね。', translation: '早上好。今天天气真好啊。' },
     { speaker: 'A', text: 'そうですね。あ、すみません、今何時ですか。', translation: '是啊。啊，不好意思，现在几点了？' },
@@ -17,7 +17,7 @@ const texts = [
   ]},
 
   // ==================== N5: Lesson 2 (濁音・半濁音) ====================
-  { id: 3, lesson: 2, title: '家族の写真', dialogue: [
+  { id: 3, lesson: 2, title: '家人照片', subtitle: '介绍家人', dialogue: [
     { speaker: 'A', text: 'これは誰の写真ですか。', translation: '这是谁的照片？' },
     { speaker: 'B', text: '私の家族の写真です。', translation: '我家人的照片。' },
     { speaker: 'A', text: 'この方はどなたですか。', translation: '这位是谁？' },
@@ -27,7 +27,7 @@ const texts = [
   ]},
 
   // ==================== N5: Lesson 3 (長音・促音) ====================
-  { id: 4, lesson: 3, title: '教室で', dialogue: [
+  { id: 4, lesson: 3, title: '在教室', subtitle: '询问物品', dialogue: [
     { speaker: 'A', text: 'すみません、これは何ですか。', translation: '不好意思，这是什么？' },
     { speaker: 'B', text: 'それは消しゴムです。', translation: '那是橡皮。' },
     { speaker: 'A', text: 'あのう、この本は誰のですか。', translation: '那个，这本书是谁的？' },
@@ -35,7 +35,7 @@ const texts = [
   ]},
 
   // ==================== N5: Lesson 4 (拗音・撥音) ====================
-  { id: 5, lesson: 4, title: '郵便局で', dialogue: [
+  { id: 5, lesson: 4, title: '在邮局', subtitle: '问路', dialogue: [
     { speaker: 'A', text: 'すみません、郵便局はどこですか。', translation: '不好意思，邮局在哪里？' },
     { speaker: 'B', text: '郵便局は駅の隣にあります。', translation: '邮局在车站旁边。' },
     { speaker: 'A', text: 'ここから遠いですか。', translation: '从这里远吗？' },

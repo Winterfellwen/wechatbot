@@ -143,7 +143,7 @@ Page({
     }
 
     this.setData({
-      lessonId: lessonId, lessonTitle: lesson.title, level: lesson.level,
+      lessonId: lessonId, lessonTitle: lesson.title, lessonSubtitle: lesson.subtitle || '', level: lesson.level,
       mode: initialMode,
       words: lessonWords, grammar: lessonGrammar,
       textDialogue: lessonTexts.length > 0 ? lessonTexts[0] : null

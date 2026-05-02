@@ -59,6 +59,7 @@
           </view>
           <view class="lesson-info">
             <text class="lesson-title">{{item.title}}</text>
+            <text wx:if="{{item.subtitle}}" class="lesson-subtitle">{{item.subtitle}}</text>
             <text class="lesson-meta">{{item.words}}词 · {{item.grammar}}语法</text>
           </view>
           <text class="lesson-arrow">→</text>

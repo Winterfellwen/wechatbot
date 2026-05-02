@@ -61,5 +61,6 @@
 .lesson-row.done .lesson-num-circle { border-color: #22C55E; background: #22C55E; box-shadow: 0 4rpx 12rpx rgba(34,197,94,0.3); }
 .lesson-info { flex: 1; }
 .lesson-title { font-size: 32rpx; font-weight: bold; color: #0F172A; display: block; }
+.lesson-subtitle { font-size: 26rpx; color: #0EA5E9; display: block; margin-top: 4rpx; }
 .lesson-meta { font-size: 26rpx; color: #64748B; display: block; margin-top: 6rpx; }
 .lesson-arrow { font-size: 40rpx; color: #CBD5E1; }

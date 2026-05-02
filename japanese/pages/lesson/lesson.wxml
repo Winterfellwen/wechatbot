@@ -4,7 +4,66 @@
   <view wx:if="{{mode === 'study'}}" class="study-container">
     <view class="study-header">
       <view class="exit-btn" bindtap="goBack">◀ 返回</view>
-      <text class="study-title">{{lessonTitle}}</text>
+      <view class="title-wrap">
+        <text class="study-title">{{lessonTitle}}</text>
+        <text wx:if="{{lessonSubtitle}}" class="study-subtitle">{{lessonSubtitle}}</text>
+      </view>
+      <view class="level-tag">{{level}}</view>
+    </view>
+
+    <scroll-view scroll-y class="study-body">
+      <view wx:if="{{words.length > 0}}" class="study-section">
+        <text class="section-title">词汇 ({{words.length}})</text>
+        <block wx:for="{{words}}" wx:key="id">
+          <view class="study-word-card">
+            <view class="sw-jp {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio" data-word="{{item.word}}">
+              {{item.word}} <text class="audio-icon {{isPlayingAudio ? 'playing' : ''}}">🔊</text>
+            </view>
+            <view class="sw-reading">{{item.reading}}</view>
+            <view class="sw-meaning">{{item.meaning}}</view>
+            <view wx:if="{{item.example}}" class="sw-example {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio" data-word="{{item.example}}">{{item.example}} <text class="audio-icon {{isPlayingAudio ? 'playing' : ''}}">🔊</text></view>
+            <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
+          </view>
+        </block>
+      </view>
+
+      <view wx:if="{{grammar.length > 0}}" class="study-section">
+        <text class="section-title">语法 ({{grammar.length}})</text>
+        <block wx:for="{{grammar}}" wx:key="id">
+          <view class="study-grammar-card">
+            <text class="sg-pattern">{{item.pattern}}</text>
+            <text class="sg-structure">{{item.structure}}</text>
+            <text class="sg-explain">{{item.explanation}}</text>
+            <view class="sg-example">
+              <text>{{item.example}}</text>
+              <text class="sg-trans">{{item.translation}}</text>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view wx:if="{{textDialogue}}" class="study-section">
+        <text class="section-title">课文</text>
+        <view class="text-block">
+          <view class="text-name-wrap">
+            <text class="text-name">{{textDialogue.title}}</text>
+            <text wx:if="{{textDialogue.subtitle}}" class="text-subtitle">{{textDialogue.subtitle}}</text>
+          </view>
+          <block wx:for="{{textDialogue.dialogue}}" wx:key="speaker">
+            <view class="dialogue-row">
+              <text class="dr-speaker">{{item.speaker}}:</text>
+              <text class="dr-jp">{{item.text}}</text>
+              <text class="dr-cn">{{item.translation}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="start-quiz-bar">
+      <view class="start-quiz-btn" bindtap="startQuiz">开始练习 →</view>
+    </view>
+  </view>
       <view class="level-tag">{{level}}</view>
     </view>
 
