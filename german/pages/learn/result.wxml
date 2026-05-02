@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="result-card">
+    <view class="result-icon {{passed ? 'success' : 'fail'}}">
+      {{passed ? '🎉' : '💪'}}
+    </view>
+    <view class="result-title">{{passed ? '恭喜通过！' : '再接再厉！'}}</view>
+    <view class="result-score">
+      <text class="score-num">{{score}}</text>
+      <text class="score-divider">/</text>
+      <text class="score-total">{{total}}</text>
+    </view>
+    <view class="result-percent">{{percentage}}%</view>
+    <view class="result-message">
+      {{passed ? '你已掌握本关知识点' : '差' + (total - score) + '分，继续加油！'}}
+    </view>
+  </view>
+
+  <view class="wrong-review" wx:if="{{wrongAnswers.length > 0}}">
+    <view class="section-title">错题回顾</view>
+    <view class="wrong-list">
+      <view class="wrong-item" wx:for="{{wrongAnswers}}" wx:key="index">
+        <view class="wrong-word">{{item.question.word}}</view>
+        <view class="wrong-translation">{{item.question.translation}}</view>
+        <view class="wrong-answer">
+          <text class="label">你的答案:</text>
+          <text class="value">{{item.userAnswer}}</text>
+        </view>
+        <view class="correct-answer">
+          <text class="label">正确答案:</text>
+          <text class="value">{{item.correctAnswer}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="action-btn primary" bindtap="goToReview" wx:if="{{wrongAnswers.length > 0}}">
+      立即复习错题
+    </button>
+    <button class="action-btn" bindtap="retryChallenge">
+      重新闯关
+    </button>
+    <button class="action-btn" bindtap="nextLevel">
+      返回首页
+    </button>
+  </view>
+</view>

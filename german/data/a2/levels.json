@@ -1,0 +1,23 @@
+{
+  "level": "a2",
+  "name": "A2 进阶",
+  "description": "扩展词汇和日常交流能力",
+  "totalLevels": 15,
+  "levels": [
+    {"id": 1, "name": "购物与服务", "unlock": 0},
+    {"id": 2, "name": "餐厅与点餐", "unlock": 1},
+    {"id": 3, "name": "问路与指路", "unlock": 2},
+    {"id": 4, "name": "预约与计划", "unlock": 3},
+    {"id": 5, "name": "健康与医疗", "unlock": 4},
+    {"id": 6, "name": "银行与金融", "unlock": 5},
+    {"id": 7, "name": "旅行与住宿", "unlock": 6},
+    {"id": 8, "name": "工作与职业", "unlock": 7},
+    {"id": 9, "name": "媒体与娱乐", "unlock": 8},
+    {"id": 10, "name": "情感与关系", "unlock": 9},
+    {"id": 11, "name": "观点与意见", "unlock": 10},
+    {"id": 12, "name": "环境与自然", "unlock": 11},
+    {"id": 13, "name": "科技与社会", "unlock": 12},
+    {"id": 14, "name": "文化与传统", "unlock": 13},
+    {"id": 15, "name": "总结与复习", "unlock": 14}
+  ]
+}

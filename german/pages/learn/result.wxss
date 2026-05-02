@@ -1,0 +1,140 @@
+.container {
+  padding: 30rpx;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.result-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 50rpx;
+  text-align: center;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1);
+}
+
+.result-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.result-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+
+.result-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 20rpx;
+}
+
+.score-num {
+  font-size: 80rpx;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.score-divider {
+  font-size: 40rpx;
+  color: #999;
+  margin: 0 10rpx;
+}
+
+.score-total {
+  font-size: 40rpx;
+  color: #999;
+}
+
+.result-percent {
+  font-size: 32rpx;
+  color: #52c41a;
+  margin-bottom: 20rpx;
+}
+
+.result-message {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.wrong-review {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.wrong-list {
+  max-height: 500rpx;
+  overflow-y: auto;
+}
+
+.wrong-item {
+  padding: 20rpx;
+  background: #fff7e6;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+  border-left: 6rpx solid #faad14;
+}
+
+.wrong-word {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.wrong-translation {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.wrong-answer, .correct-answer {
+  font-size: 24rpx;
+  margin-top: 8rpx;
+}
+
+.wrong-answer .label, .correct-answer .label {
+  color: #999;
+}
+
+.wrong-answer .value {
+  color: #ff4d4f;
+}
+
+.correct-answer .value {
+  color: #52c41a;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.action-btn {
+  padding: 28rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  background: #fff;
+  color: #333;
+  border: 2rpx solid #d9d9d9;
+}
+
+.action-btn.primary {
+  background: #1890ff;
+  color: #fff;
+  border: none;
+}

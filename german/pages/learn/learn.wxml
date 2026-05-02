@@ -1,2 +1,74 @@
-<!--german/pages/learn/learn.wxml-->
-<text>german/pages/learn/learn.wxml</text>
+<view class="container">
+  <view class="header">
+    <text class="title">德语闯关</text>
+    <text class="subtitle">选择等级，开始学习</text>
+  </view>
+
+  <view class="stats-bar" wx:if="{{userProgress}}">
+    <view class="stat-item">
+      <text class="stat-num">{{userProgress.totalPoints || 0}}</text>
+      <text class="stat-label">积分</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{userProgress.streakDays || 0}}</text>
+      <text class="stat-label">连续天数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{userProgress.completedLevels.length || 0}}</text>
+      <text class="stat-label">已完成关卡</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">选择等级</view>
+    <view class="level-grid">
+      <view 
+        wx:for="{{levels}}" 
+        wx:key="id"
+        class="level-card {{currentLevel === item.id ? 'active' : ''}}"
+        bindtap="selectLevel"
+        data-id="{{item.id}}">
+        <view class="level-header">
+          <text class="level-name">{{item.name}}</text>
+          <text class="level-badge">{{item.total}}关</text>
+        </view>
+        <text class="level-desc">{{item.description}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">选择关卡 - {{currentLevel}}</view>
+    <view class="level-buttons">
+      <block wx:for="{{15}}" wx:key="*this">
+        <view 
+          class="level-btn {{index + 1 <= currentLevelIndex ? 'unlocked' : 'locked'}}"
+          bindtap="startChallenge"
+          data-index="{{index + 1}}">
+          <text class="level-btn-num">{{index + 1}}</text>
+          <text class="level-btn-status" wx:if="{{index + 1 < currentLevelIndex}}">✓</text>
+          <text class="level-btn-status" wx:elif="{{index + 1 == currentLevelIndex}}">进行中</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">快速入口</view>
+    <view class="quick-links">
+      <view class="quick-link" bindtap="goToReview">
+        <text class="quick-icon">📖</text>
+        <text class="quick-text">复习关卡</text>
+        <text class="quick-badge" wx:if="{{reviewCount > 0}}">{{reviewCount}}</text>
+      </view>
+      <view class="quick-link" bindtap="goToCourse">
+        <text class="quick-icon">📚</text>
+        <text class="quick-text">课程学习</text>
+      </view>
+      <view class="quick-link" bindtap="goToWordbook">
+        <text class="quick-icon">📝</text>
+        <text class="quick-text">生词本</text>
+      </view>
+    </view>
+  </view>
+</view>

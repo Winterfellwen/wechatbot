@@ -1,66 +1,103 @@
-// german/pages/learn/learn.js
+const storage = require('../../utils/storage');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    levels: [],
+    currentLevel: 'a1',
+    currentLevelIndex: 1,
+    userProgress: null,
+    reviewCount: 0,
+    showLevelSelect: true
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function(options) {
+    this.loadLevels();
+    this.loadUserProgress();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  onShow: function() {
+    this.loadUserProgress();
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  loadLevels: function() {
+    this.setData({
+      levels: [
+        { id: 'a1', name: 'A1 基础', description: '掌握基础词汇和简单语法', total: 15 },
+        { id: 'a2', name: 'A2 进阶', description: '扩展词汇和日常交流', total: 15 },
+        { id: 'b1', name: 'B1 中级', description: '流利表达和复杂语法', total: 15 },
+        { id: 'b2', name: 'B2 高级', description: '深入交流和学术表达', total: 15 }
+      ],
+      currentLevel: 'a1'
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  loadUserProgress: function() {
+    const progress = storage.getUserProgress();
+    const reviewQueue = storage.getReviewQueue();
+    
+    this.setData({
+      userProgress: progress,
+      currentLevelIndex: progress.currentLevelIndex || 1,
+      reviewCount: reviewQueue.length
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  selectLevel: function(e) {
+    const levelId = e.currentTarget.dataset.id;
+    this.setData({ 
+      currentLevel: levelId,
+      showLevelSelect: true
+    });
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
+  startChallenge: function(e) {
+    const levelIndex = e.currentTarget.dataset.index;
+    const level = this.data.currentLevel;
+    
+    if (levelIndex > this.data.currentLevelIndex) {
+      wx.showToast({
+        title: '请先完成前一关',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.navigateTo({
+      url: `/german/pages/learn/challenge?level=${level}&index=${levelIndex}`
+    });
   },
 
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
+  goToReview: function() {
+    const reviewQueue = storage.getReviewQueue();
+    if (reviewQueue.length === 0) {
+      wx.showToast({
+        title: '暂无复习内容',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.navigateTo({
+      url: '/german/pages/learn/review'
+    });
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
+  goToCourse: function() {
+    wx.navigateTo({
+      url: '/german/pages/course/course'
+    });
+  },
 
+  goToWordbook: function() {
+    wx.navigateTo({
+      url: '/german/pages/wordbook/wordbook'
+    });
+  },
+
+  onShareAppMessage: function() {
+    return {
+      title: '德语闯关学习',
+      path: '/german/pages/learn/learn'
+    };
   }
-})
+});

@@ -1,0 +1,190 @@
+.container {
+  padding: 30rpx;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 10rpx;
+  display: block;
+}
+
+.stats-bar {
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1890ff;
+  display: block;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+}
+
+.section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-left: 10rpx;
+  border-left: 6rpx solid #1890ff;
+}
+
+.level-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.level-card {
+  width: 48%;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
+  box-sizing: border-box;
+}
+
+.level-card.active {
+  border: 4rpx solid #1890ff;
+}
+
+.level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.level-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.level-badge {
+  font-size: 22rpx;
+  color: #1890ff;
+  background: #e6f7ff;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+
+.level-desc {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+  line-height: 1.4;
+}
+
+.level-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.level-btn {
+  width: 100rpx;
+  height: 100rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  background: #1890ff;
+  color: #fff;
+}
+
+.level-btn.locked {
+  background: #d9d9d9;
+}
+
+.level-btn.unlocked {
+  background: #52c41a;
+}
+
+.level-btn-num {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.level-btn-status {
+  font-size: 18rpx;
+  margin-top: 4rpx;
+  opacity: 0.8;
+}
+
+.quick-links {
+  display: flex;
+  gap: 20rpx;
+}
+
+.quick-link {
+  flex: 1;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.quick-icon {
+  font-size: 40rpx;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.quick-text {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.quick-badge {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 20rpx;
+}

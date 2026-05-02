@@ -1,0 +1,121 @@
+<view class="container">
+  <view class="progress-bar">
+    <view class="progress-fill" style="width: {{currentQuestion / totalQuestions * 100}}%"></view>
+    <text class="progress-text">{{currentQuestion + 1}} / {{totalQuestions}}</text>
+  </view>
+
+  <view class="score">得分: {{score}}</view>
+
+  <view class="question-box">
+    <view wx:if="{{questions[currentQuestion]}}" class="question-content">
+      <!-- 选择题 -->
+      <view wx:if="{{questions[currentQuestion].type === 'choice'}}" class="type-choice">
+        <view class="question-text">{{questions[currentQuestion].question}}</view>
+        <view class="options">
+          <button 
+            wx:for="{{questions[currentQuestion].options}}" 
+            wx:key="*this"
+            class="option-btn {{showFeedback && index == questions[currentQuestion].correct ? 'correct' : ''}}"
+            bindtap="selectAnswer"
+            data-index="{{index}}"
+            disabled="{{showFeedback}}">
+            {{item}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 听力题 -->
+      <view wx:elif="{{questions[currentQuestion].type === 'listen'}}" class="type-listen">
+        <view class="question-text">{{questions[currentQuestion].question}}</view>
+        <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
+          <text class="audio-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
+          <text>{{isPlaying ? '播放中...' : '播放录音'}}</text>
+        </view>
+        <view class="options">
+          <button 
+            wx:for="{{questions[currentQuestion].options}}" 
+            wx:key="*this"
+            class="option-btn"
+            bindtap="selectAnswer"
+            data-index="{{index}}"
+            disabled="{{showFeedback}}">
+            {{item}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 拼写题 -->
+      <view wx:elif="{{questions[currentQuestion].type === 'spell'}}" class="type-spell">
+        <view class="question-text">{{questions[currentQuestion].question}}</view>
+        <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
+          <text class="audio-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
+          <text>{{isPlaying ? '播放中...' : '播放录音'}}</text>
+        </view>
+        <input 
+          class="spell-input" 
+          placeholder="请输入德语单词"
+          confirm-type="done"
+          bindconfirm="submitSpellAnswer"
+          disabled="{{showFeedback}}"/>
+        <button class="submit-btn" bindtap="submitSpellAnswer" data-answer="" disabled="{{showFeedback}}">确认</button>
+      </view>
+
+      <!-- 排序题 -->
+      <view wx:elif="{{questions[currentQuestion].type === 'order'}}" class="type-order">
+        <view class="question-text">{{questions[currentQuestion].question}}</view>
+        <view class="word-pool">
+          <button 
+            wx:for="{{questions[currentQuestion].words}}" 
+            wx:key="*this"
+            class="word-btn"
+            bindtap="selectOrderWord"
+            data-word="{{item}}"
+            wx:if="{{!currentOrder.includes(item)}}">
+            {{item}}
+          </button>
+        </view>
+        <view class="answer-area">
+          <text class="answer-label">答案: </text>
+          <text class="answer-text">{{currentOrder.join(' ')}}</text>
+        </view>
+        <view class="order-actions">
+          <button class="clear-btn" bindtap="clearOrder" disabled="{{showFeedback}}">清除</button>
+          <button class="submit-btn" bindtap="submitOrderAnswer" disabled="{{currentOrder.length < 3 || showFeedback}}">确认</button>
+        </view>
+      </view>
+
+      <!-- 配对题 -->
+      <view wx:elif="{{questions[currentQuestion].type === 'match'}}" class="type-match">
+        <view class="question-text">{{questions[currentQuestion].question}}</view>
+        <view class="match-area">
+          <view class="match-left">
+            <view 
+              wx:for="{{questions[currentQuestion].pairs}}" 
+              wx:key="*this"
+              class="match-item {{selectedPairs.indexOf(index) !== -1 ? 'selected' : ''}}"
+              bindtap="selectPair"
+              data-index="{{index}}">
+              {{item.left}}
+            </view>
+          </view>
+          <view class="match-right">
+            <view 
+              wx:for="{{questions[currentQuestion].pairs}}" 
+              wx:key="*this"
+              class="match-item {{selectedPairs.indexOf(index) !== -1 ? 'selected' : ''}}"
+              bindtap="selectPair"
+              data-index="{{index}}">
+              {{item.right}}
+            </view>
+          </view>
+        </view>
+        <button class="submit-btn" bindtap="checkPairAnswer" disabled="{{selectedPairs.length !== 2 || showFeedback}}">确认配对</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="hint">
+    <text>当前词汇: {{questions[currentQuestion].word}}</text>
+    <text wx:if="{{questions[currentQuestion].phonetic}}"> / {{questions[currentQuestion].phonetic}}</text>
+  </view>
+</view>
