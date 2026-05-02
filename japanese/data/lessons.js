@@ -1,11 +1,11 @@
 module.exports = [
-  // ==================== Level N5 (Book 1: 50音 → 聊天) ====================
-  { id: 1, level: 'N5', title: '五十音図', subtitle: '平假名与片假名', description: '学习日语最基础的五十音图，掌握平假名和片假名的读写', unit: '音声', words_count: 46, grammar_count: 2, unlocked: true },
-  { id: 2, level: 'N5', title: '濁音・半濁音', subtitle: '浊音和半浊音', description: '学习日语中的浊音和半浊音发音规则', unit: '音声', words_count: 25, grammar_count: 2, unlocked: false },
-  { id: 3, level: 'N5', title: '長音・促音', subtitle: '长音和促音', description: '掌握日语长音和促音的发音技巧', unit: '音声', words_count: 20, grammar_count: 2, unlocked: false },
-  { id: 4, level: 'N5', title: '拗音・撥音', subtitle: '拗音和拨音', description: '学习拗音和拨音的发音与书写', unit: '音声', words_count: 30, grammar_count: 2, unlocked: false },
-  { id: 5, level: 'N5', title: 'わたしは留学生です', subtitle: '我是留学生', description: '学习自我介绍和基本判断句的使用', unit: '初級文法', words_count: 25, grammar_count: 4, unlocked: false },
-  { id: 6, level: 'N5', title: 'これは本です', subtitle: '这是书', description: '掌握指示代词的用法和物品指代', unit: '初級文法', words_count: 20, grammar_count: 3, unlocked: false },
+  // ==================== Level N5 (Book 1: 基础会话) ====================
+  { id: 1, level: 'N5', title: '基础寒暄', subtitle: '日常问候语', description: '学习日语最基础的日常寒暄用语', unit: '初級会話', words_count: 30, grammar_count: 2, unlocked: true },
+  { id: 2, level: 'N5', title: '家人称呼', subtitle: '家庭成员', description: '学习家庭成员的相关词汇', unit: '単語学習', words_count: 25, grammar_count: 2, unlocked: false },
+  { id: 3, level: 'N5', title: '数字和物品', subtitle: '常用名词', description: '学习数字和日常物品词汇', unit: '単語学習', words_count: 20, grammar_count: 2, unlocked: false },
+  { id: 4, level: 'N5', title: '时间和天气', subtitle: '时间表达', description: '学习时间、日期和天气相关词汇', unit: '単語学習', words_count: 30, grammar_count: 2, unlocked: false },
+  { id: 5, level: 'N5', title: '我是留学生', subtitle: '自我介绍', description: '学习自我介绍和基本判断句的使用', unit: '初級文法', words_count: 25, grammar_count: 4, unlocked: false },
+  { id: 6, level: 'N5', title: '这是书', subtitle: '指示代词', description: '掌握指示代词的用法和物品指代', unit: '初級文法', words_count: 20, grammar_count: 3, unlocked: false },
   { id: 7, level: 'N5', title: '図書館はどこですか', subtitle: '图书馆在哪里', description: '学习地点询问和存在句的表达方式', unit: '初級文法', words_count: 18, grammar_count: 3, unlocked: false },
   { id: 8, level: 'N5', title: '今何時ですか', subtitle: '现在几点', description: '掌握时间、数字的表达和询问方式', unit: '初級文法', words_count: 22, grammar_count: 3, unlocked: false },
   { id: 9, level: 'N5', title: '花見に行きます', subtitle: '去看花', description: '学习动词ます形的方向和移动表达', unit: '初級文法', words_count: 24, grammar_count: 4, unlocked: false },
