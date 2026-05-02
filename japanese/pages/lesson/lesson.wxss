@@ -89,15 +89,18 @@
 .option-btn.wrong .option-badge { background: #EF4444; color: #fff; box-shadow: 0 4rpx 12rpx rgba(239,68,68,0.3); }
 .option-text { flex: 1; font-size: 34rpx; color: #0F172A; line-height: 1.4; font-weight: 500; }
 
+.fill-hint { font-size: 28rpx; color: #64748B; margin-bottom: 16rpx; padding: 12rpx 20rpx; background: #F1F5F9; border-radius: 12rpx; display: inline-block; }
+
 .fill-input {
-  width: 100%; padding: 28rpx; border-radius: 16rpx; border: 3rpx solid #E0F2FE;
-  background: #fff; font-size: 34rpx; box-shadow: 0 4rpx 12rpx rgba(14,165,233,0.06);
-  box-sizing: border-box;
+  width: 100%; padding: 32rpx 28rpx; border-radius: 20rpx; border: 3rpx solid #E0F2FE;
+  background: #fff; font-size: 36rpx; line-height: 1.4; box-shadow: 0 4rpx 12rpx rgba(14,165,233,0.06);
+  box-sizing: border-box; height: 100rpx;
 }
 .fill-input:focus { border-color: #0EA5E9; }
 
 .fill-actions { display: flex; gap: 20rpx; margin-top: 24rpx; }
-.fill-submit { flex: 1; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; border: none; border-radius: 16rpx; font-size: 32rpx; font-weight: bold; box-shadow: 0 4rpx 16rpx rgba(14,165,233,0.3); }
+.fill-submit { display: flex; align-items: center; justify-content: center; height: 100rpx; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; border: none; border-radius: 20rpx; font-size: 34rpx; font-weight: bold; box-shadow: 0 6rpx 20rpx rgba(14,165,233,0.35); }
+.fill-submit:active { transform: scale(0.98); }
 
 .quiz-result { text-align: center; padding: 60rpx; background: #fff; border-radius: 24rpx; box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1); margin-top: 40rpx; }
 .result-correct { font-size: 52rpx; font-weight: bold; color: #22C55E; display: block; }
