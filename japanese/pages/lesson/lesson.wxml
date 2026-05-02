@@ -92,11 +92,21 @@
     </view>
 
     <view wx:if="{{showResult}}" class="result-bar">
-      <view wx:if="{{isCorrect}}" class="result-correct"><text class="result-big">🎉</text><text class="result-sub">正确! {{combo > 1 ? '连续' + combo + '题!' : ''}}</text></view>
-      <view wx:else class="result-wrong"><text class="result-big">✗</text><text class="result-sub" wx:if="{{currentQuestion.options}}">正确答案: {{currentQuestion.options[correctIndex]}}</text><text class="result-sub" wx:else>正确答案: {{currentQuestion.answer}}</text></view>
       <view class="next-btn" bindtap="nextQuestion">
         <text class="next-icon">{{current < total ? '➡️' : '🏁'}}</text>
         <text class="next-text">{{current < total ? '继续' : '完成!'}}</text>
+      </view>
+      <view wx:if="{{isCorrect}}" class="result-hint result-correct-anim">
+        <text class="result-big">🎉</text>
+        <text class="result-text">回答正确! {{combo > 1 ? '连续' + combo + '题!' : ''}}</text>
+      </view>
+      <view wx:else class="result-hint result-wrong-anim">
+        <text class="result-big">✗</text>
+        <text class="result-text">回答错误</text>
+      </view>
+      <view wx:if="{{!isCorrect}}" class="answer-reveal">
+        <text class="answer-label">正确答案：</text>
+        <text class="answer-value">{{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</text>
       </view>
     </view>
   </view>
