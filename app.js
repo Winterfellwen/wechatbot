@@ -9,8 +9,13 @@ App({
         traceUser: true,
       });
     }
-    
+
     this.checkLoginStatus();
+
+    try {
+      var ttsJP = require('./japanese/utils/tts.js');
+      if (ttsJP && ttsJP.preLoad) ttsJP.preLoad();
+    } catch(e) {}
   },
   
   globalData: {

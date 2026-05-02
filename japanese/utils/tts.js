@@ -4,26 +4,28 @@ const TTS_API_BASE = 'https://eastasia.tts.speech.microsoft.com/cognitiveservice
 let audioContext = null;
 let currentAudio = null;
 let apiKey = null;
+let keyLoaded = false;
+let keyLoading = null;
 
 function getAudioContext() {
   if (!audioContext) {
     audioContext = wx.createInnerAudioContext();
+    audioContext.volume = 1;
   }
   return audioContext;
 }
 
 function initApiKey() {
-  return new Promise((resolve, reject) => {
-    if (apiKey) {
-      resolve();
-      return;
-    }
+  if (apiKey) return Promise.resolve();
+  if (keyLoading) return keyLoading;
 
+  keyLoading = new Promise((resolve, reject) => {
     wx.request({
       url: TTS_KEY_URL,
       success: function(res) {
         if (res.statusCode === 200 && res.data && res.data.key) {
           apiKey = res.data.key;
+          keyLoaded = true;
           resolve();
         } else {
           reject(new Error('Failed to get API key'));
@@ -34,6 +36,7 @@ function initApiKey() {
       }
     });
   });
+  return keyLoading;
 }
 
 function speak(text, lang) {
@@ -47,7 +50,7 @@ function speak(text, lang) {
     const voiceName = langCode === 'ja-JP' ? 'ja-JP-NanamiNeural' : 'ja-JP-NanamiNeural';
 
     const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langCode}'>
-      <voice name='${voiceName}'>
+      <voice name='${voiceName}' speed="115">
         ${text}
       </voice>
     </speak>`;
@@ -60,7 +63,7 @@ function speak(text, lang) {
           header: {
             'Ocp-Apim-Subscription-Key': apiKey,
             'Content-Type': 'application/ssml+xml',
-            'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
+            'X-Microsoft-OutputFormat': 'audio-16khz-64kbitrate-mono-mp3'
           },
           data: ssml,
           responseType: 'arraybuffer',
@@ -71,6 +74,9 @@ function speak(text, lang) {
               const audioUrl = 'data:audio/mpeg;base64,' + base64;
 
               const audio = getAudioContext();
+              if (currentAudio && currentAudio !== audio) {
+                try { currentAudio.stop(); } catch(e) {}
+              }
               currentAudio = audio;
               audio.src = audioUrl;
               audio.stopped = false;
@@ -119,5 +125,6 @@ function isPlaying() {
 module.exports = {
   speak,
   stop,
-  isPlaying
+  isPlaying,
+  preLoad: function() { initApiKey(); }
 };
