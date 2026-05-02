@@ -1,39 +1,43 @@
 /*pages/course/course.wxss*/
-.container { min-height: 100vh; background: #F0F9FF; padding-bottom: 130rpx; }
+.container { min-height: 100vh; background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%); padding-bottom: 130rpx; }
 
 .header {
-  padding: 48rpx 40rpx 40rpx; background: linear-gradient(135deg, #0EA5E9, #38BDF8);
+  padding: 56rpx 40rpx 48rpx; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
   text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(14,165,233,0.3);
 }
-.header-title { font-size: 44rpx; font-weight: bold; color: #fff; display: block; }
-.header-sub { font-size: 28rpx; color: rgba(255,255,255,0.8); margin-top: 8rpx; display: block; }
+.header-title { font-size: 48rpx; font-weight: bold; color: #fff; display: block; text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1); }
+.header-sub { font-size: 30rpx; color: rgba(255,255,255,0.85); margin-top: 12rpx; display: block; }
 
-.hub-grid { padding: 24rpx; display: flex; flex-direction: column; gap: 24rpx; margin-top: -16rpx; }
+.hub-grid { padding: 24rpx; display: flex; flex-direction: column; gap: 24rpx; margin-top: -20rpx; }
 
 .hub-card {
-  border-radius: 24rpx; padding: 40rpx 36rpx; color: #fff;
+  border-radius: 24rpx; padding: 44rpx 40rpx; color: #fff;
   display: flex; flex-direction: column; position: relative; overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1);
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.15);
+  transition: all 0.2s;
 }
-.hub-green { background: linear-gradient(135deg, #22C55E, #4ADE80); }
-.hub-blue { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
-.hub-orange { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+.hub-card:active { transform: scale(0.99); }
+.hub-green { background: linear-gradient(135deg, #22C55E 0%, #4ADE80 100%); }
+.hub-blue { background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); }
+.hub-orange { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); }
 
-.hub-icon { font-size: 64rpx; margin-bottom: 12rpx; }
-.hub-name { font-size: 40rpx; font-weight: bold; }
-.hub-desc { font-size: 26rpx; opacity: 0.85; margin-top: 8rpx; }
+.hub-icon { font-size: 72rpx; margin-bottom: 16rpx; }
+.hub-name { font-size: 44rpx; font-weight: bold; }
+.hub-desc { font-size: 28rpx; opacity: 0.9; margin-top: 10rpx; }
 .hub-badge {
-  position: absolute; top: 36rpx; right: 36rpx;
-  background: rgba(255,255,255,0.25); padding: 10rpx 24rpx;
-  border-radius: 24rpx; font-size: 26rpx; font-weight: bold;
+  position: absolute; top: 40rpx; right: 40rpx;
+  background: rgba(255,255,255,0.25); padding: 12rpx 28rpx;
+  border-radius: 24rpx; font-size: 28rpx; font-weight: bold;
 }
 
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; display: flex;
-  background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-  box-shadow: 0 -4rpx 24rpx rgba(14,165,233,0.08);
-  padding: 12rpx 0 env(safe-area-inset-bottom, 12rpx);
+  background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);
+  box-shadow: 0 -4rpx 24rpx rgba(14,165,233,0.1);
+  padding: 16rpx 0 env(safe-area-inset-bottom, 16rpx);
+  z-index: 999;
 }
-.nav-item { flex: 1; padding: 10rpx 0 14rpx; text-align: center; }
-.nav-text { font-size: 26rpx; color: #94A3B8; }
+.nav-item { flex: 1; padding: 12rpx 0 16rpx; text-align: center; }
+.nav-text { font-size: 28rpx; color: #94A3B8; transition: color 0.2s; font-weight: 500; }
 .nav-item.active .nav-text { color: #0EA5E9; font-weight: bold; }
