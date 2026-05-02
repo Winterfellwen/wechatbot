@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%);
 }
 
 .empty-state {
@@ -12,12 +12,12 @@
 }
 
 .empty-icon {
-  font-size: 120rpx;
+  font-size: 140rpx;
   margin-bottom: 30rpx;
 }
 
 .empty-title {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: bold;
   color: #333;
   margin-bottom: 16rpx;
@@ -29,14 +29,18 @@
 }
 
 .main-content {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
+  background: #fff;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
 }
 
 .word-count {
@@ -45,26 +49,34 @@
 }
 
 .review-btn {
-  background: #1890ff;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
   color: #fff;
   font-size: 26rpx;
-  padding: 12rpx 24rpx;
+  padding: 14rpx 28rpx;
   border-radius: 30rpx;
   border: none;
+  box-shadow: 0 4rpx 12rpx rgba(24,144,255,0.3);
+  font-weight: 500;
 }
 
 .word-list {
-  height: calc(100vh - 120rpx);
+  height: calc(100vh - 140rpx);
 }
 
 .word-item {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
+  border-radius: 18rpx;
+  padding: 26rpx;
+  margin-bottom: 18rpx;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
+  transition: all 0.2s;
+}
+
+.word-item:active {
+  transform: scale(0.99);
 }
 
 .word-main {
@@ -74,11 +86,11 @@
 .word-text {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 14rpx;
 }
 
 .word {
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: bold;
   color: #333;
 }
@@ -90,19 +102,19 @@
 .word-translation {
   font-size: 28rpx;
   color: #666;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
 }
 
 .word-phonetic {
   font-size: 24rpx;
   color: #999;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
 }
 
 .word-example {
   font-size: 24rpx;
   color: #999;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   font-style: italic;
 }
 
@@ -112,15 +124,20 @@
 
 .delete-btn {
   font-size: 24rpx;
-  padding: 8rpx 16rpx;
+  padding: 10rpx 20rpx;
   background: #fff;
   color: #ff4d4f;
-  border: 1rpx solid #ff4d4f;
-  border-radius: 8rpx;
+  border: 2rpx solid #ff4d4f;
+  border-radius: 10rpx;
+  font-weight: 500;
+}
+
+.delete-btn:active {
+  background: #fff1f0;
 }
 
 .review-mode {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .review-header {
@@ -128,20 +145,24 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40rpx;
+  background: #fff;
+  padding: 20rpx;
+  border-radius: 14rpx;
 }
 
 .progress {
   font-size: 28rpx;
   color: #666;
+  font-weight: bold;
 }
 
 .back-btn {
   font-size: 26rpx;
-  padding: 12rpx 24rpx;
+  padding: 14rpx 28rpx;
   background: #fff;
   color: #666;
-  border: 1rpx solid #d9d9d9;
-  border-radius: 8rpx;
+  border: 2rpx solid #d9d9d9;
+  border-radius: 10rpx;
 }
 
 .review-card {
@@ -150,37 +171,38 @@
   padding: 60rpx 40rpx;
   text-align: center;
   margin-bottom: 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1);
 }
 
 .card-word {
-  font-size: 56rpx;
+  font-size: 60rpx;
   font-weight: bold;
   color: #333;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
 .card-phonetic {
-  font-size: 32rpx;
+  font-size: 34rpx;
   color: #999;
-  margin-top: 20rpx;
+  margin-top: 24rpx;
 }
 
 .card-answer {
   margin-top: 40rpx;
-  padding: 30rpx;
-  background: #f6ffed;
+  padding: 32rpx;
+  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
   border-radius: 16rpx;
   border: 2rpx solid #52c41a;
 }
 
 .answer-translation {
-  font-size: 36rpx;
+  font-size: 38rpx;
   color: #52c41a;
   font-weight: bold;
-  margin-bottom: 12rpx;
+  margin-bottom: 14rpx;
 }
 
 .answer-example {
@@ -190,34 +212,39 @@
 
 .show-answer-btn {
   margin-top: 40rpx;
-  background: #e6f7ff;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
   color: #1890ff;
   border: 2rpx solid #1890ff;
-  border-radius: 12rpx;
-  font-size: 30rpx;
-  padding: 24rpx;
+  border-radius: 14rpx;
+  font-size: 32rpx;
+  padding: 26rpx;
+  font-weight: bold;
+  box-shadow: 0 4rpx 12rpx rgba(24,144,255,0.2);
 }
 
 .review-actions {
   display: flex;
-  gap: 30rpx;
+  gap: 24rpx;
 }
 
 .unknown-btn, .known-btn {
   flex: 1;
   padding: 28rpx;
   border-radius: 16rpx;
-  font-size: 32rpx;
+  font-size: 34rpx;
+  font-weight: bold;
 }
 
 .unknown-btn {
   background: #fff;
   color: #ff4d4f;
   border: 2rpx solid #ff4d4f;
+  box-shadow: 0 4rpx 12rpx rgba(255,77,79,0.2);
 }
 
 .known-btn {
-  background: #52c41a;
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
   color: #fff;
   border: none;
+  box-shadow: 0 4rpx 16rpx rgba(82,196,26,0.3);
 }

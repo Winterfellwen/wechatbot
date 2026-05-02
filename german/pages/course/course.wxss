@@ -1,13 +1,14 @@
 .container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%);
   padding-bottom: 40rpx;
 }
 
 .level-selector {
   background: #fff;
   padding: 20rpx;
-  border-bottom: 1rpx solid #e0e0e0;
+  border-bottom: 1rpx solid #e8e8e8;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.04);
 }
 
 .level-scroll {
@@ -16,22 +17,25 @@
 
 .level-item {
   display: inline-block;
-  padding: 16rpx 32rpx;
+  padding: 18rpx 36rpx;
   margin-right: 16rpx;
   background: #f5f5f5;
   border-radius: 30rpx;
   font-size: 28rpx;
   color: #666;
+  font-weight: 500;
+  transition: all 0.3s;
 }
 
 .level-item.active {
-  background: #1890ff;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
   color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(24,144,255,0.3);
 }
 
 .unit-selector {
   background: #fff;
-  padding: 20rpx;
+  padding: 24rpx;
   position: relative;
 }
 
@@ -39,8 +43,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #333;
+  font-weight: bold;
 }
 
 .arrow {
@@ -50,23 +55,24 @@
 
 .unit-list {
   position: absolute;
-  top: 80rpx;
-  left: 20rpx;
-  right: 20rpx;
+  top: 90rpx;
+  left: 24rpx;
+  right: 24rpx;
   background: #fff;
-  border: 1rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+  border: 1rpx solid #e8e8e8;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.12);
   z-index: 10;
-  max-height: 400rpx;
+  max-height: 500rpx;
   overflow-y: auto;
 }
 
 .unit-item {
-  padding: 20rpx;
+  padding: 22rpx;
   text-align: center;
   border-bottom: 1rpx solid #f5f5f5;
-  font-size: 28rpx;
+  font-size: 30rpx;
+  color: #666;
 }
 
 .unit-item:last-child {
@@ -76,13 +82,15 @@
 .unit-item.active {
   color: #1890ff;
   font-weight: bold;
+  background: #e6f7ff;
 }
 
 .section {
   background: #fff;
   margin: 20rpx;
-  border-radius: 16rpx;
-  padding: 20rpx;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
 }
 
 .section-header {
@@ -91,11 +99,11 @@
   align-items: center;
   margin-bottom: 20rpx;
   padding-bottom: 16rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 2rpx solid #f0f0f0;
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: bold;
   color: #333;
 }
@@ -103,6 +111,9 @@
 .section-count {
   font-size: 24rpx;
   color: #999;
+  background: #f5f5f5;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
 }
 
 .vocab-scroll {
@@ -117,51 +128,53 @@
 
 .vocab-card {
   width: calc(50% - 8rpx);
-  background: #f9f9f9;
-  border-radius: 12rpx;
-  padding: 16rpx;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  border-radius: 14rpx;
+  padding: 18rpx;
   box-sizing: border-box;
   position: relative;
+  border: 1rpx solid #f0f0f0;
 }
 
 .vocab-word {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333;
 }
 
 .audio-icon {
-  font-size: 28rpx;
+  font-size: 30rpx;
 }
 
 .vocab-translation {
   font-size: 26rpx;
   color: #666;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
 }
 
 .vocab-phonetic {
   font-size: 22rpx;
   color: #999;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
 }
 
 .add-btn {
   position: absolute;
-  top: 8rpx;
-  right: 8rpx;
-  width: 40rpx;
-  height: 40rpx;
-  line-height: 40rpx;
+  top: 10rpx;
+  right: 10rpx;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
   text-align: center;
-  background: #1890ff;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
   color: #fff;
-  border-radius: 20rpx;
+  border-radius: 22rpx;
   font-size: 28rpx;
   padding: 0;
+  box-shadow: 0 2rpx 8rpx rgba(24,144,255,0.3);
 }
 
 .grammar-list {
@@ -170,7 +183,7 @@
 }
 
 .grammar-item {
-  padding: 16rpx 0;
+  padding: 20rpx 0;
   border-bottom: 1rpx solid #f5f5f5;
 }
 
@@ -179,15 +192,17 @@
 }
 
 .grammar-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333;
+  margin-bottom: 10rpx;
 }
 
 .grammar-content {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
   margin-top: 8rpx;
+  line-height: 1.6;
 }
 
 .pronunciation-list {
@@ -196,7 +211,7 @@
 }
 
 .pronunciation-item {
-  padding: 16rpx 0;
+  padding: 20rpx 0;
   border-bottom: 1rpx solid #f5f5f5;
 }
 
@@ -205,24 +220,25 @@
 }
 
 .pronunciation-rule {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333;
 }
 
 .pronunciation-desc {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
 }
 
 .pronunciation-example {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  font-size: 24rpx;
+  gap: 10rpx;
+  font-size: 26rpx;
   color: #1890ff;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
+  font-weight: 500;
 }
 
 .text-list {
@@ -231,7 +247,7 @@
 }
 
 .text-item {
-  padding: 16rpx 0;
+  padding: 20rpx 0;
   border-bottom: 1rpx solid #f5f5f5;
 }
 
@@ -240,20 +256,21 @@
 }
 
 .text-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333;
+  margin-bottom: 12rpx;
 }
 
 .text-content {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #333;
-  margin-top: 8rpx;
-  line-height: 1.5;
+  margin-top: 10rpx;
+  line-height: 1.6;
 }
 
 .text-translation {
   font-size: 24rpx;
   color: #999;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
 }
