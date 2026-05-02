@@ -1,82 +1,66 @@
-var app = getApp();
-var lessons = require('../../data/lessons.js');
-
+// german/pages/lesson/lesson.js
 Page({
+
+  /**
+   * 页面的初始数据
+   */
   data: {
-    lesson: null,
-    currentIndex: 0,
-    words: [],
-    showAnswer: false
+
   },
 
-  onLoad: function(options) {
-    var id = options.id;
-    var lesson = lessons.find(function(l) { return l.id === id; });
-    if (lesson) {
-      this.setData({ 
-        lesson: lesson, 
-        words: lesson.words || [] 
-      });
-    }
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad(options) {
+
   },
 
-  speakWord: function(e) {
-    var word = e.currentTarget.dataset.word;
-    var that = this;
-    wx.showLoading({ title: '播放中...' });
-    wx.request({
-      url: 'https://wechatbot-g6ez.onrender.com/api/tts',
-      method: 'POST',
-      header: { 'Content-Type': 'application/json' },
-      data: { text: word, lang: 'de-DE' },
-      success: function(res) {
-        wx.hideLoading();
-        if (res.data && res.data.audioUrl) {
-          wx.downloadFile({
-            url: res.data.audioUrl,
-            success: function(dl) {
-              wx.playBackgroundAudio({
-                dataUrl: dl.tempFilePath,
-                success: function() {
-                  console.log('Playing audio');
-                },
-                fail: function(err) {
-                  console.error('Play failed:', err);
-                  wx.showToast({ title: '播放失败', icon: 'none' });
-                }
-              });
-            },
-            fail: function(err) {
-              console.error('Download failed:', err);
-              wx.showToast({ title: '下载失败', icon: 'none' });
-            }
-          });
-        } else {
-          wx.showToast({ title: '生成音频失败', icon: 'none' });
-        }
-      },
-      fail: function(err) {
-        wx.hideLoading();
-        console.error('TTS request failed:', err);
-        wx.showToast({ title: '请求失败', icon: 'none' });
-      }
-    });
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+
   },
 
-  toggleAnswer: function() {
-    this.setData({ showAnswer: !this.data.showAnswer });
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+
   },
 
-  markComplete: function() {
-    var completed = wx.getStorageSync('german_completedLessons') || [];
-    if (completed.indexOf(this.data.lesson.id) === -1) {
-      completed.push(this.data.lesson.id);
-      wx.setStorageSync('german_completedLessons', completed);
-      
-      var progress = wx.getStorageSync('german_learningProgress') || { exp: 0 };
-      progress.exp += 10;
-      wx.setStorageSync('german_learningProgress', progress);
-    }
-    wx.navigateBack();
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload() {
+
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh() {
+
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom() {
+
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage() {
+
   }
-});
+})

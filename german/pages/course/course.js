@@ -1,25 +1,66 @@
+// german/pages/course/course.js
 Page({
+
+  /**
+   * 页面的初始数据
+   */
   data: {
-    wordCount: 0,
-    masteredCount: 0,
-    grammarCount: 0
+
   },
 
-  onShow: function() {
-    var wordbook = wx.getStorageSync('german_wordbook');
-    var wordCount = wordbook ? wordbook.length : 0;
-    var masteredCount = 0;
-    if (wordbook) {
-      for (var i = 0; i < wordbook.length; i++) {
-        if (wordbook[i].mastered) masteredCount++;
-      }
-    }
-    this.setData({ wordCount: wordCount, masteredCount: masteredCount, grammarCount: 20 });
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad(options) {
+
   },
 
-  goToTextbook: function() { wx.navigateTo({ url: '/german/pages/textbook/textbook' }); },
-  goToWordbook: function() { wx.navigateTo({ url: '/german/pages/wordbook/wordbook' }); },
-  goToGrammar: function() { wx.navigateTo({ url: '/german/pages/grammar/grammar' }); },
-  goToLearn: function() { wx.redirectTo({ url: '/german/pages/learn/learn' }); },
-  goToAI: function() { wx.redirectTo({ url: '/german/pages/aichat/aichat' }); }
-});
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload() {
+
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh() {
+
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom() {
+
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage() {
+
+  }
+})

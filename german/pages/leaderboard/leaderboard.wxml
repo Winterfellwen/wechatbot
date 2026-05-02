@@ -1,17 +1,2 @@
-<view class="container">
-  <view class="header">
-    <text class="title">排行榜</text>
-  </view>
-  <view class="rank-list">
-    <view class="rank-item" wx:for="{{rankList}}" wx:key="rank">
-      <text class="rank-num">{{item.rank}}</text>
-      <text class="rank-name">{{item.name}}</text>
-      <text class="rank-exp">{{item.exp}} XP</text>
-    </view>
-  </view>
-  <view class="tab-bar">
-    <view class="tab" bindtap="goToLearn">学习</view>
-    <view class="tab" bindtap="goToCourse">教材</view>
-    <view class="tab" bindtap="goToAI">AI</view>
-  </view>
-</view>
+<!--german/pages/leaderboard/leaderboard.wxml-->
+<text>german/pages/leaderboard/leaderboard.wxml</text>

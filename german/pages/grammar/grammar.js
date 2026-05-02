@@ -1,35 +1,66 @@
-var grammarDB = require('../../data/grammar.js');
-
+// german/pages/grammar/grammar.js
 Page({
+
+  /**
+   * 页面的初始数据
+   */
   data: {
-    currentLevel: 'N5',
-    levels: ['N5', 'N4', 'N3', 'N2', 'N1'],
-    grammarList: []
+
   },
 
-  onLoad: function() {
-    this.loadGrammar();
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad(options) {
+
   },
 
-  switchLevel: function(e) {
-    var level = e.currentTarget.dataset.level;
-    this.setData({ currentLevel: level });
-    this.loadGrammar();
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+
   },
 
-  loadGrammar: function() {
-    var currentLevel = this.data.currentLevel;
-    var list = [];
-    var i;
-    for (i = 0; i < grammarDB.length; i++) {
-      if (grammarDB[i].level === currentLevel) {
-        list = list.concat([grammarDB[i]]);
-      }
-    }
-    this.setData({ grammarList: list });
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+
   },
 
-  goBack: function() {
-    wx.navigateBack();
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload() {
+
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh() {
+
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom() {
+
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage() {
+
   }
-});
+})
