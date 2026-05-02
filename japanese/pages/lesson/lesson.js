@@ -25,22 +25,27 @@ function buildQuiz(lessonId) {
       var j = Math.floor(Math.random() * (s + 1));
       var tmp = options[s]; options[s] = options[j]; options[j] = tmp;
     }
-    q.push({ type: 'choice', prompt: '"' + correct.word + '" (' + correct.reading + ') 的意思是？', options: options, answer: options.indexOf(correct.meaning) });
+    var wordWithReading = correct.word === correct.reading ? correct.word : correct.word + ' (' + correct.reading + ')';
+    q.push({ type: 'choice', prompt: '"' + correct.word + '" 的意思是？', options: options, answer: options.indexOf(correct.meaning) });
   }
 
   for (var ri = 0; ri < words.length && ri < 3; ri++) {
     var cw = words[ri];
     var dist = [];
     for (var dd2 = 0; dd2 < words.length && dist.length < 3; dd2++) {
-      if (dd2 !== ri) dist.push(words[dd2].word + ' (' + words[dd2].reading + ')');
+      if (dd2 !== ri) {
+        var dword = words[dd2];
+        dist.push(dword.word === dword.reading ? dword.word : dword.word + ' (' + dword.reading + ')');
+      }
     }
     while (dist.length < 3) dist.push('???');
-    var ops = [cw.word + ' (' + cw.reading + ')'].concat(dist);
+    var correctWithReading = cw.word === cw.reading ? cw.word : cw.word + ' (' + cw.reading + ')';
+    var ops = [correctWithReading].concat(dist);
     for (var s2 = ops.length - 1; s2 > 0; s2--) {
       var j2 = Math.floor(Math.random() * (s2 + 1));
       var t2 = ops[s2]; ops[s2] = ops[j2]; ops[j2] = t2;
     }
-    q.push({ type: 'choice', prompt: '"' + cw.meaning + '" 对应的日语是？', options: ops, answer: ops.indexOf(cw.word + ' (' + cw.reading + ')') });
+    q.push({ type: 'choice', prompt: '"' + cw.meaning + '" 对应的日语是？', options: ops, answer: ops.indexOf(correctWithReading) });
   }
 
   for (var pi = 0; pi < words.length && pi < 2; pi++) {
