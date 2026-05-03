@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: wechatbot-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATABASE_URL
+        sync: false
+      - key: WECHAT_APP_ID
+        value: "wx2510f82943d7741e"
+      - key: WECHAT_APP_SECRET
+        sync: false
+      - key: OPENROUTER_KEY
+        sync: false
+      - key: PDF_SERVICE_URL
+        value: "https://pdf-converter-idfi.onrender.com"
+
+  - type: web
+    name: pdf-converter
+    runtime: python
+    rootDir: pdf-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"

@@ -1,0 +1,276 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%);
+  padding-bottom: 40rpx;
+}
+
+.level-selector {
+  background: #fff;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #e8e8e8;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.04);
+}
+
+.level-scroll {
+  white-space: nowrap;
+}
+
+.level-item {
+  display: inline-block;
+  padding: 18rpx 36rpx;
+  margin-right: 16rpx;
+  background: #f5f5f5;
+  border-radius: 30rpx;
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.level-item.active {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(24,144,255,0.3);
+}
+
+.unit-selector {
+  background: #fff;
+  padding: 24rpx;
+  position: relative;
+}
+
+.current-unit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.arrow {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.unit-list {
+  position: absolute;
+  top: 90rpx;
+  left: 24rpx;
+  right: 24rpx;
+  background: #fff;
+  border: 1rpx solid #e8e8e8;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.12);
+  z-index: 10;
+  max-height: 500rpx;
+  overflow-y: auto;
+}
+
+.unit-item {
+  padding: 22rpx;
+  text-align: center;
+  border-bottom: 1rpx solid #f5f5f5;
+  font-size: 30rpx;
+  color: #666;
+}
+
+.unit-item:last-child {
+  border-bottom: none;
+}
+
+.unit-item.active {
+  color: #1890ff;
+  font-weight: bold;
+  background: #e6f7ff;
+}
+
+.section {
+  background: #fff;
+  margin: 20rpx;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.section-count {
+  font-size: 24rpx;
+  color: #999;
+  background: #f5f5f5;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.vocab-scroll {
+  width: 100%;
+}
+
+.vocab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.vocab-card {
+  width: calc(50% - 8rpx);
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  border-radius: 14rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  position: relative;
+  border: 1rpx solid #f0f0f0;
+}
+
+.vocab-word {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.audio-icon {
+  font-size: 30rpx;
+}
+
+.vocab-translation {
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 10rpx;
+}
+
+.vocab-phonetic {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.add-btn {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  color: #fff;
+  border-radius: 22rpx;
+  font-size: 28rpx;
+  padding: 0;
+  box-shadow: 0 2rpx 8rpx rgba(24,144,255,0.3);
+}
+
+.grammar-list {
+  max-height: 500rpx;
+  overflow-y: auto;
+}
+
+.grammar-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.grammar-item:last-child {
+  border-bottom: none;
+}
+
+.grammar-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.grammar-content {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 8rpx;
+  line-height: 1.6;
+}
+
+.pronunciation-list {
+  max-height: 400rpx;
+  overflow-y: auto;
+}
+
+.pronunciation-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.pronunciation-item:last-child {
+  border-bottom: none;
+}
+
+.pronunciation-rule {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.pronunciation-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 10rpx;
+}
+
+.pronunciation-example {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 26rpx;
+  color: #1890ff;
+  margin-top: 12rpx;
+  font-weight: 500;
+}
+
+.text-list {
+  max-height: 500rpx;
+  overflow-y: auto;
+}
+
+.text-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.text-item:last-child {
+  border-bottom: none;
+}
+
+.text-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.text-content {
+  font-size: 28rpx;
+  color: #333;
+  margin-top: 10rpx;
+  line-height: 1.6;
+}
+
+.text-translation {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 10rpx;
+}

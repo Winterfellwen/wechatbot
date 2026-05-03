@@ -1,0 +1,151 @@
+<!--word/pages/editor/editor.wxml - 全面重构版-->
+<view class="editor-page">
+  <!-- 顶部导航栏 -->
+  <view class="top-bar">
+    <input class="title-input-top" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" wx:if="{{!previewMode}}" />
+    <text class="title-text" wx:if="{{previewMode}}">{{title}}</text>
+    <view class="top-actions">
+      <view class="mode-btn" bindtap="togglePreview">
+        <text>{{previewMode ? '✎编辑' : '👁预览'}}</text>
+      </view>
+      <view class="save-btn-top {{saveStatus === '保存中...' ? 'disabled' : ''}}" bindtap="saveDoc">
+        <text>{{saveStatus === '保存中...' ? '保存中...' : '保存'}}</text>
+      </view>
+      <view class="close-btn" bindtap="goBack">✕</view>
+    </view>
+  </view>
+
+  <!-- 工具栏 - 仅编辑模式 -->
+  <view class="toolbar" wx:if="{{!previewMode}}">
+    <view class="tool-row">
+      <view class="tool-btn {{fmt.bold ? 'active' : ''}}" bindtap="toggleBold">
+        <text class="tool-label bold">B</text>
+      </view>
+      <view class="tool-btn {{fmt.italic ? 'active' : ''}}" bindtap="toggleItalic">
+        <text class="tool-label italic">I</text>
+      </view>
+      <view class="tool-btn {{fmt.underline ? 'active' : ''}}" bindtap="toggleUnderline">
+        <text class="tool-label underline">U</text>
+      </view>
+      <view class="tool-btn {{fmt.strike ? 'active' : ''}}" bindtap="toggleStrike">
+        <text class="tool-label strike">S</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn {{fmt.header === 1 ? 'active' : ''}}" bindtap="formatHeader" data-level="1">
+        <text class="tool-label">H1</text>
+      </view>
+      <view class="tool-btn {{fmt.header === 2 ? 'active' : ''}}" bindtap="formatHeader" data-level="2">
+        <text class="tool-label">H2</text>
+      </view>
+      <view class="tool-btn {{fmt.header === 3 ? 'active' : ''}}" bindtap="formatHeader" data-level="3">
+        <text class="tool-label">H3</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn {{fmt.align === 'left' ? 'active' : ''}}" bindtap="setAlign" data-align="left">
+        <text class="tool-icon">左</text>
+      </view>
+      <view class="tool-btn {{fmt.align === 'center' ? 'active' : ''}}" bindtap="setAlign" data-align="center">
+        <text class="tool-icon">中</text>
+      </view>
+      <view class="tool-btn {{fmt.align === 'right' ? 'active' : ''}}" bindtap="setAlign" data-align="right">
+        <text class="tool-icon">右</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn {{fmt.list === 'ordered' ? 'active' : ''}}" bindtap="setList" data-list="ordered">
+        <text class="tool-label">1.</text>
+      </view>
+      <view class="tool-btn {{fmt.list === 'bullet' ? 'active' : ''}}" bindtap="setList" data-list="bullet">
+        <text class="tool-icon">•</text>
+      </view>
+      <view class="tool-divider"></view>
+      <view class="tool-btn" bindtap="pickColor" data-target="color">
+        <view class="color-swatch" style="background:{{fmt.color || '#000000'}}"></view>
+        <text class="tool-icon-sm">A</text>
+      </view>
+      <view class="tool-btn" bindtap="pickColor" data-target="backgroundColor">
+        <view class="color-swatch highlight" style="background:{{fmt.backgroundColor || '#ffff00'}}"></view>
+        <text class="tool-icon-sm">🖌</text>
+      </view>
+    </view>
+
+    <!-- 可展开区域 -->
+    <view class="tool-row expand-row" bindtap="toggleExpand">
+      <text class="expand-label">{{toolbarExpanded ? '收起▲' : '更多▼'}}</text>
+    </view>
+    <view class="tool-row expanded-row" wx:if="{{toolbarExpanded}}">
+      <view class="size-selector">
+        <text class="tool-icon-sm">字号:</text>
+        <view class="select-options">
+          <view wx:for="{{fontSizes}}" wx:key="*this"
+            class="select-opt {{fmt.fontSize == item ? 'active' : ''}}"
+            bindtap="setFontSize" data-size="{{item}}">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="font-selector">
+        <text class="tool-icon-sm">字体:</text>
+        <view class="select-options">
+          <view wx:for="{{fontFamilies}}" wx:key="*this"
+            class="select-opt {{fmt.fontFamily === item ? 'active' : ''}}"
+            bindtap="setFontFamily" data-family="{{item}}">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="tool-row expanded-row" wx:if="{{toolbarExpanded}}">
+      <view class="tool-btn" bindtap="insertImage">
+        <text class="tool-label">🖼图片</text>
+      </view>
+      <view class="tool-btn" bindtap="clearFormat">
+        <text class="tool-label">清除格式</text>
+      </view>
+      <view class="tool-btn" bindtap="undo">
+        <text class="tool-label">撤销</text>
+      </view>
+      <view class="tool-btn" bindtap="redo">
+        <text class="tool-label">重做</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 颜色选择器组件 -->
+  <color-picker
+    show="{{showColorPicker}}"
+    target="{{colorTarget}}"
+    currentColor="{{colorTarget === 'color' ? fmt.color : fmt.backgroundColor}}"
+    bind:colorpick="onColorPick"
+    bind:close="onColorClose"
+  />
+
+  <!-- 标题编辑（保留以兼容） -->
+  <view class="title-bar" style="display:none;">
+    <input class="title-input" placeholder="输入文档标题" value="{{title}}" bindinput="onTitleInput" bindblur="saveDoc" />
+  </view>
+
+  <!-- 编辑区 -->
+  <view class="editor-wrap" wx:if="{{!previewMode}}">
+    <editor
+      id="editor"
+      class="editor"
+      placeholder="开始输入内容..."
+      show-img-size
+      show-img-toolbar
+      bindstatuschange="onStatusChange"
+      bindready="onEditorReady"
+      bindinput="onEditorInput"
+    ></editor>
+  </view>
+
+  <!-- 预览区 -->
+  <view class="preview-wrap" wx:if="{{previewMode}}">
+    <rich-text nodes="{{previewNodes}}" class="preview-content"></rich-text>
+  </view>
+
+  <!-- 底部状态栏 -->
+  <view class="bottom-bar">
+    <view class="save-status">{{saveStatus}}</view>
+  </view>
+</view>

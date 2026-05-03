@@ -1,0 +1,53 @@
+<!--pages/wordbook/wordbook.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="header-row">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">◀</text>
+      </view>
+      <text class="header-title">单词本</text>
+      <view class="header-placeholder"></view>
+    </view>
+  </view>
+
+  <view class="search-bar">
+    <input class="search-input" placeholder="搜索单词 / 释义 / 读音" bindinput="onSearch" value="{{searchKey}}" />
+    <view wx:if="{{searchKey}}" class="clear-btn" bindtap="clearSearch">×</view>
+  </view>
+
+  <view class="stats-bar">
+    <view class="stat-item">
+      <text class="stat-num">{{totalWords}}</text>
+      <text class="stat-label">总词汇</text>
+    </view>
+    <view class="stat-item stat-divider">
+      <text class="stat-num">{{masteredWords}}</text>
+      <text class="stat-label">已掌握</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{learningWords}}</text>
+      <text class="stat-label">学习中</text>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="word-list">
+    <block wx:for="{{filteredWords}}" wx:key="id">
+      <view class="word-card">
+        <view class="word-main">
+          <view class="word-row">
+            <text class="word-japanese">{{item.word}}</text>
+            <text wx:if="{{item.reading}}" class="word-reading">[{{item.reading}}]</text>
+          </view>
+          <text class="word-meaning">{{item.meaning}}</text>
+          <view wx:if="{{item.example}}" class="word-example">
+            <text class="example-jp">{{item.example}}</text>
+            <text class="example-cn">{{item.example_translation}}</text>
+          </view>
+        </view>
+        <view class="word-star {{item.mastered ? 'starred' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
+          <text class="star-icon">{{item.mastered ? '⭐' : '☆'}}</text>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

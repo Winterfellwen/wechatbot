@@ -1,0 +1,55 @@
+<!--pages/leaderboard/leaderboard.wxml-->
+<view class="container">
+  <view class="personal-card">
+    <view class="rank-number">{{myRank === '-' ? '-' : '#' + myRank}}</view>
+    <view class="user-info">
+      <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+      <view class="user-detail">
+        <text class="nickname">{{userInfo.nickName || '游客'}}</text>
+        <text class="stats">Lv.{{level}} · {{totalScore}}分</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{currentTab === 'score' ? 'active' : ''}}" bindtap="switchTab" data-tab="score">综合得分</view>
+    <view class="tab {{currentTab === 'words' ? 'active' : ''}}" bindtap="switchTab" data-tab="words">掌握单词</view>
+    <view class="tab {{currentTab === 'progress' ? 'active' : ''}}" bindtap="switchTab" data-tab="progress">学习进度</view>
+  </view>
+
+  <scroll-view scroll-y class="rank-list">
+    <block wx:for="{{rankList}}" wx:key="openid">
+      <view class="rank-item {{index < 3 ? 'top' : ''}}">
+        <view class="rank-num">{{index + 1}}</view>
+        <image class="rank-avatar" src="{{item.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+        <view class="rank-info">
+          <view class="rank-name">{{item.nickName}}</view>
+          <view class="rank-level">Lv.{{item.level}}</view>
+        </view>
+        <view class="rank-score">{{currentTab === 'score' ? item.score + '分' : (currentTab === 'words' ? item.words + '词' : item.progress + '%')}}</view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="my-stats">
+    <view class="stat-box">
+      <text class="stat-value">{{wordsLearned}}</text>
+      <text class="stat-label">已学单词</text>
+    </view>
+    <view class="stat-box">
+      <text class="stat-value">{{lessonsCompleted}}</text>
+      <text class="stat-label">已完成课</text>
+    </view>
+    <view class="stat-box">
+      <text class="stat-value">{{streakDays}}</text>
+      <text class="stat-label">连续天数</text>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <view class="nav-item" bindtap="goToLesson"><text class="nav-text">闯关</text></view>
+    <view class="nav-item" bindtap="goToCourse"><text class="nav-text">课程</text></view>
+    <view class="nav-item" bindtap="goToAI"><text class="nav-text">智能老师</text></view>
+    <view class="nav-item active"><text class="nav-text">排行榜</text></view>
+  </view>
+</view>

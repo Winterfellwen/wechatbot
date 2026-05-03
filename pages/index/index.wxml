@@ -1,0 +1,53 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 顶部用户信息栏 -->
+  <view class="user-header" bindtap="handleUserTap">
+    <view class="user-info">
+      <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+      <view class="user-detail">
+        <text class="user-nickname">{{userInfo.nickName || '游客'}}</text>
+        <text class="user-status">{{isLoggedIn ? '已登录' : '点击头像登录'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 入口卡片区 -->
+  <view class="entry-container">
+    <view class="entry-grid">
+      <view class="entry-card" bindtap="handleEntryTap" data-type="japanese">
+        <image class="entry-icon" src="/images/icon-japanese.png" mode="aspectFit"></image>
+        <text class="entry-title">日语学习机器人</text>
+        <text class="entry-desc">日语学习好帮手</text>
+      </view>
+
+      <view class="entry-card" bindtap="handleEntryTap" data-type="german">
+        <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
+        <text class="entry-title">德语学习机器人</text>
+        <text class="entry-desc">德语学习好帮手</text>
+      </view>
+
+      <view class="entry-card" bindtap="handleEntryTap" data-type="word">
+        <view class="icon-word">
+          <view class="icon-word-body">
+            <view class="icon-word-fold"></view>
+            <text class="icon-word-letter">W</text>
+          </view>
+        </view>
+        <text class="entry-title">Word在线编辑</text>
+        <text class="entry-desc">文档编辑工具</text>
+      </view>
+
+      <view class="entry-card" bindtap="handleEntryTap" data-type="pdf">
+        <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
+        <text class="entry-title">PDF机器人</text>
+        <text class="entry-desc">PDF处理工具</text>
+      </view>
+
+      <view class="entry-card" bindtap="handleEntryTap" data-type="developing">
+        <image class="entry-icon" src="/images/icon-developing.png" mode="aspectFit"></image>
+        <text class="entry-title">新功能开发中</text>
+        <text class="entry-desc">敬请期待</text>
+      </view>
+    </view>
+  </view>
+</view>

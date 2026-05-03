@@ -1,0 +1,44 @@
+<!--pages/user/user.wxml-->
+<view class="page">
+  <!-- Not logged in -->
+  <view class="login-section" wx:if="{{!isLoggedIn}}">
+    <image class="avatar-lg" src="/images/avatar-default.png" mode="aspectFill"></image>
+    <text class="login-desc">微信一键登录，同步文档数据</text>
+    <button class="login-btn" bindtap="handleLogin">微信一键登录</button>
+  </view>
+
+  <!-- Logged in -->
+  <view class="profile-section" wx:if="{{isLoggedIn}}">
+    <!-- Avatar -->
+    <view class="avatar-row">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar-lg" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+      </button>
+    </view>
+
+    <!-- Nickname -->
+    <view class="nick-row" wx:if="{{!showNickInput}}">
+      <text class="nickname">{{userInfo.nickName || '微信用户'}}</text>
+      <text class="edit-link" bindtap="showNickInput">修改昵称</text>
+    </view>
+    <view class="nick-input-row" wx:if="{{showNickInput}}">
+      <input class="nick-input" type="nickname" placeholder="请输入昵称" value="{{nickName}}" bindinput="onNickInput" focus="{{true}}" />
+      <view class="nick-actions">
+        <text class="btn-cancel" bindtap="cancelNickname">取消</text>
+        <text class="btn-confirm" bindtap="confirmNickname">确定</text>
+      </view>
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- Danger zone -->
+    <view class="danger-zone">
+      <view class="danger-item" bindtap="handleLogout">
+        <text class="danger-text">退出登录</text>
+      </view>
+      <view class="danger-item" bindtap="handleDeleteAccount">
+        <text class="danger-text">注销账号</text>
+      </view>
+    </view>
+  </view>
+</view>

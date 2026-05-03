@@ -1,0 +1,68 @@
+<view class="container">
+  <!-- 空状态 -->
+  <view wx:if="{{isEmpty}}" class="empty-state">
+    <text class="empty-icon">📚</text>
+    <text class="empty-title">生词本为空</text>
+    <text class="empty-desc">在课程或闯关中添加生词</text>
+  </view>
+
+  <!-- 正常状态 -->
+  <view wx:else class="main-content">
+    <view class="header">
+      <text class="word-count">共 {{wordList.length}} 个单词</text>
+      <button class="review-btn" bindtap="startReview" wx:if="{{currentTab === 'list'}}">开始复习</button>
+    </view>
+
+    <!-- 单词列表 -->
+    <scroll-view wx:if="{{currentTab === 'list'}}" class="word-list" scroll-y>
+      <view class="word-item" wx:for="{{wordList}}" wx:key="index">
+        <view class="word-main">
+          <view class="word-text" bindtap="playAudio" data-word="{{item.word}}">
+            <text class="word">{{item.word}}</text>
+            <text class="audio-icon">🔊</text>
+          </view>
+          <view class="word-translation">{{item.translation}}</view>
+          <view class="word-phonetic" wx:if="{{item.phonetic}}">/{{item.phonetic}}/</view>
+          <view class="word-example" wx:if="{{item.example}}">{{item.example}}</view>
+        </view>
+        <view class="word-actions">
+          <button class="delete-btn" bindtap="removeWord" data-word="{{item.word}}">删除</button>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 复习模式 -->
+    <view wx:if="{{currentTab === 'review'}}" class="review-mode">
+      <view class="review-header">
+        <text class="progress">{{currentCard + 1}} / {{wordList.length}}</text>
+        <button class="back-btn" bindtap="goBack">返回</button>
+      </view>
+
+      <view class="review-card" wx:if="{{wordList.length > 0}}">
+        <view class="card-word" bindtap="playAudio" data-word="{{wordList[currentCard].word}}">
+          <text>{{wordList[currentCard].word}}</text>
+          <text class="audio-icon">🔊</text>
+        </view>
+        <view class="card-phonetic" wx:if="{{wordList[currentCard].phonetic}}">
+          /{{wordList[currentCard].phonetic}}/
+        </view>
+
+        <view class="card-answer" wx:if="{{showAnswer}}">
+          <view class="answer-translation">{{wordList[currentCard].translation}}</view>
+          <view class="answer-example" wx:if="{{wordList[currentCard].example}}">
+            {{wordList[currentCard].example}}
+          </view>
+        </view>
+
+        <button class="show-answer-btn" bindtap="toggleAnswer" wx:else>
+          {{showAnswer ? '隐藏答案' : '显示答案'}}
+        </button>
+      </view>
+
+      <view class="review-actions" wx:if="{{showAnswer}}">
+        <button class="unknown-btn" bindtap="markUnknown">不认识</button>
+        <button class="known-btn" bindtap="markKnown">认识</button>
+      </view>
+    </view>
+  </view>
+</view>

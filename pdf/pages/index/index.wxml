@@ -1,0 +1,58 @@
+<!--pdf/pages/index/index.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="header-title">PDF 工具箱</text>
+    <text class="header-sub">上传文件，格式转换</text>
+  </view>
+
+  <!-- No file: upload area -->
+  <view wx:if="{{!fileName}}" class="upload-section">
+    <view class="upload-btn" bindtap="uploadFile">
+      <text class="upload-icon">+</text>
+      <text class="upload-text">选择文件</text>
+      <text class="upload-hint">支持 PDF / DOC / DOCX</text>
+    </view>
+  </view>
+
+  <!-- Has file: convert area -->
+  <view wx:if="{{fileName}}" class="convert-section">
+    <view class="file-card">
+      <view class="file-info">
+        <text class="file-name">{{fileName}}</text>
+        <text class="file-type">{{fromFormat === 'pdf' ? 'PDF文档' : fromFormat === 'docx' ? 'Word文档' : '旧版Word'}}</text>
+      </view>
+      <view class="file-del" bindtap="clearFile">×</view>
+    </view>
+
+    <text class="section-label">转换为</text>
+    <view class="target-list">
+      <block wx:for="{{targetOptions}}" wx:key="value">
+        <view class="target-card {{toFormat === item.value ? 'active' : ''}}" bindtap="selectTarget" data-value="{{item.value}}">
+          <text class="target-label">{{item.label}}</text>
+        </view>
+      </block>
+    </view>
+
+    <view class="convert-btn-wrap">
+      <view class="convert-btn {{converting ? 'loading' : ''}}" bindtap="doConvert">
+        {{converting ? (progressText || '处理中...') : '开始转换'}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 转换结果列表 -->
+  <view wx:if="{{results.length > 0}}" class="result-section">
+    <view class="result-card" wx:for="{{results}}" wx:key="time">
+      <view class="result-header">
+        <text class="result-icon">✓</text>
+        <text class="result-title">{{item.name}}</text>
+        <text class="result-del" data-idx="{{index}}" bindtap="removeResult">×</text>
+      </view>
+      <view class="result-btn open" data-idx="{{index}}" bindtap="openResult">查看文件</view>
+    </view>
+  </view>
+
+  <view class="bottom-nav">
+    <view class="nav-item active"><text class="nav-text">PDF工具</text></view>
+  </view>
+</view>

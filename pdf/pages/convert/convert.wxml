@@ -1,0 +1,33 @@
+<!--pdf/pages/convert/convert.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack">← 返回</view>
+    <text class="header-title">格式转换</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="file-display" wx:if="{{fileName}}">
+    <text class="file-label">当前文件</text>
+    <text class="file-value">{{fileName}}</text>
+    <text class="file-fmt">{{fromFormat | '.pdf' ? 'PDF' : fromFormat === 'docx' ? 'Word文档' : fromFormat === 'doc' ? '旧版Word' : ''}} → {{toFormat | '.pdf' ? 'PDF' : toFormat === 'docx' ? 'Word文档' : 'DOC'}}</text>
+  </view>
+  <view wx:else class="no-file">
+    <text>请先在主页上传文件</text>
+  </view>
+
+  <view class="convert-area" wx:if="{{targetOptions.length > 0}}">
+    <text class="section-title">转换为</text>
+    <view class="target-list">
+      <block wx:for="{{targetOptions}}" wx:key="value">
+        <view class="target-card {{toFormat === item.value ? 'active' : ''}}" bindtap="selectTarget" data-value="{{item.value}}">
+          <text class="target-icon">{{item.value === 'pdf' ? '📄' : (item.value === 'docx' ? '📝' : '📃')}}</text>
+          <text class="target-name">{{item.label}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="convert-btn-wrap">
+    <view class="convert-btn {{converting ? 'disabled' : ''}}" bindtap="doConvert">{{converting ? '转换中...' : '开始转换'}}</view>
+  </view>
+</view>

@@ -1,0 +1,84 @@
+<!--word/pages/index/index.wxml - 重构版-->
+<view class="container">
+  <view class="header">
+    <text class="header-title">Word 文档</text>
+    <text class="header-sub">在线编辑，随时保存并导出</text>
+  </view>
+
+  <view class="notice">
+    <text class="notice-text">⚠ Word 编辑功能仅供临时急用，不支持表格功能。</text>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索文档..." value="{{searchKey}}" bindinput="onSearchInput" />
+      <text class="search-clear" wx:if="{{searchKey}}" bindtap="onSearchClear">×</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="btn-row">
+    <view class="new-btn" bindtap="createDoc">
+      <text class="new-icon">+</text>
+      <text class="new-text">新建文档</text>
+    </view>
+    <view class="import-btn" bindtap="importDoc">
+      <text class="import-icon">↑</text>
+      <text class="import-text">导入Word</text>
+    </view>
+  </view>
+
+
+  <!-- 排序和视图切换 -->
+  <view class="toolbar-row" wx:if="{{filteredDocs.length > 0}}">
+    <text class="section-title">全部文档 ({{filteredDocs.length}})</text>
+    <view class="toolbar-actions">
+      <view class="sort-btn" bindtap="showSortPicker">
+        <text>{{sortBy === 'updatedAt_desc' ? '最新修改' : sortBy === 'updatedAt_asc' ? '最早修改' : sortBy === 'title' ? '按名称' : '最近创建'}} ▼</text>
+      </view>
+      <view class="view-toggle" bindtap="toggleViewMode">
+        <text>{{viewMode === 'list' ? '⊞' : '☰'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 排序选择器 -->
+  <view class="sort-picker" wx:if="{{showSortMenu}}" bindtap="hideSortPicker">
+    <view class="sort-options" catchtap="noop">
+      <view class="sort-opt {{sortBy === 'updatedAt_desc' ? 'active' : ''}}" bindtap="onSortChange" data-sort="updatedAt_desc">最新修改</view>
+      <view class="sort-opt {{sortBy === 'updatedAt_asc' ? 'active' : ''}}" bindtap="onSortChange" data-sort="updatedAt_asc">最早修改</view>
+      <view class="sort-opt {{sortBy === 'title' ? 'active' : ''}}" bindtap="onSortChange" data-sort="title">按名称</view>
+      <view class="sort-opt {{sortBy === 'createdAt_desc' ? 'active' : ''}}" bindtap="onSortChange" data-sort="createdAt_desc">最近创建</view>
+    </view>
+  </view>
+
+  <!-- 文档列表 -->
+  <view class="doc-list {{viewMode}}">
+    <view class="doc-card {{viewMode}}" wx:for="{{filteredDocs}}" wx:key="id">
+      <view class="doc-info" bindtap="openDoc" data-id="{{item.id}}">
+        <view class="doc-icon-wrap">
+          <text class="doc-icon">W</text>
+        </view>
+        <view class="doc-detail">
+          <text class="doc-name">{{item.title}}</text>
+          <text class="doc-time">{{item.timeStr}}</text>
+        </view>
+      </view>
+      <view class="doc-actions">
+        <text class="action-btn edit" data-id="{{item.id}}" bindtap="openDoc">编辑</text>
+        <text class="action-btn save" data-id="{{item.id}}" bindtap="exportDoc">保存</text>
+        <text class="action-btn del" data-id="{{item.id}}" bindtap="deleteDoc">删除</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{filteredDocs.length === 0 && searchKey}}" class="empty">
+    <text class="empty-text">未找到相关文档</text>
+  </view>
+
+  <view wx:if="{{docs.length === 0}}" class="empty">
+    <text class="empty-text">暂无文档，点击上方新建</text>
+  </view>
+</view>

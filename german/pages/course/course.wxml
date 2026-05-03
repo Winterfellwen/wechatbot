@@ -1,0 +1,101 @@
+<view class="container">
+  <!-- 级别选择 -->
+  <view class="level-selector">
+    <scroll-view class="level-scroll" scroll-x>
+      <view 
+        wx:for="{{levels}}" 
+        wx:key="id"
+        class="level-item {{currentLevel === item.id ? 'active' : ''}}"
+        bindtap="selectLevel"
+        data-id="{{item.id}}">
+        {{item.name}}
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 单元选择 -->
+  <view class="unit-selector">
+    <view class="current-unit" bindtap="toggleUnitSelector">
+      <text>第 {{currentUnit}} 单元</text>
+      <text class="arrow">{{showUnitSelector ? '▲' : '▼'}}</text>
+    </view>
+    <view class="unit-list" wx:if="{{showUnitSelector}}">
+      <view 
+        wx:for="{{15}}" 
+        wx:key="*this"
+        class="unit-item {{currentUnit === index + 1 ? 'active' : ''}}"
+        bindtap="selectUnit"
+        data-unit="{{index + 1}}">
+        单元 {{index + 1}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 单词 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">单词</text>
+      <text class="section-count">{{vocabList.length}} 个</text>
+    </view>
+    <scroll-view class="vocab-scroll" scroll-x>
+      <view class="vocab-row">
+        <view class="vocab-card" wx:for="{{vocabList}}" wx:key="index">
+          <view class="vocab-word" bindtap="playAudio" data-word="{{item.word}}">
+            <text>{{item.word}}</text>
+            <text class="audio-icon">🔊</text>
+          </view>
+          <view class="vocab-translation">{{item.translation}}</view>
+          <view class="vocab-phonetic" wx:if="{{item.phonetic}}">/{{item.phonetic}}/</view>
+          <button class="add-btn" bindtap="addToWordBook" data-word="{{item}}">+</button>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 语法 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">语法</text>
+      <text class="section-count">{{grammarList.length}} 个</text>
+    </view>
+    <view class="grammar-list">
+      <view class="grammar-item" wx:for="{{grammarList}}" wx:key="index">
+        <view class="grammar-title">{{item.title}}</view>
+        <view class="grammar-content">{{item.content}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 发音 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">发音</text>
+      <text class="section-count">{{pronunciationList.length}} 个</text>
+    </view>
+    <view class="pronunciation-list">
+      <view class="pronunciation-item" wx:for="{{pronunciationList}}" wx:key="index">
+        <view class="pronunciation-rule">{{item.rule}}</view>
+        <view class="pronunciation-desc">{{item.description}}</view>
+        <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
+          <text>{{item.example}}</text>
+          <text class="audio-icon">🔊</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 课文 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">课文</text>
+      <text class="section-count">{{textList.length}} 篇</text>
+    </view>
+    <view class="text-list">
+      <view class="text-item" wx:for="{{textList}}" wx:key="index">
+        <view class="text-title">{{item.title}}</view>
+        <view class="text-content">{{item.content}}</view>
+        <view class="text-translation">{{item.translation}}</view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,128 @@
+{
+  "level": "a1",
+  "name": "A1 基础",
+  "description": "掌握德语基础词汇和简单语法",
+  "totalLevels": 15,
+  "levels": [
+    {
+      "id": 1,
+      "name": "你好，德国",
+      "vocabCount": 15,
+      "grammar": ["问候语"],
+      "pronunciation": ["元音a", "元音e"],
+      "unlock": 0
+    },
+    {
+      "id": 2,
+      "name": "自我介绍",
+      "vocabCount": 15,
+      "grammar": ["第一人称", "动词变位"],
+      "pronunciation": ["元音i"],
+      "unlock": 1
+    },
+    {
+      "id": 3,
+      "name": "数字和时间",
+      "vocabCount": 15,
+      "grammar": ["数字表达"],
+      "pronunciation": ["元音o"],
+      "unlock": 2
+    },
+    {
+      "id": 4,
+      "name": "家庭成员",
+      "vocabCount": 15,
+      "grammar": ["名词性数"],
+      "pronunciation": ["辅音ch"],
+      "unlock": 3
+    },
+    {
+      "id": 5,
+      "name": "日常生活",
+      "vocabCount": 15,
+      "grammar": ["现在时"],
+      "pronunciation": ["辅音sch"],
+      "unlock": 4
+    },
+    {
+      "id": 6,
+      "name": "颜色和形容",
+      "vocabCount": 15,
+      "grammar": ["形容词"],
+      "pronunciation": ["复合元音"],
+      "unlock": 5
+    },
+    {
+      "id": 7,
+      "name": "地点和方向",
+      "vocabCount": 15,
+      "grammar": ["介词"],
+      "pronunciation": ["辅音r"],
+      "unlock": 6
+    },
+    {
+      "id": 8,
+      "name": "购物和价格",
+      "vocabCount": 15,
+      "grammar": ["冠词"],
+      "pronunciation": ["元音u"],
+      "unlock": 7
+    },
+    {
+      "id": 9,
+      "name": "食物和饮料",
+      "vocabCount": 15,
+      "grammar": ["第四格"],
+      "pronunciation": ["辅音w"],
+      "unlock": 8
+    },
+    {
+      "id": 10,
+      "name": "职业和工作",
+      "vocabCount": 15,
+      "grammar": ["动词搭配"],
+      "pronunciation": ["辅音v"],
+      "unlock": 9
+    },
+    {
+      "id": 11,
+      "name": "天气和季节",
+      "vocabCount": 15,
+      "grammar": ["否定词"],
+      "pronunciation": ["辅音z"],
+      "unlock": 10
+    },
+    {
+      "id": 12,
+      "name": "城市和国家",
+      "vocabCount": 15,
+      "grammar": ["第三格"],
+      "pronunciation": ["辅音pf"],
+      "unlock": 11
+    },
+    {
+      "id": 13,
+      "name": "交通出行",
+      "vocabCount": 15,
+      "grammar": ["命令式"],
+      "pronunciation": ["辅音ts"],
+      "unlock": 12
+    },
+    {
+      "id": 14,
+      "name": "电话和邮件",
+      "vocabCount": 15,
+      "grammar": ["疑问词"],
+      "pronunciation": ["辅音sp"],
+      "unlock": 13
+    },
+    {
+      "id": 15,
+      "name": "兴趣和爱好",
+      "vocabCount": 15,
+      "grammar": ["从句入门"],
+      "pronunciation": ["复习总结"],
+      "unlock": 14
+    }
+  ]
+}

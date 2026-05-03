@@ -1,0 +1,356 @@
+/* word/pages/index/index.wxss */
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 30rpx;
+}
+
+.header {
+  padding: 30rpx 0 20rpx;
+}
+
+.header-title {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+
+.header-sub {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+}
+
+/* 提示 */
+.notice {
+  background: #fffbe6;
+  border: 1rpx solid #ffe58f;
+  border-radius: 10rpx;
+  padding: 14rpx 20rpx;
+  margin-bottom: 20rpx;
+}
+.notice-text { font-size: 24rpx; color: #ad6800; }
+
+/* 操作按钮行 */
+.btn-row {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+/* 新建文档按钮 */
+.new-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2b5797;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 4rpx 12rpx rgba(43, 87, 151, 0.25);
+}
+
+.new-btn:active {
+  opacity: 0.85;
+}
+
+.new-icon {
+  font-size: 40rpx;
+  color: #fff;
+  margin-right: 12rpx;
+  font-weight: 300;
+}
+
+.new-text {
+  font-size: 30rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 导入按钮 */
+.import-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  border: 2rpx solid #dcdfe6;
+}
+
+.import-btn:active {
+  background: #f5f7fa;
+}
+
+.import-icon {
+  font-size: 34rpx;
+  color: #666;
+  margin-right: 10rpx;
+}
+
+.import-text {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.doc-section {
+  margin-top: 10rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.doc-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #2b5797, #1a3a6b);
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.doc-icon {
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: bold;
+  font-family: Georgia, serif;
+}
+
+.doc-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.doc-name {
+  font-size: 28rpx;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-time {
+  font-size: 22rpx;
+  color: #bbb;
+  margin-top: 6rpx;
+}
+
+.doc-actions {
+  display: flex;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+}
+
+.action-btn.edit {
+  color: #333;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.action-btn.export {
+  color: #2b5797;
+  background: rgba(43, 87, 151, 0.08);
+  margin-left: 8rpx;
+}
+
+.action-btn.del {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.08);
+  margin-left: 8rpx;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  padding: 100rpx 0;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #ccc;
+}
+/* 搜索栏 */
+.search-bar {
+  margin-bottom: 20rpx;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.search-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.search-clear {
+  font-size: 32rpx;
+  color: #ccc;
+  padding: 0 8rpx;
+}
+
+/* 工具栏行 */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20rpx 0 16rpx;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.sort-btn {
+  font-size: 24rpx;
+  color: #666;
+  background: #fff;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid #e5e5e5;
+}
+
+.view-toggle {
+  font-size: 32rpx;
+  color: #666;
+  padding: 8rpx 12rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  border: 1rpx solid #e5e5e5;
+}
+
+/* 排序选择器 */
+.sort-picker {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  padding-top: 200rpx;
+}
+
+.sort-options {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 0;
+  width: 400rpx;
+}
+
+.sort-opt {
+  padding: 24rpx 32rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.sort-opt.active {
+  color: #2b5797;
+  font-weight: 500;
+  background: rgba(43,87,151,0.05);
+}
+
+/* 网格视图 */
+.doc-list.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.doc-card.grid {
+  width: calc(50% - 8rpx);
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 16rpx;
+}
+
+.doc-card.grid .doc-info {
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16rpx;
+  width: 100%;
+}
+
+.doc-card.grid .doc-icon-wrap {
+  margin-right: 0;
+  margin-bottom: 12rpx;
+}
+
+.doc-card.grid .doc-detail {
+  align-items: center;
+}
+
+.doc-card.grid .doc-name {
+  text-align: center;
+  font-size: 24rpx;
+}
+
+.doc-card.grid .doc-time {
+  text-align: center;
+}
+
+.doc-card.grid .doc-actions {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.doc-card.grid .action-btn {
+  text-align: center;
+  margin: 4rpx 0;
+  font-size: 22rpx;
+  padding: 6rpx 0;
+}

@@ -1,0 +1,116 @@
+/*pages/index/index.wxss*/
+.user-header {
+  background-color: #fff;
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+}
+
+.user-detail {
+  margin-left: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-nickname {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-status {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.entry-container {
+  padding: 20rpx;
+}
+
+.entry-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.entry-card {
+  width: calc(50% - 15rpx);
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.entry-icon {
+  width: 100rpx;
+  height: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.entry-card.disabled { opacity: 0.5; }
+.entry-card.disabled .entry-title { color: #999; }
+.entry-icon.gray { filter: grayscale(100%); }
+.icon-word {
+  width: 100rpx;
+  height: 100rpx;
+  margin-bottom: 20rpx;
+  position: relative;
+}
+.icon-word-body {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #2b5797 0%, #1a3a6b 100%);
+  border-radius: 10rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(43,87,151,0.3);
+}
+.icon-word-fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30rpx;
+  height: 30rpx;
+  background: linear-gradient(225deg, #1a3a6b 50%, rgba(255,255,255,0.15) 50%);
+}
+.icon-word-letter {
+  position: absolute;
+  bottom: 8rpx;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #fff;
+  font-size: 56rpx;
+  font-weight: bold;
+  font-family: Georgia, serif;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
+}
+
+.entry-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.entry-desc {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
