@@ -106,8 +106,8 @@ function buildQuiz(lessonId) {
 }
 
 Page({
-  data: {
-    lessonId: 0, lessonTitle: '', level: '',
+   data: {
+    lessonId: 0, lessonTitle: '', lessonSubtitle: '', level: '',
     mode: 'study', // 'study' or 'quiz'
     words: [], grammar: [], textDialogue: null,
     current: 0, total: 0, progress: 0, score: 0,
@@ -115,44 +115,49 @@ Page({
     selectedIndex: -1, correctIndex: -1,
     currentQuestion: null, fillAnswer: '', streak: 0, combo: 0,
     showComplete: false, xpEarned: 0,
-    questions: []
+    questions: [],
+    playingWord: '' // Track which specific word is playing
   },
 
-  onLoad: function(options) {
-    var lessonId = parseInt(options.id) || 1;
-    var initialMode = options.mode || 'study';
+   onLoad: function(options) {
+      var lessonId = parseInt(options.id) || 1;
+      var initialMode = options.mode || 'study';
 
-    var lesson = null;
-    for (var i = 0; i < lessons.length; i++) {
-      if (lessons[i].id === lessonId) { lesson = lessons[i]; break; }
-    }
-    if (!lesson) {
-      wx.showToast({ title: '课程不存在', icon: 'none' });
-      setTimeout(function() { wx.navigateBack(); }, 1500);
-      return;
-    }
+      var lesson = null;
+      for (var i = 0; i < lessons.length; i++) {
+        if (lessons[i].id === lessonId) { lesson = lessons[i]; break; }
+      }
+      if (!lesson) {
+        wx.showToast({ title: '课程不存在', icon: 'none' });
+        setTimeout(function() { wx.navigateBack(); }, 1500);
+        return;
+      }
 
-    var lessonWords = wordsIndex.byLesson(lessonId).slice(0, 20);
-    var lessonGrammar = [];
-    for (var gi = 0; gi < grammarData.length; gi++) {
-      if (grammarData[gi].lesson === lessonId) lessonGrammar.push(grammarData[gi]);
-    }
-    var lessonTexts = [];
-    for (var ti = 0; ti < textsData.length; ti++) {
-      if (textsData[ti].lesson === lessonId) lessonTexts.push(textsData[ti]);
-    }
+      var lessonWords = wordsIndex.byLesson(lessonId).slice(0, 20);
+      var lessonGrammar = [];
+      for (var gi = 0; gi < grammarData.length; gi++) {
+        if (grammarData[gi].lesson === lessonId) lessonGrammar.push(grammarData[gi]);
+      }
+      var lessonTexts = [];
+      for (var ti = 0; ti < textsData.length; ti++) {
+        if (textsData[ti].lesson === lessonId) lessonTexts.push(textsData[ti]);
+      }
 
-    this.setData({
-      lessonId: lessonId, lessonTitle: lesson.title, lessonSubtitle: lesson.subtitle || '', level: lesson.level,
-      mode: initialMode,
-      words: lessonWords, grammar: lessonGrammar,
-      textDialogue: lessonTexts.length > 0 ? lessonTexts[0] : null
-    });
+      this.setData({
+        lessonId: lessonId, lessonTitle: lesson.title, lessonSubtitle: lesson.subtitle || '', level: lesson.level,
+        mode: initialMode,
+        words: lessonWords, grammar: lessonGrammar,
+        textDialogue: lessonTexts.length > 0 ? lessonTexts[0] : null
+      });
 
-    if (initialMode === 'quiz') {
-      this.startQuiz();
-    }
-  },
+      // Preload TTS for all words in this lesson when page loads
+      tts.preLoad();
+      tts.preLoadWords(lessonWords, 'ja-JP');
+
+      if (initialMode === 'quiz') {
+        this.startQuiz();
+      }
+    },
 
   goBack: function() { wx.navigateBack(); },
 
@@ -257,9 +262,9 @@ Page({
     }
     if (word) {
       var that = this;
-      that.setData({ isPlayingAudio: true });
+      that.setData({ playingWord: word });
       tts.speak(word).finally(function() {
-        that.setData({ isPlayingAudio: false });
+        that.setData({ playingWord: '' });
       });
     }
   }

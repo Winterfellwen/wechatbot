@@ -4,12 +4,13 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = config.database.url;
 
 // --- Auth helpers ---
 function generateToken() {
@@ -43,8 +44,8 @@ const pool = DATABASE_URL ? new Pool({
   connectionString: DATABASE_URL,
 }) : null;
 
-const APP_ID = 'wx2510f82943d7741e';
-const APP_SECRET = process.env.WECHAT_APP_SECRET;
+const WECHAT_APP_ID = config.wechat.appId;
+const WECHAT_APP_SECRET = config.wechat.appSecret;
 
 console.log('APP_SECRET:', APP_SECRET ? 'set' : 'NOT SET');
 
@@ -160,22 +161,22 @@ app.get('/api/init', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = config.server.port;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
 // Keep Python service warm when this service is active
-const KEEPALIVE_INTERVAL = 14 * 60 * 1000;
+const KEEPALIVE_INTERVAL = config.pdfService.keepaliveInterval;
 setInterval(() => {
   console.log('Keepalive: warming Python service');
-  fetch('https://pdf-converter-idfi.onrender.com/').catch(() => {});
+  fetch(config.pdfService.url + '/').catch(() => {});
 }, KEEPALIVE_INTERVAL);
 
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
-    const openrouterKey = process.env.OPENROUTER_KEY;
+    const openrouterKey = config.openrouter.apiKey;
     
     if (!openrouterKey) {
       return res.status(500).json({ error: 'API key not configured' });
@@ -203,10 +204,10 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // PDF conversion endpoint - submit job, return job_id immediately (client polls)
-fs.mkdirSync('/tmp/uploads', { recursive: true });
-fs.mkdirSync('/tmp/serve', { recursive: true });
-const upload = multer({ dest: '/tmp/uploads/' });
-const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
+fs.mkdirSync(config.storage.uploadDir, { recursive: true });
+fs.mkdirSync(config.storage.serveDir, { recursive: true });
+const upload = multer({ dest: config.storage.uploadDir + '/' });
+const pdfServiceUrl = config.pdfService.url;
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
@@ -265,11 +266,11 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       if (!dlRes.ok) return res.status(502).json({ error: '下载转换结果失败' });
 
       const buffer = await dlRes.arrayBuffer();
-      const outFile = '/tmp/serve/conv_' + jobId;
+      const outFile = config.storage.serveDir + '/conv_' + jobId;
       fs.writeFileSync(outFile, Buffer.from(buffer));
       return res.json({
         status: 'done',
-        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile)
+         url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}`
       });
     } else if (status.status === 'error') {
       return res.json({ status: 'error', error: status.error || '转换失败' });
@@ -284,7 +285,7 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
 app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: '请上传文件' });
-    const pdfServiceUrl = process.env.PDF_SERVICE_URL || 'https://pdf-converter-idfi.onrender.com';
+    const pdfServiceUrl = config.pdfService.url;
     const { op, text, angle } = req.body;
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
@@ -307,11 +308,11 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     }
 
     const buffer = await pyRes.arrayBuffer();
-    const outFile = '/tmp/serve/edit_' + Date.now() + '.pdf';
-    fs.mkdirSync('/tmp/serve', { recursive: true });
+    const outFile = config.storage.serveDir + '/edit_' + Date.now() + '.pdf';
+    fs.mkdirSync(config.storage.serveDir, { recursive: true });
     fs.writeFileSync(outFile, Buffer.from(buffer));
 
-    res.json({ url: 'https://wechatbot-g6ez.onrender.com/api/pdf/download/' + path.basename(outFile) });
+     res.json({ url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}` });
     fs.unlinkSync(req.file.path);
   } catch (err) {
     console.error(err);
@@ -320,7 +321,7 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
 });
 
 app.get('/api/pdf/download/:filename', (req, res) => {
-  const filePath = '/tmp/serve/' + req.params.filename;
+  const filePath = config.storage.serveDir + '/' + req.params.filename;
   if (fs.existsSync(filePath)) {
     res.download(filePath);
   } else {
@@ -404,25 +405,33 @@ function parseZip(buf) {
 
 // Azure TTS API - Get API key for frontend
 app.get('/api/tts/key', (req, res) => {
-  const key = process.env.TTS_API_AZURE;
+  const key = config.azureTts.apiKey;
   if (!key) {
     return res.status(500).json({ error: 'API key not configured' });
   }
-  res.json({ key: key, region: 'eastasia' });
+  res.json({ key: key, region: config.azureTts.region });
+});
+
+// Frontend config API - Provide frontend with necessary config
+app.get('/api/config', (req, res) => {
+  res.json({
+    ttsKeyUrl: config.frontend.ttsKeyUrl,
+    apiBaseUrl: config.frontend.apiBaseUrl
+  });
 });
 
 // Azure TTS API for German pronunciation
 app.post('/api/tts', async (req, res) => {
   try {
     const { text, lang } = req.body;
-    const subscriptionKey = process.env.TTS_API_AZURE;
+    const subscriptionKey = config.azureTts.apiKey;
     if (!subscriptionKey) {
       return res.status(500).json({ error: 'Azure speech key not configured' });
     }
-    const region = 'eastasia';
+    const region = config.azureTts.region;
     
-    // Use German voice
-    const voiceName = lang === 'de-DE' ? 'de-DE-ConradNeural' : 'de-DE-ConradNeural';
+    // Get voice based on language
+    const voiceName = config.azureTts.voiceMap[lang || 'de-DE'] || 'de-DE-ConradNeural';
     
     const response = await fetch(`https://${region}.api.cognitive.microsoft.com/cognitiveservices/v3.0/tts`, {
       method: 'POST',
@@ -445,13 +454,13 @@ app.post('/api/tts', async (req, res) => {
 
     const audioBuffer = await response.arrayBuffer();
     const fileName = 'tts_' + Date.now() + '.mp3';
-    const filePath = '/tmp/serve/' + fileName;
-    fs.mkdirSync('/tmp/serve', { recursive: true });
+    const filePath = config.storage.serveDir + '/' + fileName;
+    fs.mkdirSync(config.storage.serveDir, { recursive: true });
     fs.writeFileSync(filePath, Buffer.from(audioBuffer));
 
-    res.json({ 
-      audioUrl: 'https://wechatbot-g6ez.onrender.com/api/tts/download/' + fileName 
-    });
+     res.json({ 
+       audioUrl: `${req.protocol}://${req.get('host')}/api/tts/download/${fileName}` 
+     });
   } catch (err) {
     console.error('TTS error:', err);
     res.status(500).json({ error: err.message });
@@ -459,7 +468,7 @@ app.post('/api/tts', async (req, res) => {
 });
 
 app.get('/api/tts/download/:filename', (req, res) => {
-  const filePath = '/tmp/serve/' + req.params.filename;
+  const filePath = config.storage.serveDir + '/' + req.params.filename;
   if (fs.existsSync(filePath)) {
     res.download(filePath);
   } else {

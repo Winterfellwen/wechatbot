@@ -3,7 +3,7 @@ module.exports = [
   { id: 1, level: 'N5', title: '基础寒暄', subtitle: '日常问候语', description: '学习日语最基础的日常寒暄用语', unit: '初級会話', words_count: 30, grammar_count: 2, unlocked: true },
   { id: 2, level: 'N5', title: '家人称呼', subtitle: '家庭成员', description: '学习家庭成员的相关词汇', unit: '単語学習', words_count: 25, grammar_count: 2, unlocked: false },
   { id: 3, level: 'N5', title: '数字和物品', subtitle: '常用名词', description: '学习数字和日常物品词汇', unit: '単語学習', words_count: 20, grammar_count: 2, unlocked: false },
-  { id: 4, level: 'N5', title: '学校生活', subtitle: '时间表达', description: '学习时间、日期和学校相关词汇', unit: '単語学習', words_count: 30, grammar_count: 2, unlocked: false },
+   { id: 4, level: 'N5', title: '在邮局', subtitle: '问路', description: '学习问路和场所表达', unit: '初級会話', words_count: 20, grammar_count: 2, unlocked: false },
   { id: 5, level: 'N5', title: '我是留学生', subtitle: '自我介绍', description: '学习自我介绍和基本判断句的使用', unit: '初級文法', words_count: 25, grammar_count: 4, unlocked: false },
   { id: 6, level: 'N5', title: '这是书', subtitle: '指示代词', description: '掌握指示代词的用法和物品指代', unit: '初級文法', words_count: 20, grammar_count: 3, unlocked: false },
   { id: 7, level: 'N5', title: '图书馆在哪里', subtitle: '场所方位', description: '学习地点询问和存在句的表达方式', unit: '初級文法', words_count: 18, grammar_count: 3, unlocked: false },
