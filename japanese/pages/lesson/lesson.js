@@ -274,12 +274,18 @@ Page({
   startAgain: function() { this.startQuiz(); },
 
   nextUnit: function() {
+    if (this._isNavigating) return;
+    this._isNavigating = true;
+    var that = this;
     var nextId = this.data.nextUnitId;
-    if (nextId) {
-      wx.redirectTo({ url: '/japanese/pages/lesson/lesson?id=' + nextId + '&mode=quiz' });
-    } else {
-      this.startQuiz();
-    }
+    setTimeout(function() {
+      if (nextId) {
+        wx.redirectTo({ url: '/japanese/pages/lesson/lesson?id=' + nextId + '&mode=quiz', complete: function() { that._isNavigating = false; } });
+      } else {
+        that.startQuiz();
+        that._isNavigating = false;
+      }
+    }, 200);
   },
 
   playAudio: function(e) {
