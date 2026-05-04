@@ -111,6 +111,10 @@
     </view>
 
     <view wx:if="{{showResult}}" class="result-bar">
+      <view class="next-btn" bindtap="nextQuestion">
+        <text class="next-icon">{{current < total ? '➡️' : '🏁'}}</text>
+        <text class="next-text">{{current < total ? '继续' : '完成!'}}</text>
+      </view>
       <view class="result-card {{isCorrect ? 'result-correct' : 'result-wrong'}}">
         <view class="result-icon-wrap">
           <text class="result-icon">{{isCorrect ? '✓' : '✗'}}</text>
@@ -121,10 +125,6 @@
           <text class="answer-label">正确答案：</text>
           <text class="answer-value">{{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</text>
         </view>
-      </view>
-      <view class="next-btn" bindtap="nextQuestion">
-        <text class="next-icon">{{current < total ? '➡️' : '🏁'}}</text>
-        <text class="next-text">{{current < total ? '继续' : '完成!'}}</text>
       </view>
     </view>
   </view>
