@@ -78,6 +78,7 @@ Page({
       filePath: that.data.filePath,
       name: 'file',
       formData: { from: that.data.fromFormat, to: that.data.toFormat },
+      timeout: 120000,
       success: function(res) {
         if (res.statusCode === 200) {
           var data = {};
@@ -145,10 +146,10 @@ Page({
         return;
       }
 
-      wx.request({
-        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/status/' + jobId,
-        timeout: 30000,
-        success: function(r) {
+        wx.request({
+          url: 'https://wechatbot-g6ez.onrender.com/api/pdf/status/' + jobId,
+          timeout: 60000,
+          success: function(r) {
           if (!that.data.converting || that.data.currentJobId !== jobId) return;
 
           if (r.statusCode === 200 && r.data) {
@@ -180,12 +181,13 @@ Page({
     pollTimer = setTimeout(doPoll, 2000);
   },
 
-  // 下载到小程序缓存，展示结果卡片
-  _downloadResult: function(url, jobId) {
-    var that = this;
-    wx.downloadFile({
-      url: url,
-      success: function(dl) {
+    // 下载到小程序缓存，展示结果卡片
+    _downloadResult: function(url, jobId) {
+      var that = this;
+      wx.downloadFile({
+        url: url,
+        timeout: 120000,
+        success: function(dl) {
         if (dl.statusCode !== 200) {
           that.setData({ converting: false, progressText: '', currentJobId: null });
           wx.showToast({ title: '下载失败', icon: 'none' });

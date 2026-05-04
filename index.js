@@ -414,6 +414,14 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       }, 180000, 5000);
 
       const buffer = await dlRes.arrayBuffer();
+      // Verify file header to avoid "bad magic number" errors
+      const header = Buffer.from(buffer.slice(0, 8)).toString('ascii');
+      const isPdf = header.startsWith('%PDF');
+      const isZip = header.startsWith('PK'); // DOCX, XLSX, etc.
+      if (!isPdf && !isZip) {
+        console.error('Invalid file header from Python:', header);
+        return res.json({ status: 'error', error: '转换结果格式无效，请重试' });
+      }
       const outFile = config.storage.serveDir + '/conv_' + jobId;
       fs.writeFileSync(outFile, Buffer.from(buffer));
       return res.json({
