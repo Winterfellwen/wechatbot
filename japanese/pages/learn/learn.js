@@ -23,7 +23,7 @@ Page({
     var that = this;
     var loggedIn = wx.getStorageSync('auth_token');
     if (loggedIn) {
-      var loginLib = require('../../utils/login');
+      var loginLib = require('../../../../utils/login');
       loginLib.getJpLessonScores().then(function(res) {
         var scores = {};
         if (res.scores) {

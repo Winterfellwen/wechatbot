@@ -240,7 +240,7 @@ Page({
 
     // Save Japanese lesson score
     if (score > 0) {
-      var loginLib = require('../../../utils/login');
+      var loginLib = require('../../../../utils/login');
       loginLib.saveJpLessonScore(lessonId, score, total).catch(function(){});
     }
     var completed = wx.getStorageSync('completedLessons') || [];
