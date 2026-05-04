@@ -74,10 +74,16 @@ var wxRes = await fetch(
     var user, token;
     if (userResult.rows.length > 0) {
       var existing = userResult.rows[0];
-      if (existing.deleted) return res.status(403).json({ error: '该账号已注销' });
-      token = generateToken();
-      await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
-      user = existing;
+      if (existing.deleted) {
+        token = generateToken();
+        await pool.query('UPDATE users SET deleted = false, token = $1, updatedAt = NOW() WHERE openid = $2', [token, openid]);
+        var updatedResult = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
+        user = updatedResult.rows[0];
+      } else {
+        token = generateToken();
+        await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
+        user = existing;
+      }
     } else {
       var countResult = await pool.query('SELECT COUNT(*) FROM users');
       var count = parseInt(countResult.rows[0].count) + 1;
