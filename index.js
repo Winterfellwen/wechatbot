@@ -11,6 +11,20 @@ app.set('trust proxy', 'loopback');
 app.use(cors());
 app.use(express.json());
 
+// Retry helper with timeout (default 3 minutes)
+async function retryWithTimeout(fn, timeoutMs = 180000, retryIntervalMs = 3000) {
+  const start = Date.now();
+  while (true) {
+    try {
+      return await fn();
+    } catch (err) {
+      const elapsed = Date.now() - start;
+      if (elapsed >= timeoutMs) throw err;
+      await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
+    }
+  }
+}
+
 const DATABASE_URL = config.database.url;
 
 // --- Auth helpers ---
@@ -341,29 +355,30 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   const { from, to } = req.body;
   const toFmt = to || 'docx';
 
-  try {
+    try {
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
 
-    // Submit job to Python (returns job_id immediately)
-    const submitRes = await fetch(pdfServiceUrl + '/convert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file_base64: fileBase64,
-        filename: req.file.originalname || 'file.' + (from || 'pdf'),
-        from_fmt: from || 'pdf',
-        to_fmt: toFmt
-      })
-    });
+    // Submit job to Python with retry (3 min timeout)
+    const submitRes = await retryWithTimeout(async () => {
+      const res = await fetch(pdfServiceUrl + '/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_base64: fileBase64,
+          filename: req.file.originalname || 'file.' + (from || 'pdf'),
+          from_fmt: from || 'pdf',
+          to_fmt: toFmt
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Unknown error');
+        throw new Error(errText);
+      }
+      return res;
+    }, 180000, 5000);
+    
     fs.unlinkSync(req.file.path);
-
-    if (!submitRes.ok) {
-      const errText = await submitRes.text().catch(() => 'Unknown error');
-      let errMsg = errText;
-      try { errMsg = JSON.parse(errText).detail || errText; } catch(e) {}
-      return res.status(400).json({ error: errMsg.substring(0, 200) });
-    }
 
     const { job_id } = await submitRes.json();
     // Return job_id immediately; client polls /api/pdf/status/:job_id
@@ -378,19 +393,25 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 app.get('/api/pdf/status/:jobId', async (req, res) => {
   const { jobId } = req.params;
   try {
-    const statusRes = await fetch(pdfServiceUrl + '/status/' + jobId);
-    if (!statusRes.ok) {
-      const errText = await statusRes.text().catch(() => 'Unknown error');
-      return res.status(502).json({ error: '查询失败: ' + errText.substring(0, 100) });
-    }
+    const statusRes = await retryWithTimeout(async () => {
+      const res = await fetch(pdfServiceUrl + '/status/' + jobId);
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Unknown error');
+        throw new Error('查询失败: ' + errText.substring(0, 100));
+      }
+      return res;
+    }, 180000, 5000);
 
     const status = await statusRes.json();
     if (status.status === 'pending' || status.status === 'processing') {
       return res.json({ status: 'processing' });
     } else if (status.status === 'done') {
       // Download result from Python and cache locally
-      const dlRes = await fetch(pdfServiceUrl + '/download/' + status.result);
-      if (!dlRes.ok) return res.status(502).json({ error: '下载转换结果失败' });
+      const dlRes = await retryWithTimeout(async () => {
+        const res = await fetch(pdfServiceUrl + '/download/' + status.result);
+        if (!res.ok) throw new Error('下载转换结果失败');
+        return res;
+      }, 180000, 5000);
 
       const buffer = await dlRes.arrayBuffer();
       const outFile = config.storage.serveDir + '/conv_' + jobId;
