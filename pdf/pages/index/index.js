@@ -157,8 +157,16 @@ Page({
               that.setData({ progressText: '下载中...' });
               that._downloadResult(r.data.url, jobId);
             } else if (r.data.status === 'error') {
-              that.setData({ converting: false, progressText: '', currentJobId: null });
-              wx.showToast({ title: r.data.error || '转换失败', icon: 'none', duration: 3000 });
+              var errMsg = r.data.error || '转换失败';
+              that.setData({ converting: false, progressText: '转换失败: ' + errMsg, currentJobId: null });
+              // 同时 console 输出详细错误
+              console.error('PDF转换失败:', errMsg);
+              wx.showModal({
+                title: '转换失败',
+                content: errMsg.length > 200 ? errMsg.substring(0, 200) + '...' : errMsg,
+                showCancel: false,
+                confirmText: '确定'
+              });
             } else {
               // processing / pending，继续轮询
               var elapsed = Math.round((Date.now() - start) / 1000);

@@ -198,16 +198,44 @@ def _docx_to_pdf(input_path: Path) -> Path:
     except ImportError:
         raise Exception("pypandoc not installed. Run: pip install pypandoc")
 
+    # Check if pandoc is available, if not try to download it
+    try:
+        version = pypandoc.get_pandoc_version()
+        print("Found pandoc version: " + str(version))
+    except Exception:
+        print("Pandoc not found, attempting to download...")
+        try:
+            from pypandoc.pandoc_download import download_pandoc
+            download_pandoc()
+            print("Pandoc downloaded successfully")
+        except Exception as e:
+            raise Exception("Pandoc not installed and auto-download failed: " + str(e))
+
     output_path = input_path.with_suffix(".pdf")
     try:
-        # Use pypandoc (pandoc) for conversion with full format support
-        # Requires pandoc and LaTeX (TinyTeX) to be installed
-        pypandoc.convert_file(
-            str(input_path),
-            to='pdf',
-            outputfile=str(output_path),
-            extra_args=['--pdf-engine=xelatex', '-V', 'geometry:margin=1.5cm']
-        )
+        # Try with xelatex first (better CJK support)
+        try:
+            pypandoc.convert_file(
+                str(input_path),
+                to='pdf',
+                outputfile=str(output_path),
+                extra_args=['--pdf-engine=xelatex', '-V', 'geometry:margin=1.5cm']
+            )
+        except Exception as e1:
+            error_msg = str(e1)
+            print("xelatex failed: " + error_msg + ", trying pdflatex...")
+            # Fallback to pdflatex
+            try:
+                pypandoc.convert_file(
+                    str(input_path),
+                    to='pdf',
+                    outputfile=str(output_path),
+                    extra_args=['--pdf-engine=pdflatex', '-V', 'geometry:margin=1.5cm']
+                )
+            except Exception as e2:
+                error_msg2 = str(e2)
+                raise Exception("Pandoc conversion failed with both engines:\n" +
+                            "xelatex error: " + error_msg + "\npdflatex error: " + error_msg2)
         print("PDF generated with pypandoc: " + str(output_path))
         return output_path
     except Exception as e:
