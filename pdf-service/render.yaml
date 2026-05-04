@@ -3,7 +3,7 @@ services:
     name: pdf-converter
     runtime: python
     buildCommand: |
-      apt-get update && apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra
+      apt-get update && apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra libpango-1.0-0 libcairo2 libglib2.0-0 libgdk-pixbuf2.0-0 shared-mime-info
       pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:

@@ -201,6 +201,16 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
     output_path = input_path.with_suffix(".pdf")
     try:
+        # Debug: check weasyprint version and fonts
+        print("WeasyPrint version: " + str(weasyprint.__version__))
+        try:
+            from weasyprint.text.fonts import FontConfiguration
+            font_config = FontConfiguration()
+            print("Font configuration created")
+        except Exception as fe:
+            print("Font config error: " + str(fe))
+            font_config = None
+
         # Convert docx to HTML with mammoth (preserves images and basic formatting)
         print("Converting " + str(input_path) + " to HTML with mammoth...")
         with open(input_path, 'rb') as f:
@@ -211,27 +221,46 @@ def _docx_to_pdf(input_path: Path) -> Path:
                 print("Mammoth: " + str(msg))
 
         # Add basic CSS for better rendering
+        # Use generic font family that works with WeasyPrint/Pango
         html_with_style = """<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', sans-serif; margin: 2cm; line-height: 1.6; font-size: 11pt; }
+        @font-face {
+            font-family: 'Noto Sans CJK SC';
+            src: local('Noto Sans CJK SC'), local('Noto Sans SC'), local('SimHei'), local('Microsoft YaHei');
+        }
+        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }
         img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
-        table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 10pt; table-layout: fixed; word-wrap: break-word; }
-        th, td { border: 1px solid #333; padding: 8px 12px; text-align: left; vertical-align: top; }
-        th { background-color: #f0f0f0; font-weight: bold; }
-        tr:nth-child(even) { background-color: #fafafa; }
-        h1, h2, h3 { page-break-after: avoid; margin-top: 1em 0; }
-        p { margin: 0.5em 0; }
+        table { border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 10pt; table-layout: auto; }
+        th, td { border: 1px solid #666; padding: 6px 10px; text-align: left; vertical-align: top; word-wrap: break-word; }
+        th { background-color: #e8e8e8; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        h1 { font-size: 1.8em; margin: 1em 0 0.5em 0; page-break-after: avoid; }
+        h2 { font-size: 1.4em; margin: 0.8em 0 0.4em 0; page-break-after: avoid; }
+        h3 { font-size: 1.2em; margin: 0.6em 0 0.3em 0; page-break-after: avoid; }
+        p { margin: 0.6em 0; }
         ul, ol { margin: 0.5em 0; padding-left: 2em; }
+        li { margin: 0.3em 0; }
     </style>
 </head>
 <body>""" + html + """</body></html>"""
 
         # Convert HTML to PDF with weasyprint
         print("Converting HTML to PDF with weasyprint...")
-        weasyprint.HTML(string=html_with_style).write_pdf(str(output_path))
+        try:
+            from weasyprint.text.fonts import FontConfiguration
+            font_config = FontConfiguration()
+            print("Using custom font configuration")
+        except Exception as fe:
+            print("Font config not available: " + str(fe))
+            font_config = None
+
+        if font_config:
+            weasyprint.HTML(string=html_with_style).write_pdf(str(output_path), font_config=font_config)
+        else:
+            weasyprint.HTML(string=html_with_style).write_pdf(str(output_path))
 
         print("PDF generated with mammoth+weasyprint: " + str(output_path))
         return output_path
