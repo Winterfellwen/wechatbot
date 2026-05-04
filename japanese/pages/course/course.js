@@ -38,6 +38,5 @@ Page({
 
   goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
   goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
-  goToAI: function() { wx.redirectTo({ url: '/japanese/pages/aichat/aichat' }); },
   goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
 });

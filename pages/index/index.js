@@ -3,18 +3,59 @@ var loginLib = require('../../utils/login');
 Page({
   data: {
     userInfo: null,
+    displayUserInfo: null,
     isLoggedIn: false
   },
 
+  isValidAvatarUrl: function(url) {
+    if (!url) return false;
+    if (url.indexOf('/images/') === 0) return true;
+    if (url.indexOf('http') !== 0) return false;
+    if (url.indexOf('__tmp__') >= 0) return false;
+    if (url.indexOf('wxfile://') >= 0) return false;
+    if (url.indexOf('127.0.0.1') >= 0) return false;
+    if (url.indexOf('localhost') >= 0) return false;
+    return true;
+  },
+
+  isValidNickname: function(nick) {
+    if (!nick) return false;
+    var trimmed = nick.trim();
+    if (trimmed.length === 0) return false;
+    if (trimmed.indexOf('微信用户') === 0) return false;
+    if (trimmed === '游客') return false;
+    return true;
+  },
+
+  getDisplayUserInfo: function(user) {
+    if (!user) return { avatarUrl: '/images/avatar-default.png', nickName: '游客' };
+    var display = { avatarUrl: '/images/avatar-default.png', nickName: '游客' };
+    if (this.isValidAvatarUrl(user.avatarUrl)) {
+      display.avatarUrl = user.avatarUrl;
+    }
+    if (this.isValidNickname(user.nickName)) {
+      display.nickName = user.nickName;
+    }
+    return display;
+  },
+
   onShow: function () {
+    var loggedIn = loginLib.isLoggedIn();
+    var user = loggedIn ? loginLib.getUserInfo() : null;
+    var displayUserInfo = this.getDisplayUserInfo(user);
     this.setData({
-      isLoggedIn: loginLib.isLoggedIn(),
-      userInfo: loginLib.getUserInfo()
+      isLoggedIn: loggedIn,
+      userInfo: user,
+      displayUserInfo: displayUserInfo
     });
   },
 
   handleUserTap: function () {
     wx.switchTab({ url: '/pages/user/user' });
+  },
+
+  onAvatarError: function () {
+    this.setData({ userInfo: { avatarUrl: '/images/avatar-default.png' } });
   },
 
   handleEntryTap: function (e) {

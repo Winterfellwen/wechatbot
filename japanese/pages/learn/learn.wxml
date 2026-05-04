@@ -55,10 +55,6 @@
       <text class="nav-icon">📖</text>
       <text class="nav-text">课程</text>
     </view>
-    <view class="nav-item" bindtap="goToAI">
-      <text class="nav-icon">💬</text>
-      <text class="nav-text">智能老师</text>
-    </view>
     <view class="nav-item" bindtap="goToRank">
       <text class="nav-icon">🏆</text>
       <text class="nav-text">排行榜</text>

@@ -45,11 +45,6 @@
       </view>
     </view>
 
-    <view class="book-detail-header" style="background: {{currentBook.color}}">
-      <text class="detail-level">{{currentBook.level}}</text>
-      <text class="detail-count">{{currentBookLessons.length}}节课</text>
-    </view>
-
     <view class="lesson-list">
       <block wx:for="{{currentBookLessons}}" wx:key="id">
         <view class="lesson-row {{item.done ? 'done' : ''}}" bindtap="startLesson" data-id="{{item.id}}">

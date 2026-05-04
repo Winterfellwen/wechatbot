@@ -11,7 +11,9 @@ Page({
     exp: 0,
     totalProgress: 0,
     currentTab: 'lesson',
-    scrollToNode: 0
+    scrollToNode: 0,
+    selectedLevel: 'all',
+    levelOptions: ['all', 'N5', 'N4', 'N3', 'N2', 'N1']
   },
 
   onShow: function() {
@@ -23,14 +25,17 @@ Page({
     var progress = wx.getStorageSync('learningProgress') || {};
     var exp = progress.exp || 0;
     var level = Math.floor(exp / 100) + 1;
+    var selectedLevel = this.data.selectedLevel;
 
-    // Group lessons by level, then build path nodes
     var lvOrder = ['N5', 'N4', 'N3', 'N2', 'N1'];
     var nodes = [];
     var totalDone = 0;
+    var totalLessons = 0;
 
     for (var li = 0; li < lvOrder.length; li++) {
       var lv = lvOrder[li];
+      if (selectedLevel !== 'all' && selectedLevel !== lv) continue;
+
       var lvLessons = [];
       for (var i = 0; i < lessons.length; i++) {
         if (lessons[i].level === lv) {
@@ -38,7 +43,6 @@ Page({
         }
       }
 
-      // Unit header
       nodes.push({
         type: 'header',
         id: 'h-' + lv,
@@ -51,11 +55,10 @@ Page({
         var ls = lvLessons[j];
         var done = completed.indexOf(ls.id) !== -1;
         if (done) totalDone++;
+        totalLessons++;
 
-        // Find the current one: first incomplete lesson
         var isCurrent = false;
         if (!done) {
-          // Check if this is the first incomplete overall
           var allDone = true;
           for (var k = 0; k < nodes.length; k++) {
             if (nodes[k].type === 'node' && !nodes[k].done) {
@@ -81,7 +84,7 @@ Page({
       }
     }
 
-    var totalProgress = lessons.length ? Math.round(totalDone / lessons.length * 100) : 0;
+    var totalProgress = totalLessons ? Math.round(totalDone / totalLessons * 100) : 0;
     var scrollTo = 0;
     for (var n = 0; n < nodes.length; n++) {
       if (nodes[n].type === 'node' && nodes[n].current) {
@@ -106,6 +109,12 @@ Page({
 
   goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
   goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
-  goToAI: function() { wx.redirectTo({ url: '/japanese/pages/aichat/aichat' }); },
-  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
+  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); },
+
+  onLevelChange: function(e) {
+    var idx = parseInt(e.detail.value);
+    var selectedLevel = this.data.levelOptions[idx];
+    this.setData({ selectedLevel: selectedLevel });
+    this.buildPath();
+  }
 });

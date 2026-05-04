@@ -116,7 +116,8 @@ Page({
     currentQuestion: null, fillAnswer: '', streak: 0, combo: 0,
     showComplete: false, xpEarned: 0,
     questions: [],
-    playingWord: '' // Track which specific word is playing
+    playingWord: '',
+    nextUnitId: 0
   },
 
    onLoad: function(options) {
@@ -133,7 +134,7 @@ Page({
         return;
       }
 
-      var lessonWords = wordsIndex.byLesson(lessonId).slice(0, 20);
+      var lessonWords = wordsIndex.byLesson(lessonId).slice(0, 20).map(function(w) { w.expanded = false; return w; });
       var lessonGrammar = [];
       for (var gi = 0; gi < grammarData.length; gi++) {
         if (grammarData[gi].lesson === lessonId) lessonGrammar.push(grammarData[gi]);
@@ -249,10 +250,29 @@ Page({
     newProgress.progress = Math.round(completed.length / lessons.length * 100);
     wx.setStorageSync('completedLessons', completed);
     wx.setStorageSync('learningProgress', newProgress);
-    this.setData({ showComplete: true, xpEarned: xp });
+
+    var currentIdx = -1;
+    for (var i = 0; i < lessons.length; i++) {
+      if (lessons[i].id === lessonId) { currentIdx = i; break; }
+    }
+    var nextId = 0;
+    if (currentIdx >= 0 && currentIdx < lessons.length - 1) {
+      nextId = lessons[currentIdx + 1].id;
+    }
+
+    this.setData({ showComplete: true, xpEarned: xp, nextUnitId: nextId });
   },
 
   startAgain: function() { this.startQuiz(); },
+
+  nextUnit: function() {
+    var nextId = this.data.nextUnitId;
+    if (nextId) {
+      wx.redirectTo({ url: '/japanese/pages/lesson/lesson?id=' + nextId + '&mode=quiz' });
+    } else {
+      this.startQuiz();
+    }
+  },
 
   playAudio: function(e) {
     var word = e && e.currentTarget && e.currentTarget.dataset.word;
@@ -267,5 +287,12 @@ Page({
         that.setData({ playingWord: '' });
       });
     }
+  },
+
+  toggleWordExpand: function(e) {
+    var idx = parseInt(e.currentTarget.dataset.index);
+    var words = this.data.words;
+    words[idx].expanded = !words[idx].expanded;
+    this.setData({ words: words });
   }
 });

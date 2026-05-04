@@ -12,13 +12,13 @@
     <!-- Avatar -->
     <view class="avatar-row">
       <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-        <image class="avatar-lg" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill"></image>
+        <image class="avatar-lg" src="{{displayUserInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
       </button>
     </view>
 
     <!-- Nickname -->
     <view class="nick-row" wx:if="{{!showNickInput}}">
-      <text class="nickname">{{userInfo.nickName || '微信用户'}}</text>
+      <text class="nickname">{{displayUserInfo.nickName}}</text>
       <text class="edit-link" bindtap="showNickInput">修改昵称</text>
     </view>
     <view class="nick-input-row" wx:if="{{showNickInput}}">

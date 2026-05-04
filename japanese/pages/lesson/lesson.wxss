@@ -27,7 +27,15 @@
   transition: all 0.2s;
 }
 .study-word-card:active { transform: scale(0.99); }
-.sw-jp { font-size: 36rpx; font-weight: bold; color: #0F172A; display: flex; align-items: center; gap: 10rpx; }
+.word-main-row { display: flex; justify-content: space-between; align-items: center; }
+.word-content { flex: 1; }
+.sw-jp { font-size: 36rpx; font-weight: bold; color: #0F172A; }
+.expand-btn {
+  padding: 8rpx; flex-shrink: 0;margin-right: 32rpx;
+}
+.expand-btn .arrow { font-size: 40rpx; color: #94A3B8; transition: transform 0.2s; }
+.expand-btn .arrow.up { transform: rotate(180deg); }
+.word-extra { margin-top: 16rpx; padding-top: 16rpx; border-top: 1rpx solid #E2E8F0; }
 .sw-reading { font-size: 28rpx; color: #64748B; margin-top: 6rpx; }
 .sw-meaning { font-size: 30rpx; color: #475569; margin-top: 10rpx; font-weight: 500; }
 .sw-example { font-size: 28rpx; color: #0EA5E9; margin-top: 12rpx; padding: 12rpx 18rpx; background: #f0f9ff; border-radius: 10rpx; display: flex; align-items: center; gap: 8rpx; font-weight: 500; }

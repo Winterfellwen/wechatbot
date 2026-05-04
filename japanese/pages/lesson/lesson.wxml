@@ -14,22 +14,29 @@
     <scroll-view scroll-y class="study-body">
       <view wx:if="{{words.length > 0}}" class="study-section">
         <text class="section-title">词汇 ({{words.length}})</text>
-        <block wx:for="{{words}}" wx:key="id">
+        <block wx:for="{{words}}" wx:for-index="wordIdx" wx:key="wordIdx">
           <view class="study-word-card">
-            <view class="sw-jp {{playingWord === item.word ? 'playing' : ''}}" bindtap="playAudio" data-word="{{item.word}}">
-              {{item.word}} <text class="audio-icon {{playingWord === item.word ? 'playing' : ''}}">🔊</text>
+            <view class="word-main-row" bindtap="playAudio" data-word="{{item.word}}">
+              <view class="word-content">
+                <view class="sw-jp {{playingWord === item.word ? 'playing' : ''}}">{{item.word}}</view>
+                <view class="sw-meaning">{{item.meaning}}</view>
+              </view>
+              <view class="expand-btn" catchtap="toggleWordExpand" data-index="{{wordIdx}}">
+                <text class="arrow">{{item.expanded ? '▲' : '▼'}}</text>
+              </view>
             </view>
-            <view class="sw-reading">{{item.reading}}</view>
-            <view class="sw-meaning">{{item.meaning}}</view>
-            <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" bindtap="playAudio" data-word="{{item.example}}">{{item.example}} <text class="audio-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text></view>
-            <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
+            <view wx:if="{{item.expanded}}" class="word-extra">
+              <view class="sw-reading">{{item.reading}}</view>
+              <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">{{item.example}} <text class="audio-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text></view>
+              <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
+            </view>
           </view>
         </block>
       </view>
 
       <view wx:if="{{grammar.length > 0}}" class="study-section">
         <text class="section-title">语法 ({{grammar.length}})</text>
-        <block wx:for="{{grammar}}" wx:key="id">
+        <block wx:for="{{grammar}}" wx:for-index="gIdx" wx:key="gIdx">
           <view class="study-grammar-card">
             <text class="sg-pattern">{{item.pattern}}</text>
             <text class="sg-structure">{{item.structure}}</text>
@@ -49,7 +56,7 @@
             <text class="text-name">{{textDialogue.title}}</text>
             <text wx:if="{{textDialogue.subtitle}}" class="text-subtitle">{{textDialogue.subtitle}}</text>
           </view>
-          <block wx:for="{{textDialogue.dialogue}}" wx:key="speaker">
+          <block wx:for="{{textDialogue.dialogue}}" wx:for-index="dIdx" wx:key="dIdx">
             <view class="dialogue-row">
               <text class="dr-speaker">{{item.speaker}}:</text>
               <text class="dr-jp">{{item.text}}</text>
@@ -82,9 +89,9 @@
       <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio"><text class="audio-icon {{isPlayingAudio ? 'playing' : ''}}">🔊</text></view>
 
       <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">
-        <block wx:for="{{currentQuestion.options}}" wx:key="*this">
-          <view class="option-btn {{showResult && index === correctIndex ? 'correct' : ''}} {{showResult && index === selectedIndex && index !== correctIndex ? 'wrong' : ''}}" bindtap="selectOption" data-index="{{index}}">
-            <view class="option-badge">{{['A','B','C','D'][index]}}</view>
+        <block wx:for="{{currentQuestion.options}}" wx:for-index="idx" wx:key="idx">
+          <view class="option-btn {{showResult && idx === correctIndex ? 'correct' : ''}} {{showResult && idx === selectedIndex && idx !== correctIndex ? 'wrong' : ''}}" bindtap="selectOption" data-index="{{idx}}">
+            <view class="option-badge">{{['A','B','C','D'][idx]}}</view>
             <text class="option-text">{{item}}</text>
           </view>
         </block>
@@ -136,7 +143,7 @@
       <text class="complete-score">{{score}} / {{total}}</text>
       <text class="complete-xp">+{{xpEarned}} XP</text>
       <view class="complete-btns">
-        <view class="btn-retry" bindtap="startAgain">再来一次</view>
+        <view class="btn-retry" bindtap="nextUnit">{{nextUnitId ? '下一单元' : '再来一次'}}</view>
         <view class="btn-exit" bindtap="goBack">返回</view>
       </view>
     </view>

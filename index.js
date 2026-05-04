@@ -161,6 +161,33 @@ app.get('/api/init', async (req, res) => {
   }
 });
 
+// Auto-init DB on startup
+async function initDB() {
+  if (!pool) { console.log('No DB - skip init'); return; }
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        openid VARCHAR(255) PRIMARY KEY,
+        nickName VARCHAR(255),
+        avatarUrl TEXT,
+        token VARCHAR(64),
+        gender INTEGER,
+        country VARCHAR(100),
+        province VARCHAR(100),
+        city VARCHAR(100),
+        createdAt TIMESTAMP DEFAULT NOW(),
+        updatedAt TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
+    console.log('DB initialized');
+  } catch (err) {
+    console.error('DB init error:', err.message);
+  }
+}
+initDB();
+
 const PORT = config.server.port;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -20,7 +20,6 @@
         "pages/course/course",
         "pages/wordbook/wordbook",
         "pages/grammar/grammar",
-        "pages/aichat/aichat",
         "pages/textbook/textbook",
         "pages/leaderboard/leaderboard"
       ]

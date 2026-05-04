@@ -4,28 +4,93 @@ Page({
   data: {
     isLoggedIn: false,
     userInfo: null,
+    displayUserInfo: null,
     showNickInput: false,
     nickName: ''
   },
 
+  isValidAvatarUrl: function(url) {
+    if (!url) return false;
+    if (url.indexOf('/images/') === 0) return true;
+    if (url.indexOf('http') !== 0) return false;
+    if (url.indexOf('__tmp__') >= 0) return false;
+    if (url.indexOf('wxfile://') >= 0) return false;
+    if (url.indexOf('127.0.0.1') >= 0) return false;
+    if (url.indexOf('localhost') >= 0) return false;
+    return true;
+  },
+
+  isValidNickname: function(nick) {
+    if (!nick) return false;
+    var trimmed = nick.trim();
+    if (trimmed.length === 0) return false;
+    if (trimmed.indexOf('微信用户') === 0) return false;
+    if (trimmed === '游客') return false;
+    return true;
+  },
+
+  getDisplayUserInfo: function(user) {
+    if (!user) return null;
+    var display = { avatarUrl: '/images/avatar-default.png', nickName: '微信用户' };
+    if (this.isValidAvatarUrl(user.avatarUrl)) {
+      display.avatarUrl = user.avatarUrl;
+    }
+    if (this.isValidNickname(user.nickName)) {
+      display.nickName = user.nickName;
+    }
+    return display;
+  },
+
+  validateUserInfo: function(user) {
+    var needsUpdate = false;
+    var updates = {};
+    if (user && !this.isValidAvatarUrl(user.avatarUrl)) {
+      updates.avatarUrl = '/images/avatar-default.png';
+      needsUpdate = true;
+    }
+    if (user && !this.isValidNickname(user.nickName)) {
+      updates.nickName = '';
+      needsUpdate = true;
+    }
+    return { needsUpdate: needsUpdate, updates: updates };
+  },
+
   onShow: function () {
+    var that = this;
     var loggedIn = loginLib.isLoggedIn();
+    var user = loggedIn ? loginLib.getUserInfo() : null;
+    var displayUserInfo = this.getDisplayUserInfo(user);
+    if (user) {
+      var validation = this.validateUserInfo(user);
+      if (validation.needsUpdate) {
+        user = Object.assign({}, user, validation.updates);
+        loginLib.updateProfile(validation.updates).catch(function(){});
+      }
+    }
     this.setData({
       isLoggedIn: loggedIn,
-      userInfo: loggedIn ? loginLib.getUserInfo() : null
+      userInfo: user,
+      displayUserInfo: displayUserInfo,
+      showNickInput: user && !this.isValidNickname(user.nickName) || false
     });
   },
 
   // --- Login ---
   handleLogin: function () {
     var that = this;
+    var isNewUser = !wx.getStorageSync('hasSetNickname');
     wx.showLoading({ title: '登录中...' });
     loginLib.login().then(function (data) {
       wx.hideLoading();
-      that.setData({ isLoggedIn: true, userInfo: data.user });
-      // Auto-prompt new users to set nickname
-      var nick = data.user.nickName || '';
-      if (!nick || nick.indexOf('微信用户') === 0) {
+      var user = data.user;
+      var validation = that.validateUserInfo(user);
+      if (validation.needsUpdate) {
+        user = Object.assign({}, user, validation.updates);
+        loginLib.updateProfile(validation.updates).catch(function(){});
+      }
+      var displayUserInfo = that.getDisplayUserInfo(user);
+      that.setData({ isLoggedIn: true, userInfo: user, displayUserInfo: displayUserInfo });
+      if (isNewUser && (!user.nickName || user.nickName.indexOf('微信用户') === 0)) {
         setTimeout(function () {
           that.showNickInput();
         }, 500);
@@ -39,11 +104,20 @@ Page({
   },
 
   // --- Avatar ---
+  onAvatarError: function () {
+    var user = this.data.userInfo;
+    if (user) {
+      var updated = Object.assign({}, user, { avatarUrl: '/images/avatar-default.png' });
+      this.setData({ userInfo: updated });
+    }
+  },
+
   onChooseAvatar: function (e) {
     var avatarUrl = e.detail.avatarUrl;
     var that = this;
     loginLib.updateProfile({ avatarUrl: avatarUrl }).then(function (updated) {
-      that.setData({ userInfo: updated });
+      var displayUserInfo = that.getDisplayUserInfo(updated);
+      that.setData({ userInfo: updated, displayUserInfo: displayUserInfo });
       wx.showToast({ title: '头像已更新', icon: 'success' });
     }).catch(function () {
       wx.showToast({ title: '更新失败', icon: 'none' });
@@ -64,6 +138,7 @@ Page({
     var nickName = this.data.nickName.trim();
     if (!nickName) return;
     loginLib.updateProfile({ nickName: nickName }).then(function (updated) {
+      wx.setStorageSync('hasSetNickname', true);
       that.setData({ showNickInput: false, userInfo: updated });
       wx.showToast({ title: '昵称已更新', icon: 'success' });
     }).catch(function () {
