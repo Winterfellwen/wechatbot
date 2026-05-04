@@ -117,7 +117,8 @@ Page({
     showComplete: false, xpEarned: 0,
     questions: [],
     playingWord: '',
-    nextUnitId: 0
+    nextUnitId: 0,
+    completeStars: { full: 0, half: 0, empty: 5 }
   },
 
    onLoad: function(options) {
@@ -266,7 +267,8 @@ Page({
       nextId = lessons[currentIdx + 1].id;
     }
 
-    this.setData({ showComplete: true, xpEarned: xp, nextUnitId: nextId });
+    var stars = this.getStarData(score, total);
+    this.setData({ showComplete: true, xpEarned: xp, nextUnitId: nextId, completeStars: stars });
   },
 
   startAgain: function() { this.startQuiz(); },
@@ -300,5 +302,16 @@ Page({
     var words = this.data.words;
     words[idx].expanded = !words[idx].expanded;
     this.setData({ words: words });
+  },
+
+  getStarData: function(score, total) {
+    if (!score || !total) return { full: 0, half: 0, empty: 5 };
+    var percentage = score / total * 100;
+    var stars = percentage / 20;
+    var fullStars = Math.floor(stars);
+    var hasHalf = (stars - fullStars) >= 0.5;
+    var halfStars = hasHalf ? 1 : 0;
+    var emptyStars = 5 - fullStars - halfStars;
+    return { full: fullStars, half: halfStars, empty: emptyStars };
   }
 });

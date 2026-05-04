@@ -137,13 +137,17 @@
   <!-- Complete screen -->
   <view wx:if="{{showComplete}}" class="complete-screen">
     <view class="complete-card">
-      <view class="complete-icon">{{score >= total * 0.8 ? 'A' : 'B'}}</view>
+      <view class="complete-stars">
+        <text wx:for="{{completeStars.full}}" wx:for-item="star" wx:key="*this" class="star full">★</text>
+        <text wx:if="{{completeStars.half}}" class="star half">★</text>
+        <text wx:for="{{completeStars.empty}}" wx:for-item="star" wx:key="*this" class="star empty">☆</text>
+      </view>
       <text class="complete-title">课程完成!</text>
       <text class="complete-score">{{score}} / {{total}}</text>
       <text class="complete-xp">+{{xpEarned}} XP</text>
       <view class="complete-btns">
-        <view class="btn-retry" bindtap="nextUnit">{{nextUnitId ? '下一单元' : '再来一次'}}</view>
-        <view class="btn-exit" bindtap="goBack">返回</view>
+        <view class="complete-btn btn-primary" bindtap="nextUnit">{{nextUnitId ? '下一单元' : '再来一次'}}</view>
+        <view class="complete-btn btn-secondary" bindtap="goBack">返回</view>
       </view>
     </view>
   </view>

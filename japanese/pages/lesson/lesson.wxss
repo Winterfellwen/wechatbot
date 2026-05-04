@@ -123,9 +123,19 @@
 .retry-btn { display: inline-block; margin-top: 30rpx; padding: 20rpx 60rpx; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; border-radius: 24rpx; font-size: 32rpx; font-weight: bold; box-shadow: 0 4rpx 16rpx rgba(14,165,233,0.3); }
 
 .complete-card { background: #fff; border-radius: 28rpx; padding: 50rpx; text-align: center; box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.12); margin: 40rpx; }
+.complete-stars { margin-bottom: 20rpx; display: flex; justify-content: center; gap: 8rpx; }
+.complete-stars .star { font-size: 48rpx; line-height: 1; }
+.complete-stars .star.full { color: #F59E0B; }
+.complete-stars .star.half { color: #F59E0B; opacity: 0.5; }
+.complete-stars .star.empty { color: #E2E8F0; }
 .complete-icon { font-size: 120rpx; display: block; margin-bottom: 20rpx; }
 .complete-title { font-size: 44rpx; font-weight: bold; color: #0F172A; display: block; margin-bottom: 20rpx; }
 .complete-xp { font-size: 32rpx; color: #F59E0B; font-weight: bold; display: block; margin-bottom: 30rpx; }
+.complete-btns { display: flex; gap: 20rpx; justify-content: center; margin-top: 20rpx; }
+.complete-btn { padding: 24rpx 48rpx; border-radius: 20rpx; font-size: 32rpx; font-weight: bold; box-shadow: 0 6rpx 20rpx rgba(14,165,233,0.35); transition: all 0.2s; }
+.complete-btn:active { transform: scale(0.98); }
+.btn-primary { background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; }
+.btn-secondary { background: #F1F5F9; color: #64748B; box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); }
 .continue-btn { display: inline-block; padding: 26rpx 80rpx; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; border-radius: 24rpx; font-size: 34rpx; font-weight: bold; box-shadow: 0 8rpx 24rpx rgba(14,165,233,0.35); }
 
 .next-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10rpx; padding: 20rpx 48rpx; border-radius: 40rpx; background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); color: #fff; font-size: 30rpx; font-weight: bold; box-shadow: 0 6rpx 16rpx rgba(14,165,233,0.35); transition: all 0.2s; }
