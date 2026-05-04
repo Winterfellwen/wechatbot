@@ -47,7 +47,7 @@ const pool = DATABASE_URL ? new Pool({
 const WECHAT_APP_ID = config.wechat.appId;
 const WECHAT_APP_SECRET = config.wechat.appSecret;
 
-console.log('APP_SECRET:', APP_SECRET ? 'set' : 'NOT SET');
+console.log('APP_SECRET:', WECHAT_APP_SECRET ? 'set' : 'NOT SET');
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -61,9 +61,9 @@ app.post('/api/auth/login', async (req, res) => {
     var code = req.body.code;
     if (!code) return res.status(400).json({ error: 'Missing code' });
 
-    var wxRes = await fetch(
-      'https://api.weixin.qq.com/sns/jscode2session?appid=' + APP_ID +
-      '&secret=' + APP_SECRET + '&js_code=' + code + '&grant_type=authorization_code'
+var wxRes = await fetch(
+      'https://api.weixin.qq.com/sns/jscode2session?appid=' + WECHAT_APP_ID +
+        '&secret=' + WECHAT_APP_SECRET + '&js_code=' + code + '&grant_type=authorization_code'
     );
     var wxData = await wxRes.json();
     if (wxData.errcode) return res.status(400).json({ error: wxData.errmsg });
