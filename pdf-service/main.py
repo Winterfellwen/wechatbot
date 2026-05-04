@@ -216,11 +216,15 @@ def _docx_to_pdf(input_path: Path) -> Path:
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: 'Arial', 'Helvetica', sans-serif; margin: 2cm; }
-        img { max-width: 100%; height: auto; }
-        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-        th, td { border: 1px solid #ccc; padding: 8px; }
-        h1, h2, h3 { page-break-after: avoid; }
+        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', sans-serif; margin: 2cm; line-height: 1.6; font-size: 11pt; }
+        img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 10pt; table-layout: fixed; word-wrap: break-word; }
+        th, td { border: 1px solid #333; padding: 8px 12px; text-align: left; vertical-align: top; }
+        th { background-color: #f0f0f0; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        h1, h2, h3 { page-break-after: avoid; margin-top: 1em 0; }
+        p { margin: 0.5em 0; }
+        ul, ol { margin: 0.5em 0; padding-left: 2em; }
     </style>
 </head>
 <body>""" + html + """</body></html>"""
