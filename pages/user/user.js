@@ -108,20 +108,22 @@ Page({
     var user = this.data.userInfo;
     if (user) {
       var updated = Object.assign({}, user, { avatarUrl: '/images/avatar-default.png' });
-      this.setData({ userInfo: updated });
+      this.setData({ userInfo: updated, displayUserInfo: this.getDisplayUserInfo(updated) });
     }
   },
 
   onChooseAvatar: function (e) {
     var avatarUrl = e.detail.avatarUrl;
-    var that = this;
-    loginLib.updateProfile({ avatarUrl: avatarUrl }).then(function (updated) {
-      var displayUserInfo = that.getDisplayUserInfo(updated);
-      that.setData({ userInfo: updated, displayUserInfo: displayUserInfo });
-      wx.showToast({ title: '头像已更新', icon: 'success' });
-    }).catch(function () {
-      wx.showToast({ title: '更新失败', icon: 'none' });
-    });
+    if (!avatarUrl) {
+      wx.showToast({ title: '选择头像失败', icon: 'none' });
+      return;
+    }
+    var user = this.data.userInfo || {};
+    var updated = Object.assign({}, user, { avatarUrl: avatarUrl });
+    wx.setStorageSync('auth_user', updated);
+    var displayUserInfo = this.getDisplayUserInfo(updated);
+    this.setData({ userInfo: updated, displayUserInfo: displayUserInfo });
+    wx.showToast({ title: '头像已更新', icon: 'success' });
   },
 
   // --- Nickname ---

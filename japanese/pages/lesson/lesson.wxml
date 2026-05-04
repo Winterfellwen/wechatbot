@@ -104,28 +104,27 @@
       </view>
 
       <view wx:if="{{!currentQuestion.options}}" class="fill-section">
-        <view wx:if="{{currentQuestion.hints}}" class="fill-hint">提示：以「{{currentQuestion.hints[0]}}」开头</view>
-        <input class="fill-input" value="{{fillAnswer}}" placeholder="输入你的答案" bindinput="onFillInput" confirm-type="done" focus="{{true}}" />
-        <view class="fill-submit" bindtap="checkFill">确认</view>
+        <view wx:if="{{currentQuestion.hints && !showResult}}" class="fill-hint">提示：以「{{currentQuestion.hints[0]}}」开头</view>
+        <input class="fill-input" value="{{fillAnswer}}" placeholder="输入你的答案" bindinput="onFillInput" confirm-type="done" focus="{{true}}" disabled="{{showResult}}" />
+        <view wx:if="{{!showResult}}" class="fill-submit" bindtap="checkFill">确认</view>
       </view>
     </view>
 
     <view wx:if="{{showResult}}" class="result-bar">
+      <view class="result-card {{isCorrect ? 'result-correct' : 'result-wrong'}}">
+        <view class="result-icon-wrap">
+          <text class="result-icon">{{isCorrect ? '✓' : '✗'}}</text>
+        </view>
+        <text class="result-msg">{{isCorrect ? '回答正确!' : '回答错误'}}</text>
+        <text wx:if="{{isCorrect && combo > 1}}" class="result-combo">{{combo}} 连击!</text>
+        <view wx:if="{{!isCorrect}}" class="answer-box">
+          <text class="answer-label">正确答案：</text>
+          <text class="answer-value">{{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</text>
+        </view>
+      </view>
       <view class="next-btn" bindtap="nextQuestion">
         <text class="next-icon">{{current < total ? '➡️' : '🏁'}}</text>
         <text class="next-text">{{current < total ? '继续' : '完成!'}}</text>
-      </view>
-      <view wx:if="{{isCorrect}}" class="result-hint result-correct-anim">
-        <text class="result-big">🎉</text>
-        <text class="result-text">回答正确! {{combo > 1 ? '连续' + combo + '题!' : ''}}</text>
-      </view>
-      <view wx:else class="result-hint result-wrong-anim">
-        <text class="result-big">✗</text>
-        <text class="result-text">回答错误</text>
-      </view>
-      <view wx:if="{{!isCorrect}}" class="answer-reveal">
-        <text class="answer-label">正确答案：</text>
-        <text class="answer-value">{{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</text>
       </view>
     </view>
   </view>

@@ -12,12 +12,33 @@ Page({
     totalProgress: 0,
     currentTab: 'lesson',
     scrollToNode: 0,
-    selectedLevel: 'all',
-    levelOptions: ['all', 'N5', 'N4', 'N3', 'N2', 'N1']
+    scrollTop: 0,
+    selectedLevel: '全部级别',
+    selectedLevelIndex: 0,
+    levelOptions: ['全部级别', 'N5', 'N4', 'N3', 'N2', 'N1'],
+    jpScores: {}
   },
 
   onShow: function() {
-    this.buildPath();
+    var that = this;
+    var loggedIn = wx.getStorageSync('auth_token');
+    if (loggedIn) {
+      var loginLib = require('../../utils/login');
+      loginLib.getJpLessonScores().then(function(res) {
+        var scores = {};
+        if (res.scores) {
+          for (var i = 0; i < res.scores.length; i++) {
+            scores[res.scores[i].lesson_id] = res.scores[i];
+          }
+        }
+        that.setData({ jpScores: scores });
+        that.buildPath();
+      }).catch(function() {
+        that.buildPath();
+      });
+    } else {
+      this.buildPath();
+    }
   },
 
   buildPath: function() {
@@ -26,6 +47,7 @@ Page({
     var exp = progress.exp || 0;
     var level = Math.floor(exp / 100) + 1;
     var selectedLevel = this.data.selectedLevel;
+    var that = this;
 
     var lvOrder = ['N5', 'N4', 'N3', 'N2', 'N1'];
     var nodes = [];
@@ -34,7 +56,7 @@ Page({
 
     for (var li = 0; li < lvOrder.length; li++) {
       var lv = lvOrder[li];
-      if (selectedLevel !== 'all' && selectedLevel !== lv) continue;
+      if (selectedLevel !== '全部级别' && selectedLevel !== lv) continue;
 
       var lvLessons = [];
       for (var i = 0; i < lessons.length; i++) {
@@ -69,7 +91,7 @@ Page({
           if (allDone) isCurrent = true;
         }
 
-        nodes.push({
+        var nodeData = {
           type: 'node',
           id: ls.id,
           title: ls.title,
@@ -80,7 +102,14 @@ Page({
           number: j + 1,
           words: ls.words_count || 0,
           grammar: ls.grammar_count || 0
-        });
+        };
+        var scoreData = that.data.jpScores[ls.id];
+        if (scoreData && scoreData.score > 0) {
+          nodeData.jpScore = scoreData.score;
+          nodeData.jpTotal = scoreData.total;
+          nodeData.jpStarData = that.getJpStarData(scoreData.score, scoreData.total);
+        }
+        nodes.push(nodeData);
       }
     }
 
@@ -99,7 +128,22 @@ Page({
       exp: exp,
       totalProgress: totalProgress,
       scrollToNode: scrollTo
-    });
+    }, function() {
+      if (scrollTo) {
+        var query = wx.createSelectorQuery().in(this);
+        query.select('.path-scroll').boundingClientRect();
+        query.select('#node-' + scrollTo).boundingClientRect();
+        query.exec(function(res) {
+          if (res && res[0] && res[1]) {
+            var scrollView = res[0];
+            var node = res[1];
+            var scrollTop = node.top - scrollView.top - (scrollView.height / 2) + (node.height / 2);
+            scrollTop = Math.max(0, scrollTop);
+            this.setData({ scrollTop: scrollTop });
+          }
+        }.bind(this));
+      }
+    }.bind(this));
   },
 
   startLesson: function(e) {
@@ -114,7 +158,18 @@ Page({
   onLevelChange: function(e) {
     var idx = parseInt(e.detail.value);
     var selectedLevel = this.data.levelOptions[idx];
-    this.setData({ selectedLevel: selectedLevel });
+    this.setData({ selectedLevel: selectedLevel, selectedLevelIndex: idx });
     this.buildPath();
+  },
+
+  getJpStarData: function(score, total) {
+    if (!score || !total) return { full: 0, half: 0, empty: 5 };
+    var percentage = score / total * 100;
+    var stars = percentage / 20;
+    var fullStars = Math.floor(stars);
+    var hasHalf = (stars - fullStars) >= 0.5;
+    var halfStars = hasHalf ? 1 : 0;
+    var emptyStars = 5 - fullStars - halfStars;
+    return { full: fullStars, half: halfStars, empty: emptyStars };
   }
 });

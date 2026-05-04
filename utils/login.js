@@ -38,6 +38,9 @@ module.exports = {
           request('POST', '/api/auth/login', { code: res.code }, false)
             .then(function (data) {
               if (!data.token || !data.user) return reject({ error: 'Server returned incomplete data', data: data });
+              if (data.user.avatarUrl && (data.user.avatarUrl.indexOf('__tmp__') >= 0 || data.user.avatarUrl.indexOf('127.0.0.1') >= 0)) {
+                data.user.avatarUrl = '/images/avatar-default.png';
+              }
               wx.setStorageSync(STORAGE_TOKEN, data.token);
               wx.setStorageSync(STORAGE_USER, data.user);
               var app = getApp();
@@ -87,5 +90,15 @@ module.exports = {
 
   deleteAccount: function () {
     return request('DELETE', '/api/users/me', {}, true);
+  },
+
+  saveJpLessonScore: function(lessonId, score, total) {
+    if (score <= 0) return Promise.resolve();
+    return request('POST', '/api/jp/lesson-scores', { lessonId: lessonId, score: score, total: total }, true)
+      .then(function(data) { return data; });
+  },
+
+  getJpLessonScores: function() {
+    return request('GET', '/api/jp/lesson-scores', null, true);
   }
 };

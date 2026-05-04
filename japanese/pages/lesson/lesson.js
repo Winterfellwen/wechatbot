@@ -237,6 +237,12 @@ Page({
     var xp = total > 0 ? Math.round(score / total * 20) : 10;
     if (score === total) xp = 30;
     var lessonId = this.data.lessonId;
+
+    // Save Japanese lesson score
+    if (score > 0) {
+      var loginLib = require('../../../utils/login');
+      loginLib.saveJpLessonScore(lessonId, score, total).catch(function(){});
+    }
     var completed = wx.getStorageSync('completedLessons') || [];
     var progress = wx.getStorageSync('learningProgress') || {};
     if (score >= total * 0.6) {

@@ -49,6 +49,32 @@ const WECHAT_APP_SECRET = config.wechat.appSecret;
 
 console.log('APP_SECRET:', WECHAT_APP_SECRET ? 'set' : 'NOT SET');
 
+// Avatar upload
+const avatarUpload = multer({ dest: config.storage.uploadDir + '/avatars' });
+app.post('/api/upload/avatar', requireAuth, avatarUpload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    var ext = path.extname(req.file.originalname) || '.jpg';
+    var newName = 'avatar_' + req.user.openid + '_' + Date.now() + ext;
+    var destPath = config.storage.serveDir + '/' + newName;
+    fs.renameSync(req.file.path, destPath);
+    var avatarUrl = `${req.protocol}://${req.get('host')}/api/avatar/${newName}`;
+    await pool.query('UPDATE users SET avatarUrl = $1, updatedAt = NOW() WHERE openid = $2', [avatarUrl, req.user.openid]);
+    res.json({ avatarUrl: avatarUrl });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/avatar/:filename', (req, res) => {
+  var filePath = config.storage.serveDir + '/' + req.params.filename;
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ error: 'File not found' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -141,6 +167,43 @@ app.delete('/api/users/me', requireAuth, async (req, res) => {
   }
 });
 
+// Japanese lesson scores
+app.post('/api/jp/lesson-scores', requireAuth, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: 'Database not available' });
+  try {
+    var { lessonId, score, total } = req.body;
+    if (!lessonId || score == null || !total) return res.status(400).json({ error: 'Missing fields' });
+    if (score <= 0) return res.json({ ok: true, message: 'Score not saved (zero or negative)' });
+
+    var percentage = Math.round(score / total * 100);
+    var result = await pool.query(
+      `INSERT INTO jp_lesson_scores (openid, lesson_id, score, total, percentage, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+       ON CONFLICT(openid, lesson_id)
+       DO UPDATE SET score = EXCLUDED.score, total = EXCLUDED.total, percentage = EXCLUDED.percentage, updated_at = NOW()
+       WHERE EXCLUDED.score > jp_lesson_scores.score
+       RETURNING *`,
+      [req.user.openid, lessonId, score, total, percentage]
+    );
+    res.json({ ok: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/jp/lesson-scores', requireAuth, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: 'Database not available' });
+  try {
+    var result = await pool.query(
+      'SELECT lesson_id, score, total, percentage FROM jp_lesson_scores WHERE openid = $1',
+      [req.user.openid]
+    );
+    res.json({ scores: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/init', async (req, res) => {
   if (!pool) return res.status(500).json({ error: 'No database' });
   try {
@@ -161,6 +224,21 @@ app.get('/api/init', async (req, res) => {
     `);
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
+
+    // Japanese lesson scores table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS jp_lesson_scores (
+        id SERIAL PRIMARY KEY,
+        openid VARCHAR(255) REFERENCES users(openid),
+        lesson_id INTEGER NOT NULL,
+        score INTEGER NOT NULL,
+        total INTEGER NOT NULL,
+        percentage INTEGER,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(openid, lesson_id)
+      )
+    `);
     res.json({ status: 'ok', message: 'Users table ready' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -187,6 +265,21 @@ async function initDB() {
     `);
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
+
+    // Japanese lesson scores table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS jp_lesson_scores (
+        id SERIAL PRIMARY KEY,
+        openid VARCHAR(255) REFERENCES users(openid),
+        lesson_id INTEGER NOT NULL,
+        score INTEGER NOT NULL,
+        total INTEGER NOT NULL,
+        percentage INTEGER,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(openid, lesson_id)
+      )
+    `);
     console.log('DB initialized');
   } catch (err) {
     console.error('DB init error:', err.message);

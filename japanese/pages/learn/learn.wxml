@@ -12,8 +12,16 @@
       <text class="overall-pct">{{totalProgress}}%</text>
     </view>
   </view>
+  <view class="level-bar">
+    <picker mode="selector" range="{{levelOptions}}" value="{{selectedLevelIndex}}" bindchange="onLevelChange">
+      <view class="level-picker">
+        <text class="level-label">{{selectedLevel}}</text>
+        <text class="picker-arrow">▼</text>
+      </view>
+    </picker>
+  </view>
 
-  <scroll-view scroll-y class="path-scroll" scroll-into-view="node-{{scrollToNode}}" scroll-with-animation>
+  <scroll-view scroll-y class="path-scroll" scroll-top="{{scrollTop}}" scroll-with-animation>
     <view class="path-container">
       <block wx:for="{{pathNodes}}" wx:key="id">
         <!-- Unit header -->
@@ -37,6 +45,11 @@
             <view class="node-info">
               <text class="node-title">{{item.title}}</text>
               <text class="node-meta" wx:if="{{item.words}}">{{item.words}}词 · {{item.grammar}}语法</text>
+            </view>
+            <view wx:if="{{item.jpScore > 0}}" class="jp-star-rating">
+              <text wx:for="{{item.jpStarData.full}}" wx:for-item="star" wx:key="*this" class="jp-star full">★</text>
+              <text wx:if="{{item.jpStarData.half}}" class="jp-star half">★</text>
+              <text wx:for="{{item.jpStarData.empty}}" wx:for-item="star" wx:key="*this" class="jp-star empty">☆</text>
             </view>
           </view>
           <!-- Connector line (not for the last item) -->
