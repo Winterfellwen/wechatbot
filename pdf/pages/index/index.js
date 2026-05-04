@@ -98,8 +98,8 @@ Page({
         } else if (res.statusCode >= 500) {
           // 服务端错误，自动重试
           if (retryCount < 2) {
-            wx.showToast({ title: '服务器启动中，自动重试...', icon: 'loading', duration: 2000 });
-            setTimeout(function() { that.doConvert(retryCount + 1); }, 3000);
+            wx.showToast({ title: '服务器启动中，10秒后重试...', icon: 'loading', duration: 2000 });
+            setTimeout(function() { that.doConvert(retryCount + 1); }, 10000);
           } else {
             that.setData({ converting: false, progressText: '' });
             wx.showToast({ title: '服务器异常，请稍后重试', icon: 'none' });
@@ -114,8 +114,8 @@ Page({
       },
       fail: function(err) {
         if (retryCount < 2) {
-          wx.showToast({ title: '网络不稳定，自动重试...', icon: 'loading', duration: 2000 });
-          setTimeout(function() { that.doConvert(retryCount + 1); }, 3000);
+          wx.showToast({ title: '服务器休眠中，10秒后重试...', icon: 'loading', duration: 2000 });
+          setTimeout(function() { that.doConvert(retryCount + 1); }, 10000);
         } else {
           that.setData({ converting: false, progressText: '' });
           wx.showToast({ title: '网络超时，请稍后重试', icon: 'none', duration: 3000 });

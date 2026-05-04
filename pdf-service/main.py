@@ -242,6 +242,10 @@ def download_cjk_font():
 
 def _docx_to_pdf(input_path: Path) -> Path:
     from docx import Document
+    from docx.oxml.table import CT_Tbl
+    from docx.oxml.text.paragraph import CT_P
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
     from fpdf import FPDF
 
     output_path = input_path.with_suffix(".pdf")
@@ -259,21 +263,113 @@ def _docx_to_pdf(input_path: Path) -> Path:
     pdf.set_font("CJK", size=11)
     print("Using CJK font: " + font_path)
 
-    for para in doc.paragraphs:
+    # Build image map from relationships
+    image_rels = {}
+    for rel_id, rel in doc.part.rels.items():
+        if "image" in rel.target_ref:
+            image_part = rel.target_part
+            ext = image_part.content_type.split("/")[-1]
+            if ext == "jpeg": ext = "jpg"
+            img_data = image_part.blob
+            tmp_img = tempfile.NamedTemporaryFile(delete=False, suffix="." + ext)
+            tmp_img.write(img_data)
+            tmp_img.close()
+            image_rels[rel_id] = tmp_img.name
+    print(f"Found {len(image_rels)} images in document")
+
+    # Process document elements in order
+    for element in doc.element.body:
+        if isinstance(element, CT_P):
+            para = Paragraph(element, doc)
+            _process_paragraph_with_images(pdf, para, image_rels)
+        elif isinstance(element, CT_Tbl):
+            table = Table(element, doc)
+            _process_table(pdf, table)
+
+    # Cleanup temp images
+    for img_path in image_rels.values():
+        try:
+            os.unlink(img_path)
+        except:
+            pass
+
+    pdf.output(str(output_path))
+    print("PDF generated: " + str(output_path))
+    return output_path
+
+
+def _process_paragraph_with_images(pdf, para: Paragraph, image_rels: dict):
+    # Check if paragraph has drawing (inline images)
+    has_drawing = para._element.xpath(".//w:drawing")
+    if has_drawing:
+        # Process text runs and inline images in order
+        _process_runs_with_images(pdf, para, image_rels)
+    else:
+        # No images, just text
         text = para.text.strip()
         if not text:
             pdf.ln(3)
-            continue
+            return
         try:
             pdf.multi_cell(w=0, h=7, txt=text)
             pdf.ln(2)
         except Exception as e:
             print("Text error: " + str(e))
-            continue
 
-    pdf.output(str(output_path))
-    print("PDF generated: " + str(output_path))
-    return output_path
+
+def _process_runs_with_images(pdf, para: Paragraph, image_rels: dict):
+    from lxml import etree
+
+    # Process each run in the paragraph
+    for run in para.runs:
+        text = run.text
+        if text:
+            try:
+                pdf.multi_cell(w=0, h=7, txt=text)
+            except Exception as e:
+                print("Text error: " + str(e))
+
+        # Check for inline images in this run
+        for drawing in run._element.xpath(".//w:drawing"):
+            # Find the relationship ID
+            for inline in drawing.xpath(".//wp:inline"):
+                ext_obj = inline.xpath(".//wp:extent")
+                if ext_obj:
+                    ext = ext_obj[0]
+                    cx = int(ext.get("cx", 0))
+                    cy = int(ext.get("cy", 0))
+
+                    # Calculate width (convert from EMUs to mm)
+                    width_mm = cx / 914400 * 210
+                    if width_mm > pdf.w - 20:
+                        width_mm = pdf.w - 20
+
+                    # Find the image relationship
+                    for blip in inline.xpath(".//a:blip", namespaces={'a': 'http://schemas.openxmlformats.org/drawingml/2006/main'}):
+                        r_id = blip.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed")
+                        if r_id and r_id in image_rels:
+                            try:
+                                pdf.ln(2)
+                                pdf.image(image_rels[r_id], x=10, w=width_mm)
+                                pdf.ln(2)
+                            except Exception as e:
+                                print("Image error: " + str(e))
+
+    pdf.ln(3)
+
+
+def _process_table(pdf, table: Table):
+    for row in table.rows:
+        for cell in row.cells:
+            for para in cell.paragraphs:
+                text = para.text.strip()
+                if text:
+                    try:
+                        pdf.multi_cell(w=0, h=6, txt=text)
+                        pdf.ln(1)
+                    except Exception as e:
+                        print("Table text error: " + str(e))
+    pdf.ln(3)
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
