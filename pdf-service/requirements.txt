@@ -2,4 +2,5 @@ fastapi==0.115.6
 uvicorn==0.34.0
 python-multipart==0.0.18
 pdf2docx==0.5.12
-pypandoc>=1.13.0
+mammoth>=1.6.0
+weasyprint>=61.0

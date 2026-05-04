@@ -194,54 +194,45 @@ def _pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 
 def _docx_to_pdf(input_path: Path) -> Path:
     try:
-        import pypandoc
-    except ImportError:
-        raise Exception("pypandoc not installed. Run: pip install pypandoc")
-
-    # Check if pandoc is available, if not try to download it
-    try:
-        version = pypandoc.get_pandoc_version()
-        print("Found pandoc version: " + str(version))
-    except Exception:
-        print("Pandoc not found, attempting to download...")
-        try:
-            from pypandoc.pandoc_download import download_pandoc
-            download_pandoc()
-            print("Pandoc downloaded successfully")
-        except Exception as e:
-            raise Exception("Pandoc not installed and auto-download failed: " + str(e))
+        import mammoth
+        import weasyprint
+    except ImportError as e:
+        raise Exception("Missing dependency: " + str(e) + ". Run: pip install mammoth weasyprint")
 
     output_path = input_path.with_suffix(".pdf")
     try:
-        # Try with xelatex first (better CJK support)
-        try:
-            pypandoc.convert_file(
-                str(input_path),
-                to='pdf',
-                outputfile=str(output_path),
-                extra_args=['--pdf-engine=xelatex', '-V', 'geometry:margin=1.5cm']
-            )
-        except Exception as e1:
-            error_msg = str(e1)
-            print("xelatex failed: " + error_msg + ", trying pdflatex...")
-            # Fallback to pdflatex
-            try:
-                pypandoc.convert_file(
-                    str(input_path),
-                    to='pdf',
-                    outputfile=str(output_path),
-                    extra_args=['--pdf-engine=pdflatex', '-V', 'geometry:margin=1.5cm']
-                )
-            except Exception as e2:
-                error_msg2 = str(e2)
-                raise Exception("Pandoc conversion failed with both engines:\n" +
-                            "xelatex error: " + error_msg + "\npdflatex error: " + error_msg2)
-        print("PDF generated with pypandoc: " + str(output_path))
+        # Convert docx to HTML with mammoth (preserves images and basic formatting)
+        print("Converting " + str(input_path) + " to HTML with mammoth...")
+        with open(input_path, 'rb') as f:
+            result = mammoth.convert_to_html(f)
+            html = result.value
+            messages = result.messages
+            for msg in messages:
+                print("Mammoth: " + str(msg))
+
+        # Add basic CSS for better rendering
+        html_with_style = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: 'Arial', 'Helvetica', sans-serif; margin: 2cm; }
+        img { max-width: 100%; height: auto; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        h1, h2, h3 { page-break-after: avoid; }
+    </style>
+</head>
+<body>""" + html + """</body></html>"""
+
+        # Convert HTML to PDF with weasyprint
+        print("Converting HTML to PDF with weasyprint...")
+        weasyprint.HTML(string=html_with_style).write_pdf(str(output_path))
+
+        print("PDF generated with mammoth+weasyprint: " + str(output_path))
         return output_path
     except Exception as e:
-        raise Exception("pandoc conversion failed: " + str(e))
-
-
+        raise Exception("Mammoth/WeasyPrint conversion failed: " + str(e))
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def health():
