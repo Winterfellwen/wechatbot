@@ -231,20 +231,20 @@ def _docx_to_pdf(input_path: Path) -> Path:
                 print("Mammoth: " + str(msg))
 
         # Add basic CSS for better rendering
-        # Use generic font family that works with WeasyPrint/Pango
+        # Expanded font list for Pango/WeasyPrint
         html_with_style = """<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <style>
-        @font-face {
-            font-family: 'Noto Sans CJK SC';
-            src: local('Noto Sans CJK SC'), local('Noto Sans SC'), local('SimHei'), local('Microsoft YaHei');
-        }
-        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }
+        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'Noto Sans CJK', 'WenQuanYi Micro Hei', 
+              'Microsoft YaHei', 'SimHei', 'SimSun', 'FangSong', 'KaiTi', 
+              sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }
         img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
-        table { border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 10pt; table-layout: auto; }
-        th, td { border: 1px solid #666; padding: 6px 10px; text-align: left; vertical-align: top; word-wrap: break-word; }
+        table { border-collapse: collapse; width: 100%; margin: 1.5em 0; 
+              font-size: 10pt; table-layout: fixed; word-break: break-word; }
+        th, td { border: 1px solid #666; padding: 6px 10px; 
+                 text-align: left; vertical-align: top; }
         th { background-color: #e8e8e8; font-weight: bold; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         h1 { font-size: 1.8em; margin: 1em 0 0.5em 0; page-break-after: avoid; }
@@ -276,6 +276,26 @@ def _docx_to_pdf(input_path: Path) -> Path:
         return output_path
     except Exception as e:
         raise Exception("Mammoth/WeasyPrint conversion failed: " + str(e))
+
+@app.get("/debug")
+def debug():
+    try:
+        result = subprocess.run(['fc-list', ':lang=zh'], capture_output=True, text=True, timeout=10)
+        fonts = result.stdout[:2000]
+    except Exception as e:
+        fonts = str(e)
+    try:
+        import weasyprint
+        wp_ver = weasyprint.__version__
+    except Exception as e:
+        wp_ver = str(e)
+    try:
+        from weasyprint.text.fonts import FontConfiguration
+        font_config = "FontConfiguration available"
+    except Exception as e:
+        font_config = str(e)
+    return {"fonts": fonts, "weasyprint_version": wp_ver, "font_config": font_config}
+
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def health():
