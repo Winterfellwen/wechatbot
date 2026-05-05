@@ -348,7 +348,7 @@ async def get_html(filename: str):
         raise HTTPException(status_code=404, detail=f"File not found: {filename}")
 
     try:
-        content = path.read_bytes(encoding='utf-8')
+        content = path.read_text(encoding='utf-8')
         return Response(content=content, media_type="text/html")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Read error: {str(e)}")
