@@ -39,54 +39,79 @@ class ExportRequest(BaseModel):
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
     """使用PyMuPDF将PDF转换为HTML"""
     import io
+    import base64
 
     html_parts = []
-
     doc = fitz.open(stream=file_data, filetype="pdf")
 
     for page_num, page in enumerate(doc):
-        text = page.get_text("text")
         html_parts.append(f'<div class="page" data-page="{page_num + 1}">')
 
-        lines = text.split('\n')
+        img_list = page.get_images()
+        if img_list:
+            for img_idx, img in enumerate(img_list):
+                try:
+                    xref = img[0]
+                    base_img = page.parent.extract_image(xref)
+                    img_data = base_img["image"]
+                    img_ext = base_img["ext"]
+                    img_base64 = base64.b64encode(img_data).decode('utf-8')
+                    html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="max-width:100%;height:auto;" />')
+                except Exception as e:
+                    print(f"Failed to extract image: {e}")
+
+        blocks = page.get_text("dict")["blocks"]
         in_list = False
-        in_table = False
+        table_rows = []
 
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
+        for block in blocks:
+            if block.get("type") == 0:
+                lines = block.get("lines", [])
+                for line in lines:
+                    text = "".join([span.get("text", "") for span in line.get("spans", [])])
+                    text = text.strip()
+                    if not text:
+                        continue
 
-            if re.match(r'^[\d\.\)\u3000]+', line) and len(line) < 100:
-                if not in_list:
-                    html_parts.append('<ul>')
-                    in_list = True
-                html_parts.append(f'<li>{line}</li>')
-            else:
-                if in_list:
-                    html_parts.append('</ul>')
-                    in_list = False
+                    if re.match(r'^[\d\.\)\u3000]+', text) and len(text) < 100:
+                        if not in_list:
+                            html_parts.append('<ul>')
+                            in_list = True
+                        html_parts.append(f'<li>{text}</li>')
+                    else:
+                        if in_list:
+                            html_parts.append('</ul>')
+                            in_list = False
 
-                if '    ' in line or '\t' in line:
-                    if not in_table:
-                        html_parts.append('<table>')
-                        in_table = True
-                    cells = line.split('\t')
-                    html_parts.append('<tr>')
-                    for cell in cells:
-                        cell = cell.strip()
-                        if cell:
-                            html_parts.append(f'<td>{cell}</td>')
-                    html_parts.append('</tr>')
-                else:
-                    if in_table:
-                        html_parts.append('</table>')
-                        in_table = False
-                    html_parts.append(f'<p>{line}</p>')
+                        if '    ' in text or '\t' in text or len(text) > 50 and ' ' not in text:
+                            table_rows.append(text)
+                        else:
+                            if table_rows:
+                                html_parts.append('<table>')
+                                for row in table_rows:
+                                    cells = row.split('\t') if '\t' in row else [row[i:i+20] for i in range(0, len(row), 20)]
+                                    html_parts.append('<tr>')
+                                    for cell in cells:
+                                        cell = cell.strip()
+                                        if cell:
+                                            html_parts.append(f'<td>{cell}</td>')
+                                    html_parts.append('</tr>')
+                                html_parts.append('</table>')
+                                table_rows = []
+                            html_parts.append(f'<p>{text}</p>')
 
         if in_list:
             html_parts.append('</ul>')
-        if in_table:
+        if table_rows:
+            html_parts.append('<table>')
+            for row in table_rows:
+                cells = row.split('\t') if '\t' in row else [row]
+                html_parts.append('<tr>')
+                for cell in cells:
+                    cell = cell.strip()
+                    if cell:
+                        html_parts.append(f'<td>{cell}</td>')
+                html_parts.append('</tr>')
             html_parts.append('</table>')
 
         html_parts.append('</div>')
