@@ -277,11 +277,25 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
 @app.get("/debug")
 def debug():
+    # List Chinese fonts without fc-list (not available on free tier)
+    fonts = []
     try:
-        result = subprocess.run(['fc-list', ':lang=zh'], capture_output=True, text=True, timeout=10)
-        fonts = result.stdout[:2000]
+        import os
+        # Common font directories on Linux
+        font_dirs = ['/usr/share/fonts', '/usr/local/share/fonts', os.path.expanduser('~/.fonts')]
+        for font_dir in font_dirs:
+            if os.path.exists(font_dir):
+                for root, dirs, files in os.walk(font_dir):
+                    for f in files:
+                        if any(f.lower().endswith(ext) for ext in ['.ttf', '.otf', '.ttc']):
+                            # Check if it might be a CJK font by name
+                            lower = f.lower()
+                            if any(kw in lower for kw in ['noto', 'cjk', 'chinese', 'simhei', 'simsun', 'yahei', 'wqy', 'wenquanyi']):
+                                fonts.append(os.path.join(root, f))
+        fonts_str = '\n'.join(fonts[:50])  # limit output
     except Exception as e:
-        fonts = str(e)
+        fonts_str = str(e)
+    
     try:
         import weasyprint
         wp_ver = weasyprint.__version__
@@ -292,7 +306,7 @@ def debug():
         font_config = "FontConfiguration available"
     except Exception as e:
         font_config = str(e)
-    return {"fonts": fonts, "weasyprint_version": wp_ver, "font_config": font_config}
+    return {"fonts": fonts_str, "weasyprint_version": wp_ver, "font_config": font_config}
 
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
