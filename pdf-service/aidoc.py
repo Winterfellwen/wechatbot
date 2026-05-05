@@ -37,100 +37,68 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """将PDF转换为可缩放的HTML页面"""
+    """将PDF转换为简单的HTML用于预览（文字+图片，简化版）"""
     import fitz
     import base64
+
+    pages_html = []
 
     try:
         doc = fitz.open(stream=file_data, filetype="pdf")
     except Exception as e:
         raise Exception(f"Cannot open PDF: {str(e)}")
 
-    # 收集所有页面内容
-    pages_html = []
-
     for page_num, page in enumerate(doc):
         w = int(page.rect.width)
         h = int(page.rect.height)
 
-        page_parts = [f'<div class="page" style="width:{w}px;height:{h}px;">']
+        page_content = [f'<div class="page" style="width:{w}px;height:{h}px;position:relative;background:white;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,0.15);">']
 
         # 提取图片
         try:
             for img in page.get_images():
                 try:
                     xref = img[0]
-                    bbox = img[1]  # (x0, y0, x1, y1)
-                    img_data = page.parent.extract_image(xref)
-                    if img_data and "image" in img_data:
-                        b64 = base64.b64encode(img_data["image"]).decode()
-                        ext = img_data.get("ext", "png")
-                        x = int(bbox[0])
-                        y = int(bbox[1])
-                        w_img = int(bbox[2] - bbox[0])
-                        h_img = int(bbox[3] - bbox[1])
-                        page_parts.append(f'<img src="data:image/{ext};base64,{b64}" style="position:absolute;left:{x}px;top:{y}px;width:{w_img}px;height:{h_img}px;" />')
+                    img_info = page.parent.extract_image(xref)
+                    if img_info and "image" in img_info:
+                        b64 = base64.b64encode(img_info["image"]).decode()
+                        ext = img_info.get("ext", "png")
+                        bbox = img[1]
+                        x, y = int(bbox[0]), int(bbox[1])
+                        ww, hh = int(bbox[2] - bbox[0]), int(bbox[3] - bbox[1])
+                        page_content.append(f'<img src="data:image/{ext};base64,{b64}" style="position:absolute;left:{x}px;top:{y}px;width:{ww}px;height:{hh}px;" />')
                 except:
                     pass
         except:
             pass
 
-        # 提取文字
+        # 提取文字（按行输出，不使用绝对定位，简单堆叠）
         try:
-            blocks = page.get_text("dict").get("blocks", [])
-            for block in blocks:
-                if block.get("type") == 0:  # text block
-                    bbox = block.get("bbox", [])
-                    if len(bbox) >= 4:
-                        x = int(bbox[0])
-                        y = int(bbox[1])
-                        # 提取文字内容
-                        text = ""
-                        for line in block.get("lines", []):
-                            for span in line.get("spans", []):
-                                text += span.get("text", "")
-                        if text.strip():
-                            text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                            page_parts.append(f'<div style="position:absolute;left:{x}px;top:{y}px;font-size:12px;white-space:pre-wrap;">{text}</div>')
+            text = page.get_text("text")
+            if text.strip():
+                text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                # 使用pre标签简单显示
+                page_content.append(f'<pre style="margin:0;padding:10px;font-size:12px;white-space:pre-wrap;word-wrap:break-word;">{text}</pre>')
         except:
             pass
 
-        page_parts.append('</div>')
-        pages_html.append('\n'.join(page_parts))
+        page_content.append('</div>')
+        pages_html.append('\n'.join(page_content))
 
     doc.close()
 
-    # 构建完整HTML
     html = f'''<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes">
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: sans-serif; background: #f0f0f0; }}
-        .container {{ transform-origin: top left; }}
-        .page {{ position: relative; background: white; margin: 10px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }}
+        body {{ font-family: sans-serif; background: #f0f0f0; margin: 0; padding: 10px; }}
+        .page {{ position: relative; overflow: hidden; }}
     </style>
-    <script>
-        function scaleToFit() {{
-            var c = document.querySelector('.container');
-            if (!c) return;
-            var p = c.querySelector('.page');
-            if (!p) return;
-            var scale = (window.innerWidth - 20) / p.offsetWidth;
-            if (scale > 1) scale = 1;
-            c.style.transform = 'scale(' + scale + ')';
-            c.style.width = (100 / scale) + '%';
-        }}
-        window.addEventListener('load', scaleToFit);
-        window.addEventListener('resize', scaleToFit);
-    </script>
 </head>
 <body>
-    <div class="container">
-        {chr(10).join(pages_html)}
-    </div>
+{chr(10).join(pages_html)}
 </body>
 </html>'''
 
