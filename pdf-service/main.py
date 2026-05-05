@@ -277,36 +277,58 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
 @app.get("/debug")
 def debug():
-    # List Chinese fonts without fc-list (not available on free tier)
-    fonts = []
-    try:
-        import os
-        # Common font directories on Linux
-        font_dirs = ['/usr/share/fonts', '/usr/local/share/fonts', os.path.expanduser('~/.fonts')]
-        for font_dir in font_dirs:
-            if os.path.exists(font_dir):
-                for root, dirs, files in os.walk(font_dir):
-                    for f in files:
-                        if any(f.lower().endswith(ext) for ext in ['.ttf', '.otf', '.ttc']):
-                            # Check if it might be a CJK font by name
-                            lower = f.lower()
-                            if any(kw in lower for kw in ['noto', 'cjk', 'chinese', 'simhei', 'simsun', 'yahei', 'wqy', 'wenquanyi']):
-                                fonts.append(os.path.join(root, f))
-        fonts_str = '\n'.join(fonts[:50])  # limit output
-    except Exception as e:
-        fonts_str = str(e)
+    import os
+    import subprocess
+    result = {"tests": []}
     
+    # Test 1: Check if fonts-noto-cjk is installed
+    try:
+        pkg_check = subprocess.run(['dpkg', '-l', 'fonts-noto-cjk*'], capture_output=True, text=True, timeout=10)
+        result["fonts-noto-cjk_package"] = pkg_check.stdout[:500] if pkg_check.stdout else "Not installed"
+    except Exception as e:
+        result["fonts-noto-cjk_package"] = str(e)
+    
+    # Test 2: List /usr/share/fonts/ directory
+    try:
+        fonts_dir = '/usr/share/fonts/'
+        if os.path.exists(fonts_dir):
+            # List top-level directories
+            dirs = os.listdir(fonts_dir)
+            result["fonts_dirs"] = [d for d in dirs if os.path.isdir(os.path.join(fonts_dir, d))][:20]
+        else:
+            result["fonts_dirs"] = "Directory not found"
+    except Exception as e:
+        result["fonts_dirs"] = str(e)
+    
+    # Test 3: Find CJK fonts
+    fonts = []
+    font_dirs = ['/usr/share/fonts', '/usr/local/share/fonts', os.path.expanduser('~/.fonts')]
+    for font_dir in font_dirs:
+        if os.path.exists(font_dir):
+            for root, dirs, files in os.walk(font_dir):
+                for f in files:
+                    if any(f.lower().endswith(ext) for ext in ['.ttf', '.otf', '.ttc']):
+                        lower = f.lower()
+                        if any(kw in lower for kw in ['noto', 'cjk', 'chinese', 'simhei', 'simsun', 'yahei', 'wqy', 'wenquanyi']):
+                            fonts.append(os.path.join(root, f))
+    result["cjk_fonts_found"] = fonts[:20]  # limit output
+    result["cjk_fonts_count"] = len(fonts)
+    
+    # Test 4: WeasyPrint version
     try:
         import weasyprint
-        wp_ver = weasyprint.__version__
+        result["weasyprint_version"] = weasyprint.__version__
     except Exception as e:
-        wp_ver = str(e)
+        result["weasyprint_version"] = str(e)
+    
+    # Test 5: FontConfiguration
     try:
         from weasyprint.text.fonts import FontConfiguration
-        font_config = "FontConfiguration available"
+        result["font_config"] = "FontConfiguration available"
     except Exception as e:
-        font_config = str(e)
-    return {"fonts": fonts_str, "weasyprint_version": wp_ver, "font_config": font_config}
+        result["font_config"] = str(e)
+    
+    return result
 
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
