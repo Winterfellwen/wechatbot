@@ -158,6 +158,8 @@ async def convert_to_html(req: ConvertToHtmlRequest):
     filename = req.filename.lower()
     job_id = uuid.uuid4().hex
 
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
     try:
         if filename.endswith('.pdf'):
             html = convert_pdf_to_html(file_data, filename)
@@ -179,7 +181,8 @@ async def convert_to_html(req: ConvertToHtmlRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
+        import traceback
+        raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}\n{traceback.format_exc()}")
 
 
 @router.post("/ai-review")
@@ -240,6 +243,8 @@ async def export_html(req: ExportRequest):
     import weasyprint
     from docx import Document
     from io import BytesIO
+
+    OUTPUT_DIR.mkdir(exist_ok=True)
 
     job_id = uuid.uuid4().hex
     html = req.html_content
@@ -337,8 +342,13 @@ async def get_html(filename: str):
     """获取HTML文件"""
     from fastapi.responses import Response
 
+    OUTPUT_DIR.mkdir(exist_ok=True)
     path = OUTPUT_DIR / filename
     if not path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail=f"File not found: {filename}")
 
-    return Response(content=path.read_bytes(encoding='utf-8'), media_type="text/html")
+    try:
+        content = path.read_bytes(encoding='utf-8')
+        return Response(content=content, media_type="text/html")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Read error: {str(e)}")
