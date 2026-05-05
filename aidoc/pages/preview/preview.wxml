@@ -1,21 +1,33 @@
 <view class="container">
   <view class="toolbar">
-    <button class="tool-btn" bindtap="aiReview" disabled="{{reviewing}}">
-      {{reviewing ? 'AI修正中...' : 'AI修正'}}
+    <button class="tool-btn" bindtap="togglePreview">
+      {{previewMode ? '✎ 编辑' : '👁 预览'}}
     </button>
-    <button class="tool-btn download-btn" bindtap="openPdf">查看PDF</button>
+    <button class="tool-btn export-btn" bindtap="showExportMenu">导出</button>
   </view>
 
-  <view class="info">
-    <text class="info-text">文件已转换完成</text>
-    <text class="info-hint">点击"查看PDF"用手机自带查看器打开</text>
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <!-- 编辑模式 -->
+  <view class="editor-wrap" wx:if="{{!previewMode && !loading}}">
+    <editor
+      id="editor"
+      class="editor"
+      placeholder="文档内容..."
+      show-img-size
+      show-img-toolbar
+      bindready="onEditorReady"
+      bindinput="onEditorInput"
+    ></editor>
   </view>
 
-  <view class="tips">
-    <text class="tips-title">使用说明</text>
-    <text class="tips-item">1. 点击"查看PDF"打开文档</text>
-    <text class="tips-item">2. 支持左右滑动翻页</text>
-    <text class="tips-item">3. 双指缩放查看细节</text>
-    <text class="tips-item">4. 点击"AI修正"优化格式后再导出</text>
+  <!-- 预览模式 -->
+  <view class="preview-wrap" wx:if="{{previewMode && !loading}}">
+    <rich-text nodes="{{previewNodes}}" class="preview-content"></rich-text>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="bottom-tip" wx:if="{{!loading}}">
+    <text>提示：点击"编辑"可修改内容，修改后再导出</text>
   </view>
 </view>

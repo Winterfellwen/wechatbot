@@ -1,73 +1,76 @@
 .container {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 30rpx;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f5f5;
 }
 
 .toolbar {
   display: flex;
   gap: 20rpx;
-  margin-bottom: 40rpx;
+  padding: 20rpx;
+  background: #fff;
+  border-bottom: 2rpx solid #eee;
 }
 
 .tool-btn {
   flex: 1;
-  padding: 24rpx;
-  background-color: #1890ff;
+  padding: 20rpx;
+  background: #1890ff;
   color: #fff;
   border: none;
-  border-radius: 12rpx;
+  border-radius: 10rpx;
   font-size: 28rpx;
 }
 
-.tool-btn[disabled] {
-  background-color: #ccc;
+.export-btn {
+  background: #52c41a;
 }
 
-.download-btn {
-  background-color: #52c41a;
-}
-
-.info {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
+.loading {
+  padding: 100rpx;
   text-align: center;
-}
-
-.info-text {
-  display: block;
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
-}
-
-.info-hint {
-  display: block;
-  font-size: 26rpx;
   color: #999;
+  font-size: 28rpx;
 }
 
-.tips {
-  background-color: #fff;
-  border-radius: 16rpx;
+.editor-wrap {
+  flex: 1;
+  background: #fff;
+}
+
+.editor {
+  width: 100%;
+  height: 100%;
+  min-height: 500rpx;
+}
+
+.preview-wrap {
+  flex: 1;
   padding: 30rpx;
+  background: #fff;
+  overflow-y: auto;
 }
 
-.tips-title {
-  display: block;
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20rpx;
-}
-
-.tips-item {
-  display: block;
-  font-size: 26rpx;
-  color: #666;
+.preview-content {
+  font-size: 28rpx;
   line-height: 1.8;
-  margin-bottom: 10rpx;
+  color: #333;
+}
+
+.preview-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.bottom-tip {
+  padding: 20rpx;
+  text-align: center;
+  background: #fff;
+  border-top: 2rpx solid #eee;
+}
+
+.bottom-tip text {
+  font-size: 24rpx;
+  color: #999;
 }
