@@ -3,50 +3,21 @@ const API_BASE = 'https://wechatbot-g6ez.onrender.com';
 Page({
   data: {
     jobId: '',
+    htmlUrl: '',
     html: '',
-    htmlNodes: '',
     reviewing: false
   },
 
   onLoad: function(options) {
     const jobId = options.jobId || '';
-    this.setData({ jobId: jobId });
-    this.loadHtml();
-  },
-
-  loadHtml: function() {
-    const that = this;
-    wx.showLoading({ title: '加载中...' });
-
-    wx.request({
-      url: API_BASE + '/api/aidoc/html/' + this.data.jobId + '.html',
-      success: (res) => {
-        wx.hideLoading();
-        if (res.statusCode === 200) {
-          let html = res.data;
-
-          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-          if (bodyMatch) {
-            html = bodyMatch[1];
-          }
-
-          this.setData({
-            html: res.data,
-            htmlNodes: html
-          });
-        } else {
-          wx.showToast({ title: '加载失败', icon: 'none' });
-        }
-      },
-      fail: () => {
-        wx.hideLoading();
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      }
+    this.setData({
+      jobId: jobId,
+      htmlUrl: API_BASE + '/api/aidoc/html/' + jobId + '.html'
     });
   },
 
   aiReview: function() {
-    if (!this.data.html || this.data.reviewing) return;
+    if (!this.data.jobId || this.data.reviewing) return;
 
     const that = this;
     this.setData({ reviewing: true });
@@ -57,20 +28,18 @@ Page({
       method: 'POST',
       header: { 'Content-Type': 'application/json' },
       data: {
-        html_content: this.data.html,
+        html_content: this.data.html || '',
         instructions: '检查HTML内容，修复布局问题，调整图片大小，确保格式正确。'
       },
       success: (res) => {
         wx.hideLoading();
         if (res.data && res.data.status === 'done') {
-          let html = res.data.corrected_html;
-          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-          if (bodyMatch) {
-            html = bodyMatch[1];
-          }
           that.setData({
-            html: res.data.corrected_html,
-            htmlNodes: html
+            html: res.data.corrected_html
+          });
+          // 重新加载修正后的HTML
+          that.setData({
+            htmlUrl: API_BASE + '/api/aidoc/html/' + that.data.jobId + '.html?t=' + Date.now()
           });
           wx.showToast({ title: 'AI修正完成', icon: 'success' });
         } else {
@@ -88,24 +57,26 @@ Page({
   },
 
   downloadPdf: function() {
-    if (!this.data.html) return;
+    if (!this.data.html && !this.data.jobId) return;
 
     const that = this;
     wx.showLoading({ title: '生成PDF...' });
+
+    const htmlContent = this.data.html || '';
 
     wx.request({
       url: API_BASE + '/api/aidoc/export',
       method: 'POST',
       header: { 'Content-Type': 'application/json' },
       data: {
-        html_content: this.data.html,
+        html_content: htmlContent,
         format: 'pdf'
       },
       success: (res) => {
         wx.hideLoading();
         if (res.data && res.data.file_base64) {
           const fs = wx.getFileSystemManager();
-          const filePath = wx.env.USER_DATA_PATH + '/document_' + this.data.jobId + '.pdf';
+          const filePath = wx.env.USER_DATA_PATH + '/document_' + that.data.jobId + '.pdf';
 
           fs.writeFile({
             filePath: filePath,

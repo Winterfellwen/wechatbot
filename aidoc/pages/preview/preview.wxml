@@ -6,7 +6,7 @@
     <button class="tool-btn download-btn" bindtap="downloadPdf">下载PDF</button>
   </view>
 
-  <view class="preview-wrap">
-    <rich-text nodes="{{htmlNodes}}" class="preview-content"></rich-text>
+  <view class="webview-wrap">
+    <web-view src="{{htmlUrl}}"></web-view>
   </view>
 </view>

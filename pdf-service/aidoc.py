@@ -37,18 +37,32 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """将PDF转换为HTML用于预览"""
+    """将PDF转换为HTML，使用绝对定位保持原始布局"""
     import fitz
     import base64
 
-    html_parts = []
-    html_parts.append('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>')
-    html_parts.append('body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 10px; background: #f5f5f5; }')
-    html_parts.append('.page { background: white; margin: 10px auto; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; }')
-    html_parts.append('.page p { margin: 8px 0; line-height: 1.6; font-size: 14px; }')
-    html_parts.append('.page img { max-width: 100%; height: auto; display: block; margin: 10px 0; }')
-    html_parts.append('.page h3 { margin: 10px 0; color: #666; font-size: 12px; }')
-    html_parts.append('</style></head><body>')
+    html = []
+    html.append('<!DOCTYPE html><html><head><meta charset="utf-8">')
+    html.append('<meta name="viewport" content="width=device-width,initial-scale=1.0">')
+    html.append('<style>')
+    html.append('* { margin: 0; padding: 0; box-sizing: border-box; }')
+    html.append('body { font-family: sans-serif; background: #f0f0f0; }')
+    html.append('.container { transform-origin: top left; transition: transform 0.3s; }')
+    html.append('.page { position: relative; background: white; margin: 10px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }')
+    html.append('.text { position: absolute; font-size: 12px; white-space: pre-wrap; }')
+    html.append('.img { position: absolute; }')
+    html.append('</style>')
+    html.append('<script>')
+    html.append('function scaleToFit() {')
+    html.append('  var c = document.querySelector(".container"); if (!c) return;')
+    html.append('  var p = c.querySelector(".page"); if (!p) return;')
+    html.append('  var s = (window.innerWidth - 20) / p.offsetWidth;')
+    html.append('  if (s > 1) s = 1;')
+    html.append('  c.style.transform = "scale(" + s + ")"; c.style.width = (100/s) + "%";')
+    html.append('}')
+    html.append('window.onload = scaleToFit; window.onresize = scaleToFit;')
+    html.append('</script></head><body>')
+    html.append('<div class="container">')
 
     try:
         doc = fitz.open(stream=file_data, filetype="pdf")
@@ -56,34 +70,58 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
         raise Exception(f"Cannot open PDF: {str(e)}")
 
     for page_num, page in enumerate(doc):
-        html_parts.append(f'<div class="page"><h3>Page {page_num + 1}</h3>')
+        try:
+            w = int(page.rect.width)
+            h = int(page.rect.height)
+            html.append(f'<div class="page" style="width:{w}px;height:{h}px;">')
 
-        img_list = page.get_images()
-        if img_list:
-            for img in img_list:
-                try:
-                    xref = img[0]
-                    base_img = page.parent.extract_image(xref)
-                    if base_img:
-                        img_data = base_img.get("image")
-                        img_ext = base_img.get("ext", "png")
-                        if img_data:
-                            img_b64 = base64.b64encode(img_data).decode('utf-8')
-                            html_parts.append(f'<img src="data:image/{img_ext};base64,{img_b64}" />')
-                except Exception as e:
-                    print(f"Image error: {e}")
+            # Images
+            try:
+                for img in page.get_images():
+                    try:
+                        xref = img[0]
+                        bbox = img[1]  # (x0, y0, x1, y1)
+                        img_data = page.parent.extract_image(xref)
+                        if img_data and "image" in img_data:
+                            b64 = base64.b64encode(img_data["image"]).decode()
+                            ext = img_data.get("ext", "png")
+                            x = int(bbox[0])
+                            y = int(bbox[1])
+                            w_img = int(bbox[2] - bbox[0])
+                            h_img = int(bbox[3] - bbox[1])
+                            html.append(f'<img class="img" src="data:image/{ext};base64,{b64}" style="left:{x}px;top:{y}px;width:{w_img}px;height:{h_img}px;" />')
+                    except:
+                        pass
+            except:
+                pass
 
-        text = page.get_text("text")
-        if text and text.strip():
-            text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            html_parts.append(f'<p>{text}</p>')
+            # Text blocks
+            try:
+                blocks = page.get_text("dict")
+                for block in blocks.get("blocks", []):
+                    if block.get("type") == 0:
+                        bbox = block.get("bbox", [])
+                        if len(bbox) >= 4:
+                            x = int(bbox[0])
+                            y = int(bbox[1])
+                            text = ""
+                            for line in block.get("lines", []):
+                                for span in line.get("spans", []):
+                                    text += span.get("text", "")
+                            if text.strip():
+                                text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                                html.append(f'<div class="text" style="left:{x}px;top:{y}px;">{text}</div>')
+            except:
+                pass
 
-        html_parts.append('</div>')
+            html.append('</div>')
+        except Exception as e:
+            print(f"Page error: {e}")
+            continue
 
     doc.close()
-
-    html_parts.append('</body></html>')
-    return '\n'.join(html_parts)
+    html.append('</div></body></html>')
+    return '\n'.join(html)
 
     html = f'''<!DOCTYPE html>
 <html>
