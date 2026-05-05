@@ -8,7 +8,7 @@
 
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
-  <view class="html-content" wx:else>
-    <rich-text nodes="{{htmlNodes}}" type="html"></rich-text>
+  <view class="preview-container" wx:else>
+    <web-view src="{{htmlUrl}}"></web-view>
   </view>
 </view>

@@ -3,48 +3,17 @@ const API_BASE = 'https://wechatbot-g6ez.onrender.com';
 Page({
   data: {
     jobId: '',
-    html: '',
-    htmlNodes: '',
+    htmlUrl: '',
     reviewing: false,
     loading: true
   },
 
   onLoad: function(options) {
     const jobId = options.jobId || '';
-    this.setData({ jobId: jobId });
-    this.loadHtml(jobId);
-  },
-
-  loadHtml: function(jobId) {
-    const that = this;
-    this.setData({ loading: true });
-
-    wx.request({
-      url: API_BASE + '/api/aidoc/html/' + jobId + '.html',
-      success: (res) => {
-        console.log('HTML load response:', res.statusCode, res.data);
-        if (res.statusCode === 200) {
-          let html = res.data;
-          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-          if (bodyMatch) {
-            html = bodyMatch[1];
-          }
-
-          that.setData({
-            html: res.data,
-            htmlNodes: html,
-            loading: false
-          });
-        } else {
-          wx.showToast({ title: '加载失败: ' + res.statusCode, icon: 'none' });
-          that.setData({ loading: false });
-        }
-      },
-      fail: (err) => {
-        console.error('HTML load error:', err);
-        wx.showToast({ title: '网络错误', icon: 'none' });
-        that.setData({ loading: false });
-      }
+    this.setData({
+      jobId: jobId,
+      htmlUrl: API_BASE + '/api/aidoc/html/' + jobId + '.html',
+      loading: false
     });
   },
 
