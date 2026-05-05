@@ -503,6 +503,13 @@ app.post('/api/aidoc/convert-to-html', upload.single('file'), async (req, res) =
     });
 
     fs.unlinkSync(req.file.path);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Convert error:', response.status, errorText);
+      return res.status(response.status).json({ error: errorText || 'Convert failed' });
+    }
+
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -544,6 +551,11 @@ app.post('/api/aidoc/export', async (req, res) => {
 app.get('/api/aidoc/html/:filename', async (req, res) => {
   try {
     const response = await fetch(pdfServiceUrl + '/aidoc/html/' + req.params.filename);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('PDF service error:', response.status, errorText);
+      return res.status(response.status).json({ error: errorText || 'PDF service error' });
+    }
     const data = await response.text();
     res.set('Content-Type', 'text/html; charset=utf-8');
     res.send(data);
