@@ -14,6 +14,9 @@ import uvicorn
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# Version marker for debugging
+PDF_SERVICE_VERSION = "2026-05-05-v3"
+
 # Try to find CJK font from multiple sources
 def find_cjk_font():
     """Find CJK font from repo, pymupdf-fonts, or system"""
