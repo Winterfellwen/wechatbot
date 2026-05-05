@@ -393,37 +393,38 @@ def _docx_to_pdf(input_path: Path) -> Path:
 def debug():
     result = {"tests": []}
     
-    # Test 1: Check CJK font
-    result["cjk_font_path"] = str(CJK_FONT_PATH)
-    result["cjk_font_exists"] = CJK_FONT_PATH.exists()
-    if CJK_FONT_PATH.exists():
-        result["cjk_font_size"] = CJK_FONT_PATH.stat().st_size
+    # Get the actual font path being used
+    cjk_font = find_cjk_font()
+    result["cjk_font_path"] = cjk_font if cjk_font else "None"
+    result["cjk_font_exists"] = Path(cjk_font).exists() if cjk_font else False
+    if cjk_font and Path(cjk_font).exists():
+        result["cjk_font_size"] = Path(cjk_font).stat().st_size
     
-    # Test 2: WeasyPrint version
+    # Test: WeasyPrint version
     try:
         import weasyprint
         result["weasyprint_version"] = weasyprint.__version__
     except Exception as e:
         result["weasyprint_version"] = str(e)
     
-    # Test 3: FontConfiguration
+    # Test: FontConfiguration
     try:
         from weasyprint.text.fonts import FontConfiguration
         result["font_config"] = "FontConfiguration available"
     except Exception as e:
         result["font_config"] = str(e)
     
-    # Test 4: List fonts directory
+    # Test: List fonts directory
     try:
         import os
-        fonts_dir = '/tmp/font-cache'
-        if os.path.exists(fonts_dir):
+        fonts_dir = Path(__file__).parent / "fonts"
+        if fonts_dir.exists():
             files = os.listdir(fonts_dir)
-            result["font_cache_files"] = files
+            result["repo_fonts_dir"] = files
         else:
-            result["font_cache_files"] = "Directory not found"
+            result["repo_fonts_dir"] = "Directory not found"
     except Exception as e:
-        result["font_cache_files"] = str(e)
+        result["repo_fonts_dir"] = str(e)
     
     return result
 
