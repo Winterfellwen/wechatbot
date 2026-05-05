@@ -22,6 +22,7 @@ Page({
     wx.request({
       url: API_BASE + '/api/aidoc/html/' + jobId + '.html',
       success: (res) => {
+        console.log('HTML load response:', res.statusCode, res.data);
         if (res.statusCode === 200) {
           let html = res.data;
           const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
@@ -35,11 +36,12 @@ Page({
             loading: false
           });
         } else {
-          wx.showToast({ title: '加载失败', icon: 'none' });
+          wx.showToast({ title: '加载失败: ' + res.statusCode, icon: 'none' });
           that.setData({ loading: false });
         }
       },
-      fail: () => {
+      fail: (err) => {
+        console.error('HTML load error:', err);
         wx.showToast({ title: '网络错误', icon: 'none' });
         that.setData({ loading: false });
       }
