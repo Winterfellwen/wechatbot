@@ -3,6 +3,7 @@ import base64
 import uuid
 import threading
 import subprocess
+import ssl
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -13,16 +14,82 @@ import uvicorn
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# Download CJK font on startup
+@app.on_event("startup")
+async def startup_download_font():
+    print("Startup: Checking/downloading CJK font...")
+    font = ensure_cjk_font()
+    if font:
+        print(f"Startup: CJK font ready at {font}")
+        register_font_for_weasyprint(font)
+    else:
+        print("Startup WARNING: CJK font download failed, Chinese may not display correctly")
+
 UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+FONT_CACHE_DIR = Path("/tmp/font-cache")
+FONT_CACHE_DIR.mkdir(exist_ok=True)
+CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 
-
-# ── Job queue ──────────────────────────────────────────────────────────────────
+# ── Job queue ──────────────────────────────────────────────────────────
 jobs = {}           # job_id -> {"status": "pending"|"done"|"error", "result": ..., "error": ...}
 jobs_lock = threading.Lock()
 OUTPUT_DIR = Path("/tmp/pdf-outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+def ensure_cjk_font():
+    """Download CJK font to a known location for WeasyPrint"""
+    # 1. Check if font already cached
+    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
+        print("Using cached CJK font: " + str(CJK_FONT_PATH))
+        return str(CJK_FONT_PATH)
+    
+    # 2. Download from network
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    
+    urls = [
+        "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
+        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf"
+    ]
+    
+    for url in urls:
+        try:
+            print("Downloading CJK font from " + url)
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
+            data = response.read()
+            if len(data) > 50000:
+                CJK_FONT_PATH.write_bytes(data)
+                print("Downloaded CJK font: " + str(len(data)) + " bytes")
+                return str(CJK_FONT_PATH)
+        except Exception as e:
+            print("Download failed from " + url + ": " + str(e))
+            continue
+    
+    print("WARNING: CJK font download failed")
+    return None
+
+
+def register_font_for_weasyprint(font_path):
+    """Register font with fc-cache for WeasyPrint/Pango"""
+    try:
+        import subprocess
+        # Add font directory to fontconfig cache
+        result = subprocess.run(
+            ['fc-cache', '-fv', str(Path(font_path).parent)],
+            capture_output=True, text=True, timeout=30
+        )
+        print("fc-cache output: " + str(result.stdout)[:200])
+        if result.stderr:
+            print("fc-cache errors: " + str(result.stderr)[:200])
+        return True
+    except Exception as e:
+        print("fc-cache failed: " + str(e))
+        return False
 
 def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to_fmt: str):
     """Background conversion worker (runs in thread)."""
@@ -202,24 +269,16 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
     output_path = input_path.with_suffix(".pdf")
     try:
-        # Debug: check weasyprint version and fonts
-        print("Weasyprint version: " + str(weasyprint.__version__))
-        try:
-            result = subprocess.run(['fc-list', ':lang=zh'], capture_output=True, text=True, timeout=10)
-            print("Available Chinese fonts:")
-            print(result.stdout[:500] if result.stdout else "None found")
-        except Exception as fl:
-            print("fc-list failed: " + str(fl))
+        # Step 1: Ensure CJK font is downloaded
+        print("Ensuring CJK font available...")
+        font_path = ensure_cjk_font()
+        if font_path:
+            print("CJ K font path: " + font_path)
+            register_font_for_weasyprint(font_path)
+        else:
+            print("WARNING: CJK font not available, text may not render correctly")
         
-        try:
-            from weasyprint.text.fonts import FontConfiguration
-            font_config = FontConfiguration()
-            print("FontConfiguration created successfully")
-        except Exception as fe:
-            print("Font config error: " + str(fe))
-            font_config = None
-
-        # Convert docx to HTML with mammoth (preserves images and basic formatting)
+        # Step 2: Convert docx to HTML with mammoth
         print("Converting " + str(input_path) + " to HTML with mammoth...")
         with open(input_path, 'rb') as f:
             result = mammoth.convert_to_html(f)
@@ -227,16 +286,26 @@ def _docx_to_pdf(input_path: Path) -> Path:
             messages = result.messages
             for msg in messages:
                 print("Mammoth: " + str(msg))
-
-        # Add basic CSS for better rendering
-        # Expanded font list for Pango/WeasyPrint
-        html_with_style = """<!DOCTYPE html>
+        
+        # Step 3: Generate CSS with font-face pointing to downloaded font
+        font_face = ""
+        if font_path:
+            # Use file:// protocol for WeasyPrint to find the font
+            font_face = f"""
+        @font-face {{
+            font-family: 'NotoSansSC';
+            src: url('file://{font_path}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }}"""
+        
+        html_with_style = f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <style>
-        body { font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'Noto Sans CJK', 'WenQuanYi Micro Hei', 
-              'Microsoft YaHei', 'SimHei', 'SimSun', 'FangSong', 'KaiTi', 
+    <style>{font_face}
+        body { font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'Noto Sans SC', 
+              'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', 
               sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }
         img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
         table { border-collapse: collapse; width: 100%; margin: 1.5em 0; 
@@ -254,22 +323,18 @@ def _docx_to_pdf(input_path: Path) -> Path:
     </style>
 </head>
 <body>""" + html + """</body></html>"""
-
-        # Convert HTML to PDF with weasyprint
+        
+        # Step 4: Convert HTML to PDF with weasyprint
         print("Converting HTML to PDF with weasyprint...")
         try:
             from weasyprint.text.fonts import FontConfiguration
             font_config = FontConfiguration()
-            print("Using custom font configuration")
-        except Exception as fe:
-            print("Font config not available: " + str(fe))
-            font_config = None
-
-        if font_config:
+            print("Using FontConfiguration")
             weasyprint.HTML(string=html_with_style).write_pdf(str(output_path), font_config=font_config)
-        else:
+        except Exception as fe:
+            print("FontConfiguration failed: " + str(fe) + ", trying without...")
             weasyprint.HTML(string=html_with_style).write_pdf(str(output_path))
-
+        
         print("PDF generated with mammoth+weasyprint: " + str(output_path))
         return output_path
     except Exception as e:
@@ -277,56 +342,39 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
 @app.get("/debug")
 def debug():
-    import os
-    import subprocess
     result = {"tests": []}
     
-    # Test 1: Check if fonts-noto-cjk is installed
-    try:
-        pkg_check = subprocess.run(['dpkg', '-l', 'fonts-noto-cjk*'], capture_output=True, text=True, timeout=10)
-        result["fonts-noto-cjk_package"] = pkg_check.stdout[:500] if pkg_check.stdout else "Not installed"
-    except Exception as e:
-        result["fonts-noto-cjk_package"] = str(e)
+    # Test 1: Check CJK font
+    result["cjk_font_path"] = str(CJK_FONT_PATH)
+    result["cjk_font_exists"] = CJK_FONT_PATH.exists()
+    if CJK_FONT_PATH.exists():
+        result["cjk_font_size"] = CJK_FONT_PATH.stat().st_size
     
-    # Test 2: List /usr/share/fonts/ directory
-    try:
-        fonts_dir = '/usr/share/fonts/'
-        if os.path.exists(fonts_dir):
-            # List top-level directories
-            dirs = os.listdir(fonts_dir)
-            result["fonts_dirs"] = [d for d in dirs if os.path.isdir(os.path.join(fonts_dir, d))][:20]
-        else:
-            result["fonts_dirs"] = "Directory not found"
-    except Exception as e:
-        result["fonts_dirs"] = str(e)
-    
-    # Test 3: Find CJK fonts
-    fonts = []
-    font_dirs = ['/usr/share/fonts', '/usr/local/share/fonts', os.path.expanduser('~/.fonts')]
-    for font_dir in font_dirs:
-        if os.path.exists(font_dir):
-            for root, dirs, files in os.walk(font_dir):
-                for f in files:
-                    if any(f.lower().endswith(ext) for ext in ['.ttf', '.otf', '.ttc']):
-                        lower = f.lower()
-                        if any(kw in lower for kw in ['noto', 'cjk', 'chinese', 'simhei', 'simsun', 'yahei', 'wqy', 'wenquanyi']):
-                            fonts.append(os.path.join(root, f))
-    result["cjk_fonts_found"] = fonts[:20]  # limit output
-    result["cjk_fonts_count"] = len(fonts)
-    
-    # Test 4: WeasyPrint version
+    # Test 2: WeasyPrint version
     try:
         import weasyprint
         result["weasyprint_version"] = weasyprint.__version__
     except Exception as e:
         result["weasyprint_version"] = str(e)
     
-    # Test 5: FontConfiguration
+    # Test 3: FontConfiguration
     try:
         from weasyprint.text.fonts import FontConfiguration
         result["font_config"] = "FontConfiguration available"
     except Exception as e:
         result["font_config"] = str(e)
+    
+    # Test 4: List fonts directory
+    try:
+        import os
+        fonts_dir = '/tmp/font-cache'
+        if os.path.exists(fonts_dir):
+            files = os.listdir(fonts_dir)
+            result["font_cache_files"] = files
+        else:
+            result["font_cache_files"] = "Directory not found"
+    except Exception as e:
+        result["font_cache_files"] = str(e)
     
     return result
 
