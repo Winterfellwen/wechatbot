@@ -123,57 +123,40 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
     html.append('</div></body></html>')
     return '\n'.join(html)
 
-    html = f'''<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; 
-               margin: 0; padding: 10px; background: #f0f0f0; }
-        .page { position: relative; background: white; margin: 0 auto 20px; 
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }
-        .page p { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
-        .page img { position: absolute; }
-    </style>
-</head>
-<body>
-{chr(10).join(html_parts)}
-</body>
-</html>'''
-
-    return html
-
 
 def convert_docx_to_html(file_data: bytes) -> str:
     """使用mammoth将docx转换为HTML"""
     import mammoth
 
     result = mammoth.convert_to_html({"file_data": file_data})
-    html = result.get("value", "")
+    html_content = result.get("value", "")
 
-    html = f'''<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; 
-               margin: 20px; line-height: 1.6; color: #333; }}
-        img {{ max-width: 100%; height: auto; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-        h1, h2, h3 {{ margin: 15px 0 10px; }}
-        p {{ margin: 10px 0; }}
-        ul, ol {{ margin: 10px 0; padding-left: 25px; }}
-    </style>
-</head>
-<body>
-{html}
-</body>
-</html>'''
+    # 构建完整的HTML文档，添加缩放功能
+    html = []
+    html.append('<!DOCTYPE html><html><head><meta charset="utf-8">')
+    html.append('<meta name="viewport" content="width=device-width,initial-scale=1.0">')
+    html.append('<style>')
+    html.append('* { box-sizing: border-box; }')
+    html.append('body { font-family: sans-serif; margin: 0; padding: 10px; background: #f0f0f0; }')
+    html.append('.container { transform-origin: top left; transition: transform 0.3s; }')
+    html.append('.page { background: white; margin: 10px auto; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }')
+    html.append('img { max-width: 100%; height: auto; }')
+    html.append('</style>')
+    html.append('<script>')
+    html.append('function scaleToFit() {')
+    html.append('  var c = document.querySelector(".container"); if (!c) return;')
+    html.append('  var p = c.querySelector(".page"); if (!p) return;')
+    html.append('  var s = (window.innerWidth - 20) / p.offsetWidth;')
+    html.append('  if (s > 1) s = 1;')
+    html.append('  c.style.transform = "scale(" + s + ")"; c.style.width = (100/s) + "%";')
+    html.append('}')
+    html.append('window.onload = scaleToFit; window.onresize = scaleToFit;')
+    html.append('</script></head><body>')
+    html.append('<div class="container"><div class="page">')
+    html.append(html_content)
+    html.append('</div></div></body></html>')
 
-    return html
+    return '\n'.join(html)
 
 
 @router.post("/convert-to-html")
