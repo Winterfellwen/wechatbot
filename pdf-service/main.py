@@ -23,6 +23,25 @@ try:
         register_font_for_weasyprint(font)
     else:
         print("Module startup WARNING: CJK font download failed, Chinese may not display correctly")
+        # Try one more time with different approach
+        print("Module startup: Retrying font download...")
+        try:
+            import urllib.request
+            import ssl
+            url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf"
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
+            data = response.read()
+            if len(data) > 50000:
+                CJK_FONT_PATH.write_bytes(data)
+                print(f"Module startup: Font downloaded successfully, size: {len(data)}")
+            else:
+                print(f"Module startup: Downloaded file too small: {len(data)}")
+        except Exception as e2:
+            print(f"Module startup: Retry also failed: {e2}")
 except Exception as e:
     print(f"Module startup ERROR: {e}")
 
@@ -43,11 +62,16 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 def ensure_cjk_font():
     """Download CJK font to a known location for WeasyPrint"""
     # 1. Check if font already cached
+    print(f"ensure_cjk_font: Checking {CJK_FONT_PATH}")
+    print(f"ensure_cjk_font: File exists: {CJK_FONT_PATH.exists()}")
+    if CJK_FONT_PATH.exists():
+        print(f"ensure_cjk_font: File size: {CJK_FONT_PATH.stat().st_size}")
     if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
         print("Using cached CJK font: " + str(CJK_FONT_PATH))
         return str(CJK_FONT_PATH)
     
     # 2. Download from network
+    print("ensure_cjk_font: Starting download...")
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -59,16 +83,21 @@ def ensure_cjk_font():
     
     for url in urls:
         try:
-            print("Downloading CJK font from " + url)
+            print(f"ensure_cjk_font: Trying {url}")
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
+            print(f"ensure_cjk_font: Response status: {response.status}")
+            print(f"ensure_cjk_font: Content-Type: {response.headers.get('Content-Type')}")
             data = response.read()
+            print(f"ensure_cjk_font: Downloaded {len(data)} bytes")
             if len(data) > 50000:
                 CJK_FONT_PATH.write_bytes(data)
                 print("Downloaded CJK font: " + str(len(data)) + " bytes")
                 return str(CJK_FONT_PATH)
+            else:
+                print(f"ensure_cjk_font: File too small: {len(data)} bytes")
         except Exception as e:
-            print("Download failed from " + url + ": " + str(e))
+            print(f"ensure_cjk_font: Download failed from {url}: {e}")
             continue
     
     print("WARNING: CJK font download failed")
