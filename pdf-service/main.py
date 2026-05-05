@@ -313,13 +313,84 @@ def _pdf_rotate(input_path: Path, angle: int = 90) -> Path:
 def _docx_to_pdf(input_path: Path) -> Path:
     try:
         import mammoth
-        import weasyprint
+        import weasyprint 
     except ImportError as e:
         raise Exception("Missing dependency: " + str(e) + ". Run: pip install mammoth weasyprint")
 
     output_path = input_path.with_suffix(".pdf")
     try:
-        # Step 1: Find CJK font
+        # Step 1: Extract images from docx with dimensions
+        print("Extracting images from docx...")
+        img_dir = Path("/tmp/docx-images")
+        img_dir.mkdir(exist_ok=True)
+        img_map = {}
+        
+        try:
+            import zipfile, os
+            from PIL import Image
+            with zipfile.ZipFile(input_path, 'r') as zip_ref:
+                for name in zip_ref.namelist():
+                    if name.startswith('word/media/') and name != 'word/media/':
+                        img_data = zip_ref.read(name)
+                        img_name = os.path.basename(name)
+                        img_path = img_dir / img_name
+                        with open(img_path, 'wb') as f:
+                            f.write(img_data)
+                        try:
+                            with Image.open(img_path) as img:
+                                width, height = img.size
+                                img_map[img_name] = (str(img_path), width, height)
+                                print(f"Extracted {img_name}: {width}x{height}")
+                        except Exception as ie:
+                            print(f"Failed to get dimensions for {img_name}: {ie}")
+                            img_map[img_name] = (str(img_path), 400, 300)
+        except Exception as ze:
+            print(f"Failed to extract images: {ze}")
+        
+        # Step 2: Convert docx to HTML with mammoth
+        print("Converting " + str(input_path) + " to HTML with mammoth...")
+        with open(input_path, 'rb') as f:
+            result = mammoth.convert_to_html(f)
+            html = result.value
+            messages = result.messages
+            for msg in messages:
+                print("Mammoth: " + str(msg))
+        
+        # Step 3: Replace base64 images with local references and proper sizing
+        import re
+        
+        def replace_img(match):
+            img_tag = match.group(0)
+            src_match = re.search(r'src="([^"]+)"', img_tag)
+            if not src_match:
+                return img_tag
+            src = src_match.group(1)
+            
+            # Check if this is a base64 image
+            if src.startswith('data:image'):
+                # Count how many images we've processed to match order
+                if not hasattr(replace_img, 'count'):
+                    replace_img.count = 0
+                replace_img.count += 1
+                
+                # Try to find corresponding image
+                img_files = list(img_map.keys())
+                if replace_img.count <= len(img_files):
+                    img_name = img_files[replace_img.count - 1]
+                    if img_name in img_map:
+                        local_path, width, height = img_map[img_name]
+                        # Calculate display size (max 500px width)
+                        display_width = min(width, 500)
+                        display_height = int(height * display_width / width) if width > 0 else height
+                        new_tag = f'<img src="file://{local_path}" width="{display_width}" height="{display_height}" style="max-width:100%; height:auto; display:block; margin:1em auto;">'
+                        return new_tag
+            
+            return img_tag
+        
+        html = re.sub(r'<img[^>]+>', replace_img, html)
+        print("Fixed image tags in HTML")
+        
+        # Step 4: Find CJK font
         print("Finding CJK font...")
         cjk_font = CJK_FONT  # from find_cjk_font()
         if cjk_font:
@@ -331,16 +402,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
         else:
             print("WARNING: No CJK font found, will use system fonts")
         
-        # Step 2: Convert docx to HTML with mammoth
-        print("Converting " + str(input_path) + " to HTML with mammoth...")
-        with open(input_path, 'rb') as f:
-            result = mammoth.convert_to_html(f)
-            html = result.value
-            messages = result.messages
-            for msg in messages:
-                print("Mammoth: " + str(msg))
-        
-        # Step 3: Generate CSS with font-face if font available
+        # Step 5: Generate CSS
         font_face = ""
         if cjk_font:
             font_face = f"""
@@ -356,9 +418,9 @@ def _docx_to_pdf(input_path: Path) -> Path:
 <head>
     <meta charset="utf-8">
     <style>{font_face}
-        body {{ font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 
-              'Microsoft YaHei', 'SimHei', 'sans-serif'; 
-              margin: 2cm; line-height: 1.8; font-size: 12pt; }}
+        body {{ font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'Noto Sans SC', 
+              'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', 
+              sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }}
         img {{ max-width: 100%; height: auto; display: block; margin: 1em auto; }}
         table {{ border-collapse: collapse; width: 100%; margin: 1.5em 0; 
               font-size: 10pt; table-layout: fixed; word-wrap: break-word; }}
@@ -374,9 +436,10 @@ def _docx_to_pdf(input_path: Path) -> Path:
         li {{ margin: 0.3em 0; }}
     </style>
 </head>
-<body>""" + html + """</body></html>"""
+<body>{html}</body>
+</html>"""
         
-        # Step 4: Convert HTML to PDF with weasyprint
+        # Step 6: Convert HTML to PDF with weasyprint
         print("Converting HTML to PDF with weasyprint...")
         try:
             from weasyprint.text.fonts import FontConfiguration
@@ -392,7 +455,6 @@ def _docx_to_pdf(input_path: Path) -> Path:
     except Exception as e:
         raise Exception("Mammoth/WeasyPrint conversion failed: " + str(e))
 
-@app.get("/debug")
 def debug():
     result = {"tests": []}
     
