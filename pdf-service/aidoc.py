@@ -37,15 +37,17 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """将PDF转换为HTML用于预览（简化版）"""
+    """将PDF转换为HTML用于预览"""
     import fitz
+    import base64
 
     html_parts = []
     html_parts.append('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>')
-    html_parts.append('body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 10px; background: #f5f5f5; }')
-    html_parts.append('.page { background: white; margin: 10px auto; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }')
-    html_parts.append('.page p { margin: 5px 0; line-height: 1.6; }')
-    html_parts.append('.page img { max-width: 100%; height: auto; }')
+    html_parts.append('body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 10px; background: #f5f5f5; }')
+    html_parts.append('.page { background: white; margin: 10px auto; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; }')
+    html_parts.append('.page p { margin: 8px 0; line-height: 1.6; font-size: 14px; }')
+    html_parts.append('.page img { max-width: 100%; height: auto; display: block; margin: 10px 0; }')
+    html_parts.append('.page h3 { margin: 10px 0; color: #666; font-size: 12px; }')
     html_parts.append('</style></head><body>')
 
     try:
@@ -55,8 +57,27 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
 
     for page_num, page in enumerate(doc):
         html_parts.append(f'<div class="page"><h3>Page {page_num + 1}</h3>')
+
+        img_list = page.get_images()
+        if img_list:
+            for img in img_list:
+                try:
+                    xref = img[0]
+                    base_img = page.parent.extract_image(xref)
+                    if base_img:
+                        img_data = base_img.get("image")
+                        img_ext = base_img.get("ext", "png")
+                        if img_data:
+                            img_b64 = base64.b64encode(img_data).decode('utf-8')
+                            html_parts.append(f'<img src="data:image/{img_ext};base64,{img_b64}" />')
+                except Exception as e:
+                    print(f"Image error: {e}")
+
         text = page.get_text("text")
-        html_parts.append(f'<pre style="white-space:pre-wrap;word-wrap:break-word;">{text}</pre>')
+        if text and text.strip():
+            text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            html_parts.append(f'<p>{text}</p>')
+
         html_parts.append('</div>')
 
     doc.close()
