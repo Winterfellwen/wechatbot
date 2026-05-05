@@ -37,7 +37,7 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """使用PyMuPDF将PDF转换为HTML"""
+    """使用PyMuPDF将PDF转换为HTML，保持原始页面布局"""
     import io
     import base64
 
@@ -45,8 +45,12 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
     doc = fitz.open(stream=file_data, filetype="pdf")
 
     for page_num, page in enumerate(doc):
-        html_parts.append(f'<div class="page" data-page="{page_num + 1}">')
+        page_width = page.rect.width
+        page_height = page.rect.height
 
+        html_parts.append(f'<div class="page" style="width:{page_width}px;height:{page_height}px;">')
+
+        img_map = {}
         img_list = page.get_images()
         if img_list:
             for img_idx, img in enumerate(img_list):
@@ -56,63 +60,36 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
                     img_data = base_img["image"]
                     img_ext = base_img["ext"]
                     img_base64 = base64.b64encode(img_data).decode('utf-8')
-                    html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="max-width:100%;height:auto;" />')
+                    img_map[img_idx] = (img_base64, img_ext)
                 except Exception as e:
                     print(f"Failed to extract image: {e}")
 
         blocks = page.get_text("dict")["blocks"]
-        in_list = False
-        table_rows = []
 
         for block in blocks:
             if block.get("type") == 0:
+                bbox = block.get("bbox", [0, 0, 0, 0])
+                x, y, w, h = bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]
+
                 lines = block.get("lines", [])
+                texts = []
                 for line in lines:
                     text = "".join([span.get("text", "") for span in line.get("spans", [])])
-                    text = text.strip()
-                    if not text:
-                        continue
+                    if text.strip():
+                        texts.append(text.strip())
 
-                    if re.match(r'^[\d\.\)\u3000]+', text) and len(text) < 100:
-                        if not in_list:
-                            html_parts.append('<ul>')
-                            in_list = True
-                        html_parts.append(f'<li>{text}</li>')
-                    else:
-                        if in_list:
-                            html_parts.append('</ul>')
-                            in_list = False
+                if texts:
+                    style = f'position:absolute;left:{x}px;top:{y}px;width:{w}px;'
+                    html_parts.append(f'<p style="{style}font-size:12px;margin:0;">' + " ".join(texts) + '</p>')
 
-                        if '    ' in text or '\t' in text or len(text) > 50 and ' ' not in text:
-                            table_rows.append(text)
-                        else:
-                            if table_rows:
-                                html_parts.append('<table>')
-                                for row in table_rows:
-                                    cells = row.split('\t') if '\t' in row else [row[i:i+20] for i in range(0, len(row), 20)]
-                                    html_parts.append('<tr>')
-                                    for cell in cells:
-                                        cell = cell.strip()
-                                        if cell:
-                                            html_parts.append(f'<td>{cell}</td>')
-                                    html_parts.append('</tr>')
-                                html_parts.append('</table>')
-                                table_rows = []
-                            html_parts.append(f'<p>{text}</p>')
+            elif block.get("type") == 1:
+                bbox = block.get("bbox", [0, 0, 0, 0])
+                x, y = bbox[0], bbox[1]
+                img_idx = block.get("number", 0) - 1
 
-        if in_list:
-            html_parts.append('</ul>')
-        if table_rows:
-            html_parts.append('<table>')
-            for row in table_rows:
-                cells = row.split('\t') if '\t' in row else [row]
-                html_parts.append('<tr>')
-                for cell in cells:
-                    cell = cell.strip()
-                    if cell:
-                        html_parts.append(f'<td>{cell}</td>')
-                html_parts.append('</tr>')
-            html_parts.append('</table>')
+                if img_idx in img_map:
+                    img_base64, img_ext = img_map[img_idx]
+                    html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="position:absolute;left:{x}px;top:{y}px;max-width:100%;height:auto;" />')
 
         html_parts.append('</div>')
 
@@ -122,16 +99,15 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; 
-               margin: 20px; line-height: 1.6; color: #333; }}
-        .page {{ margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; page-break-after: always; }}
-        p {{ margin: 10px 0; }}
-        ul, ol {{ margin: 10px 0; padding-left: 25px; }}
-        li {{ margin: 5px 0; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-        h1, h2, h3 {{ margin: 15px 0 10px; }}
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; 
+               margin: 0; padding: 10px; background: #f0f0f0; }
+        .page { position: relative; background: white; margin: 0 auto 20px; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }
+        .page p { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+        .page img { position: absolute; }
     </style>
 </head>
 <body>
