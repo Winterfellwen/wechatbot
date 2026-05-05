@@ -68,8 +68,6 @@ Page({
       wx.navigateTo({ url: '/word/pages/index/index' });
     } else if (type === 'pdf') {
       wx.navigateTo({ url: '/pdf/pages/index/index' });
-    } else if (type === 'aidoc') {
-      wx.navigateTo({ url: '/aidoc/pages/index/index' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
     }

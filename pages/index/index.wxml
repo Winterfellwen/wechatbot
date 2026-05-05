@@ -43,12 +43,6 @@
         <text class="entry-desc">PDF处理工具</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="aidoc">
-        <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
-        <text class="entry-title">AI文档</text>
-        <text class="entry-desc">智能文档处理</text>
-      </view>
-
       <view class="entry-card" bindtap="handleEntryTap" data-type="developing">
         <image class="entry-icon" src="/images/icon-developing.png" mode="aspectFit"></image>
         <text class="entry-title">新功能开发中</text>
