@@ -4,6 +4,7 @@ Page({
   data: {
     jobId: '',
     html: '',
+    htmlNodes: '',
     reviewing: false
   },
 
@@ -18,11 +19,21 @@ Page({
     wx.showLoading({ title: '加载中...' });
 
     wx.request({
-      url: API_BASE + '/api/aidoc/html/' + that.data.jobId + '.html',
+      url: API_BASE + '/api/aidoc/html/' + this.data.jobId + '.html',
       success: (res) => {
         wx.hideLoading();
         if (res.statusCode === 200) {
-          that.setData({ html: res.data });
+          let html = res.data;
+
+          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          if (bodyMatch) {
+            html = bodyMatch[1];
+          }
+
+          this.setData({
+            html: res.data,
+            htmlNodes: html
+          });
         } else {
           wx.showToast({ title: '加载失败', icon: 'none' });
         }
@@ -52,7 +63,15 @@ Page({
       success: (res) => {
         wx.hideLoading();
         if (res.data && res.data.status === 'done') {
-          that.setData({ html: res.data.corrected_html });
+          let html = res.data.corrected_html;
+          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          if (bodyMatch) {
+            html = bodyMatch[1];
+          }
+          that.setData({
+            html: res.data.corrected_html,
+            htmlNodes: html
+          });
           wx.showToast({ title: 'AI修正完成', icon: 'success' });
         } else {
           wx.showToast({ title: '修正失败', icon: 'none' });
@@ -86,7 +105,7 @@ Page({
         wx.hideLoading();
         if (res.data && res.data.file_base64) {
           const fs = wx.getFileSystemManager();
-          const filePath = wx.env.USER_DATA_PATH + '/document_' + that.data.jobId + '.pdf';
+          const filePath = wx.env.USER_DATA_PATH + '/document_' + this.data.jobId + '.pdf';
 
           fs.writeFile({
             filePath: filePath,
@@ -99,12 +118,11 @@ Page({
                 success: () => {
                   wx.showToast({ title: '已打开PDF', icon: 'success' });
                 },
-                fail: (err) => {
-                  console.error('Open failed:', err);
+                fail: () => {
                   wx.saveFile({
                     tempFilePath: filePath,
                     success: () => {
-                      wx.showToast({ title: '已保存到文件', icon: 'success' });
+                      wx.showToast({ title: '已保存', icon: 'success' });
                     },
                     fail: () => {
                       wx.showToast({ title: '保存失败', icon: 'none' });
@@ -113,8 +131,7 @@ Page({
                 }
               });
             },
-            fail: (err) => {
-              console.error('Write failed:', err);
+            fail: () => {
               wx.showToast({ title: '生成失败', icon: 'none' });
             }
           });
@@ -122,9 +139,8 @@ Page({
           wx.showToast({ title: '生成失败', icon: 'none' });
         }
       },
-      fail: (err) => {
+      fail: () => {
         wx.hideLoading();
-        console.error('Export failed:', err);
         wx.showToast({ title: '网络错误', icon: 'none' });
       }
     });
