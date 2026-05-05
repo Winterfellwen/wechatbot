@@ -37,91 +37,104 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """将PDF转换为HTML，使用绝对定位保持原始布局"""
+    """将PDF转换为可缩放的HTML页面"""
     import fitz
     import base64
-
-    html = []
-    html.append('<!DOCTYPE html><html><head><meta charset="utf-8">')
-    html.append('<meta name="viewport" content="width=device-width,initial-scale=1.0">')
-    html.append('<style>')
-    html.append('* { margin: 0; padding: 0; box-sizing: border-box; }')
-    html.append('body { font-family: sans-serif; background: #f0f0f0; }')
-    html.append('.container { transform-origin: top left; transition: transform 0.3s; }')
-    html.append('.page { position: relative; background: white; margin: 10px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }')
-    html.append('.text { position: absolute; font-size: 12px; white-space: pre-wrap; }')
-    html.append('.img { position: absolute; }')
-    html.append('</style>')
-    html.append('<script>')
-    html.append('function scaleToFit() {')
-    html.append('  var c = document.querySelector(".container"); if (!c) return;')
-    html.append('  var p = c.querySelector(".page"); if (!p) return;')
-    html.append('  var s = (window.innerWidth - 20) / p.offsetWidth;')
-    html.append('  if (s > 1) s = 1;')
-    html.append('  c.style.transform = "scale(" + s + ")"; c.style.width = (100/s) + "%";')
-    html.append('}')
-    html.append('window.onload = scaleToFit; window.onresize = scaleToFit;')
-    html.append('</script></head><body>')
-    html.append('<div class="container">')
 
     try:
         doc = fitz.open(stream=file_data, filetype="pdf")
     except Exception as e:
         raise Exception(f"Cannot open PDF: {str(e)}")
 
+    # 收集所有页面内容
+    pages_html = []
+
     for page_num, page in enumerate(doc):
+        w = int(page.rect.width)
+        h = int(page.rect.height)
+
+        page_parts = [f'<div class="page" style="width:{w}px;height:{h}px;">']
+
+        # 提取图片
         try:
-            w = int(page.rect.width)
-            h = int(page.rect.height)
-            html.append(f'<div class="page" style="width:{w}px;height:{h}px;">')
+            for img in page.get_images():
+                try:
+                    xref = img[0]
+                    bbox = img[1]  # (x0, y0, x1, y1)
+                    img_data = page.parent.extract_image(xref)
+                    if img_data and "image" in img_data:
+                        b64 = base64.b64encode(img_data["image"]).decode()
+                        ext = img_data.get("ext", "png")
+                        x = int(bbox[0])
+                        y = int(bbox[1])
+                        w_img = int(bbox[2] - bbox[0])
+                        h_img = int(bbox[3] - bbox[1])
+                        page_parts.append(f'<img src="data:image/{ext};base64,{b64}" style="position:absolute;left:{x}px;top:{y}px;width:{w_img}px;height:{h_img}px;" />')
+                except:
+                    pass
+        except:
+            pass
 
-            # Images
-            try:
-                for img in page.get_images():
-                    try:
-                        xref = img[0]
-                        bbox = img[1]  # (x0, y0, x1, y1)
-                        img_data = page.parent.extract_image(xref)
-                        if img_data and "image" in img_data:
-                            b64 = base64.b64encode(img_data["image"]).decode()
-                            ext = img_data.get("ext", "png")
-                            x = int(bbox[0])
-                            y = int(bbox[1])
-                            w_img = int(bbox[2] - bbox[0])
-                            h_img = int(bbox[3] - bbox[1])
-                            html.append(f'<img class="img" src="data:image/{ext};base64,{b64}" style="left:{x}px;top:{y}px;width:{w_img}px;height:{h_img}px;" />')
-                    except:
-                        pass
-            except:
-                pass
+        # 提取文字
+        try:
+            blocks = page.get_text("dict").get("blocks", [])
+            for block in blocks:
+                if block.get("type") == 0:  # text block
+                    bbox = block.get("bbox", [])
+                    if len(bbox) >= 4:
+                        x = int(bbox[0])
+                        y = int(bbox[1])
+                        # 提取文字内容
+                        text = ""
+                        for line in block.get("lines", []):
+                            for span in line.get("spans", []):
+                                text += span.get("text", "")
+                        if text.strip():
+                            text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                            page_parts.append(f'<div style="position:absolute;left:{x}px;top:{y}px;font-size:12px;white-space:pre-wrap;">{text}</div>')
+        except:
+            pass
 
-            # Text blocks
-            try:
-                blocks = page.get_text("dict")
-                for block in blocks.get("blocks", []):
-                    if block.get("type") == 0:
-                        bbox = block.get("bbox", [])
-                        if len(bbox) >= 4:
-                            x = int(bbox[0])
-                            y = int(bbox[1])
-                            text = ""
-                            for line in block.get("lines", []):
-                                for span in line.get("spans", []):
-                                    text += span.get("text", "")
-                            if text.strip():
-                                text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                                html.append(f'<div class="text" style="left:{x}px;top:{y}px;">{text}</div>')
-            except:
-                pass
-
-            html.append('</div>')
-        except Exception as e:
-            print(f"Page error: {e}")
-            continue
+        page_parts.append('</div>')
+        pages_html.append('\n'.join(page_parts))
 
     doc.close()
-    html.append('</div></body></html>')
-    return '\n'.join(html)
+
+    # 构建完整HTML
+    html = f'''<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: sans-serif; background: #f0f0f0; }}
+        .container {{ transform-origin: top left; }}
+        .page {{ position: relative; background: white; margin: 10px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }}
+    </style>
+    <script>
+        function scaleToFit() {{
+            var c = document.querySelector('.container');
+            if (!c) return;
+            var p = c.querySelector('.page');
+            if (!p) return;
+            var scale = (window.innerWidth - 20) / p.offsetWidth;
+            if (scale > 1) scale = 1;
+            c.style.transform = 'scale(' + scale + ')';
+            c.style.width = (100 / scale) + '%';
+        }}
+        window.addEventListener('load', scaleToFit);
+        window.addEventListener('resize', scaleToFit);
+    </script>
+</head>
+<body>
+    <div class="container">
+        {chr(10).join(pages_html)}
+    </div>
+</body>
+</html>'''
+
+    return html
 
 
 def convert_docx_to_html(file_data: bytes) -> str:
