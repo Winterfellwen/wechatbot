@@ -10,9 +10,11 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from aidoc import router as aidoc_router
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.include_router(aidoc_router, prefix="/aidoc", tags=["AI Document"])
 
 # Version marker for debugging
 PDF_SERVICE_VERSION = "2026-05-05-v3"

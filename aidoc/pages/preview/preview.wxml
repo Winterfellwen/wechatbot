@@ -1,0 +1,14 @@
+<view class="container">
+  <view class="toolbar">
+    <button class="tool-btn" bindtap="aiReview" disabled="{{reviewing || loading}}">
+      {{reviewing ? 'AI修正中...' : 'AI修正'}}
+    </button>
+    <button class="tool-btn" bindtap="showExportMenu" disabled="{{loading}}">导出</button>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view class="html-content" wx:else>
+    <rich-text nodes="{{htmlNodes}}" type="html"></rich-text>
+  </view>
+</view>

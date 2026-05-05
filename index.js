@@ -485,6 +485,74 @@ app.get('/api/pdf/download/:filename', (req, res) => {
   }
 });
 
+// AI Document API - 转发到 pdf-service (文件上传方式)
+app.post('/api/aidoc/convert-to-html', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请上传文件' });
+
+  try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+
+    const response = await fetch(pdfServiceUrl + '/aidoc/convert-to-html', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_base64: fileBase64,
+        filename: req.file.originalname
+      })
+    });
+
+    fs.unlinkSync(req.file.path);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('AI Doc convert error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/aidoc/ai-review', async (req, res) => {
+  try {
+    const response = await fetch(pdfServiceUrl + '/aidoc/ai-review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('AI Doc review error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/aidoc/export', async (req, res) => {
+  try {
+    const response = await fetch(pdfServiceUrl + '/aidoc/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('AI Doc export error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/aidoc/html/:filename', async (req, res) => {
+  try {
+    const response = await fetch(pdfServiceUrl + '/aidoc/html/' + req.params.filename);
+    const data = await response.text();
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(data);
+  } catch (err) {
+    console.error('AI Doc get html error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Word import: receive .docx, unzip with zlib, return document.xml text
 app.post('/api/word/import', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });

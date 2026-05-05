@@ -46,6 +46,13 @@
         "pages/index/index",
         "pages/editor/editor"
       ]
+    },
+    {
+      "root": "aidoc",
+      "pages": [
+        "pages/index/index",
+        "pages/preview/preview"
+      ]
     }
   ],
   "window": {

@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="header">
+    <text class="title">AI文档处理</text>
+    <text class="subtitle">智能转换与修正您的文档</text>
+  </view>
+
+  <view class="upload-section">
+    <view class="upload-box" bindtap="chooseFile">
+      <view class="upload-icon">+</view>
+      <text class="upload-text">点击选择文件</text>
+      <text class="upload-hint">支持 PDF、DOCX 格式</text>
+    </view>
+  </view>
+
+  <view class="process-section" wx:if="{{currentFile}}">
+    <view class="file-info">
+      <text class="file-name">{{currentFile.name}}</text>
+      <text class="file-size">{{currentFile.size}}</text>
+    </view>
+
+    <button class="convert-btn" bindtap="startConvert" disabled="{{converting}}">
+      {{converting ? '转换中...' : '转换为HTML5'}}
+    </button>
+  </view>
+
+  <view class="history-section" wx:if="{{history.length > 0}}">
+    <text class="section-title">历史记录</text>
+    <view class="history-list">
+      <view class="history-item" wx:for="{{history}}" wx:key="jobId" bindtap="openPreview" data-jobid="{{item.jobId}}">
+        <text class="history-name">{{item.filename}}</text>
+        <text class="history-status">{{item.status}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text class="tips-title">使用说明</text>
+    <text class="tips-item">1. 上传 PDF 或 DOCX 文件</text>
+    <text class="tips-item">2. 系统自动转换为 HTML5</text>
+    <text class="tips-item">3. AI 自动检查并修正格式</text>
+    <text class="tips-item">4. 导出为 PDF/DOCX/DOC</text>
+  </view>
+</view>
