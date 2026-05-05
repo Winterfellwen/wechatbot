@@ -1,14 +1,15 @@
 <view class="container">
   <view class="toolbar">
-    <button class="tool-btn" bindtap="aiReview" disabled="{{reviewing || loading}}">
+    <button class="tool-btn" bindtap="aiReview" disabled="{{reviewing}}">
       {{reviewing ? 'AI修正中...' : 'AI修正'}}
     </button>
-    <button class="tool-btn" bindtap="showExportMenu" disabled="{{loading}}">导出</button>
+    <button class="tool-btn download-btn" bindtap="downloadPdf">下载PDF查看</button>
   </view>
 
-  <view class="loading" wx:if="{{loading}}">加载中...</view>
-
-  <view class="preview-container" wx:else>
-    <web-view src="{{htmlUrl}}"></web-view>
+  <view class="tips">
+    <text class="tips-title">使用方法</text>
+    <text class="tips-item">1. 点击"下载PDF查看"下载文件</text>
+    <text class="tips-item">2. 在手机文件中打开即可查看原格式</text>
+    <text class="tips-item">3. 点击"AI修正"可优化文档格式</text>
   </view>
 </view>

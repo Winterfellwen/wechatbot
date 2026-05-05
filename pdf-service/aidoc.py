@@ -37,17 +37,15 @@ class ExportRequest(BaseModel):
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
-    """使用PyMuPDF将PDF转换为HTML，保持原始页面布局"""
-    import io
-    import base64
+    """将PDF转换为HTML用于预览（简化版）"""
+    import fitz
 
     html_parts = []
     html_parts.append('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>')
-    html_parts.append('* { box-sizing: border-box; }')
-    html_parts.append('body { margin: 0; padding: 10px; background: #f0f0f0; }')
-    html_parts.append('.page { position: relative; background: white; margin: 0 auto 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }')
-    html_parts.append('.page p { position: absolute; margin: 0; white-space: pre-wrap; word-wrap: break-word; }')
-    html_parts.append('.page img { position: absolute; }')
+    html_parts.append('body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 10px; background: #f5f5f5; }')
+    html_parts.append('.page { background: white; margin: 10px auto; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }')
+    html_parts.append('.page p { margin: 5px 0; line-height: 1.6; }')
+    html_parts.append('.page img { max-width: 100%; height: auto; }')
     html_parts.append('</style></head><body>')
 
     try:
@@ -56,65 +54,10 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
         raise Exception(f"Cannot open PDF: {str(e)}")
 
     for page_num, page in enumerate(doc):
-        try:
-            page_width = page.rect.width
-            page_height = page.rect.height
-
-            html_parts.append(f'<div class="page" style="width:{page_width}px;height:{page_height}px;">')
-
-            img_map = {}
-            try:
-                img_list = page.get_images()
-                if img_list:
-                    for img_idx, img in enumerate(img_list):
-                        try:
-                            xref = img[0]
-                            base_img = page.parent.extract_image(xref)
-                            img_data = base_img["image"]
-                            img_ext = base_img["ext"]
-                            img_base64 = base64.b64encode(img_data).decode('utf-8')
-                            img_map[img_idx] = (img_base64, img_ext)
-                        except Exception as e:
-                            print(f"Failed to extract image {img_idx}: {e}")
-            except Exception as e:
-                print(f"Failed to get images: {e}")
-
-            try:
-                blocks = page.get_text("dict")["blocks"]
-                for block in blocks:
-                    try:
-                        if block.get("type") == 0:
-                            bbox = block.get("bbox", [0, 0, 0, 0])
-                            x, y = bbox[0], bbox[1]
-
-                            lines = block.get("lines", [])
-                            texts = []
-                            for line in lines:
-                                text = "".join([span.get("text", "") for span in line.get("spans", [])])
-                                if text.strip():
-                                    texts.append(text.strip())
-
-                            if texts:
-                                text_content = " ".join(texts)
-                                html_parts.append(f'<p style="left:{x}px;top:{y}px;font-size:12px;">{text_content}</p>')
-
-                        elif block.get("type") == 1:
-                            bbox = block.get("bbox", [0, 0, 0, 0])
-                            x, y = bbox[0], bbox[1]
-                            img_idx = block.get("number", 0) - 1
-
-                            if img_idx in img_map:
-                                img_base64, img_ext = img_map[img_idx]
-                                html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="left:{x}px;top:{y}px;" />')
-                    except Exception as e:
-                        print(f"Block error: {e}")
-            except Exception as e:
-                print(f"Failed to get text: {e}")
-
-            html_parts.append('</div>')
-        except Exception as e:
-            print(f"Page {page_num} error: {e}")
-            continue
+        html_parts.append(f'<div class="page"><h3>Page {page_num + 1}</h3>')
+        text = page.get_text("text")
+        html_parts.append(f'<pre style="white-space:pre-wrap;word-wrap:break-word;">{text}</pre>')
+        html_parts.append('</div>')
 
     doc.close()
 

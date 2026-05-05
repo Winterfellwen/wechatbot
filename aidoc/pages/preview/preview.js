@@ -3,17 +3,34 @@ const API_BASE = 'https://wechatbot-g6ez.onrender.com';
 Page({
   data: {
     jobId: '',
-    htmlUrl: '',
-    reviewing: false,
-    loading: true
+    html: '',
+    reviewing: false
   },
 
   onLoad: function(options) {
     const jobId = options.jobId || '';
-    this.setData({
-      jobId: jobId,
-      htmlUrl: API_BASE + '/api/aidoc/html/' + jobId + '.html',
-      loading: false
+    this.setData({ jobId: jobId });
+    this.loadHtml();
+  },
+
+  loadHtml: function() {
+    const that = this;
+    wx.showLoading({ title: '加载中...' });
+
+    wx.request({
+      url: API_BASE + '/api/aidoc/html/' + that.data.jobId + '.html',
+      success: (res) => {
+        wx.hideLoading();
+        if (res.statusCode === 200) {
+          that.setData({ html: res.data });
+        } else {
+          wx.showToast({ title: '加载失败', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      }
     });
   },
 
@@ -22,7 +39,6 @@ Page({
 
     const that = this;
     this.setData({ reviewing: true });
-
     wx.showLoading({ title: 'AI修正中...' });
 
     wx.request({
@@ -31,53 +47,32 @@ Page({
       header: { 'Content-Type': 'application/json' },
       data: {
         html_content: this.data.html,
-        instructions: '检查HTML内容，修复布局问题，调整图片大小，确保格式正确，修复可能的HTML语法错误。'
+        instructions: '检查HTML内容，修复布局问题，调整图片大小，确保格式正确。'
       },
       success: (res) => {
-        if (res.statusCode === 200 && res.data.status === 'done') {
-          that.setData({
-            html: res.data.corrected_html,
-            htmlNodes: res.data.corrected_html
-          });
-
-          const history = wx.getStorageSync('aidoc_history') || [];
-          const idx = history.findIndex(h => h.jobId === that.data.jobId);
-          if (idx >= 0) {
-            history[idx].html = res.data.corrected_html;
-            history[idx].status = '已修正';
-            wx.setStorageSync('aidoc_history', history);
-          }
-
+        wx.hideLoading();
+        if (res.data && res.data.status === 'done') {
+          that.setData({ html: res.data.corrected_html });
           wx.showToast({ title: 'AI修正完成', icon: 'success' });
         } else {
           wx.showToast({ title: '修正失败', icon: 'none' });
         }
       },
-      fail: (err) => {
-        console.error('AI review failed:', err);
-        wx.showToast({ title: '网络请求失败', icon: 'none' });
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
       },
       complete: () => {
         that.setData({ reviewing: false });
-        wx.hideLoading();
       }
     });
   },
 
-  showExportMenu: function() {
-    wx.showActionSheet({
-      itemList: ['导出为 PDF', '导出为 DOCX', '导出为 DOC'],
-      success: (res) => {
-        const format = ['pdf', 'docx', 'doc'][res.tapIndex];
-        this.exportFile(format);
-      }
-    });
-  },
+  downloadPdf: function() {
+    if (!this.data.html) return;
 
-  exportFile: function(format) {
     const that = this;
-
-    wx.showLoading({ title: '导出中...' });
+    wx.showLoading({ title: '生成PDF...' });
 
     wx.request({
       url: API_BASE + '/api/aidoc/export',
@@ -85,44 +80,52 @@ Page({
       header: { 'Content-Type': 'application/json' },
       data: {
         html_content: this.data.html,
-        format: format
+        format: 'pdf'
       },
       success: (res) => {
-        if (res.statusCode === 200 && res.data.file_base64) {
+        wx.hideLoading();
+        if (res.data && res.data.file_base64) {
           const fs = wx.getFileSystemManager();
-          const filePath = wx.env.USER_DATA_PATH + '/exported.' + format;
+          const filePath = wx.env.USER_DATA_PATH + '/document_' + that.data.jobId + '.pdf';
 
           fs.writeFile({
             filePath: filePath,
             data: res.data.file_base64,
             encoding: 'base64',
             success: () => {
-              wx.saveFile({
-                tempFilePath: filePath,
-                success: (saveRes) => {
-                  wx.showToast({ title: '导出成功', icon: 'success' });
+              wx.openDocument({
+                filePath: filePath,
+                fileType: 'pdf',
+                success: () => {
+                  wx.showToast({ title: '已打开PDF', icon: 'success' });
                 },
                 fail: (err) => {
-                  console.error('Save file failed:', err);
-                  wx.showToast({ title: '保存失败', icon: 'none' });
+                  console.error('Open failed:', err);
+                  wx.saveFile({
+                    tempFilePath: filePath,
+                    success: () => {
+                      wx.showToast({ title: '已保存到文件', icon: 'success' });
+                    },
+                    fail: () => {
+                      wx.showToast({ title: '保存失败', icon: 'none' });
+                    }
+                  });
                 }
               });
             },
             fail: (err) => {
-              console.error('Write file failed:', err);
-              wx.showToast({ title: '写入失败', icon: 'none' });
+              console.error('Write failed:', err);
+              wx.showToast({ title: '生成失败', icon: 'none' });
             }
           });
         } else {
-          wx.showToast({ title: '导出失败', icon: 'none' });
+          wx.showToast({ title: '生成失败', icon: 'none' });
         }
       },
       fail: (err) => {
-        console.error('Export failed:', err);
-        wx.showToast({ title: '网络请求失败', icon: 'none' });
-      },
-      complete: () => {
         wx.hideLoading();
+        console.error('Export failed:', err);
+        wx.showToast({ title: '网络错误', icon: 'none' });
       }
     });
   }
