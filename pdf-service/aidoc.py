@@ -42,58 +42,84 @@ def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
     import base64
 
     html_parts = []
-    doc = fitz.open(stream=file_data, filetype="pdf")
+    html_parts.append('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>')
+    html_parts.append('* { box-sizing: border-box; }')
+    html_parts.append('body { margin: 0; padding: 10px; background: #f0f0f0; }')
+    html_parts.append('.page { position: relative; background: white; margin: 0 auto 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }')
+    html_parts.append('.page p { position: absolute; margin: 0; white-space: pre-wrap; word-wrap: break-word; }')
+    html_parts.append('.page img { position: absolute; }')
+    html_parts.append('</style></head><body>')
+
+    try:
+        doc = fitz.open(stream=file_data, filetype="pdf")
+    except Exception as e:
+        raise Exception(f"Cannot open PDF: {str(e)}")
 
     for page_num, page in enumerate(doc):
-        page_width = page.rect.width
-        page_height = page.rect.height
+        try:
+            page_width = page.rect.width
+            page_height = page.rect.height
 
-        html_parts.append(f'<div class="page" style="width:{page_width}px;height:{page_height}px;">')
+            html_parts.append(f'<div class="page" style="width:{page_width}px;height:{page_height}px;">')
 
-        img_map = {}
-        img_list = page.get_images()
-        if img_list:
-            for img_idx, img in enumerate(img_list):
-                try:
-                    xref = img[0]
-                    base_img = page.parent.extract_image(xref)
-                    img_data = base_img["image"]
-                    img_ext = base_img["ext"]
-                    img_base64 = base64.b64encode(img_data).decode('utf-8')
-                    img_map[img_idx] = (img_base64, img_ext)
-                except Exception as e:
-                    print(f"Failed to extract image: {e}")
+            img_map = {}
+            try:
+                img_list = page.get_images()
+                if img_list:
+                    for img_idx, img in enumerate(img_list):
+                        try:
+                            xref = img[0]
+                            base_img = page.parent.extract_image(xref)
+                            img_data = base_img["image"]
+                            img_ext = base_img["ext"]
+                            img_base64 = base64.b64encode(img_data).decode('utf-8')
+                            img_map[img_idx] = (img_base64, img_ext)
+                        except Exception as e:
+                            print(f"Failed to extract image {img_idx}: {e}")
+            except Exception as e:
+                print(f"Failed to get images: {e}")
 
-        blocks = page.get_text("dict")["blocks"]
+            try:
+                blocks = page.get_text("dict")["blocks"]
+                for block in blocks:
+                    try:
+                        if block.get("type") == 0:
+                            bbox = block.get("bbox", [0, 0, 0, 0])
+                            x, y = bbox[0], bbox[1]
 
-        for block in blocks:
-            if block.get("type") == 0:
-                bbox = block.get("bbox", [0, 0, 0, 0])
-                x, y, w, h = bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]
+                            lines = block.get("lines", [])
+                            texts = []
+                            for line in lines:
+                                text = "".join([span.get("text", "") for span in line.get("spans", [])])
+                                if text.strip():
+                                    texts.append(text.strip())
 
-                lines = block.get("lines", [])
-                texts = []
-                for line in lines:
-                    text = "".join([span.get("text", "") for span in line.get("spans", [])])
-                    if text.strip():
-                        texts.append(text.strip())
+                            if texts:
+                                text_content = " ".join(texts)
+                                html_parts.append(f'<p style="left:{x}px;top:{y}px;font-size:12px;">{text_content}</p>')
 
-                if texts:
-                    style = f'position:absolute;left:{x}px;top:{y}px;width:{w}px;'
-                    html_parts.append(f'<p style="{style}font-size:12px;margin:0;">' + " ".join(texts) + '</p>')
+                        elif block.get("type") == 1:
+                            bbox = block.get("bbox", [0, 0, 0, 0])
+                            x, y = bbox[0], bbox[1]
+                            img_idx = block.get("number", 0) - 1
 
-            elif block.get("type") == 1:
-                bbox = block.get("bbox", [0, 0, 0, 0])
-                x, y = bbox[0], bbox[1]
-                img_idx = block.get("number", 0) - 1
+                            if img_idx in img_map:
+                                img_base64, img_ext = img_map[img_idx]
+                                html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="left:{x}px;top:{y}px;" />')
+                    except Exception as e:
+                        print(f"Block error: {e}")
+            except Exception as e:
+                print(f"Failed to get text: {e}")
 
-                if img_idx in img_map:
-                    img_base64, img_ext = img_map[img_idx]
-                    html_parts.append(f'<img src="data:image/{img_ext};base64,{img_base64}" style="position:absolute;left:{x}px;top:{y}px;max-width:100%;height:auto;" />')
-
-        html_parts.append('</div>')
+            html_parts.append('</div>')
+        except Exception as e:
+            print(f"Page {page_num} error: {e}")
+            continue
 
     doc.close()
+
+    html_parts.append('</body></html>')
+    return '\n'.join(html_parts)
 
     html = f'''<!DOCTYPE html>
 <html>
