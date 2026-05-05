@@ -52,6 +52,16 @@ FONT_CACHE_DIR = Path("/tmp/font-cache")
 FONT_CACHE_DIR.mkdir(exist_ok=True)
 CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 
+# Try to find font from pymupdf-fonts package
+try:
+    import pymupdf_fonts
+    pymupdf_fonts_path = Path(pymupdf_fonts.__file__).parent / "fonts" / "NotoSansSC-Regular.ttf"
+    if pymupdf_fonts_path.exists() and pymupdf_fonts_path.stat().st_size > 50000:
+        CJK_FONT_PATH = pymupdf_fonts_path
+        print("Using pymupdf-fonts CJK font: " + str(CJK_FONT_PATH))
+except Exception as e:
+    print("pymupdf-fonts not available: " + str(e))
+
 # ── Job queue ──────────────────────────────────────────────────────────
 jobs = {}           # job_id -> {"status": "pending"|"done"|"error", "result": ..., "error": ...}
 jobs_lock = threading.Lock()

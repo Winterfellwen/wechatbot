@@ -4,3 +4,4 @@ python-multipart==0.0.18
 pdf2docx==0.5.12
 mammoth>=1.6.0
 weasyprint>=61.0
+pymupdf-fonts>=1.0.0
