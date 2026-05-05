@@ -2,6 +2,7 @@ import os
 import base64
 import uuid
 import threading
+import subprocess
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -202,12 +203,9 @@ def _docx_to_pdf(input_path: Path) -> Path:
     output_path = input_path.with_suffix(".pdf")
     try:
         # Debug: check weasyprint version and fonts
-        print("WeasyPrint version: " + str(weasyprint.__version__))
-        
-        # List available system fonts for debugging
+        print("Weasyprint version: " + str(weasyprint.__version__))
         try:
-            import subprocess
-            result = subprocess.run(['fc-list', ':lang=zh'], capture_output=True, text=True)
+            result = subprocess.run(['fc-list', ':lang=zh'], capture_output=True, text=True, timeout=10)
             print("Available Chinese fonts:")
             print(result.stdout[:500] if result.stdout else "None found")
         except Exception as fl:
