@@ -14,16 +14,17 @@ import uvicorn
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Download CJK font on startup
-@app.on_event("startup")
-async def startup_download_font():
-    print("Startup: Checking/downloading CJK font...")
+# Download CJK font at module level (guaranteed to run on startup)
+print("Module startup: Checking/downloading CJK font...")
+try:
     font = ensure_cjk_font()
     if font:
-        print(f"Startup: CJK font ready at {font}")
+        print(f"Module startup: CJK font ready at {font}")
         register_font_for_weasyprint(font)
     else:
-        print("Startup WARNING: CJK font download failed, Chinese may not display correctly")
+        print("Module startup WARNING: CJK font download failed, Chinese may not display correctly")
+except Exception as e:
+    print(f"Module startup ERROR: {e}")
 
 UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
