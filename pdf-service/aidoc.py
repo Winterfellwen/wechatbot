@@ -32,8 +32,9 @@ class AIReviewRequest(BaseModel):
 
 
 class ExportRequest(BaseModel):
-    html_content: str
+    html_content: str = ""
     format: str = "pdf"
+    job_id: str = ""
 
 
 def convert_pdf_to_html(file_data: bytes, filename: str) -> str:
@@ -239,9 +240,21 @@ async def export_html(req: ExportRequest):
 
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    job_id = uuid.uuid4().hex
     html = req.html_content
+    job_id = req.job_id
+
+    # 如果没有html_content但有job_id，从文件读取
+    if not html and job_id:
+        html_file = OUTPUT_DIR / f"{job_id}.html"
+        if html_file.exists():
+            html = html_file.read_text(encoding='utf-8')
+
+    if not html:
+        raise HTTPException(status_code=400, detail="No HTML content provided")
+
     fmt = req.format.lower()
+    if not job_id:
+        job_id = uuid.uuid4().hex
 
     if fmt not in ['pdf', 'docx', 'doc']:
         raise HTTPException(status_code=400, detail="Format must be pdf, docx, or doc")
@@ -343,5 +356,57 @@ async def get_html(filename: str):
     try:
         content = path.read_text(encoding='utf-8')
         return Response(content=content, media_type="text/html")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Read error: {str(e)}")
+
+
+@router.get("/edit/{filename}")
+async def get_editable_html(filename: str):
+    """获取可编辑的HTML页面"""
+    from fastapi.responses import Response
+
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    path = OUTPUT_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"File not found: {filename}")
+
+    try:
+        content = path.read_text(encoding='utf-8')
+
+        # 注入编辑功能
+        editable_html = content.replace('<head>', '''<head>
+    <style>
+        [contenteditable="true"] { outline: 2px dashed #1890ff; padding: 4px; }
+        [contenteditable="true"]:hover { background: #f0f7ff; }
+        .save-btn { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; 
+            background: #1890ff; color: white; border: none; border-radius: 8px; 
+            font-size: 16px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    </style>
+    <script>
+        function saveContent() {
+            document.body.style.cursor = "wait";
+            var html = document.body.innerHTML;
+            // 移除script标签防止XSS
+            html = html.replace(/<script[\s\S]*?<\/script>/gi, "");
+            // 调用导出API保存
+            fetch("/aidoc/export", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({html_content: html, format: "pdf", job_id: "%s"})
+            }).then(r => r.json()).then(data => {
+                alert("保存成功！");
+                document.body.style.cursor = "default";
+            }).catch(e => {
+                alert("保存失败: " + e);
+                document.body.style.cursor = "default";
+            });
+        }
+    </script>''' % filename.replace('.html', ''))
+
+        # 添加保存按钮
+        editable_html = editable_html.replace('</body>', 
+            '<button class="save-btn" onclick="saveContent()">💾 保存修改</button></body>')
+
+        return Response(content=editable_html, media_type="text/html")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Read error: {str(e)}")

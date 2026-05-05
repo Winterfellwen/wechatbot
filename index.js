@@ -567,6 +567,23 @@ app.get('/api/aidoc/html/:filename', async (req, res) => {
   }
 });
 
+app.get('/api/aidoc/edit/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const response = await fetch(pdfServiceUrl + '/aidoc/edit/' + filename);
+    const status = response.status;
+    const text = await response.text();
+    if (!response.ok) {
+      return res.status(status).json({ error: text || 'PDF service error' });
+    }
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(text);
+  } catch (err) {
+    console.error('AI Doc get editable html error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Word import: receive .docx, unzip with zlib, return document.xml text
 app.post('/api/word/import', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
