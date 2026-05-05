@@ -22,8 +22,16 @@ services:
     name: pdf-converter
     runtime: python
     rootDir: pdf-service
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: |
+      mkdir -p /tmp/font-cache
+      wget -q "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf" -O /tmp/font-cache/NotoSansSC-Regular.ttf || \
+      curl -sL "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf" -o /tmp/font-cache/NotoSansSC-Regular.ttf || \
+      echo "Font download failed during build"
+      ls -la /tmp/font-cache/
+      pip install -r requirements.txt
+    startCommand: |
+      ls -la /tmp/font-cache/ || true
+      python -m uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
