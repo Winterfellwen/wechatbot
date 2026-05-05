@@ -14,36 +14,43 @@ import uvicorn
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Download CJK font at module level (guaranteed to run on startup)
-print("Module startup: Checking/downloading CJK font...")
-try:
-    font = ensure_cjk_font()
-    if font:
-        print(f"Module startup: CJK font ready at {font}")
-        register_font_for_weasyprint(font)
-    else:
-        print("Module startup WARNING: CJK font download failed, Chinese may not display correctly")
-        # Try one more time with different approach
-        print("Module startup: Retrying font download...")
-        try:
-            import urllib.request
-            import ssl
-            url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf"
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
-            data = response.read()
-            if len(data) > 50000:
-                CJK_FONT_PATH.write_bytes(data)
-                print(f"Module startup: Font downloaded successfully, size: {len(data)}")
-            else:
-                print(f"Module startup: Downloaded file too small: {len(data)}")
-        except Exception as e2:
-            print(f"Module startup: Retry also failed: {e2}")
-except Exception as e:
-    print(f"Module startup ERROR: {e}")
+# Try to find CJK font from multiple sources
+def find_cjk_font():
+    """Find CJK font from repo, pymupdf-fonts, or system"""
+    import os
+    
+    # 1. Check repo's fonts/ directory (user provided)
+    repo_font = Path(__file__).parent / "fonts" / "NotoSansSC-Regular.otf"
+    if repo_font.exists() and repo_font.stat().st_size > 50000:
+        print("Found CJK font in repo: " + str(repo_font))
+        return str(repo_font)
+    
+    # 2. Check pymupdf-fonts package
+    try:
+        import pymupdf_fonts
+        pymupdf_path = Path(pymupdf_fonts.__file__).parent / "fonts" / "NotoSansSC-Regular.ttf"
+        if pymupdf_path.exists() and pymupdf_path.stat().st_size > 50000:
+            print("Found CJK font in pymupdf-fonts: " + str(pymupdf_path))
+            return str(pymupdf_path)
+    except:
+        pass
+    
+    # 3. Check temp cache
+    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
+        print("Found CJK font in cache: " + str(CJK_FONT_PATH))
+        return str(CJK_FONT_PATH)
+    
+    return None
+
+CJK_FONT = find_cjk_font()
+if CJK_FONT:
+    print("CJK font available: " + CJK_FONT)
+    try:
+        register_font_for_weasyprint(CJK_FONT)
+    except Exception as e:
+        print("Font registration failed: " + str(e))
+else:
+    print("WARNING: No CJK font found, will use system fonts")
 
 UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -309,14 +316,17 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
     output_path = input_path.with_suffix(".pdf")
     try:
-        # Step 1: Ensure CJK font is downloaded
-        print("Ensuring CJK font available...")
-        font_path = ensure_cjk_font()
-        if font_path:
-            print("CJ K font path: " + font_path)
-            register_font_for_weasyprint(font_path)
+        # Step 1: Find CJK font
+        print("Finding CJK font...")
+        cjk_font = CJK_FONT  # from find_cjk_font()
+        if cjk_font:
+            print("CJ K font found: " + cjk_font)
+            try:
+                register_font_for_weasyprint(cjk_font)
+            except Exception as e:
+                print("Font registration warning: " + str(e))
         else:
-            print("WARNING: CJK font not available, text may not render correctly")
+            print("WARNING: No CJK font found, will use system fonts")
         
         # Step 2: Convert docx to HTML with mammoth
         print("Converting " + str(input_path) + " to HTML with mammoth...")
@@ -327,14 +337,13 @@ def _docx_to_pdf(input_path: Path) -> Path:
             for msg in messages:
                 print("Mammoth: " + str(msg))
         
-        # Step 3: Generate CSS with font-face pointing to downloaded font
+        # Step 3: Generate CSS with font-face if font available
         font_face = ""
-        if font_path:
-            # Use file:// protocol for WeasyPrint to find the font
+        if cjk_font:
             font_face = f"""
         @font-face {{
             font-family: 'NotoSansSC';
-            src: url('file://{font_path}') format('truetype');
+            src: url('file://{cjk_font}') format('truetype');
             font-weight: normal;
             font-style: normal;
         }}"""
@@ -344,22 +353,22 @@ def _docx_to_pdf(input_path: Path) -> Path:
 <head>
     <meta charset="utf-8">
     <style>{font_face}
-        body { font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'Noto Sans SC', 
-              'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', 
-              sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }
-        img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
-        table { border-collapse: collapse; width: 100%; margin: 1.5em 0; 
-              font-size: 10pt; table-layout: fixed; word-break: break-word; }
-        th, td { border: 1px solid #666; padding: 6px 10px; 
-                 text-align: left; vertical-align: top; }
-        th { background-color: #e8e8e8; font-weight: bold; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        h1 { font-size: 1.8em; margin: 1em 0 0.5em 0; page-break-after: avoid; }
-        h2 { font-size: 1.4em; margin: 0.8em 0 0.4em 0; page-break-after: avoid; }
-        h3 { font-size: 1.2em; margin: 0.6em 0 0.3em 0; page-break-after: avoid; }
-        p { margin: 0.6em 0; }
-        ul, ol { margin: 0.5em 0; padding-left: 2em; }
-        li { margin: 0.3em 0; }
+        body {{ font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 
+              'Microsoft YaHei', 'SimHei', 'sans-serif'; 
+              margin: 2cm; line-height: 1.8; font-size: 12pt; }}
+        img {{ max-width: 100%; height: auto; display: block; margin: 1em auto; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 1.5em 0; 
+              font-size: 10pt; table-layout: fixed; word-wrap: break-word; }}
+        th, td {{ border: 1px solid #666; padding: 6px 10px; 
+                   text-align: left; vertical-align: top; }}
+        th {{ background-color: #e8e8e8; font-weight: bold; }}
+        tr:nth-child(even) {{ background-color: #f9f9f9; }}
+        h1 {{ font-size: 1.8em; margin: 1em 0 0.5em 0; page-break-after: avoid; }}
+        h2 {{ font-size: 1.4em; margin: 0.8em 0 0.4em 0; page-break-after: avoid; }}
+        h3 {{ font-size: 1.2em; margin: 0.6em 0 0.3em 0; page-break-after: avoid; }}
+        p {{ margin: 0.6em 0; }}
+        ul, ol {{ margin: 0.5em 0; padding-left: 2em; }}
+        li {{ margin: 0.3em 0; }}
     </style>
 </head>
 <body>""" + html + """</body></html>"""
