@@ -550,15 +550,17 @@ app.post('/api/aidoc/export', async (req, res) => {
 
 app.get('/api/aidoc/html/:filename', async (req, res) => {
   try {
-    const response = await fetch(pdfServiceUrl + '/aidoc/html/' + req.params.filename);
+    const filename = req.params.filename;
+    console.log('Getting HTML for:', filename);
+    const response = await fetch(pdfServiceUrl + '/aidoc/html/' + filename);
+    const status = response.status;
+    const text = await response.text();
+    console.log('PDF service response:', status, text.substring(0, 500));
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PDF service error:', response.status, errorText);
-      return res.status(response.status).json({ error: errorText || 'PDF service error' });
+      return res.status(status).json({ error: text || 'PDF service error' });
     }
-    const data = await response.text();
     res.set('Content-Type', 'text/html; charset=utf-8');
-    res.send(data);
+    res.send(text);
   } catch (err) {
     console.error('AI Doc get html error:', err.message);
     res.status(500).json({ error: err.message });
