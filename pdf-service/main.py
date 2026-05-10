@@ -253,54 +253,71 @@ def _docx_to_pdf(input_path: Path) -> Path:
         except Exception as e:
             print("LibreOffice error: " + str(e) + ", falling back...")
 
-    # --- Method 2: DOCX -> HTML (via mammoth) -> PDF (via weasyprint) ---
+    # --- Method 2: DOCX -> HTML (via mammoth) -> PDF (via xhtml2pdf) ---
     try:
         from mammoth import convert_to_html
-        from mammoth.images import img as mammoth_images
-        from weasyprint import HTML, CSS
+        import xhtml2pdf.pisa as pisa
+        import io
 
-        print("Fallback: Using mammoth + weasyprint for DOCX→PDF...")
+        print("Fallback: Using mammoth + xhtml2pdf for DOCX→PDF...")
 
-        # Read DOCX and convert to HTML with embedded images
+        # Read DOCX and convert to HTML
         with open(str(input_path), 'rb') as docx_file:
-            # Convert DOCX to HTML (mammoth handles images automatically)
             result = convert_to_html(docx_file)
             html_content = result.value
 
-            # Add CSS for proper rendering
-            css = CSS(string="""
-                @page {
-                    size: A4;
-                    margin: 2cm;
-                }
-                body {
-                    font-family: 'Noto Sans', 'SimSun', 'Microsoft YaHei', sans-serif;
-                    font-size: 12pt;
-                    line-height: 1.6;
-                    color: #000;
-                }
-                h1 { font-size: 24pt; font-weight: bold; margin: 1em 0 0.5em; }
-                h2 { font-size: 18pt; font-weight: bold; margin: 0.8em 0 0.4em; }
-                h3 { font-size: 14pt; font-weight: bold; margin: 0.6em 0 0.3em; }
-                p { margin: 0.5em 0; }
-                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-                td, th { border: 1px solid #333; padding: 0.3em 0.5em; }
-                img { max-width: 100%; height: auto; margin: 0.5em 0; }
-                ul, ol { margin: 0.5em 0; padding-left: 2em; }
-                li { margin: 0.2em 0; }
-            """)
+            # Wrap in basic HTML structure with inline CSS
+            full_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@page {{
+    size: A4;
+    margin: 2cm;
+}}
+body {{
+    font-family: Helvetica, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+}}
+h1 {{ font-size: 18pt; font-weight: bold; margin: 1em 0 0.5em; }}
+h2 {{ font-size: 14pt; font-weight: bold; margin: 0.8em 0 0.4em; }}
+h3 {{ font-size: 12pt; font-weight: bold; margin: 0.6em 0 0.3em; }}
+p {{ margin: 0.3em 0; }}
+table {{ border-collapse: collapse; width: 100%; margin: 0.5em 0; }}
+td, th {{ border: 1px solid #333; padding: 0.2em 0.4em; }}
+img {{ max-width: 100%; height: auto; margin: 0.3em 0; }}
+ul, ol {{ margin: 0.3em 0; padding-left: 1.5em; }}
+li {{ margin: 0.1em 0; }}
+</style>
+</head>
+<body>
+{html_content}
+</body>
+</html>"""
 
-            # Write HTML to temp file for weasyprint
+            # Convert HTML to PDF using xhtml2pdf
             html_path = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.html"
-            html_path.write_text(html_content, encoding='utf-8')
+            html_path.write_text(full_html, encoding='utf-8')
 
-            # Convert HTML to PDF
-            HTML(filename=str(html_path)).write_pdf(str(output_path), stylesheets=[css])
+            with open(str(html_path), 'rb') as html_file:
+                html_bytes = html_file.read()
 
-            # Cleanup
+            with open(str(output_path), 'wb') as pdf_file:
+                pisa_status = pisa.CreatePDF(
+                    io.BytesIO(html_bytes),
+                    dest=pdf_file
+                )
+
             html_path.unlink(missing_ok=True)
 
-            print("mammoth+weasyprint conversion success: " + str(output_path))
+            if pisa_status.err:
+                print("xhtml2pdf errors: " + str(pisa_status.err))
+                raise Exception("xhtml2pdf conversion failed")
+
+            print("mammoth+xhtml2pdf conversion success: " + str(output_path))
             return output_path
 
     except ImportError as e:
