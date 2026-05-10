@@ -253,133 +253,94 @@ def _docx_to_pdf(input_path: Path) -> Path:
         except Exception as e:
             print("LibreOffice error: " + str(e) + ", falling back...")
 
-    # --- Method 2: Fallback using PyMuPDF ---
-    import fitz  # PyMuPDF
-    from docx import Document
+    # --- Method 2: DOCX -> HTML (via mammoth) -> PDF (via weasyprint) ---
+    try:
+        from mammoth import convert_to_html
+        from mammoth.images import img as mammoth_images
+        from weasyprint import HTML, CSS
 
-    print("Fallback: Using PyMuPDF to render DOCX content...")
+        print("Fallback: Using mammoth + weasyprint for DOCX→PDF...")
 
-    doc = Document(str(input_path))
-    pdf_doc = fitz.open()
+        # Read DOCX and convert to HTML with embedded images
+        with open(str(input_path), 'rb') as docx_file:
+            # Convert DOCX to HTML (mammoth handles images automatically)
+            result = convert_to_html(docx_file)
+            html_content = result.value
 
-    # A4 page dimensions in points (72 DPI)
-    PAGE_WIDTH = 595
-    PAGE_HEIGHT = 842
-    MARGIN_LEFT = 50
-    MARGIN_TOP = 50
-    MARGIN_BOTTOM = 50
-    LINE_HEIGHT = 14
-    FONT_SIZE_NORMAL = 11
+            # Add CSS for proper rendering
+            css = CSS(string="""
+                @page {
+                    size: A4;
+                    margin: 2cm;
+                }
+                body {
+                    font-family: 'Noto Sans', 'SimSun', 'Microsoft YaHei', sans-serif;
+                    font-size: 12pt;
+                    line-height: 1.6;
+                    color: #000;
+                }
+                h1 { font-size: 24pt; font-weight: bold; margin: 1em 0 0.5em; }
+                h2 { font-size: 18pt; font-weight: bold; margin: 0.8em 0 0.4em; }
+                h3 { font-size: 14pt; font-weight: bold; margin: 0.6em 0 0.3em; }
+                p { margin: 0.5em 0; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+                td, th { border: 1px solid #333; padding: 0.3em 0.5em; }
+                img { max-width: 100%; height: auto; margin: 0.5em 0; }
+                ul, ol { margin: 0.5em 0; padding-left: 2em; }
+                li { margin: 0.2em 0; }
+            """)
 
-    y_pos = MARGIN_TOP
-    page = None
+            # Write HTML to temp file for weasyprint
+            html_path = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.html"
+            html_path.write_text(html_content, encoding='utf-8')
 
-    def new_page():
-        nonlocal y_pos, page
-        page = pdf_doc.new_page(width=PAGE_WIDTH, height=PAGE_HEIGHT)
-        y_pos = MARGIN_TOP
-        return page
+            # Convert HTML to PDF
+            HTML(filename=str(html_path)).write_pdf(str(output_path), stylesheets=[css])
 
-    def add_text_block(text: str, fontsize: int = FONT_SIZE_NORMAL, bold: bool = False):
-        """Add text block to current page, creating new pages as needed."""
-        nonlocal y_pos, page
-        if page is None:
-            new_page()
+            # Cleanup
+            html_path.unlink(missing_ok=True)
 
-        fontname = "helv" if not bold else "hebo"  # Helvetica or Helvetica Bold
-        color = (0, 0, 0)
+            print("mammoth+weasyprint conversion success: " + str(output_path))
+            return output_path
 
-        # Simple word wrap
-        words = text.split()
-        line = ""
-        max_width = PAGE_WIDTH - MARGIN_LEFT - MARGIN_LEFT
+    except ImportError as e:
+        print("mammoth or weasyprint not available: " + str(e))
+    except Exception as e:
+        print("mammoth+weasyprint error: " + str(e))
 
-        for word in words:
-            test_line = line + (" " if line else "") + word
-            # Use approximate width calculation
-            test_width = len(test_line) * fontsize * 0.5
-            if test_width > max_width and line:
-                # Draw current line
-                if y_pos > PAGE_HEIGHT - MARGIN_BOTTOM - LINE_HEIGHT:
-                    new_page()
-                page.insert_text(
-                    (MARGIN_LEFT, y_pos),
-                    line,
-                    fontsize=fontsize,
-                    fontname=fontname,
-                    color=color,
-                )
-                y_pos += LINE_HEIGHT
-                line = word
-            else:
-                line = test_line
+    # --- Method 3: Final fallback - extract text only ---
+    try:
+        import fitz
+        from docx import Document
 
-        # Draw remaining line
-        if line:
-            if y_pos > PAGE_HEIGHT - MARGIN_BOTTOM - LINE_HEIGHT:
-                new_page()
-            page.insert_text(
-                (MARGIN_LEFT, y_pos),
-                line,
-                fontsize=fontsize,
-                fontname=fontname,
-                color=color,
-            )
-            y_pos += LINE_HEIGHT
+        print("Final fallback: Extracting text only (format will be lost)...")
 
-    def add_paragraph(para):
-        """Process a paragraph element."""
-        # Get font size based on style
-        fontsize = FONT_SIZE_NORMAL
-        bold = False
+        doc = Document(str(input_path))
+        pdf_doc = fitz.open()
+        page = pdf_doc.new_page(width=595, height=842)
+        y_pos = 50
+        x_pos = 50
 
-        if para.style:
-            style_name = para.style.name or ""
-            if "Heading 1" in style_name or "heading 1" in style_name.lower():
-                fontsize = 18
-                bold = True
-                y_pos += LINE_HEIGHT  # Extra space before heading
-            elif "Heading 2" in style_name or "heading 2" in style_name.lower():
-                fontsize = 15
-                bold = True
-                y_pos += LINE_HEIGHT // 2
-            elif "Heading 3" in style_name or "heading 3" in style_name.lower():
-                fontsize = 13
-                bold = True
-            elif "Title" in style_name or "title" in style_name.lower():
-                fontsize = 20
-                bold = True
-                y_pos += LINE_HEIGHT
+        for para in doc.paragraphs:
+            text = para.text
+            if not text.strip():
+                y_pos += 14
+                continue
 
-        # Process runs (to handle inline formatting)
-        full_text = ""
-        for run in para.runs:
-            full_text += run.text
-            if run.bold:
-                bold = True
+            if y_pos > 780:
+                page = pdf_doc.new_page(width=595, height=842)
+                y_pos = 50
 
-        if full_text.strip():
-            add_text_block(full_text.strip(), fontsize, bold)
-            y_pos += LINE_HEIGHT // 2  # Space after paragraph
+            page.insert_text((x_pos, y_pos), text, fontsize=11)
+            y_pos += 16
 
-    # Process paragraphs
-    for para in doc.paragraphs:
-        if para.text.strip():
-            add_paragraph(para)
+        pdf_doc.save(str(output_path))
+        pdf_doc.close()
+        print("Text-only fallback done: " + str(output_path))
+        return output_path
 
-    # Process tables
-    for table in doc.tables:
-        for row in table.rows:
-            row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
-            if row_text:
-                add_text_block(row_text, fontsize=9)
-        # Add spacing after table
-        y_pos += LINE_HEIGHT
-
-    pdf_doc.save(str(output_path))
-    pdf_doc.close()
-    print("PyMuPDF fallback conversion done: " + str(output_path))
-    return output_path
+    except Exception as e2:
+        raise Exception("DOCX→PDF conversion failed: " + str(e2))
 
 
 def _pdf_watermark(input_path: Path, text: str) -> Path:
