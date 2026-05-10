@@ -1,0 +1,72 @@
+<!--smart-teacher/pages/chat/chat.wxml-->
+<view class="chat-container">
+  <!-- 消息列表 -->
+  <scroll-view class="msg-list" scroll-y scroll-top="{{scrollTop}}" scroll-with-animation>
+    <!-- 欢迎语 -->
+    <view class="msg-row ai" id="msg-welcome">
+      <view class="avatar ai-avatar">
+        <text class="avatar-text">师</text>
+      </view>
+      <view class="bubble ai-bubble">
+        <text class="bubble-text">你好！我是智能老师，有任何学习问题都可以问我哦 📚</text>
+      </view>
+    </view>
+
+    <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg-row {{item.role}}">
+      <view wx:if="{{item.role === 'user'}}" class="avatar user-avatar">
+        <text class="avatar-text">我</text>
+      </view>
+      <view class="bubble {{item.role === 'user' ? 'user-bubble' : 'ai-bubble'}}">
+        <!-- 图片消息 -->
+        <image wx:if="{{item.imageUrl}}" class="msg-image" src="{{item.imageUrl}}" mode="widthFix" bindtap="previewImage" data-url="{{item.imageUrl}}"></image>
+        <!-- 文字消息 -->
+        <text class="bubble-text">{{item.content}}</text>
+      </view>
+      <view wx:if="{{item.role === 'ai'}}" class="avatar ai-avatar">
+        <text class="avatar-text">师</text>
+      </view>
+    </view>
+
+    <!-- AI正在输入 -->
+    <view wx:if="{{loading}}" class="msg-row ai">
+      <view class="avatar ai-avatar">
+        <text class="avatar-text">师</text>
+      </view>
+      <view class="bubble ai-bubble typing-bubble">
+        <view class="typing-dots">
+          <view class="dot"></view>
+          <view class="dot"></view>
+          <view class="dot"></view>
+        </view>
+      </view>
+    </view>
+
+    <view id="msg-bottom"></view>
+  </scroll-view>
+
+  <!-- 快捷提问 -->
+  <scroll-view wx:if="{{messages.length <= 1}}" class="quick-asks" scroll-x>
+    <view class="quick-tag" bindtap="onQuickAsk" data-q="帮我解释一下这个概念">帮我解释一下这个概念</view>
+    <view class="quick-tag" bindtap="onQuickAsk" data-q="这道题怎么做？">这道题怎么做？</view>
+    <view class="quick-tag" bindtap="onQuickAsk" data-q="帮我翻译这段话">帮我翻译这段话</view>
+    <view class="quick-tag" bindtap="onQuickAsk" data-q="帮我检查语法错误">帮我检查语法错误</view>
+  </scroll-view>
+
+  <!-- 底部输入栏 -->
+  <view class="input-bar">
+    <view class="input-bar-inner">
+      <view class="image-btn" bindtap="chooseImage">
+        <text class="image-btn-icon">📷</text>
+      </view>
+      <input class="msg-input" placeholder="输入你的问题..." value="{{inputText}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" />
+      <view class="send-btn {{inputText || previewImage ? 'active' : ''}}" bindtap="onSend">
+        <text class="send-btn-text">发送</text>
+      </view>
+    </view>
+    <!-- 图片预览条 -->
+    <view wx:if="{{previewImage}}" class="preview-bar">
+      <image class="preview-thumb" src="{{previewImage}}" mode="aspectFill"></image>
+      <view class="preview-remove" bindtap="removePreviewImage">✕</view>
+    </view>
+  </view>
+</view>

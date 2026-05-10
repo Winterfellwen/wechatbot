@@ -4,7 +4,17 @@ Page({
   data: {
     userInfo: null,
     displayUserInfo: null,
-    isLoggedIn: false
+    isLoggedIn: false,
+    greeting: '你好'
+  },
+
+  getGreeting: function () {
+    var h = new Date().getHours();
+    if (h >= 6 && h < 12) return '早上好';
+    if (h >= 12 && h < 14) return '中午好';
+    if (h >= 14 && h < 18) return '下午好';
+    if (h >= 18 && h < 22) return '晚上好';
+    return '夜深了';
   },
 
   isValidAvatarUrl: function(url) {
@@ -46,7 +56,8 @@ Page({
     this.setData({
       isLoggedIn: loggedIn,
       userInfo: user,
-      displayUserInfo: displayUserInfo
+      displayUserInfo: displayUserInfo,
+      greeting: this.getGreeting()
     });
   },
 
@@ -68,6 +79,8 @@ Page({
       wx.navigateTo({ url: '/word/pages/index/index' });
     } else if (type === 'pdf') {
       wx.navigateTo({ url: '/pdf/pages/index/index' });
+    } else if (type === 'teacher') {
+      wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
     }

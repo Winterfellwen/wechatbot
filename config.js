@@ -29,7 +29,8 @@ const config = {
   // OpenRouter API 配置
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
-    model: 'nvidia/nemotron-3-super-120b-a12b:free',
+    model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+    apiUrl: 'https://openrouter.ai/api/v1',
     maxTokens: 500,
   },
 

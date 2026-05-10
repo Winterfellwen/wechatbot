@@ -1,0 +1,251 @@
+/* smart-teacher/pages/chat/chat.wxss */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f6fa;
+}
+
+/* 消息列表 */
+.msg-list {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  overflow-y: auto;
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 28rpx;
+}
+
+.msg-row.ai {
+  flex-direction: row;
+}
+
+.msg-row.user {
+  flex-direction: row-reverse;
+}
+
+/* 头像 */
+.avatar {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin-right: 16rpx;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  margin-left: 16rpx;
+}
+
+.avatar-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+/* 气泡 */
+.bubble {
+  max-width: 70%;
+  padding: 20rpx 28rpx;
+  border-radius: 20rpx;
+  word-break: break-all;
+}
+
+.ai-bubble {
+  background-color: #ffffff;
+  border-top-left-radius: 4rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.user-bubble {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  border-top-right-radius: 4rpx;
+}
+
+.bubble-text {
+  font-size: 28rpx;
+  line-height: 1.7;
+}
+
+.ai-bubble .bubble-text {
+  color: #333;
+}
+
+.user-bubble .bubble-text {
+  color: #fff;
+}
+
+/* 图片消息 */
+.msg-image {
+  width: 300rpx;
+  border-radius: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+/* 输入动画 */
+.typing-bubble {
+  padding: 24rpx 36rpx;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background-color: #b0b0b0;
+  animation: dotBounce 1.2s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 快捷提问 */
+.quick-asks {
+  white-space: nowrap;
+  padding: 0 24rpx 16rpx;
+}
+
+.quick-tag {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  background-color: #fff;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: #667eea;
+  margin-right: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.1);
+}
+
+.quick-tag:active {
+  opacity: 0.7;
+}
+
+/* 底部输入栏 */
+.input-bar {
+  background-color: #fff;
+  padding: 16rpx 24rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #eee;
+}
+
+.input-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.image-btn {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f5f6fa;
+  flex-shrink: 0;
+}
+
+.image-btn:active {
+  background-color: #e8e9ed;
+}
+
+.image-btn-icon {
+  font-size: 36rpx;
+}
+
+.msg-input {
+  flex: 1;
+  height: 72rpx;
+  background-color: #f5f6fa;
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.send-btn {
+  height: 64rpx;
+  padding: 0 28rpx;
+  border-radius: 32rpx;
+  background-color: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.send-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.send-btn-text {
+  font-size: 26rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 图片预览条 */
+.preview-bar {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  padding: 12rpx 16rpx;
+  background-color: #f5f6fa;
+  border-radius: 12rpx;
+  position: relative;
+}
+
+.preview-thumb {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 4rpx;
+  right: 8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  color: #999;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}

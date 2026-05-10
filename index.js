@@ -316,31 +316,55 @@ setInterval(() => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages } = req.body;
+    const { messages, model } = req.body;
     const openrouterKey = config.openrouter.apiKey;
     
     if (!openrouterKey) {
-      return res.status(500).json({ error: 'API key not configured' });
+      return res.status(500).json({ error: { message: 'OpenRouter API key not configured', code: 500 } });
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const chatModel = config.openrouter.model;
+    const apiUrl = config.openrouter.apiUrl + '/chat/completions';
+
+    // Detect if any message contains image content
+    const hasImage = messages.some(m =>
+      Array.isArray(m.content) && m.content.some(c => c.type === 'image_url')
+    );
+
+    const requestBody = {
+      model: chatModel,
+      messages: messages,
+      max_tokens: hasImage ? 1024 : config.openrouter.maxTokens
+    };
+
+    console.log('Chat request - model:', chatModel, 'hasImage:', hasImage);
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openrouterKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://wechatbot-g6ez.onrender.com',
+        'X-Title': 'SmartTeacherBot'
       },
-      body: JSON.stringify({
-        model: 'nvidia/nemotron-3-super-120b-a12b:free',
-        messages: messages,
-        max_tokens: 500
-      })
+      body: JSON.stringify(requestBody)
     });
     
     const data = await response.json();
+    
+    // If OpenRouter returned an error, forward it with proper status code
+    if (data.error) {
+      const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+      console.error('OpenRouter error:', response.status, errMsg);
+      return res.status(response.status >= 400 ? response.status : 500).json({
+        error: { message: errMsg, code: response.status }
+      });
+    }
+    
     res.json(data);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error('Chat error:', err);
+    res.status(500).json({ error: { message: err.message, code: 500 } });
   }
 });
 

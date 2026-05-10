@@ -46,6 +46,12 @@
         "pages/index/index",
         "pages/editor/editor"
       ]
+    },
+    {
+      "root": "smart-teacher",
+      "pages": [
+        "pages/chat/chat"
+      ]
     }
   ],
   "window": {
@@ -56,19 +62,19 @@
   },
   "tabBar": {
     "color": "#999999",
-    "selectedColor": "#1890ff",
+    "selectedColor": "#764ba2",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "入口",
+        "text": "首页",
         "iconPath": "images/icon-home.png",
         "selectedIconPath": "images/icon-home-active.png"
       },
       {
         "pagePath": "pages/user/user",
-        "text": "用户",
+        "text": "我的",
         "iconPath": "images/icon-user.png",
         "selectedIconPath": "images/icon-user-active.png"
       }

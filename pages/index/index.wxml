@@ -2,51 +2,79 @@
 <view class="container">
   <!-- 顶部用户信息栏 -->
   <view class="user-header" bindtap="handleUserTap">
+    <view class="header-bg"></view>
     <view class="user-info">
-<image class="user-avatar" src="{{displayUserInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
-        <view class="user-detail">
-          <text class="user-nickname">{{displayUserInfo.nickName}}</text>
-        <text class="user-status">{{isLoggedIn ? '已登录' : '点击头像登录'}}</text>
+      <view class="avatar-wrap">
+        <image class="user-avatar" src="{{displayUserInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
+      </view>
+      <view class="user-detail">
+        <text class="user-greeting">{{greeting}}</text>
+        <text class="user-nickname">{{displayUserInfo.nickName}}</text>
+        <text class="user-status">{{isLoggedIn ? '欢迎回来' : '点击头像登录'}}</text>
       </view>
     </view>
   </view>
 
-  <!-- 入口卡片区 -->
-  <view class="entry-container">
+  <!-- 快捷功能区 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">学习工具</text>
+    </view>
     <view class="entry-grid">
-      <view class="entry-card" bindtap="handleEntryTap" data-type="japanese">
-        <image class="entry-icon" src="/images/icon-japanese.png" mode="aspectFit"></image>
-        <text class="entry-title">日语学习机器人</text>
+      <view class="entry-card card-japanese" bindtap="handleEntryTap" data-type="japanese">
+        <view class="card-icon-wrap icon-bg-japanese">
+          <image class="entry-icon" src="/images/icon-japanese.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">日语学习</text>
         <text class="entry-desc">日语学习好帮手</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="german">
-        <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
-        <text class="entry-title">德语学习机器人</text>
+      <view class="entry-card card-german" bindtap="handleEntryTap" data-type="german">
+        <view class="card-icon-wrap icon-bg-german">
+          <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">德语学习</text>
         <text class="entry-desc">德语学习好帮手</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="word">
-        <view class="icon-word">
+      <view class="entry-card card-word" bindtap="handleEntryTap" data-type="word">
+        <view class="card-icon-wrap icon-bg-word">
           <view class="icon-word-body">
             <view class="icon-word-fold"></view>
             <text class="icon-word-letter">W</text>
           </view>
         </view>
-        <text class="entry-title">Word在线编辑</text>
+        <text class="entry-title">Word编辑</text>
         <text class="entry-desc">文档编辑工具</text>
       </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="pdf">
-        <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
-        <text class="entry-title">PDF机器人</text>
+      <view class="entry-card card-pdf" bindtap="handleEntryTap" data-type="pdf">
+        <view class="card-icon-wrap icon-bg-pdf">
+          <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">PDF工具</text>
         <text class="entry-desc">PDF处理工具</text>
       </view>
+    </view>
+  </view>
 
-      <view class="entry-card" bindtap="handleEntryTap" data-type="developing">
-        <image class="entry-icon" src="/images/icon-developing.png" mode="aspectFit"></image>
-        <text class="entry-title">新功能开发中</text>
-        <text class="entry-desc">敬请期待</text>
+  <!-- 智能老师 - 突出卡片 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">智能助手</text>
+    </view>
+    <view class="teacher-card" bindtap="handleEntryTap" data-type="teacher">
+      <view class="teacher-left">
+        <view class="teacher-icon-wrap">
+          <text class="teacher-emoji">🎓</text>
+        </view>
+      </view>
+      <view class="teacher-info">
+        <text class="teacher-title">智能老师</text>
+        <text class="teacher-desc">AI答疑解惑，拍照问问题，随时获得解答</text>
+      </view>
+      <view class="teacher-arrow">
+        <text class="arrow-icon">›</text>
       </view>
     </view>
   </view>

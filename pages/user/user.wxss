@@ -2,122 +2,253 @@
 .page {
   min-height: 100vh;
   background: #f5f5f5;
-  padding: 60rpx 30rpx;
 }
 
-/* Login section */
+/* ========== 未登录区域 ========== */
 .login-section {
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.login-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 520rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 0;
+}
+
+.login-bg::after {
+  content: '';
+  position: absolute;
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  top: -60rpx;
+  right: -40rpx;
+}
+
+.login-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 120rpx;
+  padding-top: 180rpx;
 }
+
+.login-avatar-wrap {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  padding: 6rpx;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.login-avatar {
+  width: 148rpx;
+  height: 148rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.5);
+}
+
 .login-desc {
   font-size: 28rpx;
-  color: #999;
+  color: rgba(255, 255, 255, 0.7);
   margin: 30rpx 0 40rpx;
 }
+
 .login-btn {
-  width: 500rpx;
-  height: 88rpx;
-  line-height: 88rpx;
-  background: #07c160;
+  width: 400rpx;
+  height: 84rpx;
+  line-height: 84rpx;
+  background: rgba(255, 255, 255, 0.2);
   color: #fff;
-  border: 0;
-  border-radius: 44rpx;
-  font-size: 32rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.4);
+  border-radius: 42rpx;
+  font-size: 30rpx;
+  font-weight: 500;
   text-align: center;
+  backdrop-filter: blur(10rpx);
 }
 .login-btn::after { border: 0; }
 
-/* Profile section */
+/* ========== 已登录 - 头部 ========== */
 .profile-section {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 40rpx 30rpx;
+  min-height: 100vh;
 }
-.avatar-row {
+
+.profile-header {
+  position: relative;
+  padding: 60rpx 36rpx 48rpx;
+  overflow: hidden;
+}
+
+.profile-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 0;
+}
+
+.profile-bg::after {
+  content: '';
+  position: absolute;
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  top: -60rpx;
+  right: -30rpx;
+}
+
+.profile-info {
+  position: relative;
+  z-index: 1;
   display: flex;
-  justify-content: center;
-  margin-bottom: 30rpx;
+  align-items: center;
 }
+
 .avatar-btn {
-  width: 160rpx;
-  height: 160rpx;
+  width: 128rpx;
+  height: 128rpx;
   padding: 0;
   border: 0;
   background: transparent;
   line-height: 1;
+  flex-shrink: 0;
 }
 .avatar-btn::after { border: 0; }
-.avatar-lg {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 80rpx;
+
+.profile-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-name-area {
+  flex: 1;
+  margin-left: 28rpx;
 }
 
 .nick-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20rpx;
-  margin-bottom: 20rpx;
+  gap: 16rpx;
 }
+
 .nickname {
   font-size: 36rpx;
   font-weight: bold;
-  color: #333;
+  color: #fff;
 }
-.edit-link {
-  font-size: 26rpx;
-  color: #07c160;
+
+.edit-badge {
+  padding: 4rpx 16rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16rpx;
 }
+
+.edit-badge-text {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .nick-input-row {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 16rpx;
 }
+
 .nick-input {
-  width: 400rpx;
-  height: 72rpx;
-  border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  flex: 1;
+  height: 64rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 12rpx;
   padding: 0 20rpx;
-  font-size: 28rpx;
+  font-size: 30rpx;
+  color: #fff;
 }
-.nick-actions {
-  display: flex;
-  gap: 12rpx;
-}
+
 .btn-cancel {
   font-size: 26rpx;
-  color: #999;
-  padding: 12rpx 20rpx;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8rpx 16rpx;
 }
+
 .btn-confirm {
   font-size: 26rpx;
-  color: #07c160;
-  padding: 12rpx 20rpx;
+  color: #fff;
   font-weight: bold;
+  padding: 8rpx 16rpx;
 }
 
-.divider {
-  height: 1rpx;
-  background: #eee;
-  margin: 40rpx 0;
+/* ========== 操作卡片 ========== */
+.action-card {
+  margin: 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 0 28rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
 }
 
-.danger-zone {
+.action-item {
   display: flex;
-  flex-direction: column;
-  gap: 10rpx;
+  align-items: center;
+  padding: 32rpx 0;
 }
-.danger-item {
-  padding: 24rpx 0;
-  text-align: center;
+
+.action-icon-wrap {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.danger-text {
+
+.icon-logout {
+  background: #f0f0ff;
+}
+
+.icon-danger {
+  background: #fff0f0;
+}
+
+.action-icon-text {
   font-size: 28rpx;
+}
+
+.action-text {
+  flex: 1;
+  margin-left: 20rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.text-danger {
   color: #e74c3c;
+}
+
+.action-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  flex-shrink: 0;
+}
+
+.action-divider {
+  height: 1rpx;
+  background: #f5f5f5;
+  margin-left: 84rpx;
 }

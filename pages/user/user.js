@@ -182,8 +182,12 @@ Page({
           success: function (res2) {
             if (!res2.confirm) return;
             loginLib.deleteAccount().then(function () {
-              loginLib.logout();
-              that.setData({ isLoggedIn: false, userInfo: null });
+              // 服务端已清 token，只清理本地存储即可，不再调 logout 接口
+              wx.removeStorageSync('auth_token');
+              wx.removeStorageSync('auth_user');
+              var app = getApp();
+              if (app) app.globalData.userInfo = null;
+              that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null });
               wx.showToast({ title: '账号已注销', icon: 'success' });
             }).catch(function () {
               wx.showToast({ title: '注销失败', icon: 'none' });

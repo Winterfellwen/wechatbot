@@ -3,7 +3,7 @@ import base64
 import uuid
 import threading
 import subprocess
-import ssl
+import shutil
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -15,62 +15,47 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # Version marker for debugging
-PDF_SERVICE_VERSION = "2026-05-05-v3"
-
-# Try to find CJK font from multiple sources
-def find_cjk_font():
-    """Find CJK font from repo, pymupdf-fonts, or system"""
-    import os
-    
-    # 1. Check repo's fonts/ directory (user provided)
-    repo_font = Path(__file__).parent / "fonts" / "NotoSansSC-Regular.otf"
-    if repo_font.exists() and repo_font.stat().st_size > 50000:
-        print("Found CJK font in repo: " + str(repo_font))
-        return str(repo_font)
-    
-    # 2. Check pymupdf-fonts package
-    try:
-        import pymupdf_fonts
-        pymupdf_path = Path(pymupdf_fonts.__file__).parent / "fonts" / "NotoSansSC-Regular.ttf"
-        if pymupdf_path.exists() and pymupdf_path.stat().st_size > 50000:
-            print("Found CJK font in pymupdf-fonts: " + str(pymupdf_path))
-            return str(pymupdf_path)
-    except:
-        pass
-    
-    # 3. Check temp cache
-    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
-        print("Found CJK font in cache: " + str(CJK_FONT_PATH))
-        return str(CJK_FONT_PATH)
-    
-    return None
-
-CJK_FONT = find_cjk_font()
-if CJK_FONT:
-    print("CJK font available: " + CJK_FONT)
-    try:
-        register_font_for_weasyprint(CJK_FONT)
-    except Exception as e:
-        print("Font registration failed: " + str(e))
-else:
-    print("WARNING: No CJK font found, will use system fonts")
+PDF_SERVICE_VERSION = "2026-05-11-libreoffice-v1"
 
 UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 FONT_CACHE_DIR = Path("/tmp/font-cache")
 FONT_CACHE_DIR.mkdir(exist_ok=True)
-CJK_FONT_PATH = FONT_CACHE_DIR / "NotoSansSC-Regular.ttf"
 
-# Try to find font from pymupdf-fonts package
-try:
-    import pymupdf_fonts
-    pymupdf_fonts_path = Path(pymupdf_fonts.__file__).parent / "fonts" / "NotoSansSC-Regular.ttf"
-    if pymupdf_fonts_path.exists() and pymupdf_fonts_path.stat().st_size > 50000:
-        CJK_FONT_PATH = pymupdf_fonts_path
-        print("Using pymupdf-fonts CJK font: " + str(CJK_FONT_PATH))
-except Exception as e:
-    print("pymupdf-fonts not available: " + str(e))
+# ── LibreOffice path ──────────────────────────────────────────────────
+def find_libreoffice() -> str | None:
+    """Find LibreOffice binary path."""
+    candidates = [
+        "/usr/bin/libreoffice",
+        "/usr/bin/soffice",
+        "/usr/local/bin/libreoffice",
+        "/usr/local/bin/soffice",
+        "/snap/bin/libreoffice",
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    # Try which
+    try:
+        result = subprocess.run(["which", "libreoffice"], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+    try:
+        result = subprocess.run(["which", "soffice"], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+LIBREOFFICE_BIN = find_libreoffice()
+if LIBREOFFICE_BIN:
+    print("LibreOffice found: " + LIBREOFFICE_BIN)
+else:
+    print("WARNING: LibreOffice not found, DOCX→PDF will use fallback")
 
 # ── Job queue ──────────────────────────────────────────────────────────
 jobs = {}           # job_id -> {"status": "pending"|"done"|"error", "result": ..., "error": ...}
@@ -78,68 +63,6 @@ jobs_lock = threading.Lock()
 OUTPUT_DIR = Path("/tmp/pdf-outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-
-def ensure_cjk_font():
-    """Download CJK font to a known location for WeasyPrint"""
-    # 1. Check if font already cached
-    print(f"ensure_cjk_font: Checking {CJK_FONT_PATH}")
-    print(f"ensure_cjk_font: File exists: {CJK_FONT_PATH.exists()}")
-    if CJK_FONT_PATH.exists():
-        print(f"ensure_cjk_font: File size: {CJK_FONT_PATH.stat().st_size}")
-    if CJK_FONT_PATH.exists() and CJK_FONT_PATH.stat().st_size > 50000:
-        print("Using cached CJK font: " + str(CJK_FONT_PATH))
-        return str(CJK_FONT_PATH)
-    
-    # 2. Download from network
-    print("ensure_cjk_font: Starting download...")
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-    
-    urls = [
-        "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf",
-        "https://github.com/googlefonts/noto-cjk/raw/main/Sans/SubsetTTF/SC/NotoSansSC-Regular.ttf"
-    ]
-    
-    for url in urls:
-        try:
-            print(f"ensure_cjk_font: Trying {url}")
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            response = urllib.request.urlopen(req, timeout=120, context=ssl_context)
-            print(f"ensure_cjk_font: Response status: {response.status}")
-            print(f"ensure_cjk_font: Content-Type: {response.headers.get('Content-Type')}")
-            data = response.read()
-            print(f"ensure_cjk_font: Downloaded {len(data)} bytes")
-            if len(data) > 50000:
-                CJK_FONT_PATH.write_bytes(data)
-                print("Downloaded CJK font: " + str(len(data)) + " bytes")
-                return str(CJK_FONT_PATH)
-            else:
-                print(f"ensure_cjk_font: File too small: {len(data)} bytes")
-        except Exception as e:
-            print(f"ensure_cjk_font: Download failed from {url}: {e}")
-            continue
-    
-    print("WARNING: CJK font download failed")
-    return None
-
-
-def register_font_for_weasyprint(font_path):
-    """Register font with fc-cache for WeasyPrint/Pango"""
-    try:
-        import subprocess
-        # Add font directory to fontconfig cache
-        result = subprocess.run(
-            ['fc-cache', '-fv', str(Path(font_path).parent)],
-            capture_output=True, text=True, timeout=30
-        )
-        print("fc-cache output: " + str(result.stdout)[:200])
-        if result.stderr:
-            print("fc-cache errors: " + str(result.stderr)[:200])
-        return True
-    except Exception as e:
-        print("fc-cache failed: " + str(e))
-        return False
 
 def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to_fmt: str):
     """Background conversion worker (runs in thread)."""
@@ -153,7 +76,6 @@ def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to
             output_path = _docx_to_pdf(input_path)
         elif from_fmt == "doc" and to_fmt == "docx":
             output_path = input_path.with_suffix(".docx")
-            import shutil
             shutil.copy(input_path, output_path)
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported: {from_fmt} -> {to_fmt}")
@@ -283,6 +205,102 @@ def _pdf_to_docx(input_path: Path, to_fmt: str) -> Path:
     return output_path
 
 
+def _docx_to_pdf(input_path: Path) -> Path:
+    """Convert DOCX to PDF using LibreOffice headless (best fidelity)."""
+    output_path = input_path.with_suffix(".pdf")
+
+    # --- Method 1: LibreOffice headless (best quality) ---
+    if LIBREOFFICE_BIN:
+        try:
+            # Use a temp output dir to avoid conflicts
+            tmp_out = UPLOAD_DIR / f"lo_out_{uuid.uuid4().hex[:8]}"
+            tmp_out.mkdir(exist_ok=True)
+
+            cmd = [
+                LIBREOFFICE_BIN,
+                "--headless",
+                "--norestore",
+                "--safe-mode",
+                "--convert-to", "pdf",
+                "--outdir", str(tmp_out),
+                str(input_path),
+            ]
+            print("LibreOffice cmd: " + " ".join(cmd))
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            print("LibreOffice stdout: " + result.stdout[:500] if result.stdout else "")
+            print("LibreOffice stderr: " + result.stderr[:500] if result.stderr else "")
+            print("LibreOffice returncode: " + str(result.returncode))
+
+            # Find the generated PDF in the output dir
+            pdf_files = list(tmp_out.glob("*.pdf"))
+            if pdf_files:
+                generated = pdf_files[0]
+                shutil.copy2(generated, output_path)
+                # Cleanup temp dir
+                shutil.rmtree(tmp_out, ignore_errors=True)
+                print("LibreOffice conversion success: " + str(output_path))
+                return output_path
+            else:
+                print("LibreOffice produced no PDF, falling back...")
+                shutil.rmtree(tmp_out, ignore_errors=True)
+        except subprocess.TimeoutExpired:
+            print("LibreOffice timeout, falling back...")
+        except Exception as e:
+            print("LibreOffice error: " + str(e) + ", falling back...")
+
+    # --- Method 2: Fallback using PyMuPDF (pdf2docx reverse) ---
+    # LibreOffice not available — use pymupdf to render pages as images, build PDF
+    try:
+        import fitz  # PyMuPDF
+        print("Fallback: Using PyMuPDF to render DOCX pages...")
+
+        # First convert docx to temp PDF via pdf2docx's internal approach
+        # Actually we need a different fallback - use docx2pdf approach
+        # Since we can't easily go docx->pdf without LibreOffice or Word,
+        # we'll extract text with python-docx and build a simple PDF with fitz
+        from docx import Document
+
+        doc = Document(str(input_path))
+        pdf_doc = fitz.open()
+
+        for para in doc.paragraphs:
+            text = para.text
+            if not text.strip():
+                # Add empty line
+                page = pdf_doc.new_page(width=595, height=842)  # A4
+                continue
+
+            style = para.style.name if para.style else "Normal"
+            fontsize = 12
+            if "Heading 1" in style:
+                fontsize = 18
+            elif "Heading 2" in style:
+                fontsize = 15
+            elif "Heading" in style:
+                fontsize = 14
+
+            page = pdf_doc.new_page(width=595, height=842)
+            # Insert text
+            page.insert_text(
+                (50, 50),
+                text,
+                fontsize=fontsize,
+            )
+
+        pdf_doc.save(str(output_path))
+        pdf_doc.close()
+        print("PyMuPDF fallback conversion done: " + str(output_path))
+        return output_path
+
+    except Exception as e2:
+        raise Exception("DOCX→PDF conversion failed (LibreOffice unavailable, fallback also failed): " + str(e2))
+
+
 def _pdf_watermark(input_path: Path, text: str) -> Path:
     import fitz
     doc = fitz.open(str(input_path))
@@ -310,197 +328,48 @@ def _pdf_rotate(input_path: Path, angle: int = 90) -> Path:
     return output_path
 
 
-def _docx_to_pdf(input_path: Path) -> Path:
-    try:
-        import mammoth
-        import weasyprint 
-    except ImportError as e:
-        raise Exception("Missing dependency: " + str(e) + ". Run: pip install mammoth weasyprint")
-
-    output_path = input_path.with_suffix(".pdf")
-    try:
-        # Step 1: Extract images from docx with dimensions
-        print("Extracting images from docx...")
-        img_dir = Path("/tmp/docx-images")
-        img_dir.mkdir(exist_ok=True)
-        img_map = {}
-        
-        try:
-            import zipfile, os
-            from PIL import Image
-            with zipfile.ZipFile(input_path, 'r') as zip_ref:
-                for name in zip_ref.namelist():
-                    if name.startswith('word/media/') and name != 'word/media/':
-                        img_data = zip_ref.read(name)
-                        img_name = os.path.basename(name)
-                        img_path = img_dir / img_name
-                        with open(img_path, 'wb') as f:
-                            f.write(img_data)
-                        try:
-                            with Image.open(img_path) as img:
-                                width, height = img.size
-                                img_map[img_name] = (str(img_path), width, height)
-                                print(f"Extracted {img_name}: {width}x{height}")
-                        except Exception as ie:
-                            print(f"Failed to get dimensions for {img_name}: {ie}")
-                            img_map[img_name] = (str(img_path), 400, 300)
-        except Exception as ze:
-            print(f"Failed to extract images: {ze}")
-        
-        # Step 2: Convert docx to HTML with mammoth
-        print("Converting " + str(input_path) + " to HTML with mammoth...")
-        with open(input_path, 'rb') as f:
-            result = mammoth.convert_to_html(f)
-            html = result.value
-            messages = result.messages
-            for msg in messages:
-                print("Mammoth: " + str(msg))
-        
-        # Step 3: Replace base64 images with local references and proper sizing
-        import re
-        
-        def replace_img(match):
-            img_tag = match.group(0)
-            src_match = re.search(r'src="([^"]+)"', img_tag)
-            if not src_match:
-                return img_tag
-            src = src_match.group(1)
-            
-            # Check if this is a base64 image
-            if src.startswith('data:image'):
-                # Count how many images we've processed to match order
-                if not hasattr(replace_img, 'count'):
-                    replace_img.count = 0
-                replace_img.count += 1
-                
-                # Try to find corresponding image
-                img_files = list(img_map.keys())
-                if replace_img.count <= len(img_files):
-                    img_name = img_files[replace_img.count - 1]
-                    if img_name in img_map:
-                        local_path, width, height = img_map[img_name]
-                        # Calculate display size (max 500px width)
-                        display_width = min(width, 500)
-                        display_height = int(height * display_width / width) if width > 0 else height
-                        new_tag = f'<img src="file://{local_path}" width="{display_width}" height="{display_height}" style="max-width:100%; height:auto; display:block; margin:1em auto;">'
-                        return new_tag
-            
-            return img_tag
-        
-        html = re.sub(r'<img[^>]+>', replace_img, html)
-        print("Fixed image tags in HTML")
-        
-        # Step 4: Find CJK font
-        print("Finding CJK font...")
-        cjk_font = CJK_FONT  # from find_cjk_font()
-        if cjk_font:
-            print("CJ K font found: " + cjk_font)
-            try:
-                register_font_for_weasyprint(cjk_font)
-            except Exception as e:
-                print("Font registration warning: " + str(e))
-        else:
-            print("WARNING: No CJK font found, will use system fonts")
-        
-        # Step 5: Generate CSS
-        font_face = ""
-        if cjk_font:
-            font_face = f"""
-        @font-face {{
-            font-family: 'NotoSansSC';
-            src: url('file://{cjk_font}') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }}"""
-        
-        html_with_style = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>{font_face}
-        body {{ font-family: 'NotoSansSC', 'Noto Sans CJK SC', 'Noto Sans SC', 
-              'WenQuanYi Micro Hei', 'Microsoft YaHei', 'SimHei', 
-              sans-serif; margin: 2cm; line-height: 1.8; font-size: 12pt; }}
-        img {{ max-width: 100%; height: auto; display: block; margin: 1em auto; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 1.5em 0; 
-              font-size: 10pt; table-layout: fixed; word-wrap: break-word; }}
-        th, td {{ border: 1px solid #666; padding: 6px 10px; 
-                   text-align: left; vertical-align: top; }}
-        th {{ background-color: #e8e8e8; font-weight: bold; }}
-        tr:nth-child(even) {{ background-color: #f9f9f9; }}
-        h1 {{ font-size: 1.8em; margin: 1em 0 0.5em 0; page-break-after: avoid; }}
-        h2 {{ font-size: 1.4em; margin: 0.8em 0 0.4em 0; page-break-after: avoid; }}
-        h3 {{ font-size: 1.2em; margin: 0.6em 0 0.3em 0; page-break-after: avoid; }}
-        p {{ margin: 0.6em 0; }}
-        ul, ol {{ margin: 0.5em 0; padding-left: 2em; }}
-        li {{ margin: 0.3em 0; }}
-    </style>
-</head>
-<body>{html}</body>
-</html>"""
-        
-        # Step 6: Convert HTML to PDF with weasyprint
-        print("Converting HTML to PDF with weasyprint...")
-        try:
-            from weasyprint.text.fonts import FontConfiguration
-            font_config = FontConfiguration()
-            print("Using FontConfiguration")
-            weasyprint.HTML(string=html_with_style).write_pdf(str(output_path), font_config=font_config)
-        except Exception as fe:
-            print("FontConfiguration failed: " + str(fe) + ", trying without...")
-            weasyprint.HTML(string=html_with_style).write_pdf(str(output_path))
-        
-        print("PDF generated with mammoth+weasyprint: " + str(output_path))
-        return output_path
-    except Exception as e:
-        raise Exception("Mammoth/WeasyPrint conversion failed: " + str(e))
-
 def debug():
     result = {"tests": []}
-    
-    # Get the actual font path being used
-    cjk_font = find_cjk_font()
-    result["cjk_font_path"] = cjk_font if cjk_font else "None"
-    result["cjk_font_exists"] = Path(cjk_font).exists() if cjk_font else False
-    if cjk_font and Path(cjk_font).exists():
-        result["cjk_font_size"] = Path(cjk_font).stat().st_size
-    
-    # Test: WeasyPrint version
+    result["libreoffice_bin"] = LIBREOFFICE_BIN or "Not found"
+    result["version"] = PDF_SERVICE_VERSION
+
+    # Test: LibreOffice version
+    if LIBREOFFICE_BIN:
+        try:
+            v = subprocess.run([LIBREOFFICE_BIN, "--version"], capture_output=True, text=True, timeout=10)
+            result["libreoffice_version"] = v.stdout.strip()
+        except Exception as e:
+            result["libreoffice_version"] = str(e)
+
+    # Test: pdf2docx
     try:
-        import weasyprint
-        result["weasyprint_version"] = weasyprint.__version__
+        import pdf2docx
+        result["pdf2docx_version"] = pdf2docx.__version__
     except Exception as e:
-        result["weasyprint_version"] = str(e)
-    
-    # Test: FontConfiguration
+        result["pdf2docx_version"] = str(e)
+
+    # Test: PyMuPDF
     try:
-        from weasyprint.text.fonts import FontConfiguration
-        result["font_config"] = "FontConfiguration available"
+        import fitz
+        result["pymupdf_version"] = fitz.version[0]
     except Exception as e:
-        result["font_config"] = str(e)
-    
-    # Test: List fonts directory
-    try:
-        import os
-        fonts_dir = Path(__file__).parent / "fonts"
-        if fonts_dir.exists():
-            files = os.listdir(fonts_dir)
-            result["repo_fonts_dir"] = files
-        else:
-            result["repo_fonts_dir"] = "Directory not found"
-    except Exception as e:
-        result["repo_fonts_dir"] = str(e)
-    
+        result["pymupdf_version"] = str(e)
+
     return result
+
 
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def health():
-    return {"status": "ok", "service": "PDF Converter"}
+    return {"status": "ok", "service": "PDF Converter", "version": PDF_SERVICE_VERSION}
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "PDF Converter", "timestamp": __import__('datetime').datetime.now().isoformat()}
+    return {"status": "ok", "service": "PDF Converter", "version": PDF_SERVICE_VERSION, "timestamp": __import__('datetime').datetime.now().isoformat()}
+
+@app.get("/debug")
+def debug_endpoint():
+    return debug()
 
 
 if __name__ == "__main__":

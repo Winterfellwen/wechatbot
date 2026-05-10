@@ -1,43 +1,58 @@
 <!--pages/user/user.wxml-->
 <view class="page">
-  <!-- Not logged in -->
+  <!-- 未登录 -->
   <view class="login-section" wx:if="{{!isLoggedIn}}">
-    <image class="avatar-lg" src="/images/avatar-default.png" mode="aspectFill"></image>
-    <text class="login-desc">微信一键登录，同步文档数据</text>
-    <button class="login-btn" bindtap="handleLogin">微信一键登录</button>
+    <view class="login-bg"></view>
+    <view class="login-content">
+      <view class="login-avatar-wrap">
+        <image class="login-avatar" src="/images/avatar-default.png" mode="aspectFill"></image>
+      </view>
+      <text class="login-desc">登录后同步你的学习数据</text>
+      <button class="login-btn" bindtap="handleLogin">微信登录</button>
+    </view>
   </view>
 
-  <!-- Logged in -->
+  <!-- 已登录 -->
   <view class="profile-section" wx:if="{{isLoggedIn}}">
-    <!-- Avatar -->
-    <view class="avatar-row">
-      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-        <image class="avatar-lg" src="{{displayUserInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
-      </button>
-    </view>
-
-    <!-- Nickname -->
-    <view class="nick-row" wx:if="{{!showNickInput}}">
-      <text class="nickname">{{displayUserInfo.nickName}}</text>
-      <text class="edit-link" bindtap="showNickInput">修改昵称</text>
-    </view>
-    <view class="nick-input-row" wx:if="{{showNickInput}}">
-      <input class="nick-input" type="nickname" placeholder="请输入昵称" value="{{nickName}}" bindinput="onNickInput" focus="{{true}}" />
-      <view class="nick-actions">
-        <text class="btn-cancel" bindtap="cancelNickname">取消</text>
-        <text class="btn-confirm" bindtap="confirmNickname">确定</text>
+    <!-- 头部信息 -->
+    <view class="profile-header">
+      <view class="profile-bg"></view>
+      <view class="profile-info">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image class="profile-avatar" src="{{displayUserInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
+        </button>
+        <view class="profile-name-area">
+          <view class="nick-row" wx:if="{{!showNickInput}}">
+            <text class="nickname">{{displayUserInfo.nickName}}</text>
+            <view class="edit-badge" bindtap="showNickInput">
+              <text class="edit-badge-text">编辑</text>
+            </view>
+          </view>
+          <view class="nick-input-row" wx:if="{{showNickInput}}">
+            <input class="nick-input" type="nickname" placeholder="输入昵称" value="{{nickName}}" bindinput="onNickInput" focus="{{true}}" />
+            <text class="btn-cancel" bindtap="cancelNickname">取消</text>
+            <text class="btn-confirm" bindtap="confirmNickname">保存</text>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="divider"></view>
-
-    <!-- Danger zone -->
-    <view class="danger-zone">
-      <view class="danger-item" bindtap="handleLogout">
-        <text class="danger-text">退出登录</text>
+    <!-- 功能列表 -->
+    <view class="action-card">
+      <view class="action-item" bindtap="handleLogout">
+        <view class="action-icon-wrap icon-logout">
+          <text class="action-icon-text">⏻</text>
+        </view>
+        <text class="action-text">退出登录</text>
+        <text class="action-arrow">›</text>
       </view>
-      <view class="danger-item" bindtap="handleDeleteAccount">
-        <text class="danger-text">注销账号</text>
+      <view class="action-divider"></view>
+      <view class="action-item" bindtap="handleDeleteAccount">
+        <view class="action-icon-wrap icon-danger">
+          <text class="action-icon-text">✕</text>
+        </view>
+        <text class="action-text text-danger">注销账号</text>
+        <text class="action-arrow">›</text>
       </view>
     </view>
   </view>
