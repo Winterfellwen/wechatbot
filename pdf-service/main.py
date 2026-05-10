@@ -253,52 +253,133 @@ def _docx_to_pdf(input_path: Path) -> Path:
         except Exception as e:
             print("LibreOffice error: " + str(e) + ", falling back...")
 
-    # --- Method 2: Fallback using PyMuPDF (pdf2docx reverse) ---
-    # LibreOffice not available — use pymupdf to render pages as images, build PDF
-    try:
-        import fitz  # PyMuPDF
-        print("Fallback: Using PyMuPDF to render DOCX pages...")
+    # --- Method 2: Fallback using PyMuPDF ---
+    import fitz  # PyMuPDF
+    from docx import Document
 
-        # First convert docx to temp PDF via pdf2docx's internal approach
-        # Actually we need a different fallback - use docx2pdf approach
-        # Since we can't easily go docx->pdf without LibreOffice or Word,
-        # we'll extract text with python-docx and build a simple PDF with fitz
-        from docx import Document
+    print("Fallback: Using PyMuPDF to render DOCX content...")
 
-        doc = Document(str(input_path))
-        pdf_doc = fitz.open()
+    doc = Document(str(input_path))
+    pdf_doc = fitz.open()
 
-        for para in doc.paragraphs:
-            text = para.text
-            if not text.strip():
-                # Add empty line
-                page = pdf_doc.new_page(width=595, height=842)  # A4
-                continue
+    # A4 page dimensions in points (72 DPI)
+    PAGE_WIDTH = 595
+    PAGE_HEIGHT = 842
+    MARGIN_LEFT = 50
+    MARGIN_TOP = 50
+    MARGIN_BOTTOM = 50
+    LINE_HEIGHT = 14
+    FONT_SIZE_NORMAL = 11
 
-            style = para.style.name if para.style else "Normal"
-            fontsize = 12
-            if "Heading 1" in style:
-                fontsize = 18
-            elif "Heading 2" in style:
-                fontsize = 15
-            elif "Heading" in style:
-                fontsize = 14
+    y_pos = MARGIN_TOP
+    page = None
 
-            page = pdf_doc.new_page(width=595, height=842)
-            # Insert text
+    def new_page():
+        nonlocal y_pos, page
+        page = pdf_doc.new_page(width=PAGE_WIDTH, height=PAGE_HEIGHT)
+        y_pos = MARGIN_TOP
+        return page
+
+    def add_text_block(text: str, fontsize: int = FONT_SIZE_NORMAL, bold: bool = False):
+        """Add text block to current page, creating new pages as needed."""
+        nonlocal y_pos, page
+        if page is None:
+            new_page()
+
+        fontname = "helv" if not bold else "hebo"  # Helvetica or Helvetica Bold
+        color = (0, 0, 0)
+
+        # Simple word wrap
+        words = text.split()
+        line = ""
+        max_width = PAGE_WIDTH - MARGIN_LEFT - MARGIN_LEFT
+
+        for word in words:
+            test_line = line + (" " if line else "") + word
+            # Use approximate width calculation
+            test_width = len(test_line) * fontsize * 0.5
+            if test_width > max_width and line:
+                # Draw current line
+                if y_pos > PAGE_HEIGHT - MARGIN_BOTTOM - LINE_HEIGHT:
+                    new_page()
+                page.insert_text(
+                    (MARGIN_LEFT, y_pos),
+                    line,
+                    fontsize=fontsize,
+                    fontname=fontname,
+                    color=color,
+                )
+                y_pos += LINE_HEIGHT
+                line = word
+            else:
+                line = test_line
+
+        # Draw remaining line
+        if line:
+            if y_pos > PAGE_HEIGHT - MARGIN_BOTTOM - LINE_HEIGHT:
+                new_page()
             page.insert_text(
-                (50, 50),
-                text,
+                (MARGIN_LEFT, y_pos),
+                line,
                 fontsize=fontsize,
+                fontname=fontname,
+                color=color,
             )
+            y_pos += LINE_HEIGHT
 
-        pdf_doc.save(str(output_path))
-        pdf_doc.close()
-        print("PyMuPDF fallback conversion done: " + str(output_path))
-        return output_path
+    def add_paragraph(para):
+        """Process a paragraph element."""
+        # Get font size based on style
+        fontsize = FONT_SIZE_NORMAL
+        bold = False
 
-    except Exception as e2:
-        raise Exception("DOCX→PDF conversion failed (LibreOffice unavailable, fallback also failed): " + str(e2))
+        if para.style:
+            style_name = para.style.name or ""
+            if "Heading 1" in style_name or "heading 1" in style_name.lower():
+                fontsize = 18
+                bold = True
+                y_pos += LINE_HEIGHT  # Extra space before heading
+            elif "Heading 2" in style_name or "heading 2" in style_name.lower():
+                fontsize = 15
+                bold = True
+                y_pos += LINE_HEIGHT // 2
+            elif "Heading 3" in style_name or "heading 3" in style_name.lower():
+                fontsize = 13
+                bold = True
+            elif "Title" in style_name or "title" in style_name.lower():
+                fontsize = 20
+                bold = True
+                y_pos += LINE_HEIGHT
+
+        # Process runs (to handle inline formatting)
+        full_text = ""
+        for run in para.runs:
+            full_text += run.text
+            if run.bold:
+                bold = True
+
+        if full_text.strip():
+            add_text_block(full_text.strip(), fontsize, bold)
+            y_pos += LINE_HEIGHT // 2  # Space after paragraph
+
+    # Process paragraphs
+    for para in doc.paragraphs:
+        if para.text.strip():
+            add_paragraph(para)
+
+    # Process tables
+    for table in doc.tables:
+        for row in table.rows:
+            row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+            if row_text:
+                add_text_block(row_text, fontsize=9)
+        # Add spacing after table
+        y_pos += LINE_HEIGHT
+
+    pdf_doc.save(str(output_path))
+    pdf_doc.close()
+    print("PyMuPDF fallback conversion done: " + str(output_path))
+    return output_path
 
 
 def _pdf_watermark(input_path: Path, text: str) -> Path:
