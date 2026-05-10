@@ -253,72 +253,210 @@ def _docx_to_pdf(input_path: Path) -> Path:
         except Exception as e:
             print("LibreOffice error: " + str(e) + ", falling back...")
 
-    # --- Method 2: DOCX -> HTML (via mammoth) -> PDF (via xhtml2pdf) ---
+    # --- Method 2: DOCX -> HTML -> Images -> PDF ---
     try:
         from mammoth import convert_to_html
-        import xhtml2pdf.pisa as pisa
+        from PIL import Image, ImageDraw, ImageFont
+        import fitz
         import io
 
-        print("Fallback: Using mammoth + xhtml2pdf for DOCX→PDF...")
+        print("Fallback: Using mammoth + PIL for DOCX→PDF (image-based)...")
 
-        # Read DOCX and convert to HTML
+        # DOCX to HTML with embedded images
         with open(str(input_path), 'rb') as docx_file:
             result = convert_to_html(docx_file)
             html_content = result.value
 
-            # Wrap in basic HTML structure with inline CSS
-            full_html = f"""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-@page {{
-    size: A4;
-    margin: 2cm;
-}}
-body {{
-    font-family: Helvetica, sans-serif;
-    font-size: 12pt;
-    line-height: 1.5;
-    color: #000;
-}}
-h1 {{ font-size: 18pt; font-weight: bold; margin: 1em 0 0.5em; }}
-h2 {{ font-size: 14pt; font-weight: bold; margin: 0.8em 0 0.4em; }}
-h3 {{ font-size: 12pt; font-weight: bold; margin: 0.6em 0 0.3em; }}
-p {{ margin: 0.3em 0; }}
-table {{ border-collapse: collapse; width: 100%; margin: 0.5em 0; }}
-td, th {{ border: 1px solid #333; padding: 0.2em 0.4em; }}
-img {{ max-width: 100%; height: auto; margin: 0.3em 0; }}
-ul, ol {{ margin: 0.3em 0; padding-left: 1.5em; }}
-li {{ margin: 0.1em 0; }}
-</style>
-</head>
-<body>
-{html_content}
-</body>
-</html>"""
+        # Parse HTML to extract content
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
 
-            # Convert HTML to PDF using xhtml2pdf
-            html_path = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.html"
-            html_path.write_text(full_html, encoding='utf-8')
+        # A4 dimensions at 150 DPI for good quality
+        DPI = 150
+        PAGE_WIDTH = int(8.27 * DPI)   # 1240px
+        PAGE_HEIGHT = int(11.69 * DPI)  # 1754px
+        MARGIN = int(0.5 * DPI)         # ~75px margins
+        LINE_HEIGHT = int(0.3 * DPI)    # ~45px
 
-            with open(str(html_path), 'rb') as html_file:
-                html_bytes = html_file.read()
+        def load_font(size, bold=False):
+            """Try to load a font, fallback to default."""
+            try:
+                if bold:
+                    return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", size)
+                else:
+                    return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
+            except:
+                return ImageFont.load_default()
 
-            with open(str(output_path), 'wb') as pdf_file:
-                pisa_status = pisa.CreatePDF(
-                    io.BytesIO(html_bytes),
-                    dest=pdf_file
-                )
+        def wrap_text(text, font, max_width):
+            """Simple word wrap."""
+            words = text.split()
+            lines = []
+            current_line = ""
 
-            html_path.unlink(missing_ok=True)
+            for word in words:
+                test_line = (current_line + " " + word).strip()
+                # Approximate width
+                bbox = font.getbbox(test_line)
+                width = bbox[2] - bbox[0]
+                if width <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = word
 
-            if pisa_status.err:
-                print("xhtml2pdf errors: " + str(pisa_status.err))
-                raise Exception("xhtml2pdf conversion failed")
+            if current_line:
+                lines.append(current_line)
 
-            print("mammoth+xhtml2pdf conversion success: " + str(output_path))
-            return output_path
+            return lines if lines else [""]
+
+        def create_page():
+            img = Image.new('RGB', (PAGE_WIDTH, PAGE_HEIGHT), 'white')
+            draw = ImageDraw.Draw(img)
+            return img, draw
+
+        def save_page(img, page_num):
+            # Convert to RGB if needed
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            buf = io.BytesIO()
+            img.save(buf, format='JPEG', quality=85)
+            return buf.getvalue()
+
+        # Process content
+        pages = []
+        current_img, current_draw = create_page()
+        y_pos = MARGIN
+
+        # Get text elements in order
+        elements = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'img', 'div'])
+
+        def draw_element(element, draw, img, y_pos):
+            nonlocal PAGE_WIDTH, MARGIN
+            max_width = PAGE_WIDTH - 2 * MARGIN
+            new_y = y_pos
+
+            if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+                level = int(element.name[1])
+                font_size = max(36 - level * 4, 20)
+                font = load_font(font_size, bold=True)
+                color = (0, 0, 0)
+                text = element.get_text(strip=True)
+
+                lines = wrap_text(text, font, max_width)
+                for line in lines:
+                    if y_pos + font_size > PAGE_HEIGHT - MARGIN:
+                        return None  # Need new page
+                    draw.text((MARGIN, y_pos), line, font=font, fill=color)
+                    y_pos += int(font_size * 1.3)
+
+            elif element.name == 'p':
+                font = load_font(22, bold=False)
+                color = (0, 0, 0)
+                text = element.get_text(strip=True)
+
+                if text:
+                    lines = wrap_text(text, font, max_width)
+                    for line in lines:
+                        if y_pos + 28 > PAGE_HEIGHT - MARGIN:
+                            return None
+                        draw.text((MARGIN, y_pos), line, font=font, fill=color)
+                        y_pos += LINE_HEIGHT
+
+            elif element.name in ['ul', 'ol']:
+                font = load_font(22)
+                color = (0, 0, 0)
+                bullets = element.find_all('li', recursive=False)
+                if not bullets:
+                    bullets = element.find_all('li')
+
+                for li in bullets:
+                    text = "• " + li.get_text(strip=True)
+                    lines = wrap_text(text, font, max_width - 20)
+                    for line in lines:
+                        if y_pos + 28 > PAGE_HEIGHT - MARGIN:
+                            return None
+                        draw.text((MARGIN + 20, y_pos), line, font=font, fill=color)
+                        y_pos += LINE_HEIGHT
+
+            elif element.name == 'table':
+                rows = element.find_all('tr')
+                row_height = 35
+                for row in rows:
+                    if y_pos + row_height > PAGE_HEIGHT - MARGIN:
+                        return None
+                    cells = row.find_all(['td', 'th'])
+                    col_width = (max_width - 20) // max(len(cells), 1)
+                    x = MARGIN + 10
+                    for cell in cells:
+                        cell_text = cell.get_text(strip=True)[:20]  # Truncate
+                        font = load_font(18, bold=cell.name == 'th')
+                        draw.text((x, y_pos), cell_text, font=font, fill=(0, 0, 0))
+                        draw.rectangle([x, y_pos, x + col_width - 5, y_pos + row_height - 2], outline=(100, 100, 100))
+                        x += col_width
+                    y_pos += row_height
+
+            elif element.name == 'img':
+                # Handle images from mammoth (base64 embedded)
+                src = element.get('src', '')
+                if src.startswith('data:'):
+                    try:
+                        # Extract base64 data
+                        import base64
+                        img_data = src.split(',')[1]
+                        img_bytes = base64.b64decode(img_data)
+                        img_obj = Image.open(io.BytesIO(img_bytes))
+
+                        # Scale to fit page width
+                        max_img_width = max_width
+                        max_img_height = int(4 * DPI)  # Max 4 inches height
+                        img_obj.thumbnail((max_img_width, max_img_height), Image.Resampling.LANCZOS)
+
+                        if y_pos + img_obj.height > PAGE_HEIGHT - MARGIN:
+                            return None
+
+                        current_img.paste(img_obj, (MARGIN, y_pos))
+                        y_pos += img_obj.height + 20
+                    except Exception as e:
+                        print("Image error: " + str(e))
+
+            return y_pos
+
+        # Process all elements
+        for element in elements:
+            result_y = draw_element(element, current_draw, current_img, y_pos)
+            if result_y is None:
+                # Save current page and start new one
+                pages.append(save_page(current_img, len(pages)))
+                current_img, current_draw = create_page()
+                y_pos = MARGIN
+                result_y = draw_element(element, current_draw, current_img, y_pos)
+            y_pos = result_y if result_y else y_pos
+
+        # Save last page
+        if y_pos > MARGIN:
+            pages.append(save_page(current_img, len(pages)))
+
+        # Create PDF from images
+        pdf_doc = fitz.open()
+        for page_img_bytes in pages:
+            page_img = Image.open(io.BytesIO(page_img_bytes))
+            # Convert to RGB if needed
+            if page_img.mode != 'RGB':
+                page_img = page_img.convert('RGB')
+            # Save as temporary PNG for PyMuPDF
+            temp_png = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.png"
+            page_img.save(temp_png, 'PNG')
+            # Add page to PDF
+            pdf_doc.insert_image(fitz.Rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT), filename=str(temp_png))
+            temp_png.unlink(missing_ok=True)
+
+        pdf_doc.save(str(output_path))
+        pdf_doc.close()
+
+        print("mammoth+PIL image-based PDF success: " + str(output_path))
+        return output_path
 
     except ImportError as e:
         print("mammoth or weasyprint not available: " + str(e))
