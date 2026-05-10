@@ -271,22 +271,22 @@ def _docx_to_pdf(input_path: Path) -> Path:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(html_content, 'html.parser')
 
-        # A4 dimensions at 150 DPI for good quality
-        DPI = 150
-        PAGE_WIDTH = int(8.27 * DPI)   # 1240px
-        PAGE_HEIGHT = int(11.69 * DPI)  # 1754px
-        MARGIN = int(0.5 * DPI)         # ~75px margins
-        LINE_HEIGHT = int(0.3 * DPI)    # ~45px
+        # A4 dimensions at 96 DPI
+        DPI = 96
+        PAGE_WIDTH = int(8.27 * DPI)   # ~794px
+        PAGE_HEIGHT = int(11.69 * DPI)  # ~1123px
+        MARGIN = int(0.5 * DPI)         # ~48px margins
+        LINE_HEIGHT = 18
 
         def load_font(size, bold=False):
             """Try to load a font, fallback to default."""
             try:
-                if bold:
-                    return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", size)
-                else:
-                    return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
+                return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
             except:
-                return ImageFont.load_default()
+                try:
+                    return ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", size)
+                except:
+                    return ImageFont.load_default()
 
         def wrap_text(text, font, max_width):
             """Simple word wrap."""
@@ -296,9 +296,11 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
             for word in words:
                 test_line = (current_line + " " + word).strip()
-                # Approximate width
-                bbox = font.getbbox(test_line)
-                width = bbox[2] - bbox[0]
+                try:
+                    bbox = font.getbbox(test_line)
+                    width = bbox[2] - bbox[0]
+                except:
+                    width = len(test_line) * 6
                 if width <= max_width:
                     current_line = test_line
                 else:
@@ -316,140 +318,78 @@ def _docx_to_pdf(input_path: Path) -> Path:
             draw = ImageDraw.Draw(img)
             return img, draw
 
-        def save_page(img, page_num):
-            # Convert to RGB if needed
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
+        def save_page(img):
             buf = io.BytesIO()
-            img.save(buf, format='JPEG', quality=85)
+            img.save(buf, format='PNG')
             return buf.getvalue()
 
-        # Process content
+        # Collect all text elements in order
+        all_elements = []
+        for elem in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table']):
+            all_elements.append(elem)
+
         pages = []
         current_img, current_draw = create_page()
         y_pos = MARGIN
+        max_width = PAGE_WIDTH - 2 * MARGIN
 
-        # Get text elements in order
-        elements = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'img', 'div'])
+        def add_new_page():
+            nonlocal current_img, current_draw, y_pos
+            pages.append(save_page(current_img))
+            current_img, current_draw = create_page()
+            y_pos = MARGIN
 
-        def draw_element(element, draw, img, y_pos):
-            nonlocal PAGE_WIDTH, MARGIN
-            max_width = PAGE_WIDTH - 2 * MARGIN
-            new_y = y_pos
+        # Process all text content
+        for elem in all_elements:
+            tag = elem.name
+            text = elem.get_text(strip=True)
 
-            if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
-                level = int(element.name[1])
-                font_size = max(36 - level * 4, 20)
-                font = load_font(font_size, bold=True)
-                color = (0, 0, 0)
-                text = element.get_text(strip=True)
+            if not text:
+                continue
 
-                lines = wrap_text(text, font, max_width)
-                for line in lines:
-                    if y_pos + font_size > PAGE_HEIGHT - MARGIN:
-                        return None  # Need new page
-                    draw.text((MARGIN, y_pos), line, font=font, fill=color)
-                    y_pos += int(font_size * 1.3)
+            font_size = 12
+            bold = False
+            if tag.startswith('h1'):
+                font_size = 24
+                bold = True
+            elif tag.startswith('h2'):
+                font_size = 18
+                bold = True
+            elif tag.startswith('h3'):
+                font_size = 14
+                bold = True
 
-            elif element.name == 'p':
-                font = load_font(22, bold=False)
-                color = (0, 0, 0)
-                text = element.get_text(strip=True)
+            font = load_font(font_size, bold)
+            lines = wrap_text(text, font, max_width)
 
-                if text:
-                    lines = wrap_text(text, font, max_width)
-                    for line in lines:
-                        if y_pos + 28 > PAGE_HEIGHT - MARGIN:
-                            return None
-                        draw.text((MARGIN, y_pos), line, font=font, fill=color)
-                        y_pos += LINE_HEIGHT
+            for line in lines:
+                if y_pos + font_size + 6 > PAGE_HEIGHT - MARGIN:
+                    add_new_page()
+                current_draw.text((MARGIN, y_pos), line, font=font, fill='black')
+                y_pos += font_size + 6
 
-            elif element.name in ['ul', 'ol']:
-                font = load_font(22)
-                color = (0, 0, 0)
-                bullets = element.find_all('li', recursive=False)
-                if not bullets:
-                    bullets = element.find_all('li')
+            y_pos += 8  # paragraph spacing
 
-                for li in bullets:
-                    text = "• " + li.get_text(strip=True)
-                    lines = wrap_text(text, font, max_width - 20)
-                    for line in lines:
-                        if y_pos + 28 > PAGE_HEIGHT - MARGIN:
-                            return None
-                        draw.text((MARGIN + 20, y_pos), line, font=font, fill=color)
-                        y_pos += LINE_HEIGHT
+        # Save last page if has content
+        if y_pos > MARGIN + 20:
+            pages.append(save_page(current_img))
 
-            elif element.name == 'table':
-                rows = element.find_all('tr')
-                row_height = 35
-                for row in rows:
-                    if y_pos + row_height > PAGE_HEIGHT - MARGIN:
-                        return None
-                    cells = row.find_all(['td', 'th'])
-                    col_width = (max_width - 20) // max(len(cells), 1)
-                    x = MARGIN + 10
-                    for cell in cells:
-                        cell_text = cell.get_text(strip=True)[:20]  # Truncate
-                        font = load_font(18, bold=cell.name == 'th')
-                        draw.text((x, y_pos), cell_text, font=font, fill=(0, 0, 0))
-                        draw.rectangle([x, y_pos, x + col_width - 5, y_pos + row_height - 2], outline=(100, 100, 100))
-                        x += col_width
-                    y_pos += row_height
-
-            elif element.name == 'img':
-                # Handle images from mammoth (base64 embedded)
-                src = element.get('src', '')
-                if src.startswith('data:'):
-                    try:
-                        # Extract base64 data
-                        import base64
-                        img_data = src.split(',')[1]
-                        img_bytes = base64.b64decode(img_data)
-                        img_obj = Image.open(io.BytesIO(img_bytes))
-
-                        # Scale to fit page width
-                        max_img_width = max_width
-                        max_img_height = int(4 * DPI)  # Max 4 inches height
-                        img_obj.thumbnail((max_img_width, max_img_height), Image.Resampling.LANCZOS)
-
-                        if y_pos + img_obj.height > PAGE_HEIGHT - MARGIN:
-                            return None
-
-                        current_img.paste(img_obj, (MARGIN, y_pos))
-                        y_pos += img_obj.height + 20
-                    except Exception as e:
-                        print("Image error: " + str(e))
-
-            return y_pos
-
-        # Process all elements
-        for element in elements:
-            result_y = draw_element(element, current_draw, current_img, y_pos)
-            if result_y is None:
-                # Save current page and start new one
-                pages.append(save_page(current_img, len(pages)))
-                current_img, current_draw = create_page()
-                y_pos = MARGIN
-                result_y = draw_element(element, current_draw, current_img, y_pos)
-            y_pos = result_y if result_y else y_pos
-
-        # Save last page
-        if y_pos > MARGIN:
-            pages.append(save_page(current_img, len(pages)))
+        print(f"Generated {len(pages)} pages from DOCX content")
 
         # Create PDF from images
         pdf_doc = fitz.open()
         for page_img_bytes in pages:
             page_img = Image.open(io.BytesIO(page_img_bytes))
-            # Convert to RGB if needed
             if page_img.mode != 'RGB':
                 page_img = page_img.convert('RGB')
-            # Save as temporary PNG for PyMuPDF
+
+            # Save temp PNG
             temp_png = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.png"
-            page_img.save(temp_png, 'PNG')
+            page_img.save(str(temp_png), 'PNG')
+
             # Add page to PDF
-            pdf_doc.insert_image(fitz.Rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT), filename=str(temp_png))
+            page = pdf_doc.new_page(width=PAGE_WIDTH, height=PAGE_HEIGHT)
+            page.insert_image(fitz.Rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT), filename=str(temp_png))
             temp_png.unlink(missing_ok=True)
 
         pdf_doc.save(str(output_path))
