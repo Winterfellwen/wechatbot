@@ -15,7 +15,7 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # Version marker for debugging
-PDF_SERVICE_VERSION = "2026-05-11-libreoffice-v1"
+PDF_SERVICE_VERSION = "2026-05-11-weasyprint-v1"
 
 UPLOAD_DIR = Path("/tmp/pdf-service")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -253,155 +253,108 @@ def _docx_to_pdf(input_path: Path) -> Path:
         except Exception as e:
             print("LibreOffice error: " + str(e) + ", falling back...")
 
-    # --- Method 2: DOCX -> HTML -> Images -> PDF ---
+    # --- Method 2: DOCX -> HTML -> WeasyPrint PDF (矢量文本，可复制) ---
     try:
         from mammoth import convert_to_html
-        from PIL import Image, ImageDraw, ImageFont
-        import fitz
+        from weasyprint import HTML, CSS
         import io
 
-        print("Fallback: Using mammoth + PIL for DOCX→PDF (image-based)...")
+        print("WeasyPrint: Converting DOCX HTML to vector PDF...")
 
-        # DOCX to HTML with embedded images
+        # DOCX to HTML with embedded images (base64)
         with open(str(input_path), 'rb') as docx_file:
             result = convert_to_html(docx_file)
             html_content = result.value
 
-        # Parse HTML to extract content
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(html_content, 'html.parser')
+        # 构建完整 HTML 文档，包含 CSS 样式
+        # 使用 @font-face 确保中文字体正确渲染
+        css = CSS(string='''
+            @page {
+                size: A4;
+                margin: 2cm;
+                @top-center {
+                    content: none;
+                }
+            }
+            body {
+                font-family: "Noto Sans CJK SC", "Source Han Sans CN", "WenQuanYi Micro Hei", 
+                           "Microsoft YaHei", "SimHei", sans-serif;
+                font-size: 12pt;
+                line-height: 1.6;
+                color: #333;
+            }
+            h1 {
+                font-size: 24pt;
+                font-weight: bold;
+                margin: 1em 0 0.5em 0;
+                page-break-after: avoid;
+            }
+            h2 {
+                font-size: 18pt;
+                font-weight: bold;
+                margin: 0.8em 0 0.4em 0;
+                page-break-after: avoid;
+            }
+            h3 {
+                font-size: 14pt;
+                font-weight: bold;
+                margin: 0.6em 0 0.3em 0;
+                page-break-after: avoid;
+            }
+            p {
+                margin: 0.5em 0;
+                text-align: justify;
+            }
+            ul, ol {
+                margin: 0.5em 0;
+                padding-left: 2em;
+            }
+            li {
+                margin: 0.2em 0;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1em 0;
+                page-break-inside: avoid;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 0.4em;
+                text-align: left;
+            }
+            th {
+                background-color: #f5f5f5;
+                font-weight: bold;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+                margin: 0.5em 0;
+            }
+            strong, b {
+                font-weight: bold;
+            }
+            em, i {
+                font-style: italic;
+            }
+        ''')
 
-        # A4 dimensions at 96 DPI
-        DPI = 96
-        PAGE_WIDTH = int(8.27 * DPI)   # ~794px
-        PAGE_HEIGHT = int(11.69 * DPI)  # ~1123px
-        MARGIN = int(0.5 * DPI)         # ~48px margins
-        LINE_HEIGHT = 18
-
-        def load_font(size, bold=False):
-            """Try to load a font, fallback to default."""
-            try:
-                return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
-            except:
-                try:
-                    return ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", size)
-                except:
-                    return ImageFont.load_default()
-
-        def wrap_text(text, font, max_width):
-            """Simple word wrap."""
-            words = text.split()
-            lines = []
-            current_line = ""
-
-            for word in words:
-                test_line = (current_line + " " + word).strip()
-                try:
-                    bbox = font.getbbox(test_line)
-                    width = bbox[2] - bbox[0]
-                except:
-                    width = len(test_line) * 6
-                if width <= max_width:
-                    current_line = test_line
-                else:
-                    if current_line:
-                        lines.append(current_line)
-                    current_line = word
-
-            if current_line:
-                lines.append(current_line)
-
-            return lines if lines else [""]
-
-        def create_page():
-            img = Image.new('RGB', (PAGE_WIDTH, PAGE_HEIGHT), 'white')
-            draw = ImageDraw.Draw(img)
-            return img, draw
-
-        def save_page(img):
-            buf = io.BytesIO()
-            img.save(buf, format='PNG')
-            return buf.getvalue()
-
-        # Collect all text elements in order
-        all_elements = []
-        for elem in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table']):
-            all_elements.append(elem)
-
-        pages = []
-        current_img, current_draw = create_page()
-        y_pos = MARGIN
-        max_width = PAGE_WIDTH - 2 * MARGIN
-
-        def add_new_page():
-            nonlocal current_img, current_draw, y_pos
-            pages.append(save_page(current_img))
-            current_img, current_draw = create_page()
-            y_pos = MARGIN
-
-        # Process all text content
-        for elem in all_elements:
-            tag = elem.name
-            text = elem.get_text(strip=True)
-
-            if not text:
-                continue
-
-            font_size = 12
-            bold = False
-            if tag.startswith('h1'):
-                font_size = 24
-                bold = True
-            elif tag.startswith('h2'):
-                font_size = 18
-                bold = True
-            elif tag.startswith('h3'):
-                font_size = 14
-                bold = True
-
-            font = load_font(font_size, bold)
-            lines = wrap_text(text, font, max_width)
-
-            for line in lines:
-                if y_pos + font_size + 6 > PAGE_HEIGHT - MARGIN:
-                    add_new_page()
-                current_draw.text((MARGIN, y_pos), line, font=font, fill='black')
-                y_pos += font_size + 6
-
-            y_pos += 8  # paragraph spacing
-
-        # Save last page if has content
-        if y_pos > MARGIN + 20:
-            pages.append(save_page(current_img))
-
-        print(f"Generated {len(pages)} pages from DOCX content")
-
-        # Create PDF from images
-        pdf_doc = fitz.open()
-        for page_img_bytes in pages:
-            page_img = Image.open(io.BytesIO(page_img_bytes))
-            if page_img.mode != 'RGB':
-                page_img = page_img.convert('RGB')
-
-            # Save temp PNG
-            temp_png = UPLOAD_DIR / f"{uuid.uuid4().hex[:8]}.png"
-            page_img.save(str(temp_png), 'PNG')
-
-            # Add page to PDF
-            page = pdf_doc.new_page(width=PAGE_WIDTH, height=PAGE_HEIGHT)
-            page.insert_image(fitz.Rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT), filename=str(temp_png))
-            temp_png.unlink(missing_ok=True)
-
-        pdf_doc.save(str(output_path))
-        pdf_doc.close()
-
-        print("mammoth+PIL image-based PDF success: " + str(output_path))
+        # 生成 PDF 到内存
+        pdf_buffer = io.BytesIO()
+        HTML(string=html_content).write_pdf(pdf_buffer, stylesheets=[css])
+        pdf_buffer.seek(0)
+        
+        # 写入输出文件
+        output_path.write_bytes(pdf_buffer.read())
+        
+        print("WeasyPrint vector PDF success: " + str(output_path))
         return output_path
 
     except ImportError as e:
-        print("mammoth or weasyprint not available: " + str(e))
+        print("WeasyPrint not available: " + str(e))
     except Exception as e:
-        print("mammoth+weasyprint error: " + str(e))
+        print("WeasyPrint error: " + str(e))
 
     # --- Method 3: Final fallback - extract text only ---
     try:

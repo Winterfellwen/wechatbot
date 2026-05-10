@@ -23,9 +23,14 @@ services:
     runtime: python
     rootDir: pdf-service
     buildCommand: |
-      apt-get update && apt-get install -y --no-install-recommends libreoffice-writer libreoffice-calc libreoffice-impress fonts-noto-cjk 2>/dev/null || \
-      (apt-get update && apt-get install -y --no-install-recommends libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui fonts-noto-cjk 2>/dev/null) || \
-      echo "WARNING: LibreOffice install failed, DOCX->PDF will use fallback"
+      # Install WeasyPrint system dependencies (Cairo, Pango, etc.)
+      apt-get update && apt-get install -y --no-install-recommends \
+        libcairo2-dev libpango1.0-dev libgdk-pixbuf2.0-dev libffi-dev \
+        shared-mime-info gdk-pixbuf-2.0 2>/dev/null || true
+      # Install LibreOffice (optional, for best DOCX fidelity)
+      apt-get install -y --no-install-recommends \
+        libreoffice-writer-nogui fonts-noto-cjk 2>/dev/null || \
+        echo "WARNING: LibreOffice install failed"
       pip install -r requirements.txt
     startCommand: |
       which libreoffice || which soffice || echo "LibreOffice not found in PATH"
