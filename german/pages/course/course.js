@@ -39,7 +39,8 @@ Page({
     vocabList: [],
     grammarList: [],
     pronunciationList: [],
-    textList: []
+    textList: [],
+    playingWord: null
   },
 
   onLoad: function() {
@@ -55,9 +56,18 @@ Page({
     if (level) {
       const startIdx = (this.data.currentUnit - 1) * 15;
       const endIdx = startIdx + 15;
+      const vocabList = level.vocab.slice(startIdx, endIdx);
       
+      // 检测哪些单词已在生词本
+      const wordBook = storage.getWordBook();
+      const wordBookWords = new Set(wordBook.map(w => w.word));
+      const vocabListWithStatus = vocabList.map(word => ({
+        ...word,
+        isInWordBook: wordBookWords.has(word.word)
+      }));
+
       this.setData({
-        vocabList: level.vocab.slice(startIdx, endIdx),
+        vocabList: vocabListWithStatus,
         grammarList: level.grammar,
         pronunciationList: level.pronunciation,
         textList: level.texts
@@ -89,13 +99,48 @@ Page({
 
   playAudio: function(e) {
     const word = e.currentTarget.dataset.word;
-    tts.speak(word);
+    this.setData({ playingWord: word });
+    
+    // 播放后 1.5 秒清除动画状态
+    tts.speak(word, () => {
+      setTimeout(() => {
+        this.setData({ playingWord: null });
+      }, 1500);
+    });
   },
 
   addToWordBook: function(e) {
     const word = e.currentTarget.dataset.word;
-    storage.addToWordBook(word);
-    wx.showToast({ title: '已加入生词本', icon: 'success' });
+    const wordBook = storage.getWordBook();
+    const exists = wordBook.find(w => w.word === word.word);
+    
+    if (exists) {
+      // 已收录，移除
+      storage.removeFromWordBook(word.word);
+      this.setData({ 
+        vocabList: this.data.vocabList.map(item => 
+          item.word === word.word ? { ...item, isInWordBook: false } : item
+        )
+      });
+      wx.showToast({ 
+        title: '已移出生词本', 
+        icon: 'none',
+        duration: 1500
+      });
+    } else {
+      // 未收录，添加
+      storage.addToWordBook(word);
+      this.setData({ 
+        vocabList: this.data.vocabList.map(item => 
+          item.word === word.word ? { ...item, isInWordBook: true } : item
+        )
+      });
+      wx.showToast({ 
+        title: '已加入生词本', 
+        icon: 'success',
+        duration: 1500
+      });
+    }
   },
 
   onShareAppMessage: function() {

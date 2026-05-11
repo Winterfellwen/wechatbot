@@ -36,7 +36,7 @@ function initApiKey() {
   });
 }
 
-function speak(text, lang) {
+function speak(text, lang, callback) {
   return new Promise((resolve, reject) => {
     if (!text || !text.trim()) {
       reject(new Error('Text is empty'));
@@ -79,20 +79,24 @@ function speak(text, lang) {
 
               audio.onEnded(function() {
                 audio.stopped = true;
+                if (callback) callback();
                 resolve();
               });
 
               audio.onError(function(err) {
                 audio.stopped = true;
                 console.error('Audio play error:', err);
+                if (callback) callback();
                 reject(err);
               });
             } else {
+              if (callback) callback();
               reject(new Error('TTS API error: ' + res.statusCode));
             }
           },
           fail: function(err) {
             console.error('TTS request error:', err);
+            if (callback) callback();
             reject(err);
           }
         });

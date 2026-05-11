@@ -37,23 +37,48 @@
       <text class="section-title">单词</text>
       <text class="section-count">{{vocabList.length}} 个</text>
     </view>
-    <scroll-view class="vocab-scroll" scroll-x>
-      <view class="vocab-row">
-        <view class="vocab-card" wx:for="{{vocabList}}" wx:key="index">
-          <view class="vocab-word" bindtap="playAudio" data-word="{{item.word}}">
-            <text>{{item.word}}</text>
-            <text class="audio-icon">音</text>
+    <view class="vocab-list">
+      <view class="vocab-card" wx:for="{{vocabList}}" wx:key="index">
+        <!-- 单词信息 -->
+        <view class="vocab-main">
+          <view class="vocab-left">
+            <view class="vocab-word">{{item.word}}</view>
+            <view class="vocab-phonetic" wx:if="{{item.phonetic}}">{{item.phonetic}}</view>
+            <view class="vocab-translation">{{item.translation}}</view>
           </view>
-          <view class="vocab-translation">{{item.translation}}</view>
-          <view class="vocab-phonetic" wx:if="{{item.phonetic}}">/{{item.phonetic}}/</view>
-          <button class="add-btn" bindtap="addToWordBook" data-word="{{item}}">+</button>
+          
+          <!-- 操作按钮 -->
+          <view class="vocab-actions">
+            <!-- 播音按钮 -->
+            <view 
+              class="audio-btn {{playingWord === item.word ? 'playing' : ''}}"
+              bindtap="playAudio" 
+              data-word="{{item.word}}">
+              <view class="audio-btn-inner">
+                <text class="audio-icon {{playingWord === item.word ? 'audio-playing' : ''}}">音</text>
+              </view>
+              <view class="audio-wave" wx:if="{{playingWord === item.word}}">
+                <view class="wave-line"></view>
+                <view class="wave-line"></view>
+                <view class="wave-line"></view>
+              </view>
+            </view>
+            
+            <!-- 生词本按钮 -->
+            <view 
+              class="wordbook-btn {{item.isInWordBook ? 'added' : ''}}"
+              bindtap="addToWordBook" 
+              data-word="{{item}}">
+              <text class="wordbook-icon">{{item.isInWordBook ? '✓' : '+'}}</text>
+            </view>
+          </view>
         </view>
       </view>
-    </scroll-view>
+    </view>
   </view>
 
   <!-- 语法 -->
-  <view class="section">
+  <view class="section" wx:if="{{grammarList.length > 0}}">
     <view class="section-header">
       <text class="section-title">语法</text>
       <text class="section-count">{{grammarList.length}} 个</text>
@@ -67,7 +92,7 @@
   </view>
 
   <!-- 发音 -->
-  <view class="section">
+  <view class="section" wx:if="{{pronunciationList.length > 0}}">
     <view class="section-header">
       <text class="section-title">发音</text>
       <text class="section-count">{{pronunciationList.length}} 个</text>
@@ -78,14 +103,16 @@
         <view class="pronunciation-desc">{{item.description}}</view>
         <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
           <text>{{item.example}}</text>
-          <text class="audio-icon">音</text>
+          <view class="audio-btn-small">
+            <text class="audio-icon-small">音</text>
+          </view>
         </view>
       </view>
     </view>
   </view>
 
   <!-- 课文 -->
-  <view class="section">
+  <view class="section" wx:if="{{textList.length > 0}}">
     <view class="section-header">
       <text class="section-title">课文</text>
       <text class="section-count">{{textList.length}} 篇</text>
