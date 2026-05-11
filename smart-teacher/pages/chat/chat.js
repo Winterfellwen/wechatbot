@@ -1,4 +1,5 @@
 // smart-teacher/pages/chat/chat.js
+// 现代AI聊天 - 支持打字机效果
 
 var SERVER = 'https://wechatbot-g6ez.onrender.com';
 var msgIdCounter = 0;
@@ -9,9 +10,12 @@ Page({
     inputText: '',
     loading: false,
     scrollTop: 0,
-    previewImage: ''
+    previewImage: '',
+    hasInput: false,
+    _imageBase64: ''
   },
 
+  // 滚动到底部
   scrollToBottom: function () {
     var that = this;
     setTimeout(function () {
@@ -19,16 +23,23 @@ Page({
     }, 100);
   },
 
+  // 输入监听
   onInput: function (e) {
-    this.setData({ inputText: e.detail.value });
+    var value = e.detail.value;
+    this.setData({
+      inputText: value,
+      hasInput: value.trim().length > 0 || !!this.data.previewImage
+    });
   },
 
+  // 快捷提问
   onQuickAsk: function (e) {
     var q = e.currentTarget.dataset.q;
-    this.setData({ inputText: q });
+    this.setData({ inputText: q, hasInput: true });
     this.sendMessage(q, '');
   },
 
+  // 选择图片
   chooseImage: function () {
     var that = this;
     wx.chooseImage({
@@ -37,14 +48,14 @@ Page({
       sourceType: ['album', 'camera'],
       success: function (res) {
         var path = res.tempFilePaths[0];
-        // Convert to base64 for sending
         wx.getFileSystemManager().readFile({
           filePath: path,
           encoding: 'base64',
           success: function (readRes) {
             that.setData({
               previewImage: path,
-              _imageBase64: readRes.data
+              _imageBase64: readRes.data,
+              hasInput: true
             });
           }
         });
@@ -52,15 +63,22 @@ Page({
     });
   },
 
+  // 移除预览图片
   removePreviewImage: function () {
-    this.setData({ previewImage: '', _imageBase64: '' });
+    this.setData({
+      previewImage: '',
+      _imageBase64: '',
+      hasInput: this.data.inputText.trim().length > 0
+    });
   },
 
+  // 预览图片
   previewImage: function (e) {
     var url = e.currentTarget.dataset.url;
     wx.previewImage({ urls: [url] });
   },
 
+  // 发送消息
   onSend: function () {
     var text = this.data.inputText.trim();
     var image = this.data._imageBase64 || '';
@@ -68,11 +86,57 @@ Page({
     this.sendMessage(text, image);
   },
 
+  // 打字机效果 - 逐字显示
+  typeWriter: function (msgIndex, fullText, callback) {
+    var that = this;
+    var displayText = '';
+    var index = 0;
+    var messages = that.data.messages;
+    
+    // 确保消息存在、fullText有效且是AI消息
+    if (!messages[msgIndex] || messages[msgIndex].role !== 'ai' || fullText === null || fullText === undefined || fullText === '') {
+      if (callback) callback();
+      return;
+    }
+
+    function typeNext() {
+      if (index < fullText.length) {
+        displayText += fullText[index];
+        index++;
+        
+        // 更新显示文本
+        var updateData = {};
+        updateData['messages[' + msgIndex + '].displayContent'] = displayText;
+        that.setData(updateData);
+        
+        // 每隔几个字符滚动一次
+        if (index % 10 === 0 || index === fullText.length) {
+          that.scrollToBottom();
+        }
+        
+        // 根据文本长度调整打字速度
+        var delay = fullText[index - 1] === '\n' ? 80 : (index % 30 === 0 ? 40 : 15);
+        setTimeout(typeNext, delay);
+      } else {
+        // 打字完成，清理displayContent
+        var finalUpdate = {};
+        finalUpdate['messages[' + msgIndex + '].content'] = fullText;
+        finalUpdate['messages[' + msgIndex + '].displayContent'] = null;
+        that.setData(finalUpdate);
+        if (callback) callback();
+      }
+    }
+    
+    typeNext();
+  },
+
+  // 发送消息核心
   sendMessage: function (text, imageBase64) {
     if (this.data.loading) return;
 
     var hasImage = !!imageBase64;
 
+    // 用户消息
     var userMsg = {
       id: ++msgIdCounter,
       role: 'user',
@@ -86,11 +150,12 @@ Page({
       inputText: '',
       loading: true,
       previewImage: '',
-      _imageBase64: ''
+      _imageBase64: '',
+      hasInput: false
     });
     this.scrollToBottom();
 
-    // Build API messages
+    // 构建API消息
     var apiMessages = [
       {
         role: 'system',
@@ -103,7 +168,6 @@ Page({
       if (m.role === 'user') {
         var msgHasImage = m.imageUrl && m.imageUrl.indexOf('base64,') > -1;
         if (msgHasImage) {
-          // Multimodal content for vision model
           var parts = [];
           if (m.content) {
             parts.push({ type: 'text', text: m.content });
@@ -115,7 +179,6 @@ Page({
           });
           apiMessages.push({ role: 'user', content: parts });
         } else {
-          // Plain text content - always use simple string
           apiMessages.push({ role: 'user', content: m.content || '' });
         }
       } else if (m.role === 'ai') {
@@ -133,11 +196,13 @@ Page({
       success: function (res) {
         var reply = '';
         if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
-          reply = res.data.choices[0].message.content;
+          reply = res.data.choices[0].message.content || '';
+          if (!reply) {
+            reply = '抱歉，现在访问的人数过多，请重试。';
+          }
         } else if (res.data && res.data.error) {
           var err = res.data.error;
           var errMsg = typeof err === 'string' ? err : (err.message || JSON.stringify(err));
-          // Provide user-friendly error messages
           if (errMsg.indexOf('User not found') > -1 || errMsg.indexOf('401') > -1) {
             reply = 'API密钥无效或未配置，请联系管理员。';
           } else if (errMsg.indexOf('Insufficient credits') > -1 || errMsg.indexOf('402') > -1) {
@@ -151,17 +216,24 @@ Page({
           reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
         }
 
+        // 消息索引 - 指向刚添加的AI消息位置
+        var aiMsgIndex = that.data.messages.length;
+        
         var aiMsg = {
           id: ++msgIdCounter,
           role: 'ai',
-          content: reply
+          content: reply,
+          displayContent: undefined  // 用 undefined 而不是空字符串
         };
 
         that.setData({
           messages: that.data.messages.concat([aiMsg]),
           loading: false
+        }, function() {
+          that.scrollToBottom();
+          // setData 完成后才启动打字机效果
+          that.typeWriter(aiMsgIndex, reply);
         });
-        that.scrollToBottom();
       },
       fail: function () {
         var aiMsg = {

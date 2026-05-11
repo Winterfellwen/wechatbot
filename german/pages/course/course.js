@@ -1,11 +1,12 @@
 const storage = require('../../utils/storage');
 const tts = require('../../utils/tts');
-const iconGen = require('../../../utils/icon-generator');
 const a1Vocab = require('../../data/a1/vocab.js');
 const a1Grammar = require('../../data/a1/grammar.js');
 const a1Pronunciation = require('../../data/a1/pronunciation.js');
 const a1Texts = require('../../data/a1/texts.js');
 const a2Vocab = require('../../data/a2/vocab.js');
+const b1Vocab = require('../../data/b1/vocab.js');
+const b2Vocab = require('../../data/b2/vocab.js');
 
 const levelData = {
   a1: {
@@ -19,6 +20,22 @@ const levelData = {
   a2: {
     name: 'A2 进阶',
     vocab: a2Vocab,
+    grammar: [],
+    pronunciation: [],
+    texts: [],
+    units: 15
+  },
+  b1: {
+    name: 'B1 中级',
+    vocab: b1Vocab,
+    grammar: [],
+    pronunciation: [],
+    texts: [],
+    units: 15
+  },
+  b2: {
+    name: 'B2 高级',
+    vocab: b2Vocab,
     grammar: [],
     pronunciation: [],
     texts: [],
@@ -48,19 +65,13 @@ Page({
 
   onLoad: function() {
     this.loadLevelData();
+    // 预加载 TTS API Key，减少首次播放延迟
+    tts.preLoad();
   },
 
-  onReady: function() {
-    // 初始化 Canvas 绘制扬声器图标
-    iconGen.initSpeakerIcons('icon-canvas', this).then(function(paths) {
-      this.setData({
-        speakerNormal: paths.speakerNormal,
-        speakerActive: paths.speakerActive
-      });
-    }.bind(this)).catch(function(err) {
-      console.error('Failed to generate speaker icons:', err);
-    });
-  },
+  onReady: function() {},
+
+
 
   onShow: function() {
     this.loadLevelData();
@@ -87,6 +98,9 @@ Page({
         pronunciationList: level.pronunciation,
         textList: level.texts
       });
+
+      // 预加载当前页面单词音频
+      tts.preLoadWords(vocabListWithStatus, 'de-DE');
     }
   },
 

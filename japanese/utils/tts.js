@@ -269,7 +269,7 @@ module.exports = {
             }
           });
           
-          setTimeout(function() { processNext(idx + 1); }, 100);
+          setTimeout(function() { processNext(idx + 1); }, 50);
         }
         
         processNext(0);

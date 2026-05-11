@@ -17,8 +17,8 @@ page {
   position: fixed;
   left: -9999px;
   top: -9999px;
-  width: 128px;
-  height: 128px;
+  width: 256px;
+  height: 256px;
 }
 
 /* ========== 级别选择器 ========== */
@@ -202,6 +202,60 @@ page {
   margin-top: 4rpx;
 }
 
+.vocab-ipa {
+  font-size: 24rpx;
+  color: #2563EB;
+  font-weight: 600;
+  margin-top: 4rpx;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.vocab-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 6rpx;
+}
+
+.gender-tag {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  font-weight: 600;
+}
+
+.gender-tag.m {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+.gender-tag.f {
+  background: #FCE7F3;
+  color: #DB2777;
+}
+
+.gender-tag.n {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.pos-tag {
+  font-size: 20rpx;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+}
+
+.plural-tag {
+  font-size: 20rpx;
+  color: #7C3AED;
+  background: #F3E8FF;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+}
+
 .vocab-translation {
   font-size: 26rpx;
   color: #64748B;
@@ -218,8 +272,8 @@ page {
 
 /* 播音按钮 */
 .audio-btn {
-  width: 72rpx;
-  height: 72rpx;
+  width: 100rpx;
+  height: 100rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
   display: flex;
@@ -245,8 +299,8 @@ page {
 }
 
 .audio-icon {
-  width: 40rpx;
-  height: 40rpx;
+  width: 72rpx;
+  height: 72rpx;
 }
 
 /* 生词本按钮 */
@@ -284,8 +338,8 @@ page {
 
 /* 小播音按钮（发音列表用） */
 .audio-btn-small {
-  width: 44rpx;
-  height: 44rpx;
+  width: 52rpx;
+  height: 52rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
   display: flex;
@@ -300,8 +354,8 @@ page {
 }
 
 .audio-icon-small {
-  width: 24rpx;
-  height: 24rpx;
+  width: 58rpx;
+  height: 58rpx;
 }
 
 /* ========== 语法列表 ========== */

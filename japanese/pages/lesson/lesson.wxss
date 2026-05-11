@@ -7,15 +7,6 @@
   background: #F8FAFC; 
 }
 
-/* 隐藏的 Canvas */
-.icon-canvas-hidden {
-  position: fixed;
-  left: -9999px;
-  top: -9999px;
-  width: 128px;
-  height: 128px;
-}
-
 /* ========== STUDY MODE ========== */
 .study-container { 
   min-height: 100vh; 
@@ -352,18 +343,17 @@
   box-shadow: 0 8rpx 24rpx rgba(37,99,235,0.35);
 }
 
-/* 扬声器图标 - 小号（例句用） */
-.audio-indicator {
+.speaker-icon {
+  font-size: 52rpx;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40rpx;
-  height: 40rpx;
+  width: 56rpx;
+  height: 56rpx;
 }
-
-.speaker-img {
-  width: 32rpx;
-  height: 32rpx;
+.speaker-icon.playing {
+  animation: audioPulse 1s ease-in-out infinite;
 }
 
 /* 扬声器图标 - 大号（听力题用） */
@@ -378,9 +368,9 @@
   50% { transform: scale(1.08); }
 }
 
-.speaker-img-lg {
-  width: 64rpx;
-  height: 64rpx;
+.speaker-icon-lg {
+  font-size: 80rpx;
+  line-height: 1;
 }
 
 @keyframes pulse {

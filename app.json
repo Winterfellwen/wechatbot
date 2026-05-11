@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/user/user"
   ],
+  "lazyCodeLoading": "requiredComponents",
   "subpackages": [
     {
       "root": "pdf",

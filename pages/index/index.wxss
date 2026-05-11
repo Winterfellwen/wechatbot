@@ -174,7 +174,7 @@
 
 .card-japanese::before { background: linear-gradient(90deg, #ff6b6b, #ee5a24); }
 .card-german::before { background: linear-gradient(90deg, #51cf66, #37b24d); }
-.card-word::before { background: linear-gradient(90deg, #217346, #2e7d32); }
+.card-word::before { background: linear-gradient(90deg, #2563EB, #3B82F6); }
 .card-pdf::before { background: linear-gradient(90deg, #ff922b, #f76707); }
 
 /* 卡片右上角装饰圆 */
@@ -228,8 +228,8 @@
 }
 
 .icon-bg-word {
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  box-shadow: 0 6rpx 20rpx rgba(33, 115, 70, 0.2);
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.2);
 }
 
 .icon-bg-pdf {
@@ -251,7 +251,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #217346, #2e7d32);
+  background: linear-gradient(135deg, #2563EB, #3B82F6);
   border-radius: 8rpx;
 }
 
@@ -360,9 +360,9 @@
 
 /* 使用图标替代 emoji */
 .teacher-icon {
-  width: 48rpx;
-  height: 48rpx;
-  color: #ffffff;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
 }
 
 .teacher-info {

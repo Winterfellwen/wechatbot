@@ -1,7 +1,4 @@
 <view class="container">
-  <!-- 隐藏的 Canvas 用于绘制图标 -->
-  <canvas type="2d" id="icon-canvas" class="icon-canvas-hidden"></canvas>
-
   <!-- 级别选择 -->
   <view class="level-selector">
     <scroll-view class="level-scroll" scroll-x>
@@ -46,7 +43,15 @@
         <view class="vocab-main">
           <view class="vocab-left">
             <view class="vocab-word">{{item.word}}</view>
+            <view class="vocab-ipa" wx:if="{{item.ipa}}">{{item.ipa}}</view>
             <view class="vocab-phonetic" wx:if="{{item.phonetic}}">{{item.phonetic}}</view>
+            <view class="vocab-meta" wx:if="{{item.pos}}">
+              <text wx:if="{{item.gender}}" class="gender-tag {{item.gender}}">
+                {{item.gender === 'm' ? 'der' : item.gender === 'f' ? 'die' : 'das'}}
+              </text>
+              <text class="pos-tag">{{item.pos}}</text>
+              <text wx:if="{{item.plural}}" class="plural-tag">{{item.plural}}</text>
+            </view>
             <view class="vocab-translation">{{item.translation}}</view>
           </view>
           
@@ -57,7 +62,7 @@
               class="audio-btn {{playingWord === item.word ? 'playing' : ''}}"
               bindtap="playAudio" 
               data-word="{{item.word}}">
-              <image class="audio-icon" src="{{playingWord === item.word ? speakerActive : speakerNormal}}" mode="aspectFit" />
+              <text class="audio-icon-text">🔊</text>
             </view>
             
             <!-- 生词本按钮 -->
@@ -98,9 +103,9 @@
         <view class="pronunciation-rule">{{item.rule}}</view>
         <view class="pronunciation-desc">{{item.description}}</view>
         <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
-          <text>{{item.example}}</text>
+            <text>{{item.example}}</text>
           <view class="audio-btn-small {{playingWord === item.example ? 'playing' : ''}}">
-            <image class="audio-icon-small" src="{{playingWord === item.example ? speakerActive : speakerNormal}}" mode="aspectFit" />
+              <text class="audio-icon-small-text">🔊</text>
           </view>
         </view>
       </view>

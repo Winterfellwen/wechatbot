@@ -7,10 +7,13 @@ var STORAGE_USER = 'auth_user';
 
 function request(method, path, data, needAuth) {
   return new Promise(function (resolve, reject) {
-    var header = { 'Content-Type': 'application/json' };
     if (needAuth) {
       var token = wx.getStorageSync(STORAGE_TOKEN);
-      if (token) header['Authorization'] = 'Bearer ' + token;
+      if (!token) return reject({ statusCode: 401, error: 'no token' });
+    }
+    var header = { 'Content-Type': 'application/json' };
+    if (needAuth) {
+      header['Authorization'] = 'Bearer ' + wx.getStorageSync(STORAGE_TOKEN);
     }
     wx.request({
       url: SERVER + path,

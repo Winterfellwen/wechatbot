@@ -1,8 +1,5 @@
 <!--pages/lesson/lesson.wxml-->
 <view class="container">
-  <!-- 隐藏的 Canvas 用于绘制图标 -->
-  <canvas type="2d" id="icon-canvas" class="icon-canvas-hidden"></canvas>
-
   <!-- Study mode: words, grammar, text -->
   <view wx:if="{{mode === 'study'}}" class="study-container">
     <view class="study-header">
@@ -33,7 +30,7 @@
               <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">
                 <text class="example-text">{{item.example}}</text>
                 <view class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">
-                  <image class="speaker-img" src="{{playingWord === item.example ? speakerActive : speakerNormal}}" mode="aspectFit" />
+                  <text class="speaker-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text>
                 </view>
               </view>
               <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
@@ -95,7 +92,7 @@
     <view class="quiz-body">
       <view class="question-prompt">{{currentQuestion.prompt}}</view>
       <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio">
-        <image class="speaker-img-lg" src="{{isPlayingAudio ? speakerActive : speakerNormal}}" mode="aspectFit" />
+        <text class="speaker-icon-lg">🔊</text>
       </view>
 
       <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">

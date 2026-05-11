@@ -26,7 +26,32 @@
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "pdf-service"
+      },
+      {
+        "type": "folder",
+        "value": "generated-images"
+      },
+      {
+        "type": "folder",
+        "value": "docs"
+      },
+      {
+        "type": "folder",
+        "value": "tests"
+      },
+      {
+        "type": "folder",
+        "value": "scripts"
+      },
+      {
+        "type": "regexp",
+        "value": "\\.backup$"
+      }
+    ],
     "include": []
   },
   "appid": "wx2510f82943d7741e",

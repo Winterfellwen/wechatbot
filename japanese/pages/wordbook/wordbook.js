@@ -1,5 +1,7 @@
 var wordsIndex = require('../../data/words/index.js');
 
+var PAGE_SIZE = 60;
+
 Page({
   data: {
     searchKey: '',
@@ -7,7 +9,10 @@ Page({
     masteredWords: 0,
     learningWords: 0,
     filteredWords: [],
-    allWords: []
+    allWords: [],
+    page: 0,
+    hasMore: true,
+    displayWords: []
   },
 
   onLoad: function() {
@@ -16,6 +21,10 @@ Page({
 
   onShow: function() {
     this.loadWords();
+  },
+
+  getDisplayPage: function(words, page) {
+    return words.slice(0, (page + 1) * PAGE_SIZE);
   },
 
   loadWords: function() {
@@ -41,15 +50,19 @@ Page({
       totalWords: baseWords.length,
       masteredWords: mastered,
       learningWords: baseWords.length - mastered,
-      searchKey: ''
+      searchKey: '',
+      page: 0,
+      hasMore: baseWords.length > PAGE_SIZE,
+      displayWords: this.getDisplayPage(baseWords, 0)
     });
   },
 
   onSearch: function(e) {
     var key = e.detail.value;
     var words = this.data.allWords;
+    var filtered;
     if (key) {
-      var filtered = [];
+      filtered = [];
       var i;
       for (i = 0; i < words.length; i++) {
         var w = words[i];
@@ -59,14 +72,37 @@ Page({
           filtered = filtered.concat([w]);
         }
       }
-      this.setData({ filteredWords: filtered, searchKey: key });
     } else {
-      this.setData({ filteredWords: words, searchKey: '' });
+      filtered = words;
     }
+    this.setData({
+      filteredWords: filtered,
+      searchKey: key,
+      page: 0,
+      hasMore: filtered.length > PAGE_SIZE,
+      displayWords: this.getDisplayPage(filtered, 0)
+    });
   },
 
   clearSearch: function() {
-    this.setData({ filteredWords: this.data.allWords, searchKey: '' });
+    this.setData({
+      filteredWords: this.data.allWords,
+      searchKey: '',
+      page: 0,
+      hasMore: this.data.allWords.length > PAGE_SIZE,
+      displayWords: this.getDisplayPage(this.data.allWords, 0)
+    });
+  },
+
+  loadMore: function() {
+    if (!this.data.hasMore) return;
+    var nextPage = this.data.page + 1;
+    var allDisplay = this.getDisplayPage(this.data.filteredWords, nextPage);
+    this.setData({
+      page: nextPage,
+      displayWords: allDisplay,
+      hasMore: allDisplay.length < this.data.filteredWords.length
+    });
   },
 
   goBack: function() {
@@ -97,7 +133,8 @@ Page({
       allWords: words,
       filteredWords: filtered,
       masteredWords: mastered,
-      learningWords: words.length - mastered
+      learningWords: words.length - mastered,
+      displayWords: this.getDisplayPage(filtered, this.data.page)
     });
   }
 });
