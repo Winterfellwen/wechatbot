@@ -5,8 +5,11 @@ const a1Grammar = require('../../data/a1/grammar.js');
 const a1Pronunciation = require('../../data/a1/pronunciation.js');
 const a1Texts = require('../../data/a1/texts.js');
 const a2Vocab = require('../../data/a2/vocab.js');
+const a2Grammar = require('../../data/a2/grammar.js');
 const b1Vocab = require('../../data/b1/vocab.js');
+const b1Grammar = require('../../data/b1/grammar.js');
 const b2Vocab = require('../../data/b2/vocab.js');
+const b2Grammar = require('../../data/b2/grammar.js');
 
 const levelData = {
   a1: {
@@ -20,7 +23,7 @@ const levelData = {
   a2: {
     name: 'A2 进阶',
     vocab: a2Vocab,
-    grammar: [],
+    grammar: a2Grammar,
     pronunciation: [],
     texts: [],
     units: 15
@@ -28,7 +31,7 @@ const levelData = {
   b1: {
     name: 'B1 中级',
     vocab: b1Vocab,
-    grammar: [],
+    grammar: b1Grammar,
     pronunciation: [],
     texts: [],
     units: 15
@@ -36,7 +39,7 @@ const levelData = {
   b2: {
     name: 'B2 高级',
     vocab: b2Vocab,
-    grammar: [],
+    grammar: b2Grammar,
     pronunciation: [],
     texts: [],
     units: 15
@@ -170,6 +173,18 @@ Page({
         duration: 1500
       });
     }
+  },
+
+  goToLearn: function() {
+    wx.navigateTo({
+      url: '/german/pages/learn/learn'
+    });
+  },
+
+  goToWordbook: function() {
+    wx.navigateTo({
+      url: '/german/pages/wordbook/wordbook'
+    });
   },
 
   onShareAppMessage: function() {

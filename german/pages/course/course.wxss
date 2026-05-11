@@ -9,7 +9,7 @@ page {
 .container {
   min-height: 100vh;
   background: #F8FAFC;
-  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(150rpx + env(safe-area-inset-bottom));
 }
 
 /* 隐藏的 Canvas */
@@ -454,4 +454,76 @@ page {
   font-size: 22rpx;
   color: #94A3B8;
   margin-top: 8rpx;
+}
+
+/* ========== 底部导航 ========== */
+.bottom-nav {
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  right: 0; 
+  display: flex;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -4rpx 24rpx rgba(0,0,0,0.06);
+  padding: 8rpx 0 env(safe-area-inset-bottom, 8rpx);
+  z-index: 999;
+}
+
+.nav-item { 
+  flex: 1; 
+  padding: 12rpx 0; 
+  text-align: center; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
+
+.nav-icon-wrap {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 16rpx;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rpx;
+  transition: all 0.2s ease;
+}
+
+.nav-icon-active {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.25);
+}
+
+.nav-icon-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.nav-item.active .nav-icon-text {
+  color: #ffffff;
+}
+
+.nav-text { 
+  font-size: 22rpx; 
+  color: #64748B; 
+  transition: color 0.2s ease;
+}
+
+.nav-text-active {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.nav-item.active .nav-text {
+  color: #2563EB;
+  font-weight: 600;
 }

@@ -97,6 +97,18 @@ Page({
     this.setData({ currentTab: 'list' });
   },
 
+  goToLearn: function() {
+    wx.navigateTo({
+      url: '/german/pages/learn/learn'
+    });
+  },
+
+  goToCourse: function() {
+    wx.navigateTo({
+      url: '/german/pages/course/course'
+    });
+  },
+
   onShareAppMessage: function() {
     return {
       title: '德语生词本',
