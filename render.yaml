@@ -16,7 +16,7 @@ services:
       - key: OPENROUTER_KEY
         sync: false
       - key: PDF_SERVICE_URL
-        value: "https://pdf-converter-idfi.onrender.com"
+        value: "https://pdf-converter-v2.onrender.com"
 
   - type: web
     name: pdf-converter
