@@ -7,21 +7,21 @@
 
   <view class="hub-grid">
     <view class="hub-card hub-green" bindtap="goToTextbook">
-      <view class="hub-icon">📚</view>
+      <view class="hub-icon-text">文</view>
       <view class="hub-name">课本</view>
       <view class="hub-desc">N5 → N1 完整学习</view>
       <view class="hub-badge">76课</view>
     </view>
 
     <view class="hub-card hub-blue" bindtap="goToWordbook">
-      <view class="hub-icon">📖</view>
+      <view class="hub-icon-text">詞</view>
       <view class="hub-name">单词本</view>
       <view class="hub-desc">高效背单词</view>
       <view class="hub-badge">{{masteredCount}}/{{wordCount}}</view>
     </view>
 
     <view class="hub-card hub-orange" bindtap="goToGrammar">
-      <view class="hub-icon">✍️</view>
+      <view class="hub-icon-text">文</view>
       <view class="hub-name">语法</view>
       <view class="hub-desc">系统语法讲解</view>
       <view class="hub-badge">{{grammarCount}}条</view>
@@ -30,15 +30,15 @@
 
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLesson">
-      <text class="nav-icon">🎯</text>
+      <text class="nav-icon-text">关</text>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item active">
-      <text class="nav-icon">📖</text>
+      <text class="nav-icon-text">课</text>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item" bindtap="goToRank">
-      <text class="nav-icon">🏆</text>
+      <text class="nav-icon-text">榜</text>
       <text class="nav-text">排行榜</text>
     </view>
   </view>

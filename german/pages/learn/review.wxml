@@ -39,8 +39,7 @@
   <!-- 无复习内容 -->
   <block wx:elif="{{isFinished && totalQuestions === 0}}">
     <view class="empty-state">
-      <text class="empty-icon">🎉</text>
-      <text class="empty-title">太棒了！</text>
+      <text class="empty-title">太棒了</text>
       <text class="empty-desc">暂无需要复习的内容</text>
     </view>
     <button class="back-btn" bindtap="goToLearn">返回首页</button>
@@ -49,8 +48,7 @@
   <!-- 复习完成 -->
   <block wx:else-if="{{isFinished && totalQuestions > 0}}">
     <view class="finish-card">
-      <text class="finish-icon">📚</text>
-      <text class="finish-title">复习完成！</text>
+      <text class="finish-title">复习完成</text>
       <view class="finish-stats">
         <view class="stat">
           <text class="stat-num correct">{{correct}}</text>
@@ -62,9 +60,9 @@
         </view>
       </view>
       <view class="finish-message">
-        <text wx:if="{{wrong === 0}}">太棒了！全部掌握！</text>
-        <text wx:elif="{{wrong <= 2}}">很不错！继续加油！</text>
-        <text wx:else>需要多加复习哦！</text>
+        <text wx:if="{{wrong === 0}}">太棒了！全部掌握</text>
+        <text wx:elif="{{wrong <= 2}}">很不错！继续加油</text>
+        <text wx:else>需要多加复习哦</text>
       </view>
     </view>
     

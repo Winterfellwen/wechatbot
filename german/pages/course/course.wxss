@@ -24,7 +24,14 @@
   font-size: 28rpx;
   color: #666;
   font-weight: 500;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 88rpx;
+}
+
+.level-item:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 .level-item.active {
@@ -46,6 +53,8 @@
   font-size: 32rpx;
   color: #333;
   font-weight: bold;
+  cursor: pointer;
+  min-height: 88rpx;
 }
 
 .arrow {
@@ -73,6 +82,12 @@
   border-bottom: 1rpx solid #f5f5f5;
   font-size: 30rpx;
   color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.unit-item:active {
+  background: #f5f5f5;
 }
 
 .unit-item:last-child {
@@ -143,10 +158,13 @@
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
+  cursor: pointer;
+  min-height: 88rpx;
 }
 
 .audio-icon {
   font-size: 30rpx;
+  color: #1890ff;
 }
 
 .vocab-translation {
@@ -239,6 +257,8 @@
   color: #1890ff;
   margin-top: 12rpx;
   font-weight: 500;
+  cursor: pointer;
+  min-height: 88rpx;
 }
 
 .text-list {

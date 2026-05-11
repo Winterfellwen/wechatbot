@@ -28,8 +28,8 @@
       <view wx:elif="{{questions[currentQuestion].type === 'listen'}}" class="type-listen">
         <view class="question-text">{{questions[currentQuestion].question}}</view>
         <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
-          <text class="audio-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
-          <text>{{isPlaying ? '播放中...' : '播放录音'}}</text>
+          <text class="audio-icon">{{isPlaying ? '音' : '音'}}</text>
+          <text>{{isPlaying ? '播放中' : '播放录音'}}</text>
         </view>
         <view class="options">
           <button 
@@ -48,8 +48,8 @@
       <view wx:elif="{{questions[currentQuestion].type === 'spell'}}" class="type-spell">
         <view class="question-text">{{questions[currentQuestion].question}}</view>
         <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
-          <text class="audio-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
-          <text>{{isPlaying ? '播放中...' : '播放录音'}}</text>
+          <text class="audio-icon">{{isPlaying ? '音' : '音'}}</text>
+          <text>{{isPlaying ? '播放中' : '播放录音'}}</text>
         </view>
         <input 
           class="spell-input" 
@@ -95,7 +95,7 @@
               class="match-item {{selectedPairs.indexOf(index) !== -1 ? 'selected' : ''}}"
               bindtap="selectPair"
               data-index="{{index}}">
-              {{item.left}}
+              {{item.left}
             </view>
           </view>
           <view class="match-right">
@@ -105,7 +105,7 @@
               class="match-item {{selectedPairs.indexOf(index) !== -1 ? 'selected' : ''}}"
               bindtap="selectPair"
               data-index="{{index}}">
-              {{item.right}}
+              {{item.right}
             </view>
           </view>
         </view>

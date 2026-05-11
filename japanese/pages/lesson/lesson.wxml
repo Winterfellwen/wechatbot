@@ -3,7 +3,7 @@
   <!-- Study mode: words, grammar, text -->
   <view wx:if="{{mode === 'study'}}" class="study-container">
     <view class="study-header">
-      <view class="exit-btn" bindtap="goBack">◀ 返回</view>
+      <view class="exit-btn" bindtap="goBack">返回</view>
       <view class="title-wrap">
         <text class="study-title">{{lessonTitle}}</text>
         <text wx:if="{{lessonSubtitle}}" class="study-subtitle">{{lessonSubtitle}}</text>
@@ -22,12 +22,15 @@
                 <view class="sw-meaning">{{item.meaning}}</view>
               </view>
               <view class="expand-btn" catchtap="toggleWordExpand" data-index="{{wordIdx}}">
-                <text class="arrow">{{item.expanded ? '▲' : '▼'}}</text>
+                <text class="arrow {{item.expanded ? 'up' : ''}}">{{item.expanded ? '▲' : '▼'}}</text>
               </view>
             </view>
             <view wx:if="{{item.expanded}}" class="word-extra">
               <view class="sw-reading">{{item.reading}}</view>
-              <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">{{item.example}} <text class="audio-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text></view>
+              <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">
+                <text class="example-text">{{item.example}}</text>
+                <text class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">音</text>
+              </view>
               <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
             </view>
           </view>
@@ -68,14 +71,14 @@
     </scroll-view>
 
     <view class="start-quiz-bar">
-      <view class="start-quiz-btn" bindtap="startQuiz">开始练习 →</view>
+      <view class="start-quiz-btn" bindtap="startQuiz">开始练习</view>
     </view>
   </view>
 
   <!-- Quiz mode -->
   <view wx:if="{{mode === 'quiz' && !showComplete && currentQuestion}}" class="quiz-container">
     <view class="quiz-header">
-      <view class="exit-btn" bindtap="goBack">◀</view>
+      <view class="exit-btn" bindtap="goBack">返回</view>
       <view class="progress-wrap">
         <view class="progress-bar">
           <view class="progress-fill" style="width: {{progress}}%"></view>
@@ -86,7 +89,9 @@
 
     <view class="quiz-body">
       <view class="question-prompt">{{currentQuestion.prompt}}</view>
-      <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio"><text class="audio-icon {{isPlayingAudio ? 'playing' : ''}}">🔊</text></view>
+      <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio">
+        <text class="audio-indicator-large {{isPlayingAudio ? 'playing' : ''}}">音</text>
+      </view>
 
       <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">
         <block wx:for="{{currentQuestion.options}}" wx:for-index="idx" wx:key="idx">
@@ -95,12 +100,6 @@
             <text class="option-text">{{item}}</text>
           </view>
         </block>
-      </view>
-
-      <view wx:if="{{showFirework}}" class="firework-overlay">
-        <view class="firework firework-1"></view>
-        <view class="firework firework-2"></view>
-        <view class="firework firework-3"></view>
       </view>
 
       <view wx:if="{{!currentQuestion.options}}" class="fill-section">
@@ -112,15 +111,14 @@
 
     <view wx:if="{{showResult}}" class="result-bar">
       <view class="next-btn" bindtap="nextQuestion">
-        <text class="next-icon">{{current < total ? '➡️' : '🏁'}}</text>
-        <text class="next-text">{{current < total ? '继续' : '完成!'}}</text>
+        <text class="next-text">{{current < total ? '继续' : '完成'}}</text>
       </view>
       <view class="result-card {{isCorrect ? 'result-correct' : 'result-wrong'}}">
         <view class="result-icon-wrap">
-          <text class="result-icon">{{isCorrect ? '✓' : '✗'}}</text>
+          <text class="result-icon">{{isCorrect ? 'V' : 'X'}}</text>
         </view>
-        <text class="result-msg">{{isCorrect ? '回答正确!' : '回答错误'}}</text>
-        <text wx:if="{{isCorrect && combo > 1}}" class="result-combo">{{combo}} 连击!</text>
+        <text class="result-msg">{{isCorrect ? '回答正确' : '回答错误'}}</text>
+        <text wx:if="{{isCorrect && combo > 1}}" class="result-combo">{{combo}} 连击</text>
         <view wx:if="{{!isCorrect}}" class="answer-box">
           <text class="answer-label">正确答案：</text>
           <text class="answer-value">{{currentQuestion.options ? currentQuestion.options[correctIndex] : currentQuestion.answer}}</text>
@@ -138,11 +136,11 @@
   <view wx:if="{{showComplete}}" class="complete-screen">
     <view class="complete-card">
       <view class="complete-stars">
-        <text wx:for="{{completeStars.full}}" wx:for-item="star" wx:key="*this" class="star full">★</text>
-        <text wx:if="{{completeStars.half}}" class="star half">★</text>
-        <text wx:for="{{completeStars.empty}}" wx:for-item="star" wx:key="*this" class="star empty">☆</text>
+        <text wx:for="{{completeStars.full}}" wx:for-item="star" wx:key="*this" class="star full">*</text>
+        <text wx:if="{{completeStars.half}}" class="star half">*</text>
+        <text wx:for="{{completeStars.empty}}" wx:for-item="star" wx:key="*this" class="star empty">-</text>
       </view>
-      <text class="complete-title">课程完成!</text>
+      <text class="complete-title">课程完成</text>
       <text class="complete-score">{{score}} / {{total}}</text>
       <text class="complete-xp">+{{xpEarned}} XP</text>
       <view class="complete-btns">

@@ -45,7 +45,7 @@
           </view>
         </view>
         <view class="word-star {{item.mastered ? 'starred' : ''}}" catchtap="toggleMaster" data-id="{{item.id}}">
-          <text class="star-icon">{{item.mastered ? '⭐' : '☆'}}</text>
+          <text class="star-icon {{item.mastered ? 'active' : ''}}">{{item.mastered ? '★' : '☆'}}</text>
         </view>
       </view>
     </block>

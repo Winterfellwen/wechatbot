@@ -29,7 +29,7 @@
               <text class="progress-text">{{item.progress}}%</text>
             </view>
           </view>
-          <view class="book-arrow"><text class="arrow-icon">▶</text></view>
+          <view class="book-arrow"><text class="arrow-icon">></text></view>
         </view>
       </block>
     </view>
@@ -48,16 +48,16 @@
     <view class="lesson-list">
       <block wx:for="{{currentBookLessons}}" wx:key="id">
         <view class="lesson-row {{item.done ? 'done' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
-          <view class="lesson-num-circle" style="border-color: {{item.done ? '#22C55E' : '#CBD5E1'}}">
-            <text wx:if="{{item.done}}" style="color:#22C55E;font-size:32rpx">✅</text>
-            <text wx:else style="color:#94A3B8;font-size:28rpx">{{item.number}}</text>
+          <view class="lesson-num-circle {{item.done ? 'done' : ''}}">
+            <text wx:if="{{item.done}}" class="check-icon">V</text>
+            <text wx:else class="num-text">{{item.number}}</text>
           </view>
           <view class="lesson-info">
             <text class="lesson-title">{{item.title}}</text>
             <text wx:if="{{item.subtitle}}" class="lesson-subtitle">{{item.subtitle}}</text>
             <text class="lesson-meta">{{item.words}}词 · {{item.grammar}}语法</text>
           </view>
-          <text class="lesson-arrow">→</text>
+          <text class="lesson-arrow">></text>
         </view>
       </block>
     </view>
