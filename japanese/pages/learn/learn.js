@@ -16,28 +16,64 @@ Page({
     selectedLevel: '全部级别',
     selectedLevelIndex: 0,
     levelOptions: ['全部级别', 'N5', 'N4', 'N3', 'N2', 'N1'],
-    jpScores: {}
+    jpScores: {},
+    loading: true
+  },
+
+  onLoad: function() {
+    // 首次加载：先构建本地数据，立即显示
+    this.buildPath();
+    // 再异步获取云端分数
+    this.fetchCloudScores();
   },
 
   onShow: function() {
-    var that = this;
+    // 每次显示时快速刷新本地状态
     var loggedIn = wx.getStorageSync('auth_token');
     if (loggedIn) {
-      var loginLib = require('../../../utils/login');
-      loginLib.getJpLessonScores().then(function(res) {
-        var scores = {};
-        if (res.scores) {
-          for (var i = 0; i < res.scores.length; i++) {
-            scores[res.scores[i].lesson_id] = res.scores[i];
-          }
+      this.fetchCloudScores();
+    }
+  },
+
+  fetchCloudScores: function() {
+    var that = this;
+    var loggedIn = wx.getStorageSync('auth_token');
+    if (!loggedIn) {
+      this.setData({ loading: false });
+      return;
+    }
+
+    var loginLib = require('../../../utils/login');
+    loginLib.getJpLessonScores().then(function(res) {
+      var scores = {};
+      if (res.scores) {
+        for (var i = 0; i < res.scores.length; i++) {
+          scores[res.scores[i].lesson_id] = res.scores[i];
         }
-        that.setData({ jpScores: scores });
-        that.buildPath();
-      }).catch(function() {
-        that.buildPath();
-      });
-    } else {
-      this.buildPath();
+      }
+      that.setData({ jpScores: scores, loading: false });
+      that.updateNodesWithScores(scores);
+    }).catch(function() {
+      that.setData({ loading: false });
+    });
+  },
+
+  updateNodesWithScores: function(scores) {
+    var nodes = this.data.pathNodes;
+    var updated = false;
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].type === 'node' && scores[nodes[i].id]) {
+        var scoreData = scores[nodes[i].id];
+        if (scoreData.score > 0) {
+          nodes[i].jpScore = scoreData.score;
+          nodes[i].jpTotal = scoreData.total;
+          nodes[i].jpStarData = this.getJpStarData(scoreData.score, scoreData.total);
+          updated = true;
+        }
+      }
+    }
+    if (updated) {
+      this.setData({ pathNodes: nodes });
     }
   },
 
