@@ -96,7 +96,7 @@
   background: rgba(255,255,255,0.95);
   backdrop-filter: blur(20px);
   box-shadow: 0 -4rpx 24rpx rgba(0,0,0,0.06);
-  padding: 12rpx 0 calc(env(safe-area-inset-bottom, 12rpx) + 12rpx);
+  padding: 8rpx 0 16rpx;
   z-index: 999;
 }
 
@@ -113,14 +113,14 @@
 .nav-item:active { transform: scale(0.95); }
 
 .nav-icon-wrap {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 20rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
   background: #F1F5F9;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
   transition: all 0.2s ease;
 }
 .nav-icon-active {
