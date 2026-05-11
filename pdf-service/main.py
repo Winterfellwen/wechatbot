@@ -178,6 +178,15 @@ def _pdf_to_docx(input_path: Path) -> Path:
     return output_path
 
 
+def _kill_libreoffice():
+    """Kill any leftover LibreOffice processes to avoid port conflicts."""
+    try:
+        subprocess.run(["pkill", "-f", "libreoffice"], capture_output=True, timeout=10)
+        subprocess.run(["pkill", "-f", "soffice.bin"], capture_output=True, timeout=10)
+    except Exception:
+        pass
+
+
 def _docx_to_pdf(input_path: Path) -> Path:
     if not LIBREOFFICE_BIN:
         raise RuntimeError(
@@ -187,52 +196,72 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
     import fitz
 
+    _kill_libreoffice()
     tmp_out = UPLOAD_DIR / f"lo_{uuid.uuid4().hex[:8]}"
     tmp_out.mkdir(exist_ok=True)
 
-    try:
+    lo_env = os.environ.copy()
+    lo_env["SAL_USE_VCLPLUGIN"] = "gen"
+    lo_env["HOME"] = str(UPLOAD_DIR)
+
+    def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
         cmd = [
             LIBREOFFICE_BIN,
             "--headless",
             "--norestore",
             "--nofirststartwizard",
+            "--safe-mode",
             "--convert-to", "pdf",
             "--outdir", str(tmp_out),
             str(input_path),
         ]
         print(f"LibreOffice: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        print(f"LO stdout: {result.stdout[:500]}")
-        print(f"LO stderr: {result.stderr[:500]}")
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec, env=lo_env)
+
+    try:
+        result = _run_lo(300)
+        print(f"LO stdout: {(result.stdout or '')[:500]}")
+        print(f"LO stderr: {(result.stderr or '')[:500]}")
         print(f"LO returncode: {result.returncode}")
+
+        # Retry once if LO exits with error (sometimes transient)
+        if result.returncode != 0:
+            _kill_libreoffice()
+            print("LibreOffice failed, retrying once...")
+            result = _run_lo(300)
+            print(f"LO retry stdout: {(result.stdout or '')[:500]}")
+            print(f"LO retry stderr: {(result.stderr or '')[:500]}")
+            print(f"LO retry returncode: {result.returncode}")
 
         pdf_files = list(tmp_out.glob("*.pdf"))
         if not pdf_files:
             raise RuntimeError(
-                f"LibreOffice produced no PDF. stderr: {result.stderr[:500]}"
+                f"LibreOffice produced no PDF. returncode={result.returncode} "
+                f"stderr: {(result.stderr or '')[:1000]}"
             )
 
         lo_pdf_path = pdf_files[0]
-        print(f"LO PDF created: {lo_pdf_path}, size={lo_pdf_path.stat().st_size}")
+        lo_size = lo_pdf_path.stat().st_size
+        print(f"LO PDF created: {lo_pdf_path}, size={lo_size}")
+        if lo_size == 0:
+            raise RuntimeError("LibreOffice produced an empty PDF")
 
         zoom = 300.0 / 72.0
         lo_doc = fitz.open(str(lo_pdf_path))
         num_pages = len(lo_doc)
-        print(f"Rendering {num_pages} page(s) at {zoom:.2f}x zoom (300 DPI)")
+        print(f"Rendering {num_pages} page(s) at 300 DPI")
 
         out_doc = fitz.open()
-        A4_W, A4_H = 595, 842  # points
+        A4_W, A4_H = 595, 842
 
         for i in range(num_pages):
             page = lo_doc[i]
             mat = fitz.Matrix(zoom, zoom)
             pix = page.get_pixmap(matrix=mat, colorspace=fitz.csRGB)
             img_bytes = pix.tobytes("png")
-
             new_page = out_doc.new_page(width=A4_W, height=A4_H)
             new_page.insert_image(fitz.Rect(0, 0, A4_W, A4_H), stream=img_bytes)
-
-            print(f"  Page {i+1}: {pix.width}x{pix.height}px")
+            print(f"  Page {i+1}: {pix.width}x{pix.height}px, {len(img_bytes)} bytes")
 
         lo_doc.close()
 
@@ -244,6 +273,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
         return output_path
     finally:
         shutil.rmtree(tmp_out, ignore_errors=True)
+        _kill_libreoffice()
 
 
 @app.get("/")
@@ -269,6 +299,11 @@ async def debug():
         info["pillow"] = PIL.__version__
     except Exception as e:
         info["pillow"] = str(e)
+    try:
+        from pymupdf_fonts import font_version
+        info["pymupdf_fonts"] = font_version
+    except Exception as e:
+        info["pymupdf_fonts"] = str(e)
     return info
 
 

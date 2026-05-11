@@ -4,8 +4,14 @@ RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
         libreoffice-writer-nogui \
         fonts-noto-cjk \
+        fonts-wqy-microhei \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    SAL_USE_VCLPLUGIN=gen \
+    HOME=/tmp
 
 WORKDIR /app
 
