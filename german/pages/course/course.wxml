@@ -1,4 +1,7 @@
 <view class="container">
+  <!-- 隐藏的 Canvas 用于绘制图标 -->
+  <canvas type="2d" id="icon-canvas" class="icon-canvas-hidden"></canvas>
+
   <!-- 级别选择 -->
   <view class="level-selector">
     <scroll-view class="level-scroll" scroll-x>
@@ -54,14 +57,7 @@
               class="audio-btn {{playingWord === item.word ? 'playing' : ''}}"
               bindtap="playAudio" 
               data-word="{{item.word}}">
-              <view class="audio-btn-inner">
-                <view class="speaker-icon">
-                  <view class="speaker-body"></view>
-                  <view class="speaker-cone"></view>
-                  <view class="speaker-wave wave-1" wx:if="{{playingWord === item.word}}"></view>
-                  <view class="speaker-wave wave-2" wx:if="{{playingWord === item.word}}"></view>
-                </view>
-              </view>
+              <image class="audio-icon" src="{{playingWord === item.word ? speakerActive : speakerNormal}}" mode="aspectFit" />
             </view>
             
             <!-- 生词本按钮 -->
@@ -103,11 +99,8 @@
         <view class="pronunciation-desc">{{item.description}}</view>
         <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
           <text>{{item.example}}</text>
-          <view class="audio-btn-small">
-            <view class="speaker-icon-small">
-              <view class="speaker-body-s"></view>
-              <view class="speaker-cone-s"></view>
-            </view>
+          <view class="audio-btn-small {{playingWord === item.example ? 'playing' : ''}}">
+            <image class="audio-icon-small" src="{{playingWord === item.example ? speakerActive : speakerNormal}}" mode="aspectFit" />
           </view>
         </view>
       </view>

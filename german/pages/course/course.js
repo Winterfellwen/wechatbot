@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const tts = require('../../utils/tts');
+const iconGen = require('../../../utils/icon-generator');
 const a1Vocab = require('../../data/a1/vocab.js');
 const a1Grammar = require('../../data/a1/grammar.js');
 const a1Pronunciation = require('../../data/a1/pronunciation.js');
@@ -40,11 +41,25 @@ Page({
     grammarList: [],
     pronunciationList: [],
     textList: [],
-    playingWord: null
+    playingWord: null,
+    speakerNormal: '',
+    speakerActive: ''
   },
 
   onLoad: function() {
     this.loadLevelData();
+  },
+
+  onReady: function() {
+    // 初始化 Canvas 绘制扬声器图标
+    iconGen.initSpeakerIcons('icon-canvas', this).then(function(paths) {
+      this.setData({
+        speakerNormal: paths.speakerNormal,
+        speakerActive: paths.speakerActive
+      });
+    }.bind(this)).catch(function(err) {
+      console.error('Failed to generate speaker icons:', err);
+    });
   },
 
   onShow: function() {

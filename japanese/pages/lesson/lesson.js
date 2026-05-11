@@ -3,6 +3,7 @@ var grammarData = require('../../data/grammar.js');
 var wordsIndex = require('../../data/words/index.js');
 var textsData = require('../../data/texts.js');
 var tts = require('../../utils/tts');
+var iconGen = require('../../../utils/icon-generator');
 
 function buildQuiz(lessonId) {
   var words = wordsIndex.byLesson(lessonId).slice(0, 10);
@@ -118,7 +119,9 @@ Page({
     questions: [],
     playingWord: '',
     nextUnitId: 0,
-    completeStars: { full: 0, half: 0, empty: 5 }
+    completeStars: { full: 0, half: 0, empty: 5 },
+    speakerNormal: '',
+    speakerActive: ''
   },
 
    onLoad: function(options) {
@@ -160,6 +163,18 @@ Page({
         this.startQuiz();
       }
     },
+
+  onReady: function() {
+    var that = this;
+    iconGen.initSpeakerIcons('icon-canvas', that).then(function(paths) {
+      that.setData({
+        speakerNormal: paths.speakerNormal,
+        speakerActive: paths.speakerActive
+      });
+    }).catch(function(err) {
+      console.error('Failed to generate speaker icons:', err);
+    });
+  },
 
   goBack: function() { wx.navigateBack(); },
 
