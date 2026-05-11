@@ -20,28 +20,6 @@ services:
 
   - type: web
     name: pdf-converter
-    runtime: python
+    runtime: docker
     rootDir: pdf-service
-    buildCommand: |
-      apt-get update -qq
-      echo "--- Installing LibreOffice ---"
-      apt-get install -y --no-install-recommends \
-        libreoffice-writer-nogui fonts-noto-cjk 2>&1 || \
-      apt-get install -y --no-install-recommends \
-        libreoffice-writer fonts-noto-cjk 2>&1 || \
-      apt-get install -y \
-        libreoffice-writer fonts-noto-cjk 2>&1 || \
-        echo "WARNING: LibreOffice install failed (DOCX→PDF won't work)"
-      echo "--- Verification ---"
-      (which soffice && soffice --version || \
-       which libreoffice && libreoffice --version || \
-       echo "NOT FOUND") 2>&1
-      echo "--- Installing Python deps ---"
-      pip install -r requirements.txt
-    startCommand: |
-      echo "--- Runtime check ---"
-      (which soffice || which libreoffice || echo "LibreOffice not found") 2>&1
-      python -m uvicorn main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
+    dockerfilePath: Dockerfile
