@@ -1,13 +1,14 @@
-/* smart-teacher/pages/chat/chat.wxss */
+/* smart-teacher/pages/chat/chat.wxss - UI/UX Pro Max 统一版 */
+/* 主色: #2563EB | 背景: #F8FAFC | 边框: #E2E8F0 */
 
 .chat-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f6fa;
+  background-color: #F8FAFC;
 }
 
-/* 消息列表 */
+/* ========== 消息列表 ========== */
 .msg-list {
   flex: 1;
   padding: 20rpx 24rpx;
@@ -28,7 +29,7 @@
   flex-direction: row-reverse;
 }
 
-/* 头像 */
+/* ========== 头像 ========== */
 .avatar {
   width: 68rpx;
   height: 68rpx;
@@ -40,13 +41,15 @@
 }
 
 .ai-avatar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   margin-right: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.25);
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
   margin-left: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.25);
 }
 
 .avatar-text {
@@ -55,23 +58,26 @@
   font-weight: 600;
 }
 
-/* 气泡 */
+/* ========== 气泡 ========== */
 .bubble {
   max-width: 70%;
   padding: 20rpx 28rpx;
   border-radius: 20rpx;
   word-break: break-all;
+  transition: all 0.2s ease;
 }
 
 .ai-bubble {
   background-color: #ffffff;
-  border-top-left-radius: 4rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  border-top-left-radius: 8rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 3rpx solid #E2E8F0;
 }
 
 .user-bubble {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-  border-top-right-radius: 4rpx;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  border-top-right-radius: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(37,99,235,0.25);
 }
 
 .bubble-text {
@@ -80,21 +86,22 @@
 }
 
 .ai-bubble .bubble-text {
-  color: #333;
+  color: #1E293B;
 }
 
 .user-bubble .bubble-text {
-  color: #fff;
+  color: #ffffff;
 }
 
-/* 图片消息 */
+/* ========== 图片消息 ========== */
 .msg-image {
   width: 300rpx;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   margin-bottom: 12rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
 }
 
-/* 输入动画 */
+/* ========== 输入动画 ========== */
 .typing-bubble {
   padding: 24rpx 36rpx;
 }
@@ -109,7 +116,7 @@
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
-  background-color: #b0b0b0;
+  background-color: #94A3B8;
   animation: dotBounce 1.2s infinite ease-in-out;
 }
 
@@ -132,7 +139,7 @@
   }
 }
 
-/* 快捷提问 */
+/* ========== 快捷提问 ========== */
 .quick-asks {
   white-space: nowrap;
   padding: 0 24rpx 16rpx;
@@ -141,24 +148,34 @@
 .quick-tag {
   display: inline-block;
   padding: 12rpx 28rpx;
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 32rpx;
   font-size: 24rpx;
-  color: #667eea;
+  color: #2563EB;
   margin-right: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  border: 2rpx solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 88rpx;
+  display: inline-flex;
+  align-items: center;
 }
 
 .quick-tag:active {
   opacity: 0.7;
+  transform: scale(0.97);
+  background: #EFF6FF;
+  border-color: #2563EB;
 }
 
-/* 底部输入栏 */
+/* ========== 底部输入栏 ========== */
 .input-bar {
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 16rpx 24rpx;
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  border-top: 1rpx solid #eee;
+  border-top: 3rpx solid #E2E8F0;
+  box-shadow: 0 -4rpx 24rpx rgba(0,0,0,0.04);
 }
 
 .input-bar-inner {
@@ -174,65 +191,87 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: #f5f6fa;
+  background-color: #F1F5F9;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .image-btn:active {
-  background-color: #e8e9ed;
+  background-color: #E2E8F0;
+  transform: scale(0.95);
 }
 
 .image-btn-icon {
   font-size: 36rpx;
+  color: #64748B;
 }
 
 .msg-input {
   flex: 1;
   height: 72rpx;
-  background-color: #f5f6fa;
+  background-color: #F1F5F9;
   border-radius: 36rpx;
   padding: 0 28rpx;
   font-size: 28rpx;
-  color: #333;
+  color: #1E293B;
+  border: 3rpx solid transparent;
+  transition: all 0.2s ease;
+}
+
+.msg-input:focus {
+  border-color: #2563EB;
+  background: #ffffff;
 }
 
 .send-btn {
   height: 64rpx;
   padding: 0 28rpx;
   border-radius: 32rpx;
-  background-color: #d9d9d9;
+  background-color: #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .send-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  box-shadow: 0 4rpx 16rpx rgba(37,99,235,0.3);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
 }
 
 .send-btn-text {
   font-size: 26rpx;
-  color: #fff;
+  color: #94A3B8;
   font-weight: 500;
 }
 
-/* 图片预览条 */
+.send-btn.active .send-btn-text {
+  color: #ffffff;
+}
+
+/* ========== 图片预览条 ========== */
 .preview-bar {
   display: flex;
   align-items: center;
   margin-top: 16rpx;
   padding: 12rpx 16rpx;
-  background-color: #f5f6fa;
-  border-radius: 12rpx;
+  background-color: #F1F5F9;
+  border-radius: 16rpx;
   position: relative;
 }
 
 .preview-thumb {
   width: 100rpx;
   height: 100rpx;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
 }
 
 .preview-remove {
@@ -245,7 +284,14 @@
   align-items: center;
   justify-content: center;
   font-size: 22rpx;
-  color: #999;
-  background-color: rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  background-color: rgba(0,0,0,0.4);
   border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preview-remove:active {
+  transform: scale(0.9);
+  background-color: rgba(0,0,0,0.6);
 }

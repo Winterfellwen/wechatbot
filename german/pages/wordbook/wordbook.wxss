@@ -1,8 +1,10 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%);
+  background: #F8FAFC;
+  padding-bottom: calc(60rpx + env(safe-area-inset-bottom));
 }
 
+/* ========== 空状态 ========== */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -19,15 +21,16 @@
 .empty-title {
   font-size: 40rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
   margin-bottom: 16rpx;
 }
 
 .empty-desc {
   font-size: 28rpx;
-  color: #999;
+  color: #94A3B8;
 }
 
+/* ========== 主内容区 ========== */
 .main-content {
   padding: 24rpx;
 }
@@ -39,48 +42,65 @@
   margin-bottom: 24rpx;
   background: #fff;
   padding: 24rpx;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 3rpx solid #E2E8F0;
 }
 
 .word-count {
   font-size: 28rpx;
-  color: #666;
-}
-
-.review-btn {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-  color: #fff;
-  font-size: 26rpx;
-  padding: 14rpx 28rpx;
-  border-radius: 30rpx;
-  border: none;
-  box-shadow: 0 4rpx 12rpx rgba(24,144,255,0.3);
+  color: #64748B;
   font-weight: 500;
 }
 
+.review-btn {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #fff;
+  font-size: 26rpx;
+  padding: 14rpx 28rpx;
+  border-radius: 24rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.3);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-btn:active {
+  transform: scale(0.96);
+}
+
+/* ========== 单词列表 ========== */
 .word-list {
   height: calc(100vh - 140rpx);
 }
 
 .word-item {
   background: #fff;
-  border-radius: 18rpx;
+  border-radius: 24rpx;
   padding: 26rpx;
   margin-bottom: 18rpx;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
-  transition: all 0.2s;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 3rpx solid #E2E8F0;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .word-item:active {
   transform: scale(0.99);
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
 }
 
 .word-main {
   flex: 1;
+  min-width: 0;
 }
 
 .word-text {
@@ -92,50 +112,61 @@
 .word {
   font-size: 36rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
 }
 
 .audio-icon {
   font-size: 32rpx;
+  color: #2563EB;
+  padding: 4rpx;
 }
 
 .word-translation {
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   margin-top: 10rpx;
 }
 
 .word-phonetic {
   font-size: 24rpx;
-  color: #999;
+  color: #94A3B8;
   margin-top: 6rpx;
 }
 
 .word-example {
   font-size: 24rpx;
-  color: #999;
+  color: #94A3B8;
   margin-top: 10rpx;
   font-style: italic;
 }
 
 .word-actions {
   margin-left: 20rpx;
+  flex-shrink: 0;
 }
 
 .delete-btn {
   font-size: 24rpx;
   padding: 10rpx 20rpx;
   background: #fff;
-  color: #ff4d4f;
-  border: 2rpx solid #ff4d4f;
-  border-radius: 10rpx;
+  color: #EF4444;
+  border: 2rpx solid #EF4444;
+  border-radius: 12rpx;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-btn:active {
-  background: #fff1f0;
+  background: #FEF2F2;
+  transform: scale(0.95);
 }
 
+/* ========== 复习模式 ========== */
 .review-mode {
   padding: 24rpx;
 }
@@ -147,12 +178,14 @@
   margin-bottom: 40rpx;
   background: #fff;
   padding: 20rpx;
-  border-radius: 14rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 3rpx solid #E2E8F0;
 }
 
 .progress {
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   font-weight: bold;
 }
 
@@ -160,9 +193,20 @@
   font-size: 26rpx;
   padding: 14rpx 28rpx;
   background: #fff;
-  color: #666;
-  border: 2rpx solid #d9d9d9;
-  border-radius: 10rpx;
+  color: #64748B;
+  border: 2rpx solid #E2E8F0;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn:active {
+  background: #F8FAFC;
+  transform: scale(0.96);
 }
 
 .review-card {
@@ -171,13 +215,14 @@
   padding: 60rpx 40rpx;
   text-align: center;
   margin-bottom: 40rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1);
+  box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.08);
+  border: 3rpx solid #E2E8F0;
 }
 
 .card-word {
   font-size: 60rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -186,40 +231,52 @@
 
 .card-phonetic {
   font-size: 34rpx;
-  color: #999;
+  color: #94A3B8;
   margin-top: 24rpx;
 }
 
 .card-answer {
   margin-top: 40rpx;
   padding: 32rpx;
-  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
-  border-radius: 16rpx;
-  border: 2rpx solid #52c41a;
+  background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  border-radius: 24rpx;
+  border: 2rpx solid #22C55E;
 }
 
 .answer-translation {
   font-size: 38rpx;
-  color: #52c41a;
+  color: #22C55E;
   font-weight: bold;
   margin-bottom: 14rpx;
+  display: block;
 }
 
 .answer-example {
   font-size: 26rpx;
-  color: #666;
+  color: #64748B;
+  display: block;
 }
 
 .show-answer-btn {
   margin-top: 40rpx;
-  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
-  color: #1890ff;
-  border: 2rpx solid #1890ff;
-  border-radius: 14rpx;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  color: #2563EB;
+  border: 2rpx solid #2563EB;
+  border-radius: 24rpx;
   font-size: 32rpx;
   padding: 26rpx;
   font-weight: bold;
-  box-shadow: 0 4rpx 12rpx rgba(24,144,255,0.2);
+  box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.show-answer-btn:active {
+  transform: scale(0.97);
 }
 
 .review-actions {
@@ -230,21 +287,36 @@
 .unknown-btn, .known-btn {
   flex: 1;
   padding: 28rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   font-size: 34rpx;
   font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .unknown-btn {
   background: #fff;
-  color: #ff4d4f;
-  border: 2rpx solid #ff4d4f;
-  box-shadow: 0 4rpx 12rpx rgba(255,77,79,0.2);
+  color: #EF4444;
+  border: 2rpx solid #EF4444;
+  box-shadow: 0 4rpx 12rpx rgba(239,68,68,0.15);
+}
+
+.unknown-btn:active {
+  background: #FEF2F2;
+  transform: scale(0.97);
 }
 
 .known-btn {
-  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
   color: #fff;
   border: none;
-  box-shadow: 0 4rpx 16rpx rgba(82,196,26,0.3);
+  box-shadow: 0 4rpx 16rpx rgba(34,197,94,0.3);
+}
+
+.known-btn:active {
+  transform: scale(0.97);
 }

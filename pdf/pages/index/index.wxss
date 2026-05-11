@@ -422,7 +422,7 @@ page {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
-  padding: 16rpx 0 calc(env(safe-area-inset-bottom, 16rpx) + 16rpx);
+  padding: 8rpx 0 20rpx;
   z-index: 100;
 }
 

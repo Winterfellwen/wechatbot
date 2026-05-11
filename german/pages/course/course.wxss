@@ -1,14 +1,15 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #e8f4ff 0%, #f5f5f5 100%);
-  padding-bottom: 40rpx;
+  background: #F8FAFC;
+  padding-bottom: calc(60rpx + env(safe-area-inset-bottom));
 }
 
+/* ========== 级别选择器 ========== */
 .level-selector {
   background: #fff;
-  padding: 20rpx;
-  border-bottom: 1rpx solid #e8e8e8;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.04);
+  padding: 20rpx 24rpx;
+  border-bottom: 3rpx solid #E2E8F0;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
 }
 
 .level-scroll {
@@ -19,12 +20,12 @@
   display: inline-block;
   padding: 18rpx 36rpx;
   margin-right: 16rpx;
-  background: #f5f5f5;
-  border-radius: 30rpx;
+  background: #F1F5F9;
+  border-radius: 24rpx;
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   min-height: 88rpx;
 }
@@ -35,15 +36,19 @@
 }
 
 .level-item.active {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   color: #fff;
-  box-shadow: 0 4rpx 16rpx rgba(24,144,255,0.3);
+  box-shadow: 0 4rpx 16rpx rgba(37,99,235,0.3);
 }
 
+/* ========== 单元选择器 ========== */
 .unit-selector {
   background: #fff;
   padding: 24rpx;
   position: relative;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border-radius: 24rpx;
+  margin: 20rpx;
 }
 
 .current-unit {
@@ -51,7 +56,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 32rpx;
-  color: #333;
+  color: #1E293B;
   font-weight: bold;
   cursor: pointer;
   min-height: 88rpx;
@@ -59,7 +64,7 @@
 
 .arrow {
   font-size: 24rpx;
-  color: #999;
+  color: #94A3B8;
 }
 
 .unit-list {
@@ -68,7 +73,7 @@
   left: 24rpx;
   right: 24rpx;
   background: #fff;
-  border: 1rpx solid #e8e8e8;
+  border: 3rpx solid #E2E8F0;
   border-radius: 16rpx;
   box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.12);
   z-index: 10;
@@ -79,15 +84,15 @@
 .unit-item {
   padding: 22rpx;
   text-align: center;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #F1F5F9;
   font-size: 30rpx;
-  color: #666;
+  color: #64748B;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .unit-item:active {
-  background: #f5f5f5;
+  background: #F8FAFC;
 }
 
 .unit-item:last-child {
@@ -95,17 +100,19 @@
 }
 
 .unit-item.active {
-  color: #1890ff;
+  color: #2563EB;
   font-weight: bold;
-  background: #e6f7ff;
+  background: #EFF6FF;
 }
 
+/* ========== 内容区块 ========== */
 .section {
   background: #fff;
   margin: 20rpx;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 3rpx solid #E2E8F0;
 }
 
 .section-header {
@@ -114,23 +121,24 @@
   align-items: center;
   margin-bottom: 20rpx;
   padding-bottom: 16rpx;
-  border-bottom: 2rpx solid #f0f0f0;
+  border-bottom: 2rpx solid #E2E8F0;
 }
 
 .section-title {
   font-size: 34rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
 }
 
 .section-count {
   font-size: 24rpx;
-  color: #999;
-  background: #f5f5f5;
+  color: #64748B;
+  background: #F1F5F9;
   padding: 6rpx 16rpx;
   border-radius: 20rpx;
 }
 
+/* ========== 词汇卡片网格 ========== */
 .vocab-scroll {
   width: 100%;
 }
@@ -143,12 +151,18 @@
 
 .vocab-card {
   width: calc(50% - 8rpx);
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  border-radius: 14rpx;
+  background: linear-gradient(135deg, #fff 0%, #F8FAFC 100%);
+  border-radius: 24rpx;
   padding: 18rpx;
   box-sizing: border-box;
   position: relative;
-  border: 1rpx solid #f0f0f0;
+  border: 3rpx solid #E2E8F0;
+  transition: all 0.2s ease;
+}
+
+.vocab-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
 }
 
 .vocab-word {
@@ -157,25 +171,26 @@
   align-items: center;
   font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
   cursor: pointer;
   min-height: 88rpx;
 }
 
 .audio-icon {
   font-size: 30rpx;
-  color: #1890ff;
+  color: #2563EB;
+  padding: 8rpx;
 }
 
 .vocab-translation {
   font-size: 26rpx;
-  color: #666;
+  color: #64748B;
   margin-top: 10rpx;
 }
 
 .vocab-phonetic {
   font-size: 22rpx;
-  color: #999;
+  color: #94A3B8;
   margin-top: 6rpx;
 }
 
@@ -187,14 +202,26 @@
   height: 44rpx;
   line-height: 44rpx;
   text-align: center;
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   color: #fff;
   border-radius: 22rpx;
   font-size: 28rpx;
   padding: 0;
-  box-shadow: 0 2rpx 8rpx rgba(24,144,255,0.3);
+  box-shadow: 0 2rpx 8rpx rgba(37,99,235,0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 44rpx;
+  min-height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.add-btn:active {
+  transform: scale(0.9);
+}
+
+/* ========== 语法列表 ========== */
 .grammar-list {
   max-height: 500rpx;
   overflow-y: auto;
@@ -202,7 +229,13 @@
 
 .grammar-item {
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #F1F5F9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.grammar-item:active {
+  background: #F8FAFC;
 }
 
 .grammar-item:last-child {
@@ -212,17 +245,18 @@
 .grammar-title {
   font-size: 30rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
   margin-bottom: 10rpx;
 }
 
 .grammar-content {
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   margin-top: 8rpx;
   line-height: 1.6;
 }
 
+/* ========== 发音规则列表 ========== */
 .pronunciation-list {
   max-height: 400rpx;
   overflow-y: auto;
@@ -230,7 +264,13 @@
 
 .pronunciation-item {
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #F1F5F9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pronunciation-item:active {
+  background: #F8FAFC;
 }
 
 .pronunciation-item:last-child {
@@ -240,12 +280,12 @@
 .pronunciation-rule {
   font-size: 30rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
 }
 
 .pronunciation-desc {
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   margin-top: 10rpx;
 }
 
@@ -254,13 +294,14 @@
   align-items: center;
   gap: 10rpx;
   font-size: 26rpx;
-  color: #1890ff;
+  color: #2563EB;
   margin-top: 12rpx;
   font-weight: 500;
   cursor: pointer;
   min-height: 88rpx;
 }
 
+/* ========== 课文列表 ========== */
 .text-list {
   max-height: 500rpx;
   overflow-y: auto;
@@ -268,7 +309,13 @@
 
 .text-item {
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid #F1F5F9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.text-item:active {
+  background: #F8FAFC;
 }
 
 .text-item:last-child {
@@ -278,19 +325,19 @@
 .text-title {
   font-size: 30rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
   margin-bottom: 12rpx;
 }
 
 .text-content {
   font-size: 28rpx;
-  color: #333;
+  color: #1E293B;
   margin-top: 10rpx;
   line-height: 1.6;
 }
 
 .text-translation {
   font-size: 24rpx;
-  color: #999;
+  color: #94A3B8;
   margin-top: 10rpx;
 }
