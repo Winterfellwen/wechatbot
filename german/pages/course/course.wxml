@@ -55,12 +55,12 @@
               bindtap="playAudio" 
               data-word="{{item.word}}">
               <view class="audio-btn-inner">
-                <text class="audio-icon {{playingWord === item.word ? 'audio-playing' : ''}}">音</text>
-              </view>
-              <view class="audio-wave" wx:if="{{playingWord === item.word}}">
-                <view class="wave-line"></view>
-                <view class="wave-line"></view>
-                <view class="wave-line"></view>
+                <view class="speaker-icon">
+                  <view class="speaker-body"></view>
+                  <view class="speaker-cone"></view>
+                  <view class="speaker-wave wave-1" wx:if="{{playingWord === item.word}}"></view>
+                  <view class="speaker-wave wave-2" wx:if="{{playingWord === item.word}}"></view>
+                </view>
               </view>
             </view>
             
@@ -104,7 +104,10 @@
         <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
           <text>{{item.example}}</text>
           <view class="audio-btn-small">
-            <text class="audio-icon-small">音</text>
+            <view class="speaker-icon-small">
+              <view class="speaker-body-s"></view>
+              <view class="speaker-cone-s"></view>
+            </view>
           </view>
         </view>
       </view>

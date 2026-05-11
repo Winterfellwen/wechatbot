@@ -99,13 +99,13 @@ Page({
 
   playAudio: function(e) {
     const word = e.currentTarget.dataset.word;
-    this.setData({ playingWord: word });
+    if (this.data.playingWord === word) return;
     
-    // 播放后 1.5 秒清除动画状态
-    tts.speak(word, () => {
-      setTimeout(() => {
-        this.setData({ playingWord: null });
-      }, 1500);
+    this.setData({ playingWord: word });
+    tts.speak(word, 'de-DE').then(() => {
+      this.setData({ playingWord: null });
+    }).catch(() => {
+      this.setData({ playingWord: null });
     });
   },
 

@@ -29,7 +29,14 @@
               <view class="sw-reading">{{item.reading}}</view>
               <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">
                 <text class="example-text">{{item.example}}</text>
-                <text class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">音</text>
+                <view class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">
+                  <view class="speaker-icon">
+                    <view class="speaker-body"></view>
+                    <view class="speaker-cone"></view>
+                    <view class="speaker-wave wave-1" wx:if="{{playingWord === item.example}}"></view>
+                    <view class="speaker-wave wave-2" wx:if="{{playingWord === item.example}}"></view>
+                  </view>
+                </view>
               </view>
               <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
             </view>
@@ -90,7 +97,14 @@
     <view class="quiz-body">
       <view class="question-prompt">{{currentQuestion.prompt}}</view>
       <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio">
-        <text class="audio-indicator-large {{isPlayingAudio ? 'playing' : ''}}">音</text>
+        <view class="audio-indicator-large {{isPlayingAudio ? 'playing' : ''}}">
+          <view class="speaker-icon-lg">
+            <view class="speaker-body-lg"></view>
+            <view class="speaker-cone-lg"></view>
+            <view class="speaker-wave-lg wave-1" wx:if="{{isPlayingAudio}}"></view>
+            <view class="speaker-wave-lg wave-2" wx:if="{{isPlayingAudio}}"></view>
+          </view>
+        </view>
       </view>
 
       <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">
