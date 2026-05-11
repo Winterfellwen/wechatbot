@@ -38,8 +38,8 @@
           <view class="node-wrap {{item.done ? 'done' : ''}} {{item.current ? 'current' : ''}} {{!item.done && !item.current ? 'locked' : ''}}"
                 bindtap="startLesson" data-id="{{item.id}}">
             <view class="node-circle">
-              <text wx:if="{{item.done}}" class="node-icon check">🎯</text>
-              <text wx:if="{{!item.done && item.current}}" class="node-icon star">▶️</text>
+              <text wx:if="{{item.done}}" class="node-icon check">✓</text>
+              <text wx:if="{{!item.done && item.current}}" class="node-icon star">▶</text>
               <text wx:if="{{!item.done && !item.current}}" class="node-num">{{item.number}}</text>
             </view>
             <view class="node-info">
@@ -61,15 +61,21 @@
 
   <view class="bottom-nav">
     <view class="nav-item active">
-      <text class="nav-icon">🎯</text>
-      <text class="nav-text">闯关</text>
+      <view class="nav-icon-wrap nav-icon-active">
+        <text class="nav-icon-text">闯</text>
+      </view>
+      <text class="nav-text nav-text-active">闯关</text>
     </view>
     <view class="nav-item" bindtap="goToCourse">
-      <text class="nav-icon">📖</text>
+      <view class="nav-icon-wrap">
+        <text class="nav-icon-text">课</text>
+      </view>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item" bindtap="goToRank">
-      <text class="nav-icon">🏆</text>
+      <view class="nav-icon-wrap">
+        <text class="nav-icon-text">榜</text>
+      </view>
       <text class="nav-text">排行榜</text>
     </view>
   </view>

@@ -66,7 +66,7 @@
     <view class="teacher-card" bindtap="handleEntryTap" data-type="teacher">
       <view class="teacher-left">
         <view class="teacher-icon-wrap">
-          <text class="teacher-emoji">🎓</text>
+          <text class="teacher-icon">AI</text>
         </view>
       </view>
       <view class="teacher-info">

@@ -1,39 +1,65 @@
-/* word/pages/index/index.wxss */
+/* word/pages/index/index.wxss - UI/UX Pro Max 优化版 */
+/* 设计系统: Glassmorphism, Primary #2563EB */
+
 .container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #F8FAFC;
   padding: 30rpx;
+  padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
 }
 
+/* ========== 头部区域 ========== */
 .header {
-  padding: 30rpx 0 20rpx;
+  padding: 30rpx 0 24rpx;
 }
 
 .header-title {
-  font-size: 44rpx;
-  font-weight: bold;
-  color: #333;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #1E293B;
   display: block;
 }
 
 .header-sub {
   font-size: 26rpx;
-  color: #999;
+  color: #64748B;
   margin-top: 8rpx;
   display: block;
 }
 
-/* 提示 */
+/* ========== 提示框 ========== */
 .notice {
-  background: #fffbe6;
-  border: 1rpx solid #ffe58f;
-  border-radius: 10rpx;
-  padding: 14rpx 20rpx;
-  margin-bottom: 20rpx;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(217, 119, 6, 0.1);
 }
-.notice-text { font-size: 24rpx; color: #ad6800; }
 
-/* 操作按钮行 */
+.notice-icon {
+  width: 40rpx;
+  height: 40rpx;
+  background: #D97706;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.notice-text { 
+  font-size: 24rpx; 
+  color: #92400E; 
+  flex: 1;
+}
+
+/* ========== 操作按钮行 ========== */
 .btn-row {
   display: flex;
   gap: 20rpx;
@@ -46,14 +72,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2b5797;
-  border-radius: 16rpx;
+  background: linear-gradient(135deg, #217346 0%, #2E7D32 100%);
+  border-radius: 20rpx;
   padding: 28rpx;
-  box-shadow: 0 4rpx 12rpx rgba(43, 87, 151, 0.25);
+  box-shadow: 0 6rpx 20rpx rgba(34, 115, 70, 0.25);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 96rpx;
 }
 
 .new-btn:active {
-  opacity: 0.85;
+  transform: scale(0.97);
+  box-shadow: 0 4rpx 12rpx rgba(34, 115, 70, 0.3);
 }
 
 .new-icon {
@@ -75,38 +105,162 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
-  border-radius: 16rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
   padding: 28rpx;
-  border: 2rpx solid #dcdfe6;
+  border: 2rpx solid #E2E8F0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 96rpx;
 }
 
 .import-btn:active {
-  background: #f5f7fa;
+  background: #F8FAFC;
+  transform: scale(0.97);
 }
 
 .import-icon {
   font-size: 34rpx;
-  color: #666;
+  color: #64748B;
   margin-right: 10rpx;
 }
 
 .import-text {
   font-size: 30rpx;
-  color: #333;
+  color: #1E293B;
   font-weight: 500;
 }
 
-.doc-section {
-  margin-top: 10rpx;
+/* ========== 搜索栏 ========== */
+.search-bar {
+  margin-bottom: 24rpx;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 20rpx 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.search-input-wrap:focus-within {
+  box-shadow: 0 4rpx 20rpx rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+  font-size: 24rpx;
+  color: #94A3B8;
+  margin-right: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: #F1F5F9;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1E293B;
+}
+
+.search-clear {
+  font-size: 36rpx;
+  color: #94A3B8;
+  padding: 0 8rpx;
+  cursor: pointer;
+  min-width: 44rpx;
+  min-height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== 工具栏行 ========== */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24rpx 0 16rpx;
 }
 
 .section-title {
   font-size: 28rpx;
-  color: #666;
+  color: #64748B;
   font-weight: 500;
-  margin-bottom: 16rpx;
   display: block;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.sort-btn, .view-toggle {
+  font-size: 24rpx;
+  color: #64748B;
+  background: #ffffff;
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44rpx;
+  display: flex;
+  align-items: center;
+}
+
+.sort-btn:active, .view-toggle:active {
+  background: #F8FAFC;
+  transform: scale(0.97);
+}
+
+/* ========== 排序选择器 ========== */
+.sort-picker {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  padding-top: 300rpx;
+}
+
+.sort-options {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 8rpx 0;
+  width: 560rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.15);
+}
+
+.sort-opt {
+  padding: 28rpx 36rpx;
+  font-size: 28rpx;
+  color: #1E293B;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sort-opt:active {
+  background: #F1F5F9;
+}
+
+.sort-opt.active {
+  color: #2563EB;
+  font-weight: 600;
+  background: #EFF6FF;
+}
+
+/* ========== 文档卡片 ========== */
+.doc-section {
+  margin-top: 10rpx;
 }
 
 .doc-list {
@@ -118,11 +272,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-radius: 12rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
   padding: 24rpx;
   margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.doc-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.06);
 }
 
 .doc-info {
@@ -133,21 +294,24 @@
 }
 
 .doc-icon-wrap {
-  width: 72rpx;
-  height: 72rpx;
-  background: linear-gradient(135deg, #2b5797, #1a3a6b);
-  border-radius: 10rpx;
+  width: 88rpx;
+  height: 88rpx;
+  background: linear-gradient(135deg, #217346 0%, #2E7D32 100%);
+  border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 20rpx;
   flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(34, 115, 70, 0.2);
+  min-width: 88rpx;
+  min-height: 88rpx;
 }
 
 .doc-icon {
   color: #fff;
-  font-size: 36rpx;
-  font-weight: bold;
+  font-size: 40rpx;
+  font-weight: 600;
   font-family: Georgia, serif;
 }
 
@@ -155,11 +319,13 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .doc-name {
   font-size: 28rpx;
-  color: #333;
+  color: #1E293B;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -167,7 +333,7 @@
 
 .doc-time {
   font-size: 22rpx;
-  color: #bbb;
+  color: #94A3B8;
   margin-top: 6rpx;
 }
 
@@ -175,135 +341,53 @@
   display: flex;
   flex-shrink: 0;
   margin-left: 16rpx;
+  gap: 8rpx;
 }
 
 .action-btn {
   font-size: 24rpx;
-  padding: 8rpx 20rpx;
-  border-radius: 8rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
 }
 
 .action-btn.edit {
-  color: #333;
-  background: rgba(0, 0, 0, 0.06);
+  color: #64748B;
+  background: #F1F5F9;
 }
 
-.action-btn.export {
-  color: #2b5797;
-  background: rgba(43, 87, 151, 0.08);
-  margin-left: 8rpx;
+.action-btn.save {
+  color: #2563EB;
+  background: #EFF6FF;
 }
 
 .action-btn.del {
-  color: #e74c3c;
-  background: rgba(231, 76, 60, 0.08);
-  margin-left: 8rpx;
+  color: #EF4444;
+  background: #FEF2F2;
 }
 
+/* ========== 空状态 ========== */
 .empty {
   display: flex;
   justify-content: center;
-  padding: 100rpx 0;
+  padding: 120rpx 0;
 }
 
 .empty-text {
-  font-size: 26rpx;
-  color: #ccc;
-}
-/* 搜索栏 */
-.search-bar {
-  margin-bottom: 20rpx;
-}
-
-.search-input-wrap {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 16rpx 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
-}
-
-.search-icon {
   font-size: 28rpx;
-  margin-right: 12rpx;
+  color: #94A3B8;
 }
 
-.search-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: #333;
-}
-
-.search-clear {
-  font-size: 32rpx;
-  color: #ccc;
-  padding: 0 8rpx;
-}
-
-/* 工具栏行 */
-.toolbar-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 20rpx 0 16rpx;
-}
-
-.toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.sort-btn {
-  font-size: 24rpx;
-  color: #666;
-  background: #fff;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-  border: 1rpx solid #e5e5e5;
-}
-
-.view-toggle {
-  font-size: 32rpx;
-  color: #666;
-  padding: 8rpx 12rpx;
-  background: #fff;
-  border-radius: 8rpx;
-  border: 1rpx solid #e5e5e5;
-}
-
-/* 排序选择器 */
-.sort-picker {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  padding-top: 200rpx;
-}
-
-.sort-options {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 16rpx 0;
-  width: 400rpx;
-}
-
-.sort-opt {
-  padding: 24rpx 32rpx;
-  font-size: 28rpx;
-  color: #333;
-}
-
-.sort-opt.active {
-  color: #2b5797;
-  font-weight: 500;
-  background: rgba(43,87,151,0.05);
-}
-
-/* 网格视图 */
+/* ========== 网格视图 ========== */
 .doc-list.grid {
   display: flex;
   flex-wrap: wrap;
@@ -314,7 +398,7 @@
   width: calc(50% - 8rpx);
   flex-direction: column;
   align-items: center;
-  padding: 24rpx 16rpx;
+  padding: 28rpx 20rpx;
 }
 
 .doc-card.grid .doc-info {
@@ -326,7 +410,7 @@
 
 .doc-card.grid .doc-icon-wrap {
   margin-right: 0;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .doc-card.grid .doc-detail {
@@ -335,7 +419,7 @@
 
 .doc-card.grid .doc-name {
   text-align: center;
-  font-size: 24rpx;
+  font-size: 26rpx;
 }
 
 .doc-card.grid .doc-time {
@@ -343,14 +427,18 @@
 }
 
 .doc-card.grid .doc-actions {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   width: 100%;
+  justify-content: center;
+  gap: 8rpx;
+  margin-left: 0;
+  margin-top: 12rpx;
 }
 
 .doc-card.grid .action-btn {
+  flex: 1;
   text-align: center;
-  margin: 4rpx 0;
+  padding: 10rpx 0;
   font-size: 22rpx;
-  padding: 6rpx 0;
 }

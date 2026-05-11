@@ -1,4 +1,4 @@
-<!--pages/user/user.wxml-->
+<!--pages/user/user.wxml - UI/UX Pro Max 优化版-->
 <view class="page">
   <!-- 未登录 -->
   <view class="login-section" wx:if="{{!isLoggedIn}}">
@@ -47,7 +47,7 @@
         <text class="action-arrow">›</text>
       </view>
       <view class="action-divider"></view>
-      <view class="action-item" bindtap="handleDeleteAccount">
+      <view class="action-item action-item-danger" bindtap="handleDeleteAccount">
         <view class="action-icon-wrap icon-danger">
           <text class="action-icon-text">✕</text>
         </view>

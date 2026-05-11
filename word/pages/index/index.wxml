@@ -1,4 +1,4 @@
-<!--word/pages/index/index.wxml - 重构版-->
+<!--word/pages/index/index.wxml - UI/UX Pro Max 优化版-->
 <view class="container">
   <view class="header">
     <text class="header-title">Word 文档</text>
@@ -6,13 +6,14 @@
   </view>
 
   <view class="notice">
-    <text class="notice-text">⚠ Word 编辑功能仅供临时急用，不支持表格功能。</text>
+    <text class="notice-icon">!</text>
+    <text class="notice-text">Word 编辑功能仅供临时急用，不支持表格功能。</text>
   </view>
 
   <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input-wrap">
-      <text class="search-icon">🔍</text>
+      <text class="search-icon">搜</text>
       <input class="search-input" placeholder="搜索文档..." value="{{searchKey}}" bindinput="onSearchInput" />
       <text class="search-clear" wx:if="{{searchKey}}" bindtap="onSearchClear">×</text>
     </view>
@@ -36,10 +37,10 @@
     <text class="section-title">全部文档 ({{filteredDocs.length}})</text>
     <view class="toolbar-actions">
       <view class="sort-btn" bindtap="showSortPicker">
-        <text>{{sortBy === 'updatedAt_desc' ? '最新修改' : sortBy === 'updatedAt_asc' ? '最早修改' : sortBy === 'title' ? '按名称' : '最近创建'}} ▼</text>
+        <text>{{sortBy === 'updatedAt_desc' ? '最新' : sortBy === 'updatedAt_asc' ? '最早' : sortBy === 'title' ? '名称' : '创建'}} ▼</text>
       </view>
       <view class="view-toggle" bindtap="toggleViewMode">
-        <text>{{viewMode === 'list' ? '⊞' : '☰'}}</text>
+        <text>{{viewMode === 'list' ? '▦' : '≡'}}</text>
       </view>
     </view>
   </view>
