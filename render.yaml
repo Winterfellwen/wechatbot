@@ -19,7 +19,11 @@ services:
         value: "https://pdf-converter-v2.onrender.com"
 
   - type: web
-    name: pdf-converter
+    name: pdf-converter-v2
     runtime: docker
     rootDir: pdf-service
     dockerfilePath: Dockerfile
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
