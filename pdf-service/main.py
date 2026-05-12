@@ -251,48 +251,48 @@ def _docx_to_pdf(input_path: Path) -> Path:
                 print(f"LO retry stderr: {(result.stderr or '')[:500]}")
                 print(f"LO retry returncode: {result.returncode}")
 
-        pdf_files = list(tmp_out.glob("*.pdf"))
-        if not pdf_files:
-            raise RuntimeError(
-                f"LibreOffice produced no PDF. returncode={result.returncode} "
-                f"stderr: {(result.stderr or '')[:1000]}"
-            )
+            pdf_files = list(tmp_out.glob("*.pdf"))
+            if not pdf_files:
+                raise RuntimeError(
+                    f"LibreOffice produced no PDF. returncode={result.returncode} "
+                    f"stderr: {(result.stderr or '')[:1000]}"
+                )
 
-        lo_pdf_path = pdf_files[0]
-        lo_size = lo_pdf_path.stat().st_size
-        print(f"LO PDF created: {lo_pdf_path}, size={lo_size}")
-        if lo_size == 0:
-            raise RuntimeError("LibreOffice produced an empty PDF")
+            lo_pdf_path = pdf_files[0]
+            lo_size = lo_pdf_path.stat().st_size
+            print(f"LO PDF created: {lo_pdf_path}, size={lo_size}")
+            if lo_size == 0:
+                raise RuntimeError("LibreOffice produced an empty PDF")
 
-        zoom = 300.0 / 72.0
-        lo_doc = fitz.open(str(lo_pdf_path))
-        num_pages = len(lo_doc)
-        print(f"Rendering {num_pages} page(s) at 300 DPI")
+            zoom = 300.0 / 72.0
+            lo_doc = fitz.open(str(lo_pdf_path))
+            num_pages = len(lo_doc)
+            print(f"Rendering {num_pages} page(s) at 300 DPI")
 
-        out_doc = fitz.open()
-        A4_W, A4_H = 595, 842
+            out_doc = fitz.open()
+            A4_W, A4_H = 595, 842
 
-        for i in range(num_pages):
-            page = lo_doc[i]
-            mat = fitz.Matrix(zoom, zoom)
-            pix = page.get_pixmap(matrix=mat, colorspace=fitz.csRGB)
-            img_bytes = pix.tobytes("png")
-            new_page = out_doc.new_page(width=A4_W, height=A4_H)
-            new_page.insert_image(fitz.Rect(0, 0, A4_W, A4_H), stream=img_bytes)
-            print(f"  Page {i+1}: {pix.width}x{pix.height}px, {len(img_bytes)} bytes")
+            for i in range(num_pages):
+                page = lo_doc[i]
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat, colorspace=fitz.csRGB)
+                img_bytes = pix.tobytes("png")
+                new_page = out_doc.new_page(width=A4_W, height=A4_H)
+                new_page.insert_image(fitz.Rect(0, 0, A4_W, A4_H), stream=img_bytes)
+                print(f"  Page {i+1}: {pix.width}x{pix.height}px, {len(img_bytes)} bytes")
 
-        lo_doc.close()
+            lo_doc.close()
 
-        output_path = input_path.with_suffix(".pdf")
-        out_doc.save(str(output_path), garbage=4, deflate=True)
-        out_doc.close()
-        print(f"Image PDF saved: {output_path}, size={output_path.stat().st_size}")
+            output_path = input_path.with_suffix(".pdf")
+            out_doc.save(str(output_path), garbage=4, deflate=True)
+            out_doc.close()
+            print(f"Image PDF saved: {output_path}, size={output_path.stat().st_size}")
 
-        return output_path
-    finally:
-        shutil.rmtree(tmp_out, ignore_errors=True)
-        shutil.rmtree(lo_home, ignore_errors=True)
-        _kill_libreoffice()
+            return output_path
+        finally:
+            shutil.rmtree(tmp_out, ignore_errors=True)
+            shutil.rmtree(lo_home, ignore_errors=True)
+            _kill_libreoffice()
 
 
 @app.get("/")
