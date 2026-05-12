@@ -269,7 +269,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
             "--headless",
             "--norestore",
             "--nofirststartwizard",
-            "--convert-to", "pdf:writer_pdf_export",
+            "--convert-to", "pdf",
             "--outdir", str(tmp_out),
             str(input_path),
         ]
