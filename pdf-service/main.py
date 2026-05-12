@@ -5,6 +5,7 @@ import uuid
 import threading
 import subprocess
 import shutil
+import zipfile
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
