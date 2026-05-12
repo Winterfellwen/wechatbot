@@ -5,6 +5,8 @@ RUN apt-get update -qq && \
         libreoffice-writer-nogui \
         fonts-noto-cjk \
         fonts-wqy-microhei \
+        fonts-liberation \
+        fonts-dejavu-core \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
