@@ -70,6 +70,7 @@ else:
 
 jobs = {}
 jobs_lock = threading.Lock()
+_lo_lock = threading.Lock()
 
 
 class ConvertRequest(BaseModel):
@@ -191,18 +192,16 @@ def _docx_to_pdf(input_path: Path) -> Path:
     if not LIBREOFFICE_BIN:
         raise RuntimeError(
             "LibreOffice is required for DOCX→PDF conversion but was not found. "
-            "Install it with: apt-get install libreoffice-writer-nogui"
+            "Install it with: apt-get install libreoffice-writer"
         )
 
     import fitz
 
-    _kill_libreoffice()
-    tmp_out = UPLOAD_DIR / f"lo_{uuid.uuid4().hex[:8]}"
+    job_tag = uuid.uuid4().hex[:8]
+    lo_home = UPLOAD_DIR / f"lo_home_{job_tag}"
+    lo_home.mkdir(parents=True, exist_ok=True)
+    tmp_out = UPLOAD_DIR / f"lo_out_{job_tag}"
     tmp_out.mkdir(exist_ok=True)
-
-    lo_env = os.environ.copy()
-    lo_env["SAL_USE_VCLPLUGIN"] = "headless"
-    lo_env["HOME"] = str(UPLOAD_DIR)
 
     if not input_path.exists() or input_path.stat().st_size == 0:
         raise RuntimeError(f"Input file missing or empty: {input_path}")
@@ -217,35 +216,40 @@ def _docx_to_pdf(input_path: Path) -> Path:
     except Exception as e:
         raise RuntimeError(f"Input file validation failed: {e}")
 
+    lo_env = os.environ.copy()
+    lo_env.pop("SAL_USE_VCLPLUGIN", None)
+    lo_env["HOME"] = str(lo_home)
+
     def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
         cmd = [
             LIBREOFFICE_BIN,
             "--headless",
             "--norestore",
             "--nofirststartwizard",
-            "--nologo",
             "--convert-to", "pdf",
             "--outdir", str(tmp_out),
             str(input_path),
         ]
         print(f"LibreOffice: {' '.join(cmd)}")
-        print(f"LO HOME={lo_env.get('HOME')}, VCL={lo_env.get('SAL_USE_VCLPLUGIN')}, file={input_path}, size={input_path.stat().st_size}")
+        print(f"LO HOME={lo_env.get('HOME')}, file={input_path}, size={input_path.stat().st_size}, exists={input_path.exists()}")
         return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec, env=lo_env)
 
-    try:
-        result = _run_lo(300)
-        print(f"LO stdout: {(result.stdout or '')[:500]}")
-        print(f"LO stderr: {(result.stderr or '')[:500]}")
-        print(f"LO returncode: {result.returncode}")
-
-        # Retry once if LO exits with error (sometimes transient)
-        if result.returncode != 0:
-            _kill_libreoffice()
-            print("LibreOffice failed, retrying once...")
+    with _lo_lock:
+        _kill_libreoffice()
+        try:
             result = _run_lo(300)
-            print(f"LO retry stdout: {(result.stdout or '')[:500]}")
-            print(f"LO retry stderr: {(result.stderr or '')[:500]}")
-            print(f"LO retry returncode: {result.returncode}")
+            print(f"LO stdout: {(result.stdout or '')[:500]}")
+            print(f"LO stderr: {(result.stderr or '')[:500]}")
+            print(f"LO returncode: {result.returncode}")
+
+            # Retry once if LO exits with error (sometimes transient)
+            if result.returncode != 0:
+                _kill_libreoffice()
+                print("LibreOffice failed, retrying once...")
+                result = _run_lo(300)
+                print(f"LO retry stdout: {(result.stdout or '')[:500]}")
+                print(f"LO retry stderr: {(result.stderr or '')[:500]}")
+                print(f"LO retry returncode: {result.returncode}")
 
         pdf_files = list(tmp_out.glob("*.pdf"))
         if not pdf_files:
@@ -287,6 +291,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
         return output_path
     finally:
         shutil.rmtree(tmp_out, ignore_errors=True)
+        shutil.rmtree(lo_home, ignore_errors=True)
         _kill_libreoffice()
 
 
