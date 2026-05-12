@@ -204,13 +204,16 @@ def _docx_to_pdf(input_path: Path) -> Path:
     lo_env["SAL_USE_VCLPLUGIN"] = "gen"
     lo_env["HOME"] = str(UPLOAD_DIR)
 
+    if not input_path.exists() or input_path.stat().st_size == 0:
+        raise RuntimeError(f"Input file missing or empty: {input_path}")
+
     def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
         cmd = [
             LIBREOFFICE_BIN,
             "--headless",
             "--norestore",
             "--nofirststartwizard",
-            "--safe-mode",
+            "--nologo",
             "--convert-to", "pdf",
             "--outdir", str(tmp_out),
             str(input_path),
