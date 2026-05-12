@@ -193,6 +193,8 @@ def _repair_docx(path: Path) -> None:
                     comp_sz = _struct.unpack('<I', hdr[18:22])[0]
                     name_len = _struct.unpack('<H', hdr[26:28])[0]
                     extra_len = _struct.unpack('<H', hdr[28:30])[0]
+                    if comp_sz == 0 or comp_sz == 0xFFFFFFFF:
+                        comp_sz = info.compress_size
                     buf2.seek(hdr_off + 30 + name_len + extra_len)
                     compressed = buf2.read(comp_sz)
                     if comp_meth == 0:
