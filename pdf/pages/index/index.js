@@ -1,3 +1,4 @@
+
 Page({
   data: {
     fileName: '',
@@ -44,9 +45,9 @@ Page({
         var fromFmt = ext === 'pdf' ? 'pdf' : ext === 'docx' ? 'docx' : 'doc';
         var targets = [];
         if (fromFmt === 'pdf') {
-          targets = [{ label: '转为 Word (DOCX)', value: 'docx' }, { label: '转为 旧版Word (DOC)', value: 'doc' }];
+          targets = [{ label: '转为 Word (DOCX)', value: 'docx' }];
         } else if (fromFmt === 'docx') {
-          targets = [{ label: '转为 PDF', value: 'pdf' }, { label: '转为 旧版Word (DOC)', value: 'doc' }];
+          targets = [{ label: '转为 PDF', value: 'pdf' }];
         } else {
           targets = [{ label: '转为 PDF', value: 'pdf' }, { label: '转为 Word (DOCX)', value: 'docx' }];
         }

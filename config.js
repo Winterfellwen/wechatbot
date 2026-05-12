@@ -23,7 +23,7 @@ const config = {
   // PDF 转换服务配置
   pdfService: {
     url: process.env.PDF_SERVICE_URL || 'https://pdf-converter-v2.onrender.com',
-    keepaliveInterval: 14 * 60 * 1000, // 14 minutes
+    keepaliveInterval: 10 * 60 * 1000, // 10 minutes
   },
 
   // OpenRouter API 配置

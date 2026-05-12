@@ -42,13 +42,12 @@
 
   <!-- 转换结果列表 -->
   <view wx:if="{{results.length > 0}}" class="result-section">
-    <view class="result-card" wx:for="{{results}}" wx:key="time">
+    <view class="result-card" wx:for="{{results}}" wx:key="time" bindtap="openResult" data-idx="{{index}}">
       <view class="result-header">
         <text class="result-icon">✓</text>
         <text class="result-title">{{item.name}}</text>
-        <text class="result-del" data-idx="{{index}}" bindtap="removeResult">×</text>
+        <text class="result-del" data-idx="{{index}}" catchtap="removeResult">×</text>
       </view>
-      <view class="result-btn open" data-idx="{{index}}" bindtap="openResult">查看文件</view>
     </view>
   </view>
 

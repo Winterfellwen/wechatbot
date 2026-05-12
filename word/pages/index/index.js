@@ -346,33 +346,5 @@ Page({
       }
     }
     return s;
-  },
-
-  _parseDocXml: function (xmlText) {
-    var html = '';
-    var paraMatches = xmlText.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || [];
-    for (var pi = 0; pi < paraMatches.length; pi++) {
-      var pXml = paraMatches[pi];
-      var styleMatch = pXml.match(/<w:pStyle w:val="([^"]+)"/);
-      var style = styleMatch ? styleMatch[1] : '';
-      var isH = /^Heading/.test(style) || /^h[1-6]$/i.test(style);
-      var alignMatch = pXml.match(/<w:jc w:val="([^"]+)"/);
-      var align = alignMatch ? alignMatch[1] : '';
-      var isList = /<w:numPr/.test(pXml);
-      var text = '';
-      var runs = pXml.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g) || [];
-      for (var ri = 0; ri < runs.length; ri++) {
-        var m = runs[ri].match(/<w:t[^>]*>([\s\S]*)/);
-        if (m) text += m[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-      }
-      text = text.trim();
-      if (!text) continue;
-      var level = style === 'Heading1' ? 1 : style === 'Heading2' ? 2 : style === 'Heading3' ? 3 : 0;
-      var openTag = isH ? '<h' + level + '>' : isList ? '<li>' : '<p>';
-      var closeTag = openTag.replace('<', '</');
-      if (align === 'center' || align === 'right') openTag = openTag.replace('>', ' style="text-align:' + align + '">');
-      html += openTag + text + closeTag;
-    }
-    return html || '<p></p>';
   }
 });

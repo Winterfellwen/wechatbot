@@ -11,7 +11,7 @@ app.set('trust proxy', 'loopback');
 app.use(cors());
 app.use(express.json());
 
-// Retry helper with timeout (default 3 minutes)
+// Retry helper with overall timeout (default 3 minutes)
 async function retryWithTimeout(fn, timeoutMs = 180000, retryIntervalMs = 3000) {
   const start = Date.now();
   while (true) {
@@ -25,10 +25,22 @@ async function retryWithTimeout(fn, timeoutMs = 180000, retryIntervalMs = 3000) 
   }
 }
 
+// Fetch wrapper with per-request timeout (AbortController) — prevents hanging retries
+async function fetchWithTimeout(resource, options = {}, requestTimeoutMs = 60000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
+  try {
+    return await fetch(resource, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const DATABASE_URL = config.database.url;
 
 // Root health check (for Render keepalive)
 app.all('/', (req, res) => res.json({ status: 'ok', service: 'wechatbot-api' }));
+app.all('/api/health', (req, res) => res.json({ status: 'ok', service: 'wechatbot-api' }));
 
 // --- Auth helpers ---
 function generateToken() {
@@ -310,11 +322,20 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Keep Python service warm when this service is active
+// Keep both services warm: self-ping (Node API) + Python service keepalive
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || config.frontend.apiBaseUrl;
 const KEEPALIVE_INTERVAL = config.pdfService.keepaliveInterval;
+
+// Pre-warm Python service immediately on startup (cascading cold start mitigation)
+function warmPythonService() {
+  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
+}
+setTimeout(warmPythonService, 1000);
+
 setInterval(() => {
-  console.log('Keepalive: warming Python service');
-  fetch(config.pdfService.url + '/').catch(() => {});
+  console.log('Keepalive: warming services');
+  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
+  fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(() => {});
 }, KEEPALIVE_INTERVAL);
 
 app.post('/api/chat', async (req, res) => {
@@ -386,9 +407,9 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
 
-    // Submit job to Python with retry (3 min timeout)
+    // Submit job to Python with retry (3 min total, 60s per attempt)
     const submitRes = await retryWithTimeout(async () => {
-      const res = await fetch(pdfServiceUrl + '/convert', {
+      const res = await fetchWithTimeout(pdfServiceUrl + '/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -397,7 +418,7 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
           from_fmt: from || 'pdf',
           to_fmt: toFmt
         })
-      });
+      }, 60000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error(errText);
@@ -421,13 +442,13 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
   const { jobId } = req.params;
   try {
     const statusRes = await retryWithTimeout(async () => {
-      const res = await fetch(pdfServiceUrl + '/status/' + jobId);
+      const res = await fetchWithTimeout(pdfServiceUrl + '/status/' + jobId, {}, 30000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error('查询失败: ' + errText.substring(0, 100));
       }
       return res;
-    }, 180000, 5000);
+    }, 60000, 3000);
 
     const status = await statusRes.json();
     if (status.status === 'pending' || status.status === 'processing') {
@@ -435,7 +456,7 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
     } else if (status.status === 'done') {
       // Download result from Python and cache locally
       const dlRes = await retryWithTimeout(async () => {
-        const res = await fetch(pdfServiceUrl + '/download/' + status.result);
+        const res = await fetchWithTimeout(pdfServiceUrl + '/download/' + status.result, {}, 120000);
         if (!res.ok) throw new Error('下载转换结果失败');
         return res;
       }, 180000, 5000);
@@ -479,11 +500,11 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     body.append('text', text || '');
     body.append('angle', angle || '90');
 
-    const pyRes = await fetch(pdfServiceUrl + '/edit', {
+    const pyRes = await fetchWithTimeout(pdfServiceUrl + '/edit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
-    });
+    }, 120000);
 
     if (!pyRes.ok) {
       const err = await pyRes.json();

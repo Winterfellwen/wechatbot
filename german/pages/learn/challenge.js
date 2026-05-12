@@ -2,6 +2,9 @@ const storage = require('../../utils/storage');
 const tts = require('../../utils/tts');
 const algorithm = require('../../utils/algorithm');
 const a1Vocab = require('../../data/a1/vocab.js');
+const a2Vocab = require('../../data/a2/vocab.js');
+const b1Vocab = require('../../data/b1/vocab.js');
+const b2Vocab = require('../../data/b2/vocab.js');
 
 Page({
   data: {
@@ -38,6 +41,15 @@ Page({
       case 'a1':
         vocabData = a1Vocab;
         break;
+      case 'a2':
+        vocabData = a2Vocab;
+        break;
+      case 'b1':
+        vocabData = b1Vocab;
+        break;
+      case 'b2':
+        vocabData = b2Vocab;
+        break;
       default:
         vocabData = a1Vocab;
     }
@@ -53,14 +65,14 @@ Page({
     for (let i = 0; i < 8; i++) {
       const word = shuffledVocab[i];
       const type = types[i];
-      const q = this.createQuestion(word, type, i + 1);
+      const q = this.createQuestion(word, type, i + 1, vocabData);
       questions.push(q);
     }
     
     this.setData({ questions: questions });
   },
 
-  createQuestion: function(word, type, id) {
+  createQuestion: function(word, type, id, vocabData) {
     const question = {
       id: id,
       type: type,
@@ -70,7 +82,7 @@ Page({
       example: word.example || ''
     };
     
-    const shuffledVocab = algorithm.shuffleArray(a1Vocab.filter(v => v.word !== word.word));
+    const shuffledVocab = algorithm.shuffleArray(vocabData.filter(v => v.word !== word.word));
     
     if (type === 'choice') {
       question.question = `"${word.translation}" 用德语怎么说？`;

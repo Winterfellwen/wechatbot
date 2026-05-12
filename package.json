@@ -4,7 +4,13 @@
   "description": "API for 多功能小机器人",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node tests/miniprogram-automator-test.js",
+    "test:diagnose": "node tests/diagnose.js",
+    "test:diagnose:json": "node tests/diagnose.js --json",
+    "test:basic": "node tests/miniprogram-automator-test.js",
+    "test:cleanup": "node tests/cleanup.js",
+    "test:all": "node tests/cleanup.js && node tests/miniprogram-automator-test.js && node tests/diagnose.js"
   },
   "dependencies": {
     "async-limiter": "^2.0.0",
@@ -20,6 +26,7 @@
     "node": "20"
   },
   "devDependencies": {
-    "canvas": "^3.2.3"
+    "canvas": "^3.2.3",
+    "miniprogram-automator": "^0.12.1"
   }
 }
