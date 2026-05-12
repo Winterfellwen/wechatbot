@@ -169,6 +169,43 @@ def _safe_unlink(path: Path):
         pass
 
 
+import struct as _struct
+import io as _io
+import zlib as _zlib
+
+
+def _repair_docx(path: Path) -> None:
+    """Re-zip DOCX to fix bad CRC-32 in entries (pdf2docx bug)."""
+    raw = path.read_bytes()
+    out_buf = _io.BytesIO()
+    with zipfile.ZipFile(_io.BytesIO(raw), 'r') as zin:
+        with zipfile.ZipFile(out_buf, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for info in zin.infolist():
+                name = info.filename
+                try:
+                    data = zin.read(name)
+                except zipfile.BadZipFile:
+                    hdr_off = info.header_offset
+                    buf2 = _io.BytesIO(raw)
+                    buf2.seek(hdr_off)
+                    hdr = buf2.read(30)
+                    comp_meth = _struct.unpack('<H', hdr[8:10])[0]
+                    comp_sz = _struct.unpack('<I', hdr[18:22])[0]
+                    name_len = _struct.unpack('<H', hdr[26:28])[0]
+                    extra_len = _struct.unpack('<H', hdr[28:30])[0]
+                    buf2.seek(hdr_off + 30 + name_len + extra_len)
+                    compressed = buf2.read(comp_sz)
+                    if comp_meth == 0:
+                        data = compressed
+                    elif comp_meth == 8:
+                        data = _zlib.decompress(compressed, -_zlib.MAX_WBITS)
+                    else:
+                        raise ValueError(f"Unknown compression {comp_meth} in {name}")
+                    info.CRC = _zlib.crc32(data) & 0xFFFFFFFF
+                zout.writestr(info, data)
+    path.write_bytes(out_buf.getvalue())
+
+
 def _pdf_to_docx(input_path: Path) -> Path:
     from pdf2docx import Converter
 
@@ -176,6 +213,7 @@ def _pdf_to_docx(input_path: Path) -> Path:
     cv = Converter(str(input_path))
     cv.convert(str(output_path))
     cv.close()
+    _repair_docx(output_path)
     return output_path
 
 
@@ -211,6 +249,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
         with zipfile.ZipFile(input_path) as zf:
             if not any(n.endswith('.xml') for n in zf.namelist()):
                 raise RuntimeError(f"DOCX file has no XML content entries: {input_path}")
+        _repair_docx(input_path)
     except zipfile.BadZipFile:
         raise RuntimeError(f"Input file is not a valid DOCX (bad ZIP): {input_path}")
     except Exception as e:
