@@ -279,15 +279,6 @@ def _docx_to_pdf(input_path: Path) -> Path:
 
     with _lo_lock:
         _kill_libreoffice()
-        # Initialize user profile first
-        init_cmd = [
-            LIBREOFFICE_BIN,
-            f"-env:UserInstallation=file://{lo_home}",
-            "--headless", "--norestore", "--nofirststartwizard",
-            "--nologo", "--safe-mode",
-        ]
-        subprocess.run(init_cmd, capture_output=True, text=True, timeout=30, env=lo_env)
-        _kill_libreoffice()
 
         try:
             result = _run_lo(300)
