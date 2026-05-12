@@ -27,6 +27,9 @@ async function retryWithTimeout(fn, timeoutMs = 180000, retryIntervalMs = 3000) 
 
 const DATABASE_URL = config.database.url;
 
+// Root health check (for Render keepalive)
+app.all('/', (req, res) => res.json({ status: 'ok', service: 'wechatbot-api' }));
+
 // --- Auth helpers ---
 function generateToken() {
   var chars = 'abcdef0123456789';
