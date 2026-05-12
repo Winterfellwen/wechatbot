@@ -201,11 +201,21 @@ def _docx_to_pdf(input_path: Path) -> Path:
     tmp_out.mkdir(exist_ok=True)
 
     lo_env = os.environ.copy()
-    lo_env["SAL_USE_VCLPLUGIN"] = "gen"
+    lo_env["SAL_USE_VCLPLUGIN"] = "headless"
     lo_env["HOME"] = str(UPLOAD_DIR)
 
     if not input_path.exists() or input_path.stat().st_size == 0:
         raise RuntimeError(f"Input file missing or empty: {input_path}")
+
+    try:
+        import zipfile
+        with zipfile.ZipFile(input_path) as zf:
+            if not any(n.endswith('.xml') for n in zf.namelist()):
+                raise RuntimeError(f"DOCX file has no XML content entries: {input_path}")
+    except zipfile.BadZipFile:
+        raise RuntimeError(f"Input file is not a valid DOCX (bad ZIP): {input_path}")
+    except Exception as e:
+        raise RuntimeError(f"Input file validation failed: {e}")
 
     def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
         cmd = [
@@ -219,6 +229,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
             str(input_path),
         ]
         print(f"LibreOffice: {' '.join(cmd)}")
+        print(f"LO HOME={lo_env.get('HOME')}, VCL={lo_env.get('SAL_USE_VCLPLUGIN')}, file={input_path}, size={input_path.stat().st_size}")
         return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec, env=lo_env)
 
     try:
