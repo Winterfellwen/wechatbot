@@ -223,19 +223,30 @@ def _docx_to_pdf(input_path: Path) -> Path:
     def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
         cmd = [
             LIBREOFFICE_BIN,
+            f"-env:UserInstallation=file://{lo_home}",
             "--headless",
             "--norestore",
             "--nofirststartwizard",
-            "--convert-to", "pdf",
+            "--convert-to", "pdf:writer_pdf_export",
             "--outdir", str(tmp_out),
             str(input_path),
         ]
         print(f"LibreOffice: {' '.join(cmd)}")
-        print(f"LO HOME={lo_env.get('HOME')}, file={input_path}, size={input_path.stat().st_size}, exists={input_path.exists()}")
+        print(f"LO UserInstallation=file://{lo_home}, file={input_path}, size={input_path.stat().st_size}, exists={input_path.exists()}")
         return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec, env=lo_env)
 
     with _lo_lock:
         _kill_libreoffice()
+        # Initialize user profile first
+        init_cmd = [
+            LIBREOFFICE_BIN,
+            f"-env:UserInstallation=file://{lo_home}",
+            "--headless", "--norestore", "--nofirststartwizard",
+            "--nologo", "--safe-mode",
+        ]
+        subprocess.run(init_cmd, capture_output=True, text=True, timeout=30, env=lo_env)
+        _kill_libreoffice()
+
         try:
             result = _run_lo(300)
             print(f"LO stdout: {(result.stdout or '')[:500]}")
