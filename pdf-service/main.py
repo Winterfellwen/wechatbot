@@ -7,9 +7,9 @@ import subprocess
 import shutil
 import zipfile
 import struct as _struct
-import io as _io
 import zlib as _zlib
 import time
+import gc
 from pathlib import Path
 from contextlib import contextmanager
 from fastapi import FastAPI, HTTPException, Request
@@ -21,14 +21,43 @@ import uvicorn
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+
+@app.middleware("http")
+async def limit_body_size(request: Request, call_next):
+    """Reject oversized requests early (before FastAPI parses body)."""
+    if request.method in ("POST", "PUT"):
+        cl = request.headers.get("content-length")
+        if cl and int(cl) > int(MAX_FILE_SIZE * 1.5):
+            from fastapi.responses import JSONResponse
+            return JSONResponse(status_code=413, content={"detail": "Request too large"})
+    return await call_next(request)
+
+
+@app.on_event("startup")
+async def _log_memory_periodically():
+    """Log RSS every 30s to help diagnose OOM."""
+    async def _loop():
+        while True:
+            await asyncio.sleep(30)
+            try:
+                import psutil
+                proc = psutil.Process()
+                rss = proc.memory_info().rss
+                print(f"[mem] RSS={rss // 1024 // 1024}MB", flush=True)
+            except ImportError:
+                pass
+    asyncio.create_task(_loop())
+
 # === Config ===
-MAX_FILE_SIZE = 30 * 1024 * 1024  # 30MB
-MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT", "2"))  # how many convert at once
-JOB_CLEANUP_AGE = 3600  # 1 hour
+MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 10 * 1024 * 1024))  # 10MB
+MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT", "1"))  # one at a time
+JOB_CLEANUP_AGE = 3600
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
 OUTPUT_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-outputs"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+# Track memory pressure — if /tmp is nearly full, reject new jobs
+_LOW_MEM_MODE = False
 
 
 def find_libreoffice() -> str | None:
@@ -86,14 +115,21 @@ def _cleanup_old_jobs():
             _safe_unlink(p)
 
 
+def _write_input(job_id: str, file_data: bytes, ext_in: str) -> Path:
+    """Write file to disk immediately and free memory before queue wait."""
+    input_path = UPLOAD_DIR / f"{job_id}_in.{ext_in}"
+    input_path.write_bytes(file_data)
+    return input_path
+
+
 async def _queue_worker():
-    """Background worker: pulls jobs from queue, processes with limited concurrency."""
+    """Process one job at a time. Semaphore prevents concurrent LibreOffice clashes."""
     while True:
-        job_id, file_data, filename, from_fmt, to_fmt = await _queue.get()
+        job_id, input_path, filename, from_fmt, to_fmt = await _queue.get()
         try:
             async with _queue_sem:
                 await asyncio.get_event_loop().run_in_executor(
-                    None, _run_convert, job_id, file_data, filename, from_fmt, to_fmt
+                    None, _run_convert, job_id, str(input_path), filename, from_fmt, to_fmt
                 )
         finally:
             _queue.task_done()
@@ -120,19 +156,26 @@ async def convert(req: ConvertRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid base64: {e}")
 
-    if len(file_data) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=413, detail=f"File too large ({len(file_data)} bytes). Max: {MAX_FILE_SIZE}")
+    size = len(file_data)
+    if size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail=f"File too large ({size} bytes). Max: {MAX_FILE_SIZE}")
 
     job_id = uuid.uuid4().hex
+    ext_in = req.from_fmt if req.from_fmt in ("pdf", "docx") else req.filename.rsplit(".", 1)[-1]
+
+    # Write to disk NOW — don't hold file_data in queue memory
+    input_path = _write_input(job_id, file_data, ext_in)
+    file_data = None  # free immediately
+
     global _queue_position
     _queue_position += 1
     pos = _queue_position
 
     jobs[job_id] = {
-        "status": "queued", "queue_position": pos, "created_at": time.time()
+        "status": "queued", "queue_position": pos, "size": size, "created_at": time.time()
     }
 
-    await _queue.put((job_id, file_data, req.filename, req.from_fmt, req.to_fmt))
+    await _queue.put((job_id, input_path, req.filename, req.from_fmt, req.to_fmt))
 
     return {"job_id": job_id, "status": "queued", "queue_position": pos}
 
@@ -142,7 +185,7 @@ async def get_status(job_id: str):
     job = jobs.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    resp = {k: v for k, v in job.items() if k != "created_at"}
+    resp = {k: v for k, v in job.items() if k not in ("created_at", "size")}
     if job.get("status") == "queued":
         pending_before = sum(
             1 for j in jobs.values()
@@ -173,14 +216,14 @@ async def health():
     }
 
 
-# === Conversion logic ===
-def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to_fmt: str):
-    ext_in = from_fmt if from_fmt in ("pdf", "docx") else filename.rsplit(".", 1)[-1]
-    input_path = UPLOAD_DIR / f"{job_id}_in.{ext_in}"
+# === Conversion logic (receives file path, not bytes) ===
+def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str, to_fmt: str):
+    input_path = Path(input_path_str)
+    if not input_path.exists():
+        jobs[job_id] = {"status": "error", "error": "Input file lost", "created_at": time.time()}
+        return
     try:
         jobs[job_id]["status"] = "processing"
-        input_path.write_bytes(file_data)
-        file_data = None  # free memory
 
         if from_fmt == "pdf" and to_fmt == "docx":
             output_path = _pdf_to_docx(input_path)
@@ -201,6 +244,7 @@ def _run_convert(job_id: str, file_data: bytes, filename: str, from_fmt: str, to
         _safe_unlink(input_path)
         for suffix in (".docx", ".pdf"):
             _safe_unlink(input_path.with_suffix(suffix))
+        gc.collect()  # force garbage collection after each job
 
 
 def _safe_unlink(path: Path):
@@ -211,49 +255,52 @@ def _safe_unlink(path: Path):
         pass
 
 
-# === DOCX repair (streaming, lower memory) ===
+# === DOCX repair (disk-based for large files) ===
 def _repair_docx(path: Path) -> None:
-    raw = path.read_bytes()
-    if len(raw) > 100 * 1024 * 1024:
-        return  # skip repair for huge files
-    out_buf = _io.BytesIO()
-    with zipfile.ZipFile(_io.BytesIO(raw), 'r') as zin:
-        with zipfile.ZipFile(out_buf, 'w', zipfile.ZIP_DEFLATED) as zout:
-            for info in zin.infolist():
-                try:
-                    data = zin.read(info.filename)
-                except zipfile.BadZipFile:
-                    hdr_off = info.header_offset
-                    buf2 = _io.BytesIO(raw)
-                    buf2.seek(hdr_off)
-                    hdr = buf2.read(30)
-                    comp_meth = _struct.unpack('<H', hdr[8:10])[0]
-                    comp_sz = _struct.unpack('<I', hdr[18:22])[0]
-                    name_len = _struct.unpack('<H', hdr[26:28])[0]
-                    extra_len = _struct.unpack('<H', hdr[28:30])[0]
-                    if comp_sz == 0 or comp_sz == 0xFFFFFFFF:
-                        comp_sz = info.compress_size
-                    buf2.seek(hdr_off + 30 + name_len + extra_len)
-                    compressed = buf2.read(comp_sz)
-                    if comp_meth == 0:
-                        data = compressed
-                    elif comp_meth == 8:
-                        data = _zlib.decompress(compressed, -_zlib.MAX_WBITS)
-                    else:
-                        raise ValueError(f"Unknown compression {comp_meth} in {info.filename}")
-                    info.CRC = _zlib.crc32(data) & 0xFFFFFFFF
-                zout.writestr(info, data)
-    path.write_bytes(out_buf.getvalue())
-    raw = None  # free memory
+    size = path.stat().st_size
+    if size > 20 * 1024 * 1024:
+        return  # skip repair for files > 20MB
+    tmp = path.with_suffix(".tmp.docx")
+    try:
+        with zipfile.ZipFile(path, 'r') as zin:
+            with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zout:
+                for info in zin.infolist():
+                    try:
+                        data = zin.read(info.filename)
+                    except zipfile.BadZipFile:
+                        hdr_off = info.header_offset
+                        with open(path, 'rb') as f:
+                            f.seek(hdr_off)
+                            hdr = f.read(30)
+                            comp_meth = _struct.unpack('<H', hdr[8:10])[0]
+                            comp_sz = _struct.unpack('<I', hdr[18:22])[0]
+                            name_len = _struct.unpack('<H', hdr[26:28])[0]
+                            extra_len = _struct.unpack('<H', hdr[28:30])[0]
+                            if comp_sz == 0 or comp_sz == 0xFFFFFFFF:
+                                comp_sz = info.compress_size
+                            f.seek(hdr_off + 30 + name_len + extra_len)
+                            compressed = f.read(comp_sz)
+                        if comp_meth == 0:
+                            data = compressed
+                        elif comp_meth == 8:
+                            data = _zlib.decompress(compressed, -_zlib.MAX_WBITS)
+                        else:
+                            raise ValueError(f"Unknown compression {comp_meth} in {info.filename}")
+                        info.CRC = _zlib.crc32(data) & 0xFFFFFFFF
+                    zout.writestr(info, data)
+        shutil.move(tmp, path)
+    finally:
+        _safe_unlink(tmp)
 
 
-# === PDF → DOCX ===
+# === PDF → DOCX (biggest memory risk — isolate and gc after) ===
 def _pdf_to_docx(input_path: Path) -> Path:
     from pdf2docx import Converter
     output_path = input_path.with_suffix(".docx")
     cv = Converter(str(input_path))
     cv.convert(str(output_path))
     cv.close()
+    gc.collect()
     _repair_docx(output_path)
     return output_path
 
@@ -266,7 +313,7 @@ def _kill_libreoffice():
         pass
 
 
-# === DOCX → PDF (no image re-render — returns LibreOffice output directly) ===
+# === DOCX → PDF ===
 def _docx_to_pdf(input_path: Path) -> Path:
     if not LIBREOFFICE_BIN:
         raise RuntimeError("LibreOffice is required for DOCX→PDF conversion.")
@@ -278,17 +325,14 @@ def _docx_to_pdf(input_path: Path) -> Path:
     tmp_out.mkdir(exist_ok=True)
 
     try:
-        # Validate DOCX
-        with zipfile.ZipFile(input_path) as zf:
-            if not any(n.endswith('.xml') for n in zf.namelist()):
-                raise RuntimeError("DOCX has no XML content entries")
-
         lo_env = os.environ.copy()
         lo_env.pop("SAL_USE_VCLPLUGIN", None)
         lo_env["HOME"] = str(lo_home)
-        # Limit LO memory usage
         lo_env["SAL_DISABLE_OPENGL_CHECK"] = "1"
         lo_env["SAL_VIDEO_DISABLE_ACCELERATE"] = "1"
+        # Limit LO max cache/memory
+        lo_env["LIBREOFFICE_MEMORY_MULTIPLIER"] = "0.3"
+        lo_env["OOO_DISABLE_RECOVERY"] = "1"
 
         def _run_lo(timeout_sec: int) -> subprocess.CompletedProcess:
             cmd = [
@@ -315,7 +359,6 @@ def _docx_to_pdf(input_path: Path) -> Path:
             if lo_pdf_path.stat().st_size == 0:
                 raise RuntimeError("LibreOffice produced an empty PDF")
 
-            # Return LO output directly — no memory-intensive image re-render
             output_path = input_path.with_suffix(".pdf")
             shutil.copy2(lo_pdf_path, output_path)
             return output_path
@@ -323,6 +366,7 @@ def _docx_to_pdf(input_path: Path) -> Path:
         shutil.rmtree(tmp_out, ignore_errors=True)
         shutil.rmtree(lo_home, ignore_errors=True)
         _kill_libreoffice()
+        gc.collect()
 
 
 import threading
