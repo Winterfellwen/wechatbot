@@ -1,23 +1,22 @@
 """
 Isolated subprocess worker for PDF conversion.
-Purpose: memory-heavy operations (pdf2docx, LibreOffice) run in a separate
-process so ALL memory is reclaimed when the process exits.
+Runs in a subprocess so ALL memory is reclaimed when the process exits.
+PDF→DOCX uses page-by-page processing (fitz + python-docx) to stay under 512MB.
+DOCX→PDF uses LibreOffice (also subprocess, already isolated).
 Usage: python converter_worker.py <input_path> <output_path> <from_fmt> <to_fmt>
-Exit code: 0 = success, 1 = error (error message printed to stderr)
 """
 
 import os
 import sys
 import shutil
-import zipfile
-import struct
-import zlib
 import gc
 import subprocess
 import uuid
 import time
+import struct
+import zlib
+import zipfile
 from pathlib import Path
-
 
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -53,52 +52,98 @@ def find_libreoffice() -> str | None:
     return None
 
 
-def repair_docx(path: Path) -> None:
-    size = path.stat().st_size
-    if size > 20 * 1024 * 1024:
-        return
-    tmp = path.with_suffix(".tmp.docx")
-    try:
-        with zipfile.ZipFile(path, 'r') as zin:
-            with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zout:
-                for info in zin.infolist():
-                    try:
-                        data = zin.read(info.filename)
-                    except zipfile.BadZipFile:
-                        hdr_off = info.header_offset
-                        with open(path, 'rb') as f:
-                            f.seek(hdr_off)
-                            hdr = f.read(30)
-                            comp_meth = struct.unpack('<H', hdr[8:10])[0]
-                            comp_sz = struct.unpack('<I', hdr[18:22])[0]
-                            name_len = struct.unpack('<H', hdr[26:28])[0]
-                            extra_len = struct.unpack('<H', hdr[28:30])[0]
-                            if comp_sz == 0 or comp_sz == 0xFFFFFFFF:
-                                comp_sz = info.compress_size
-                            f.seek(hdr_off + 30 + name_len + extra_len)
-                            compressed = f.read(comp_sz)
-                        if comp_meth == 0:
-                            data = compressed
-                        elif comp_meth == 8:
-                            data = zlib.decompress(compressed, -zlib.MAX_WBITS)
-                        else:
-                            raise ValueError(f"Unknown compression {comp_meth} in {info.filename}")
-                        info.CRC = zlib.crc32(data) & 0xFFFFFFFF
-                    zout.writestr(info, data)
-        shutil.move(tmp, path)
-    finally:
-        safe_unlink(tmp)
-
-
+# ============================================================
+# PDF → DOCX (page-by-page, keeps ~1 page in memory)
+# ============================================================
 def pdf_to_docx(input_path: Path, output_path: Path):
-    from pdf2docx import Converter
-    cv = Converter(str(input_path))
-    cv.convert(str(output_path))
-    cv.close()
+    try:
+        import fitz
+    except ImportError:
+        raise RuntimeError("PyMuPDF (fitz) is required. pip install PyMuPDF")
+    try:
+        from docx import Document
+        from docx.shared import Inches, Pt, Emu
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.oxml.ns import qn
+    except ImportError:
+        raise RuntimeError("python-docx is required. pip install python-docx")
+
+    print(f"[worker] Opening PDF: {input_path.name}", flush=True)
+    pdf = fitz.open(str(input_path))
+    num_pages = len(pdf)
+    print(f"[worker] Pages: {num_pages}", flush=True)
+
+    doc = Document()
+    # Set default font
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Liberation Serif'
+    font.size = Pt(11)
+
+    for i in range(num_pages):
+        page = pdf[i]
+        page_size = len(page.get_text())
+        print(f"[worker] Page {i+1}/{num_pages} text={page_size}b", flush=True)
+
+        # --- Extract text blocks with position ---
+        blocks = page.get_text("dict")["blocks"]
+        for block in blocks:
+            if block["type"] == 0:  # text block
+                para_text = ""
+                for line in block["lines"]:
+                    line_text = "".join(span["text"] for span in line["spans"])
+                    if line_text.strip():
+                        para_text += line_text + " "
+                para_text = para_text.strip()
+                if para_text:
+                    p = doc.add_paragraph(para_text)
+                    # Try to preserve heading-like formatting
+                    spans = block["lines"][0]["spans"] if block["lines"] else []
+                    if spans:
+                        size = spans[0].get("size", 11)
+                        is_bold = spans[0].get("flags", 0) & 2
+                        if is_bold and size > 14:
+                            p.style = doc.styles['Heading1']
+                        elif is_bold and size > 12:
+                            p.style = doc.styles['Heading2']
+
+            elif block["type"] == 1:  # image block
+                try:
+                    xref = block.get("image", None)
+                    if xref is None:
+                        xref = block.get("xref", 0)
+                    if xref:
+                        pix = fitz.Pixmap(pdf, xref)
+                        img_bytes = pix.tobytes("png")
+                        pix = None
+                        # Save temp image and insert
+                        img_path = UPLOAD_DIR / f"img_{uuid.uuid4().hex[:8]}.png"
+                        img_path.write_bytes(img_bytes)
+                        img_bytes = None
+                        try:
+                            doc.add_picture(str(img_path), width=Inches(5))
+                        finally:
+                            safe_unlink(img_path)
+                        gc.collect()
+                except Exception as e:
+                    print(f"[worker]  Image skip: {e}", flush=True)
+
+        # Free page memory
+        page = None
+        if i % 10 == 0:
+            gc.collect()
+
+    pdf.close()
+    print(f"[worker] Saving DOCX: {output_path.name}", flush=True)
+    doc.save(str(output_path))
+    doc = None
     gc.collect()
-    repair_docx(output_path)
+    print(f"[worker] DOCX saved: {output_path.name} size={output_path.stat().st_size}", flush=True)
 
 
+# ============================================================
+# DOCX → PDF (via LibreOffice subprocess)
+# ============================================================
 def kill_libreoffice():
     try:
         subprocess.run(["pkill", "-f", "libreoffice"], capture_output=True, timeout=10)
@@ -157,6 +202,7 @@ def docx_to_pdf(input_path: Path, output_path: Path):
         gc.collect()
 
 
+# ============================================================
 def main():
     if len(sys.argv) != 5:
         print("Usage: converter_worker.py <input_path> <output_path> <from_fmt> <to_fmt>", file=sys.stderr)

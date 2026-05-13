@@ -285,11 +285,6 @@ async def _check_workers():
 async def debug():
     info = {"libreoffice": LIBREOFFICE_BIN or "not found"}
     try:
-        import pdf2docx
-        info["pdf2docx"] = pdf2docx.__version__
-    except Exception as e:
-        info["pdf2docx"] = str(e)
-    try:
         import fitz
         info["pymupdf"] = fitz.version[0]
     except Exception as e:
