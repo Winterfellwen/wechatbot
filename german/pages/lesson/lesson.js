@@ -1,66 +1,40 @@
-// german/pages/lesson/lesson.js
+const storage = require('../../utils/storage');
+const tts = require('../../utils/tts');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    words: [],
+    grammars: []
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function(options) {
+    const level = options.level || 'a1';
+    const unit = parseInt(options.unit) || 1;
+    this.loadLessonData(level, unit);
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  loadLessonData: function(level, unit) {
+    const allWords = storage.getWordBook();
+    this.setData({
+      words: allWords.slice(0, 8),
+      grammars: [
+        { title: level.toUpperCase() + ' 语法要点', content: '本节课程核心语法内容正在完善中...' }
+      ]
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  playAudio: function(e) {
+    const word = e.currentTarget.dataset.word;
+    tts.speak(word);
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  startQuiz: function() {
+    wx.navigateTo({
+      url: '/german/pages/learn/challenge?level=a1&index=1'
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  goBack: function() {
+    wx.navigateBack();
   }
-})
+});

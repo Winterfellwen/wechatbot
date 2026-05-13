@@ -32,11 +32,11 @@ Page({
     });
   },
 
-  goToTextbook: function() { wx.navigateTo({ url: '/japanese/pages/textbook/textbook' }); },
-  goToWordbook: function() { wx.navigateTo({ url: '/japanese/pages/wordbook/wordbook' }); },
-  goToGrammar: function() { wx.navigateTo({ url: '/japanese/pages/grammar/grammar' }); },
+  goToTextbook: function() { wx.redirectTo({ url: '/japanese/pages/textbook/textbook' }); },
+  goToWordbook: function() { wx.redirectTo({ url: '/japanese/pages/wordbook/wordbook' }); },
+  goToGrammar: function() { wx.redirectTo({ url: '/japanese/pages/grammar/grammar' }); },
 
   goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
   goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
-  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
+  goToRank: function() { wx.redirectTo({ url: '/japanese/pages/leaderboard/leaderboard' }); }
 });

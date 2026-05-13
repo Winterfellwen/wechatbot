@@ -29,7 +29,7 @@
               <view class="sw-reading">{{item.reading}}</view>
               <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">
                 <text class="example-text">{{item.example}}</text>
-                <view class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">
+                  <view class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">
                   <text class="speaker-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text>
                 </view>
               </view>

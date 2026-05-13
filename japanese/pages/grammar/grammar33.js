@@ -1,4 +1,4 @@
-// german/pages/aichat/aichat.js
+// japanese/pages/grammar/grammar33.js
 Page({
 
   /**

@@ -298,9 +298,12 @@ page {
   50% { transform: scale(1.08); }
 }
 
-.audio-icon {
-  width: 72rpx;
-  height: 72rpx;
+.audio-icon-text {
+  font-size: 36rpx;
+}
+
+.audio-icon-small-text {
+  font-size: 28rpx;
 }
 
 /* 生词本按钮 */

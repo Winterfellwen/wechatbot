@@ -1,66 +1,47 @@
-// german/pages/grammar/grammar.js
+const a1Grammar = require('../../data/a1/grammar.js');
+const a2Grammar = require('../../data/a2/grammar.js');
+const b1Grammar = require('../../data/b1/grammar.js');
+const b2Grammar = require('../../data/b2/grammar.js');
+
+const grammarData = {
+  'A1': a1Grammar,
+  'A2': a2Grammar,
+  'B1': b1Grammar,
+  'B2': b2Grammar
+};
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    levels: ['A1', 'A2', 'B1', 'B2'],
+    currentLevel: 'A1',
+    grammarList: []
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function() {
+    this.loadGrammar('A1');
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  switchLevel: function(e) {
+    const level = e.currentTarget.dataset.level;
+    this.setData({ currentLevel: level });
+    this.loadGrammar(level);
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  loadGrammar: function(level) {
+    const data = grammarData[level] || [];
+    const list = data.map(function(item, idx) {
+      return {
+        id: level + '-' + idx,
+        title: item.title || item.pattern || '语法点',
+        category: level,
+        rule: item.content || item.explanation || item.structure || '详细信息加载中...',
+        example: item.example || item.content || '示例加载中...'
+      };
+    });
+    this.setData({ grammarList: list });
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  goBack: function() {
+    wx.navigateBack();
   }
-})
+});

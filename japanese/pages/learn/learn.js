@@ -184,12 +184,12 @@ Page({
 
   startLesson: function(e) {
     var id = e.currentTarget.dataset.id;
-    wx.navigateTo({ url: '/japanese/pages/lesson/lesson?id=' + id + '&mode=quiz' });
+    wx.redirectTo({ url: '/japanese/pages/lesson/lesson?id=' + id + '&mode=quiz' });
   },
 
   goToLesson: function() { wx.redirectTo({ url: '/japanese/pages/learn/learn' }); },
   goToCourse: function() { wx.redirectTo({ url: '/japanese/pages/course/course' }); },
-  goToRank: function() { wx.navigateTo({ url: '/japanese/pages/leaderboard/leaderboard' }); },
+  goToRank: function() { wx.redirectTo({ url: '/japanese/pages/leaderboard/leaderboard' }); },
 
   onLevelChange: function(e) {
     var idx = parseInt(e.detail.value);

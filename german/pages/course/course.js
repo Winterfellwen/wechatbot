@@ -176,13 +176,13 @@ Page({
   },
 
   goToLearn: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/learn/learn'
     });
   },
 
   goToWordbook: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/wordbook/wordbook'
     });
   },

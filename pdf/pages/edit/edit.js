@@ -1,4 +1,4 @@
-var retry = require('../../utils/retry');
+var retry = require('../../../utils/retry');
 
 Page({
   data: {

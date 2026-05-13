@@ -1,2 +1,39 @@
-<!--german/pages/grammar/grammar.wxml-->
-<text>german/pages/grammar/grammar.wxml</text>
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">
+      <text class="back-icon">&lt;</text>
+    </view>
+    <text class="top-title">语法大全</text>
+    <view class="top-placeholder"></view>
+  </view>
+
+  <view class="level-tabs">
+    <view wx:for="{{levels}}" wx:key="*this"
+      class="tab {{currentLevel === item ? 'active' : ''}}"
+      bindtap="switchLevel" data-level="{{item}}">
+      {{item}}
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="grammar-scroll">
+    <view class="grammar-card" wx:for="{{grammarList}}" wx:key="id" wx:if="{{grammarList.length > 0}}">
+      <view class="card-header">
+        <text class="grammar-title">{{item.title}}</text>
+        <text class="grammar-badge">{{item.category}}</text>
+      </view>
+      <view class="grammar-rule">{{item.rule}}</view>
+      <view class="grammar-example">
+        <text class="example-label">例句：</text>
+        <text class="example-text">{{item.example}}</text>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{grammarList.length === 0}}">
+      <view class="empty-icon-wrap">
+        <text class="empty-icon-text">G</text>
+      </view>
+      <text class="empty-title">语法内容加载中</text>
+      <text class="empty-desc">选择一个级别查看对应语法</text>
+    </view>
+  </scroll-view>
+</view>

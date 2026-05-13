@@ -98,13 +98,13 @@ Page({
   },
 
   goToLearn: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/learn/learn'
     });
   },
 
   goToCourse: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/course/course'
     });
   },

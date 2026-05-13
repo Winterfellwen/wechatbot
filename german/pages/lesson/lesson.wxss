@@ -1,1 +1,190 @@
-/* german/pages/lesson/lesson.wxss */
+.container {
+  min-height: 100vh;
+  background: #F8FAFC;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #fff;
+}
+
+.back-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.3);
+}
+
+.back-icon {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.top-title {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.top-placeholder {
+  width: 60rpx;
+}
+
+.body-scroll {
+  height: calc(100vh - 100rpx);
+  padding: 24rpx;
+}
+
+.section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 2rpx solid #E2E8F0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 2rpx solid #F1F5F9;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.vocab-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  background: #F8FAFC;
+  border-radius: 16rpx;
+  border: 2rpx solid #E2E8F0;
+  transition: all 0.2s ease;
+}
+
+.vocab-item:active {
+  transform: scale(0.99);
+}
+
+.vocab-word {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1E293B;
+  flex: 1;
+}
+
+.vocab-translation {
+  font-size: 26rpx;
+  color: #64748B;
+  margin: 0 20rpx;
+}
+
+.play-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.play-btn:active {
+  transform: scale(0.9);
+}
+
+.play-icon {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #2563EB;
+}
+
+.grammar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.grammar-card {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border-radius: 16rpx;
+  border-left: 8rpx solid #F97316;
+}
+
+.grammar-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1E293B;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.grammar-desc {
+  font-size: 26rpx;
+  color: #64748B;
+  line-height: 1.6;
+}
+
+.empty-section {
+  padding: 40rpx;
+  text-align: center;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #94A3B8;
+}
+
+.quiz-section {
+  padding: 20rpx 0;
+}
+
+.start-quiz-btn {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(37,99,235,0.3);
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.start-quiz-btn:active {
+  transform: scale(0.97);
+}

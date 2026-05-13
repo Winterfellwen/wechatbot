@@ -1,1 +1,179 @@
-/* german/pages/grammar/grammar.wxss */
+.container {
+  min-height: 100vh;
+  background: #F8FAFC;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #fff;
+}
+
+.back-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.3);
+}
+
+.back-icon {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.top-title {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.top-placeholder {
+  width: 60rpx;
+}
+
+.level-tabs {
+  display: flex;
+  background: #fff;
+  padding: 16rpx 24rpx;
+  gap: 12rpx;
+  border-bottom: 2rpx solid #E2E8F0;
+}
+
+.tab {
+  padding: 12rpx 28rpx;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #64748B;
+  background: #F1F5F9;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:active {
+  transform: scale(0.96);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.3);
+}
+
+.grammar-scroll {
+  height: calc(100vh - 160rpx);
+  padding: 24rpx;
+}
+
+.grammar-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+  border: 2rpx solid #E2E8F0;
+  transition: all 0.2s ease;
+}
+
+.grammar-card:active {
+  transform: scale(0.99);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.grammar-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.grammar-badge {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  background: #EFF6FF;
+  color: #2563EB;
+  border-radius: 12rpx;
+  font-weight: 600;
+}
+
+.grammar-rule {
+  font-size: 28rpx;
+  color: #64748B;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.grammar-example {
+  padding: 16rpx;
+  background: #FFFBEB;
+  border-radius: 12rpx;
+  border-left: 6rpx solid #F97316;
+}
+
+.example-label {
+  font-size: 24rpx;
+  color: #F97316;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.example-text {
+  font-size: 26rpx;
+  color: #1E293B;
+  line-height: 1.5;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 40rpx;
+}
+
+.empty-icon-wrap {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.empty-icon-text {
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #2563EB;
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #94A3B8;
+}

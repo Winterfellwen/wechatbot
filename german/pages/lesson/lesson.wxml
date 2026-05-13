@@ -1,2 +1,50 @@
-<!--german/pages/lesson/lesson.wxml-->
-<text>german/pages/lesson/lesson.wxml</text>
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">
+      <text class="back-icon">&lt;</text>
+    </view>
+    <text class="top-title">课程详情</text>
+    <view class="top-placeholder"></view>
+  </view>
+
+  <scroll-view scroll-y class="body-scroll">
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">词汇 ({{words.length}})</text>
+      </view>
+      <view class="vocab-list">
+        <view class="vocab-item" wx:for="{{words}}" wx:key="index">
+          <view class="vocab-word">{{item.word}}</view>
+          <view class="vocab-translation">{{item.translation}}</view>
+          <view class="play-btn" bindtap="playAudio" data-word="{{item.word}}">
+            <text class="play-icon">A</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">语法</text>
+      </view>
+      <view class="grammar-list">
+        <view class="grammar-card" wx:for="{{grammars}}" wx:key="index">
+          <text class="grammar-title">{{item.title}}</text>
+          <text class="grammar-desc">{{item.content}}</text>
+        </view>
+        <view wx:if="{{grammars.length === 0}}" class="empty-section">
+          <text class="empty-hint">暂无语法内容</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">作业</text>
+      </view>
+      <view class="quiz-section">
+        <button class="start-quiz-btn" bindtap="startQuiz">开始练习</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

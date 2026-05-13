@@ -86,13 +86,13 @@ Page({
   },
 
   goToCourse: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/course/course'
     });
   },
 
   goToWordbook: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/german/pages/wordbook/wordbook'
     });
   },

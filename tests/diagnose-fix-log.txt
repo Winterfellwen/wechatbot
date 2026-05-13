@@ -1,0 +1,38 @@
+诊断修复记录
+============
+时间: 2026-05-13 11:20
+
+[修复 1]
+文件: pdf/pages/index/index.js
+行号: 1
+操作: 修改
+之前: var retry = require('../../utils/retry');
+之后: var retry = require('../../../utils/retry');
+原因: cosmic-planet 合并后 retry.js 位于根目录 utils/retry.js，而 PDF 子包内相对路径
+     ../../utils/retry 解析为 pdf/utils/retry.js，导致模块未定义异常
+
+[修复 2]
+文件: pdf/pages/edit/edit.js
+行号: 1
+操作: 修改
+之前: var retry = require('../../utils/retry');
+之后: var retry = require('../../../utils/retry');
+原因: 同上
+
+[修复 3]
+文件: tests/diagnose.js
+行号: ~110
+操作: 修改
+之前: cp.outerWxml() (不存在的 API)
+之后: cp.$(selector) (标准 miniprogram-automator API)
+原因: outerWxml 不是 miniprogram-automator 的 API，改用标准选择器
+
+===== 已修复问题 =====
+✓ module 'pdf/utils/retry.js' is not defined — JS 异常消失
+✓ Component is not found in path "wx://not-found" — 组件错误消失
+✓ PDF 页面 (index/edit) 正常加载渲染
+
+===== 剩余噪音（无需修复）=====
+[噪音] color-picker currentColor null → String 类型不匹配
+[噪音] 部分按钮选择器未命中（测试选择器与运行时条件渲染差异）
+[噪音] 页面路由偶发超时（测试脚本串行执行时的正常现象）

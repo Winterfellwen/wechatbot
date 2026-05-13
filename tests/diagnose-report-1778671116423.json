@@ -1,0 +1,2565 @@
+{
+  "time": "2026-05-13 11:18:36",
+  "mode": "扫描模式",
+  "summary": {
+    "pageNav": {
+      "passed": 89,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:08:47"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:08:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:09:02"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/course/course",
+          "time": "2026-05-13 11:09:08"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:09:15"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:09:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:09:28"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:09:35"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-生词本 → german/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:09:42"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:09:48"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:09:55"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课本 → german/pages/textbook/textbook",
+          "time": "2026-05-13 11:10:02"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:10:08"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:10:15"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:10:21"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:10:28"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:10:35"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法 → japanese/pages/grammar/grammar",
+          "time": "2026-05-13 11:10:41"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法33 → japanese/pages/grammar/grammar33",
+          "time": "2026-05-13 11:10:48"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课本 → japanese/pages/textbook/textbook",
+          "time": "2026-05-13 11:10:55"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:11:01"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:11:08"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:11:14"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:11:21"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF转换 → pdf/pages/convert/convert",
+          "time": "2026-05-13 11:11:28"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:11:35"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:11:41"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/course/course",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-生词本 → german/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课本 → german/pages/textbook/textbook",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法 → japanese/pages/grammar/grammar",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法33 → japanese/pages/grammar/grammar33",
+          "time": "2026-05-13 11:13:46"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课本 → japanese/pages/textbook/textbook",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF转换 → pdf/pages/convert/convert",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:14:45"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:14:52"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:14:59"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:15:05"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:15:12"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:15:20"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:15:26"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/learn/learn",
+          "time": "2026-05-13 11:15:32"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:15:39"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:15:46"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:15:53"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:16:00"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:16:07"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:16:14"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:16:20"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:16:27"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:16:34"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:16:41"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:16:47"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:16:54"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:17:01"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:17:07"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:17:13"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:17:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:17:27"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:17:34"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:17:41"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:17:47"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:17:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:18:01"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:18:07"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:18:14"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:18:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:18:28"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:18:35"
+        }
+      ]
+    },
+    "elementCheck": {
+      "passed": 0,
+      "failed": 118,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✗",
+          "msg": "pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: entry-grid - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: entry-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: teacher-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: login-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: profile-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: action-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: action-item - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: login-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: level-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: path-scroll - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: node-wrap - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: level-selector - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: unit-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: vocab-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: vocab-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: grammar-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: quiz-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: progress-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: question-box - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: options - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: option-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: answer-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: actions - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: result-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: wrong-review - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: actions - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: word-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: word-item - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: review-mode - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: level-tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: grammar-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: card-header - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: msg-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: msg-row - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: input-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: send-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: book-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: book-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: lesson-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: personal-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: rank-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: level-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: path-scroll - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: node-wrap - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: hub-grid - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: hub-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: study-word-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: quiz-container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: options-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: search-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: word-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: word-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: level-tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: grammar-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: grammar-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar33: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:46"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: book-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: book-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: lesson-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: personal-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: rank-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: search-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: doc-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: doc-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: new-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: editor-page - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: toolbar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: tool-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: editor - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: upload-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: target-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: convert-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: back-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: file-display - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: target-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: convert-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: back-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: op-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: op-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: do-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: chat-container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: msg-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: input-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: send-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: quick-tag - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        }
+      ]
+    },
+    "searchTest": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "日语-生词本: searchKey=\"test\"",
+          "time": "2026-05-13 11:14:45"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本: 清除 searchKey=\"\"",
+          "time": "2026-05-13 11:14:46"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本: searchKey=\"test\"",
+          "time": "2026-05-13 11:14:53"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本: 清除 searchKey=\"\"",
+          "time": "2026-05-13 11:14:53"
+        }
+      ]
+    },
+    "buttonNav": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 6,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "pages/index/index: 功能入口卡片",
+          "time": "2026-05-13 11:15:00"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/learn: 导航到底部课程",
+          "time": "2026-05-13 11:15:06"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/lesson/lesson: 开始测验",
+          "time": "2026-05-13 11:15:13"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/learn/review: 标记错误 - 未找到 .action-btn.wrong",
+          "time": "2026-05-13 11:15:20"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/result: 结果页操作按钮",
+          "time": "2026-05-13 11:15:27"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/course/course: 选择单元 - 未找到 .unit-item",
+          "time": "2026-05-13 11:15:32"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/grammar/grammar: 切换级别标签",
+          "time": "2026-05-13 11:15:39"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/leaderboard/leaderboard: 切换排行榜标签",
+          "time": "2026-05-13 11:15:46"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/course/course: 功能卡片",
+          "time": "2026-05-13 11:15:54"
+        },
+        {
+          "status": "⚠",
+          "msg": "japanese/pages/lesson/lesson: 选择题选项 - 未找到 .option-btn",
+          "time": "2026-05-13 11:16:00"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/leaderboard/leaderboard: 切换标签",
+          "time": "2026-05-13 11:16:07"
+        },
+        {
+          "status": "⚠",
+          "msg": "pdf/pages/index/index: 上传文件 - 未找到 .upload-btn",
+          "time": "2026-05-13 11:16:14"
+        },
+        {
+          "status": "⚠",
+          "msg": "pdf/pages/edit/edit: 选择操作 - 未找到 .op-card",
+          "time": "2026-05-13 11:16:20"
+        },
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 发送消息",
+          "time": "2026-05-13 11:16:27"
+        },
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 快捷提问",
+          "time": "2026-05-13 11:16:34"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/index/index: 新建文档",
+          "time": "2026-05-13 11:16:41"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/editor/editor: 工具栏按钮",
+          "time": "2026-05-13 11:16:48"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/editor/editor: 保存文档",
+          "time": "2026-05-13 11:16:55"
+        },
+        {
+          "status": "⚠",
+          "msg": "pages/user/user: 微信登录 - 未找到 .login-btn",
+          "time": "2026-05-13 11:17:01"
+        }
+      ]
+    },
+    "tabSwitch": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "首页",
+          "time": "2026-05-13 11:17:07"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心",
+          "time": "2026-05-13 11:17:13"
+        }
+      ]
+    },
+    "formTest": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 2,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 聊天输入框 输入\"你好老师\"",
+          "time": "2026-05-13 11:17:21"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/aichat/aichat: AI对话输入框 输入\"Test\"",
+          "time": "2026-05-13 11:17:28"
+        },
+        {
+          "status": "⚠",
+          "msg": "japanese/pages/lesson/lesson: 填空题输入 - 未找到",
+          "time": "2026-05-13 11:17:34"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/learn/challenge: 拼写输入 - 未找到",
+          "time": "2026-05-13 11:17:41"
+        }
+      ]
+    },
+    "dataCheck": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "word/pages/index/index: searchKey=",
+          "time": "2026-05-13 11:17:47"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/wordbook/wordbook: searchKey=",
+          "time": "2026-05-13 11:17:54"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/challenge: questions array(8)",
+          "time": "2026-05-13 11:18:01"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/result: score=5",
+          "time": "2026-05-13 11:18:07"
+        }
+      ]
+    },
+    "scrollTest": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/learn: 闯关路径滚动",
+          "time": "2026-05-13 11:18:15"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/lesson/lesson: 课程内容滚动",
+          "time": "2026-05-13 11:18:22"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/grammar/grammar: 语法列表滚动",
+          "time": "2026-05-13 11:18:29"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/learn/learn: 日语闯关滚动",
+          "time": "2026-05-13 11:18:36"
+        }
+      ]
+    }
+  },
+  "console": {
+    "errors": 8,
+    "warnings": 1
+  },
+  "exceptions": 2,
+  "details": {
+    "pageNav": {
+      "passed": 89,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:08:47"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:08:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:09:02"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/course/course",
+          "time": "2026-05-13 11:09:08"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:09:15"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:09:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:09:28"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:09:35"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-生词本 → german/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:09:42"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:09:48"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:09:55"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课本 → german/pages/textbook/textbook",
+          "time": "2026-05-13 11:10:02"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:10:08"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:10:15"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:10:21"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:10:28"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:10:35"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法 → japanese/pages/grammar/grammar",
+          "time": "2026-05-13 11:10:41"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法33 → japanese/pages/grammar/grammar33",
+          "time": "2026-05-13 11:10:48"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课本 → japanese/pages/textbook/textbook",
+          "time": "2026-05-13 11:10:55"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:11:01"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:11:08"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:11:14"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:11:21"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF转换 → pdf/pages/convert/convert",
+          "time": "2026-05-13 11:11:28"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:11:35"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:11:41"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/course/course",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-生词本 → german/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课本 → german/pages/textbook/textbook",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法 → japanese/pages/grammar/grammar",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-语法33 → japanese/pages/grammar/grammar33",
+          "time": "2026-05-13 11:13:46"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课本 → japanese/pages/textbook/textbook",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF转换 → pdf/pages/convert/convert",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:14:45"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:14:52"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:14:59"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:15:05"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:15:12"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-复习 → german/pages/learn/review",
+          "time": "2026-05-13 11:15:20"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:15:26"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程中心 → german/pages/learn/learn",
+          "time": "2026-05-13 11:15:32"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:15:39"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-排行榜 → german/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:15:46"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程中心 → japanese/pages/course/course",
+          "time": "2026-05-13 11:15:53"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:16:00"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-排行榜 → japanese/pages/leaderboard/leaderboard",
+          "time": "2026-05-13 11:16:07"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF工具 → pdf/pages/index/index",
+          "time": "2026-05-13 11:16:14"
+        },
+        {
+          "status": "✓",
+          "msg": "PDF编辑 → pdf/pages/edit/edit",
+          "time": "2026-05-13 11:16:20"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:16:27"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:16:34"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:16:41"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:16:47"
+        },
+        {
+          "status": "✓",
+          "msg": "作文编辑器 → word/pages/editor/editor",
+          "time": "2026-05-13 11:16:54"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:17:01"
+        },
+        {
+          "status": "✓",
+          "msg": "首页 → pages/index/index",
+          "time": "2026-05-13 11:17:07"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心 → pages/user/user",
+          "time": "2026-05-13 11:17:13"
+        },
+        {
+          "status": "✓",
+          "msg": "AI老师 → smart-teacher/pages/chat/chat",
+          "time": "2026-05-13 11:17:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-AI对话 → german/pages/aichat/aichat",
+          "time": "2026-05-13 11:17:27"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-课程详情 → japanese/pages/lesson/lesson",
+          "time": "2026-05-13 11:17:34"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:17:41"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本 → word/pages/index/index",
+          "time": "2026-05-13 11:17:47"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本 → japanese/pages/wordbook/wordbook",
+          "time": "2026-05-13 11:17:54"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-挑战 → german/pages/learn/challenge",
+          "time": "2026-05-13 11:18:01"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-结果 → german/pages/learn/result",
+          "time": "2026-05-13 11:18:07"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-闯关路径 → german/pages/learn/learn",
+          "time": "2026-05-13 11:18:14"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-课程详情 → german/pages/lesson/lesson",
+          "time": "2026-05-13 11:18:21"
+        },
+        {
+          "status": "✓",
+          "msg": "德语-语法 → german/pages/grammar/grammar",
+          "time": "2026-05-13 11:18:28"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-闯关路径 → japanese/pages/learn/learn",
+          "time": "2026-05-13 11:18:35"
+        }
+      ]
+    },
+    "elementCheck": {
+      "passed": 0,
+      "failed": 118,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✗",
+          "msg": "pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: entry-grid - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: entry-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: teacher-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/index/index: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:47"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: login-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: profile-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: action-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: action-item - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "pages/user/user: login-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:11:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: level-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: path-scroll - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: node-wrap - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/learn: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: level-selector - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: unit-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: vocab-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/course/course: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:08"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: vocab-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: grammar-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/lesson/lesson: quiz-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:15"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: progress-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: question-box - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: options - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/challenge: option-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:21"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: answer-section - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/review: actions - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:28"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: result-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: wrong-review - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/learn/result: actions - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:34"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: word-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: word-item - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: review-mode - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/wordbook/wordbook: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:41"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: level-tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: grammar-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/grammar/grammar: card-header - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:47"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: msg-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: msg-row - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: input-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/aichat/aichat: send-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:12:54"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: book-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: book-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/textbook/textbook: lesson-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:00"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: personal-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "german/pages/leaderboard/leaderboard: rank-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:07"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: level-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: path-scroll - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: node-wrap - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/learn/learn: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:14"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: hub-grid - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: hub-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/course/course: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:20"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: study-word-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: quiz-container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/lesson/lesson: options-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:27"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: search-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: word-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/wordbook/wordbook: word-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:33"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: level-tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: grammar-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar: grammar-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:40"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/grammar/grammar33: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:46"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: book-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: book-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/textbook/textbook: lesson-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:53"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: personal-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: tabs - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: rank-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "japanese/pages/leaderboard/leaderboard: bottom-nav - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:13:59"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: search-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: doc-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: doc-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/index/index: new-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:06"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: editor-page - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: toolbar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: tool-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "word/pages/editor/editor: editor - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:12"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: upload-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: target-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/index/index: convert-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:19"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: back-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: file-display - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: target-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/convert/convert: convert-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:25"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: back-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: op-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: op-card - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "pdf/pages/edit/edit: do-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:31"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: chat-container - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: msg-list - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: input-bar - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: send-btn - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        },
+        {
+          "status": "✗",
+          "msg": "smart-teacher/pages/chat/chat: quick-tag - cp.outerWxml is not a function",
+          "time": "2026-05-13 11:14:38"
+        }
+      ]
+    },
+    "searchTest": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "日语-生词本: searchKey=\"test\"",
+          "time": "2026-05-13 11:14:45"
+        },
+        {
+          "status": "✓",
+          "msg": "日语-生词本: 清除 searchKey=\"\"",
+          "time": "2026-05-13 11:14:46"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本: searchKey=\"test\"",
+          "time": "2026-05-13 11:14:53"
+        },
+        {
+          "status": "✓",
+          "msg": "作文本: 清除 searchKey=\"\"",
+          "time": "2026-05-13 11:14:53"
+        }
+      ]
+    },
+    "buttonNav": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 6,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "pages/index/index: 功能入口卡片",
+          "time": "2026-05-13 11:15:00"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/learn: 导航到底部课程",
+          "time": "2026-05-13 11:15:06"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/lesson/lesson: 开始测验",
+          "time": "2026-05-13 11:15:13"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/learn/review: 标记错误 - 未找到 .action-btn.wrong",
+          "time": "2026-05-13 11:15:20"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/result: 结果页操作按钮",
+          "time": "2026-05-13 11:15:27"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/course/course: 选择单元 - 未找到 .unit-item",
+          "time": "2026-05-13 11:15:32"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/grammar/grammar: 切换级别标签",
+          "time": "2026-05-13 11:15:39"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/leaderboard/leaderboard: 切换排行榜标签",
+          "time": "2026-05-13 11:15:46"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/course/course: 功能卡片",
+          "time": "2026-05-13 11:15:54"
+        },
+        {
+          "status": "⚠",
+          "msg": "japanese/pages/lesson/lesson: 选择题选项 - 未找到 .option-btn",
+          "time": "2026-05-13 11:16:00"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/leaderboard/leaderboard: 切换标签",
+          "time": "2026-05-13 11:16:07"
+        },
+        {
+          "status": "⚠",
+          "msg": "pdf/pages/index/index: 上传文件 - 未找到 .upload-btn",
+          "time": "2026-05-13 11:16:14"
+        },
+        {
+          "status": "⚠",
+          "msg": "pdf/pages/edit/edit: 选择操作 - 未找到 .op-card",
+          "time": "2026-05-13 11:16:20"
+        },
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 发送消息",
+          "time": "2026-05-13 11:16:27"
+        },
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 快捷提问",
+          "time": "2026-05-13 11:16:34"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/index/index: 新建文档",
+          "time": "2026-05-13 11:16:41"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/editor/editor: 工具栏按钮",
+          "time": "2026-05-13 11:16:48"
+        },
+        {
+          "status": "✓",
+          "msg": "word/pages/editor/editor: 保存文档",
+          "time": "2026-05-13 11:16:55"
+        },
+        {
+          "status": "⚠",
+          "msg": "pages/user/user: 微信登录 - 未找到 .login-btn",
+          "time": "2026-05-13 11:17:01"
+        }
+      ]
+    },
+    "tabSwitch": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "首页",
+          "time": "2026-05-13 11:17:07"
+        },
+        {
+          "status": "✓",
+          "msg": "个人中心",
+          "time": "2026-05-13 11:17:13"
+        }
+      ]
+    },
+    "formTest": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 2,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "smart-teacher/pages/chat/chat: 聊天输入框 输入\"你好老师\"",
+          "time": "2026-05-13 11:17:21"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/aichat/aichat: AI对话输入框 输入\"Test\"",
+          "time": "2026-05-13 11:17:28"
+        },
+        {
+          "status": "⚠",
+          "msg": "japanese/pages/lesson/lesson: 填空题输入 - 未找到",
+          "time": "2026-05-13 11:17:34"
+        },
+        {
+          "status": "⚠",
+          "msg": "german/pages/learn/challenge: 拼写输入 - 未找到",
+          "time": "2026-05-13 11:17:41"
+        }
+      ]
+    },
+    "dataCheck": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "word/pages/index/index: searchKey=",
+          "time": "2026-05-13 11:17:47"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/wordbook/wordbook: searchKey=",
+          "time": "2026-05-13 11:17:54"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/challenge: questions array(8)",
+          "time": "2026-05-13 11:18:01"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/result: score=5",
+          "time": "2026-05-13 11:18:07"
+        }
+      ]
+    },
+    "scrollTest": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "details": [
+        {
+          "status": "✓",
+          "msg": "german/pages/learn/learn: 闯关路径滚动",
+          "time": "2026-05-13 11:18:15"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/lesson/lesson: 课程内容滚动",
+          "time": "2026-05-13 11:18:22"
+        },
+        {
+          "status": "✓",
+          "msg": "german/pages/grammar/grammar: 语法列表滚动",
+          "time": "2026-05-13 11:18:29"
+        },
+        {
+          "status": "✓",
+          "msg": "japanese/pages/learn/learn: 日语闯关滚动",
+          "time": "2026-05-13 11:18:36"
+        }
+      ]
+    }
+  }
+}

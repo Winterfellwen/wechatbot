@@ -1,2 +1,50 @@
-<!--german/pages/textbook/textbook.wxml-->
-<text>german/pages/textbook/textbook.wxml</text>
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">
+      <text class="back-icon">&lt;</text>
+    </view>
+    <text class="top-title">课本</text>
+    <view class="top-placeholder"></view>
+  </view>
+
+  <view wx:if="{{!currentBook}}" class="book-list">
+    <view class="book-card" wx:for="{{books}}" wx:key="level" bindtap="openBook" data-level="{{item.level}}">
+      <view class="book-cover" style="background: {{item.color}}">
+        <text class="book-level">{{item.level}}</text>
+      </view>
+      <view class="book-info">
+        <text class="book-title">{{item.title}}</text>
+        <view class="book-progress">
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{item.progress}}%"></view>
+          </view>
+          <text class="progress-text">{{item.progress}}%</text>
+        </view>
+        <text class="book-meta">{{item.lessonCount}} 课 · {{item.wordCount}} 词</text>
+      </view>
+      <text class="book-arrow">&gt;</text>
+    </view>
+  </view>
+
+  <view wx:if="{{currentBook}}" class="lesson-list">
+    <view class="lesson-item" wx:for="{{lessons}}" wx:key="id" bindtap="startLesson" data-id="{{item.id}}">
+      <view class="lesson-num {{item.done ? 'done' : ''}}">
+        <text wx:if="{{item.done}}">OK</text>
+        <text wx:else>{{item.number}}</text>
+      </view>
+      <view class="lesson-info">
+        <text class="lesson-title">{{item.title}}</text>
+        <text class="lesson-meta">{{item.words}}词</text>
+      </view>
+      <text class="lesson-arrow">&gt;</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!currentBook && books.length === 0}}" class="empty-state">
+    <view class="empty-icon-wrap">
+      <text class="empty-icon-text">B</text>
+    </view>
+    <text class="empty-title">课本加载中</text>
+    <text class="empty-desc">请稍后再试</text>
+  </view>
+</view>

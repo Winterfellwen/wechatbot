@@ -1,37 +1,183 @@
+/* ========================================
+   设计系统令牌 - 多功能小机器人
+   样式: Glassmorphism
+   主色: #2563EB / #3B82F6
+   强调色: #F97316
+   成功色: #22C55E
+   危险色: #EF4444
+   文字: #1E293B / #64748B / #94A3B8
+   背景: #F8FAFC
+   ======================================== */
+
+/* 基础 - 触摸目标 >= 88rpx (44px)，对比 >= 4.5:1 */
 page {
-  background-color: #f5f5f5;
+  background-color: #F8FAFC;
   font-size: 28rpx;
-  color: #333;
+  color: #1E293B;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* 通用容器 */
 .container {
-  height: 100%;
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 卡片 - 毛玻璃 */
+.card {
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid rgba(226, 232, 240, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 主要按钮 */
+.btn-primary {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+  min-height: 88rpx;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* 次要按钮 */
+.btn-secondary {
+  background-color: #ffffff;
+  color: #1E293B;
+  border: 2rpx solid #E2E8F0;
+  border-radius: 16rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:active {
+  background: #F8FAFC;
+  transform: scale(0.98);
+}
+
+/* 禁用状态 */
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 毛玻璃卡片 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 2rpx solid rgba(226, 232, 240, 0.5);
+  border-radius: 24rpx;
+}
+
+/* 输入框 */
+.input-field {
+  height: 80rpx;
+  background: #F8FAFC;
+  border: 2rpx solid #E2E8F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: #1E293B;
+  transition: border-color 0.2s ease;
   box-sizing: border-box;
 }
 
-.card {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin: 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+.input-field:focus {
+  border-color: #2563EB;
+  background: #ffffff;
 }
 
-.btn-primary {
-  background-color: #1890ff;
-  color: #fff;
-  border-radius: 10rpx;
-  padding: 20rpx 0;
-  text-align: center;
+.input-field::placeholder {
+  color: #94A3B8;
 }
 
-.btn-default {
-  background-color: #fff;
-  color: #333;
-  border: 1rpx solid #d9d9d9;
-  border-radius: 10rpx;
-  padding: 20rpx 0;
-  text-align: center;
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 40rpx;
 }
+
+.empty-icon {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.6;
+}
+
+.empty-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #94A3B8;
+}
+
+/* 加载状态 */
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #E2E8F0;
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 骨架屏 */
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 12rpx;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Toast 增强 */
+.success-toast { background: #22C55E !important; }
+.error-toast { background: #EF4444 !important; }
+.warning-toast { background: #F97316 !important; }
