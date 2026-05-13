@@ -1,3 +1,4 @@
+var retry = require('../../utils/retry');
 
 Page({
   data: {
@@ -65,166 +66,115 @@ Page({
     this.setData({ toFormat: e.currentTarget.dataset.value });
   },
 
-  doConvert: function(retryCount) {
-    retryCount = retryCount || 0;
+  doConvert: function() {
     if (!this.data.filePath) {
       wx.showToast({ title: '请先上传文件', icon: 'none' });
       return;
     }
     var that = this;
-    that.setData({ converting: true, progressText: retryCount > 0 ? '重试中...' : '提交任务...' });
+    that.setData({ converting: true, currentJobId: null, progressText: '准备中...' });
 
-    var task = wx.uploadFile({
-      url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
-      filePath: that.data.filePath,
-      name: 'file',
-      formData: { from: that.data.fromFormat, to: that.data.toFormat },
-      timeout: 120000,
-      success: function(res) {
-        if (res.statusCode === 200) {
+    var r = retry.createRetrier(that);
+
+    // Phase 1: upload file, get job_id
+    r.operate(function(retry, stop, ctx) {
+      var task = wx.uploadFile({
+        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
+        filePath: that.data.filePath,
+        name: 'file',
+        formData: { from: that.data.fromFormat, to: that.data.toFormat },
+        timeout: 120000,
+        success: function(res) {
+          if (res.statusCode !== 200) {
+            if (res.statusCode >= 500) return retry('服务器错误');
+            var errData = {};
+            try { errData = JSON.parse(res.data || '{}'); } catch(e) {}
+            return stop(errData.error || '提交失败(' + res.statusCode + ')');
+          }
           var data = {};
-          try { data = JSON.parse(res.data); } catch(e) { data = {}; }
-
-          if (data.job_id) {
-            // 提交成功，开始轮询
-            that.setData({ currentJobId: data.job_id, progressText: '转换中，请稍候...' });
-            that._pollStatus(data.job_id, retryCount);
-          } else if (data.url) {
-            // 兼容旧版直接返回 URL
-            that._downloadResult(data.url);
-          } else {
-            that.setData({ converting: false, progressText: '' });
-            wx.showToast({ title: data.error || '提交失败', icon: 'none' });
+          try { data = JSON.parse(res.data); } catch(e) {}
+          if (!data.job_id && !data.url) return stop(data.error || '提交失败');
+          if (data.url) {
+            // legacy: direct URL, skip poll
+            return that._retryDownload(r, data.url);
           }
-        } else if (res.statusCode >= 500) {
-          // 服务端错误，自动重试
-          if (retryCount < 2) {
-            wx.showToast({ title: '服务器启动中，10秒后重试...', icon: 'loading', duration: 2000 });
-            setTimeout(function() { that.doConvert(retryCount + 1); }, 10000);
-          } else {
-            that.setData({ converting: false, progressText: '' });
-            wx.showToast({ title: '服务器异常，请稍后重试', icon: 'none' });
-          }
-        } else {
-          // 400/其他错误，显示错误信息
-          var errData = {};
-          try { errData = JSON.parse(res.data || '{}'); } catch(e) {}
-          that.setData({ converting: false, progressText: '' });
-          wx.showToast({ title: errData.error || '提交失败(' + res.statusCode + ')', icon: 'none', duration: 3000 });
-        }
-      },
-      fail: function(err) {
-        if (retryCount < 2) {
-          wx.showToast({ title: '服务器休眠中，10秒后重试...', icon: 'loading', duration: 2000 });
-          setTimeout(function() { that.doConvert(retryCount + 1); }, 10000);
-        } else {
-          that.setData({ converting: false, progressText: '' });
-          wx.showToast({ title: '网络超时，请稍后重试', icon: 'none', duration: 3000 });
-        }
-      }
-    });
-
-    task.onProgressUpdate(function(res) {
-      that.setData({ progressText: '上传中 ' + res.progress + '%' });
+          // job submitted, start polling
+          that.setData({ currentJobId: data.job_id });
+          that._retryPoll(r, data.job_id);
+        },
+        fail: function() { retry('网络错误'); }
+      });
+      task.onProgressUpdate(function(prog) {
+        r.updateProgress('上传中 ' + prog.progress + '%');
+      });
     });
   },
 
-  // 轮询任务状态
-  _pollStatus: function(jobId, retryCount) {
+  _retryPoll: function(r, jobId) {
     var that = this;
-    var maxWait = 360000; // 6 分钟
-    var start = Date.now();
-    var pollTimer = null;
-
-    function doPoll() {
-      if (!that.data.converting || that.data.currentJobId !== jobId) {
-        // 任务已取消
-        return;
-      }
-      if (Date.now() - start > maxWait) {
-        that.setData({ converting: false, progressText: '', currentJobId: null });
-        wx.showToast({ title: '转换超时，请稍后重试', icon: 'none', duration: 3000 });
-        return;
-      }
-
-        wx.request({
-          url: 'https://wechatbot-g6ez.onrender.com/api/pdf/status/' + jobId,
-          timeout: 60000,
-          success: function(r) {
-          if (!that.data.converting || that.data.currentJobId !== jobId) return;
-
-          if (r.statusCode === 200 && r.data) {
-            if (r.data.status === 'done' && r.data.url) {
-              that.setData({ progressText: '下载中...' });
-              that._downloadResult(r.data.url, jobId);
-            } else if (r.data.status === 'error') {
-              var errMsg = r.data.error || '转换失败';
-              that.setData({ converting: false, progressText: '转换失败: ' + errMsg, currentJobId: null });
-              // 同时 console 输出详细错误
-              console.error('PDF转换失败:', errMsg);
-              wx.showModal({
-                title: '转换失败',
-                content: errMsg.length > 200 ? errMsg.substring(0, 200) + '...' : errMsg,
-                showCancel: false,
-                confirmText: '确定'
-              });
-            } else {
-              // processing / pending，继续轮询
-              var elapsed = Math.round((Date.now() - start) / 1000);
-              that.setData({ progressText: '转换中 ' + elapsed + 's...' });
-              pollTimer = setTimeout(doPoll, 3000);
-            }
+    r.operate(function(retry, stop) {
+      wx.request({
+        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/status/' + jobId,
+        timeout: 60000,
+        success: function(res) {
+          if (!that.data.converting || that.data.currentJobId !== jobId) {
+            r.cancel();
+            return;
+          }
+          if (res.statusCode !== 200 || !res.data) return setTimeout(retry, 5000);
+          var d = res.data;
+          if (d.status === 'done' && d.url) {
+            that._retryDownload(r, d.url);
+          } else if (d.status === 'error') {
+            var errMsg = d.error || '转换失败';
+            console.error('PDF转换失败:', errMsg);
+            wx.showModal({
+              title: '转换失败',
+              content: errMsg.length > 200 ? errMsg.substring(0, 200) + '...' : errMsg,
+              showCancel: false,
+              confirmText: '确定'
+            });
+            stop(errMsg);
           } else {
-            // 网络抖动，继续轮询
-            pollTimer = setTimeout(doPoll, 5000);
+            r.updateProgress('转换中');
+            setTimeout(retry, 3000);
           }
         },
-        fail: function() {
-          if (!that.data.converting || that.data.currentJobId !== jobId) return;
-          pollTimer = setTimeout(doPoll, 5000);
-        }
+        fail: function() { setTimeout(retry, 5000); }
       });
-    }
-
-    // 首次轮询，稍作延迟
-    pollTimer = setTimeout(doPoll, 2000);
+    });
   },
 
-    // 下载到小程序缓存，展示结果卡片
-    _downloadResult: function(url, jobId) {
-      var that = this;
+  _retryDownload: function(r, url) {
+    var that = this;
+    r.operate(function(retry, stop) {
+      r.updateProgress('下载中');
       wx.downloadFile({
         url: url,
         timeout: 120000,
         success: function(dl) {
-        if (dl.statusCode !== 200) {
-          that.setData({ converting: false, progressText: '', currentJobId: null });
-          wx.showToast({ title: '下载失败', icon: 'none' });
-          return;
-        }
-        var fs = wx.getFileSystemManager();
-        var baseName = that.data.fileName.replace(/\.[^.]+$/, '');
-        var ext = that.data.toFormat === 'doc' ? 'doc' : that.data.toFormat;
-        var savedName = 'pdf_convert_' + Date.now() + '.' + ext;
-        var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
-        try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
-        var item = { path: savedPath, name: baseName + '.' + ext, format: ext, time: Date.now() };
-        var results = that.data.results.slice();
-        results.push(item);
-        if (results.length > 10) {
-          var removed = results.splice(0, results.length - 10);
-          var rmFs = wx.getFileSystemManager();
-          for (var i = 0; i < removed.length; i++) {
-            try { rmFs.unlinkSync(removed[i].path); } catch(e) {}
+          if (dl.statusCode !== 200) return retry('下载失败');
+          var fs = wx.getFileSystemManager();
+          var baseName = that.data.fileName.replace(/\.[^.]+$/, '');
+          var ext = that.data.toFormat === 'doc' ? 'doc' : that.data.toFormat;
+          var savedName = 'pdf_convert_' + Date.now() + '.' + ext;
+          var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
+          try { fs.saveFileSync(dl.tempFilePath, savedPath); } catch(e) { savedPath = dl.tempFilePath; }
+          var item = { path: savedPath, name: baseName + '.' + ext, format: ext, time: Date.now() };
+          var results = that.data.results.slice();
+          results.push(item);
+          if (results.length > 10) {
+            var removed = results.splice(0, results.length - 10);
+            var rmFs = wx.getFileSystemManager();
+            for (var i = 0; i < removed.length; i++) {
+              try { rmFs.unlinkSync(removed[i].path); } catch(e) {}
+            }
           }
-        }
-        that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
-        that._saveResults();
-      },
-      fail: function() {
-        that.setData({ converting: false, progressText: '', currentJobId: null });
-        wx.showToast({ title: '下载失败，请重试', icon: 'none', duration: 3000 });
-      }
+          that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
+          that._saveResults();
+        },
+        fail: function() { retry('网络错误'); }
+      });
     });
   },
 
