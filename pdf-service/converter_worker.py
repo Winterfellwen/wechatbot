@@ -1,8 +1,8 @@
 """
 Isolated subprocess worker for PDF conversion.
-Runs in a subprocess so ALL memory is reclaimed when the process exits.
-PDF→DOCX uses page-by-page processing (fitz + python-docx) to stay under 512MB.
-DOCX→PDF uses LibreOffice (also subprocess, already isolated).
+- PDF→DOCX: splits large PDFs into page-range chunks, converts each with pdf2docx,
+  then merges DOCX outputs. Memory per chunk stays low.
+- DOCX→PDF: via LibreOffice subprocess.
 Usage: python converter_worker.py <input_path> <output_path> <from_fmt> <to_fmt>
 """
 
@@ -16,9 +16,12 @@ import time
 import struct
 import zlib
 import zipfile
+import math
 from pathlib import Path
 
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
+CHUNK_MAX_PAGES = int(os.environ.get("CHUNK_MAX_PAGES", "15"))  # pages per chunk
+CHUNK_MAX_SIZE = int(os.environ.get("CHUNK_MAX_SIZE", "15"))  # MB per chunk estimate
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -53,92 +56,111 @@ def find_libreoffice() -> str | None:
 
 
 # ============================================================
-# PDF → DOCX (page-by-page, keeps ~1 page in memory)
+# DOCX merge
+# ============================================================
+def merge_docx(chunk_paths: list[Path], output_path: Path):
+    """Merge multiple DOCX files into one by copying content."""
+    from docx import Document
+    from docx.oxml import parse_xml
+    from docx.oxml.ns import nsdecls
+
+    merged = Document()
+    # Remove default empty paragraph
+    if merged.paragraphs:
+        p = merged.paragraphs[0]._element
+        p.getparent().remove(p)
+
+    for i, chunk_path in enumerate(chunk_paths):
+        print(f"[worker]  Merging chunk {i+1}/{len(chunk_paths)}: {chunk_path.name}", flush=True)
+        chunk = Document(str(chunk_path))
+        for element in chunk.element.body:
+            merged.element.body.append(element)
+        chunk = None
+        gc.collect()
+
+    merged.save(str(output_path))
+    merged = None
+    gc.collect()
+    print(f"[worker]  Merged DOCX: {output_path.name} size={output_path.stat().st_size}", flush=True)
+
+
+# ============================================================
+# PDF → DOCX (chunked, low memory per chunk)
 # ============================================================
 def pdf_to_docx(input_path: Path, output_path: Path):
     try:
         import fitz
     except ImportError:
-        raise RuntimeError("PyMuPDF (fitz) is required. pip install PyMuPDF")
+        raise RuntimeError("PyMuPDF (fitz) required")
     try:
-        from docx import Document
-        from docx.shared import Inches, Pt, Emu
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
-        from docx.oxml.ns import qn
+        from pdf2docx import Converter
     except ImportError:
-        raise RuntimeError("python-docx is required. pip install python-docx")
+        raise RuntimeError("pdf2docx required")
 
-    print(f"[worker] Opening PDF: {input_path.name}", flush=True)
     pdf = fitz.open(str(input_path))
     num_pages = len(pdf)
-    print(f"[worker] Pages: {num_pages}", flush=True)
+    file_mb = input_path.stat().st_size / (1024 * 1024)
+    print(f"[worker] PDF: {num_pages} pages, {file_mb:.1f}MB", flush=True)
 
-    doc = Document()
-    # Set default font
-    style = doc.styles['Normal']
-    font = style.font
-    font.name = 'Liberation Serif'
-    font.size = Pt(11)
+    # Determine chunk size: max 15 pages OR ~15MB per chunk
+    estimated_mb_per_page = max(file_mb / max(num_pages, 1), 0.1)
+    pages_per_chunk = max(1, min(CHUNK_MAX_PAGES, int(CHUNK_MAX_SIZE / estimated_mb_per_page)))
+    num_chunks = math.ceil(num_pages / pages_per_chunk)
 
-    for i in range(num_pages):
-        page = pdf[i]
-        page_size = len(page.get_text())
-        print(f"[worker] Page {i+1}/{num_pages} text={page_size}b", flush=True)
-
-        # --- Extract text blocks with position ---
-        blocks = page.get_text("dict")["blocks"]
-        for block in blocks:
-            if block["type"] == 0:  # text block
-                para_text = ""
-                for line in block["lines"]:
-                    line_text = "".join(span["text"] for span in line["spans"])
-                    if line_text.strip():
-                        para_text += line_text + " "
-                para_text = para_text.strip()
-                if para_text:
-                    p = doc.add_paragraph(para_text)
-                    # Try to preserve heading-like formatting
-                    spans = block["lines"][0]["spans"] if block["lines"] else []
-                    if spans:
-                        size = spans[0].get("size", 11)
-                        is_bold = spans[0].get("flags", 0) & 2
-                        if is_bold and size > 14:
-                            p.style = doc.styles['Heading1']
-                        elif is_bold and size > 12:
-                            p.style = doc.styles['Heading2']
-
-            elif block["type"] == 1:  # image block
-                try:
-                    xref = block.get("image", None)
-                    if xref is None:
-                        xref = block.get("xref", 0)
-                    if xref:
-                        pix = fitz.Pixmap(pdf, xref)
-                        img_bytes = pix.tobytes("png")
-                        pix = None
-                        # Save temp image and insert
-                        img_path = UPLOAD_DIR / f"img_{uuid.uuid4().hex[:8]}.png"
-                        img_path.write_bytes(img_bytes)
-                        img_bytes = None
-                        try:
-                            doc.add_picture(str(img_path), width=Inches(5))
-                        finally:
-                            safe_unlink(img_path)
-                        gc.collect()
-                except Exception as e:
-                    print(f"[worker]  Image skip: {e}", flush=True)
-
-        # Free page memory
-        page = None
-        if i % 10 == 0:
-            gc.collect()
-
+    print(f"[worker] Splitting into {num_chunks} chunk(s) of ~{pages_per_chunk} pages each", flush=True)
     pdf.close()
-    print(f"[worker] Saving DOCX: {output_path.name}", flush=True)
-    doc.save(str(output_path))
-    doc = None
+    pdf = None
     gc.collect()
-    print(f"[worker] DOCX saved: {output_path.name} size={output_path.stat().st_size}", flush=True)
+
+    if num_chunks == 1:
+        # Small PDF — convert directly
+        print(f"[worker] Single chunk, converting directly...", flush=True)
+        _convert_pdf_chunk(input_path, output_path, 0, num_pages)
+        print(f"[worker] Done: {output_path.name} size={output_path.stat().st_size}", flush=True)
+        return
+
+    # Large PDF — split, convert chunks, merge
+    chunk_files = []
+    try:
+        for chunk_idx in range(num_chunks):
+            start_page = chunk_idx * pages_per_chunk
+            end_page = min(start_page + pages_per_chunk, num_pages)
+            chunk_pdf = UPLOAD_DIR / f"{input_path.stem}_chunk{chunk_idx}.pdf"
+            chunk_docx = UPLOAD_DIR / f"{input_path.stem}_chunk{chunk_idx}.docx"
+
+            # Extract page range to temp PDF using fitz (zero-copy)
+            src = fitz.open(str(input_path))
+            dst = fitz.open()
+            dst.insert_pdf(src, from_page=start_page, to_page=end_page - 1)
+            dst.save(str(chunk_pdf), garbage=4, deflate=True)
+            dst.close()
+            src.close()
+            gc.collect()
+            print(f"[worker] Chunk {chunk_idx+1}: pages {start_page+1}-{end_page} → {chunk_pdf.name} ({chunk_pdf.stat().st_size//1024}KB)", flush=True)
+
+            _convert_pdf_chunk(chunk_pdf, chunk_docx, start_page, end_page)
+            chunk_files.append(chunk_docx)
+
+        # Merge all chunks
+        print(f"[worker] Merging {len(chunk_files)} DOCX chunks...", flush=True)
+        merge_docx(chunk_files, output_path)
+
+    finally:
+        for f in chunk_files:
+            safe_unlink(f)
+        for f in UPLOAD_DIR.glob(f"{input_path.stem}_chunk*.pdf"):
+            safe_unlink(f)
+
+
+def _convert_pdf_chunk(in_path: Path, out_path: Path, start_page: int, end_page: int):
+    """Convert a single PDF chunk with pdf2docx."""
+    print(f"[worker]  Converting chunk pages {start_page+1}-{end_page}...", flush=True)
+    cv = Converter(str(in_path))
+    cv.convert(str(out_path))
+    cv.close()
+    gc.collect()
+    size_mb = out_path.stat().st_size / (1024 * 1024) if out_path.exists() else 0
+    print(f"[worker]  Chunk done: {size_mb:.1f}MB", flush=True)
 
 
 # ============================================================
@@ -219,7 +241,7 @@ def main():
 
     try:
         start = time.time()
-        print(f"[worker] start {from_fmt}→{to_fmt} input={input_path.name}", flush=True)
+        print(f"[worker] start {from_fmt}→{to_fmt} input={input_path.name} size={input_path.stat().st_size//1024}KB", flush=True)
 
         if from_fmt == "pdf" and to_fmt == "docx":
             pdf_to_docx(input_path, output_path)

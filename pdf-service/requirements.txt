@@ -1,6 +1,7 @@
 fastapi==0.115.6
 uvicorn==0.34.0
 python-multipart==0.0.18
+pdf2docx==0.5.13
 PyMuPDF>=1.24.0
 pymupdf-fonts>=1.0.0
 Pillow>=10.0.0
