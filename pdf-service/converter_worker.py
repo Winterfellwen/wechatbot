@@ -154,6 +154,7 @@ def pdf_to_docx(input_path: Path, output_path: Path):
 
 def _convert_pdf_chunk(in_path: Path, out_path: Path, start_page: int, end_page: int):
     """Convert a single PDF chunk with pdf2docx."""
+    from pdf2docx import Converter
     print(f"[worker]  Converting chunk pages {start_page+1}-{end_page}...", flush=True)
     cv = Converter(str(in_path))
     cv.convert(str(out_path))
