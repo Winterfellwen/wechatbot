@@ -1,21 +1,20 @@
 """
-Subprocess worker — runs the ORIGINAL conversion functions in isolation.
-Memory is fully reclaimed when this process exits.
-Usage: converter_worker.py <input_path> <output_path> <from_fmt> <to_fmt>
+Subprocess worker — chunked PDF→DOCX with memory isolation.
+Chunks are small enough to keep pdf2docx memory under control.
+Blank-page-free merge: strips per-chunk section breaks (w:sectPr).
 """
 import os, sys, shutil, gc, subprocess, uuid, time, zipfile
-import struct, io, zlib
+import struct, io, zlib, math
 from pathlib import Path
 
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
-
+CHUNK_MAX_PAGES = int(os.environ.get("CHUNK_MAX_PAGES", "15"))
+CHUNK_MAX_SIZE = int(os.environ.get("CHUNK_MAX_SIZE", "15"))
 
 def safe_unlink(p: Path):
     try:
         if p.exists(): p.unlink(missing_ok=True)
-    except Exception:
-        pass
-
+    except Exception: pass
 
 def find_libreoffice() -> str | None:
     env = os.environ.get("LIBREOFFICE_PATH")
@@ -31,7 +30,7 @@ def find_libreoffice() -> str | None:
     return None
 
 
-# ========== ORIGINAL _repair_docx (from master, untouched) ==========
+# ========== DOCX repair (from master) ==========
 def repair_docx(path: Path):
     raw = path.read_bytes()
     out_buf = io.BytesIO()
@@ -42,15 +41,14 @@ def repair_docx(path: Path):
                 try:
                     data = zin.read(name)
                 except zipfile.BadZipFile:
-                    off = info.header_offset
-                    b2 = io.BytesIO(raw); b2.seek(off)
+                    b2 = io.BytesIO(raw); b2.seek(info.header_offset)
                     hdr = b2.read(30)
                     cm = struct.unpack('<H',hdr[8:10])[0]
                     cs = struct.unpack('<I',hdr[18:22])[0]
                     nl = struct.unpack('<H',hdr[26:28])[0]
                     el = struct.unpack('<H',hdr[28:30])[0]
                     if cs==0 or cs==0xFFFFFFFF: cs=info.compress_size
-                    b2.seek(off+30+nl+el)
+                    b2.seek(info.header_offset+30+nl+el)
                     compressed = b2.read(cs)
                     if cm==0: data=compressed
                     elif cm==8: data=zlib.decompress(compressed,-zlib.MAX_WBITS)
@@ -58,30 +56,87 @@ def repair_docx(path: Path):
                     info.CRC = zlib.crc32(data)&0xFFFFFFFF
                 zout.writestr(info,data)
     path.write_bytes(out_buf.getvalue())
-    raw=None
 
 
-# ========== ORIGINAL _pdf_to_docx (from master, untouched) ==========
-def pdf_to_docx(in_path: Path, out_path: Path):
+# ========== DOCX merge (section-break-aware) ==========
+def _remove_sectpr(body):
+    """Remove all w:sectPr elements from an lxml body element."""
+    from docx.oxml.ns import qn
+    for sp in body.findall(qn('w:sectPr')):
+        body.remove(sp)
+
+def merge_docx(chunk_paths, output_path):
+    from docx import Document
+    from docx.oxml.ns import qn
+    merged = Document()
+    # Remove default empty paragraph
+    if merged.paragraphs:
+        merged.paragraphs[0]._element.getparent().remove(merged.paragraphs[0]._element)
+    for i, cp in enumerate(chunk_paths):
+        print(f"[worker]  Merge chunk {i+1}/{len(chunk_paths)}: {cp.name}", flush=True)
+        chunk = Document(str(cp))
+        body = chunk.element.body
+        # Strip sectPr from chunk to prevent blank pages between chunks
+        _remove_sectpr(body)
+        for element in list(body):
+            merged.element.body.append(element)
+        chunk = None; gc.collect()
+    merged.save(str(output_path))
+    merged = None; gc.collect()
+    print(f"[worker]  Merged: {output_path.name} size={output_path.stat().st_size}", flush=True)
+
+
+# ========== PDF→DOCX (chunked, low memory per chunk) ==========
+def pdf_to_docx(input_path, output_path):
+    import fitz
     from pdf2docx import Converter
-    print(f"[worker] pdf2docx convert: {in_path.name}", flush=True)
-    cv = Converter(str(in_path))
-    cv.convert(str(out_path))
-    cv.close()
-    gc.collect()
-    repair_docx(out_path)
-    print(f"[worker] pdf2docx done: {out_path.name}", flush=True)
+    pdf = fitz.open(str(input_path))
+    num_pages = len(pdf)
+    file_mb = input_path.stat().st_size / (1024 * 1024)
+    print(f"[worker] PDF: {num_pages} pages, {file_mb:.1f}MB", flush=True)
+    est_mb_pp = max(file_mb / max(num_pages, 1), 0.1)
+    ppc = max(1, min(CHUNK_MAX_PAGES, int(CHUNK_MAX_SIZE / est_mb_pp)))
+    num_chunks = math.ceil(num_pages / ppc)
+    print(f"[worker] {num_chunks} chunk(s) of ~{ppc} pages", flush=True)
+    pdf.close(); pdf = None; gc.collect()
+    if num_chunks <= 1:
+        cv = Converter(str(input_path))
+        cv.convert(str(output_path))
+        cv.close(); gc.collect()
+        repair_docx(output_path)
+        print(f"[worker] Done direct: {output_path.name}", flush=True)
+        return
+    chunk_files = []
+    try:
+        for ci in range(num_chunks):
+            sp = ci * ppc; ep = min(sp + ppc, num_pages)
+            cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
+            cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
+            src = fitz.open(str(input_path))
+            dst = fitz.open()
+            dst.insert_pdf(src, from_page=sp, to_page=ep-1)
+            dst.save(str(cp), garbage=4, deflate=True)
+            dst.close(); src.close(); gc.collect()
+            print(f"[worker] Chunk {ci+1}: p{sp+1}-{ep} → {cp.name} ({cp.stat().st_size//1024}KB)", flush=True)
+            cv = Converter(str(cp))
+            cv.convert(str(cd))
+            cv.close(); gc.collect()
+            print(f"[worker]  Chunk DOCX: {cd.name} ({cd.stat().st_size//1024}KB)", flush=True)
+            chunk_files.append(cd)
+        merge_docx(chunk_files, output_path)
+    finally:
+        for f in chunk_files: safe_unlink(f)
+        for f in UPLOAD_DIR.glob(f"{input_path.stem}_c*.pdf"): safe_unlink(f)
 
 
-# ========== DOCX→PDF (skip image re-render, keep LO output) ==========
+# ========== DOCX→PDF (LibreOffice subprocess) ==========
 def kill_lo():
     try:
         subprocess.run(["pkill","-f","libreoffice"],capture_output=True,timeout=10)
         subprocess.run(["pkill","-f","soffice.bin"],capture_output=True,timeout=10)
     except: pass
 
-
-def docx_to_pdf(in_path: Path, out_path: Path):
+def docx_to_pdf(in_path, out_path):
     lo = find_libreoffice()
     if not lo: raise RuntimeError("LibreOffice not found")
     tag = uuid.uuid4().hex[:8]
@@ -91,8 +146,7 @@ def docx_to_pdf(in_path: Path, out_path: Path):
         env = os.environ.copy()
         for k in ("SAL_USE_VCLPLUGIN",): env.pop(k,None)
         env["HOME"]=str(home); env["SAL_DISABLE_OPENGL_CHECK"]="1"
-        env["SAL_VIDEO_DISABLE_ACCELERATE"]="1"
-        env["LIBREOFFICE_MEMORY_MULTIPLIER"]="0.3"
+        env["SAL_VIDEO_DISABLE_ACCELERATE"]="1"; env["LIBREOFFICE_MEMORY_MULTIPLIER"]="0.3"
         cmd=[lo,f"-env:UserInstallation=file://{home}","--headless","--norestore",
              "--nofirststartwizard","--convert-to","pdf:writer_pdf_Export","--outdir",str(tmp),str(in_path)]
         kill_lo()
@@ -116,8 +170,8 @@ def main():
     try:
         t0=time.time()
         print(f"[worker] start {from_fmt}→{to_fmt} input={in_path.name} size={in_path.stat().st_size//1024}KB",flush=True)
-        if from_fmt=="pdf" and to_fmt=="docx": pdf_to_docx(in_path,out_path)
-        elif from_fmt=="docx" and to_fmt=="pdf": docx_to_pdf(in_path,out_path)
+        if from_fmt=="pdf" and to_fmt=="docx": pdf_to_docx(in_path, out_path)
+        elif from_fmt=="docx" and to_fmt=="pdf": docx_to_pdf(in_path, out_path)
         else: print(f"Unsupported: {from_fmt}→{to_fmt}",file=sys.stderr); sys.exit(1)
         print(f"[worker] done in {time.time()-t0:.1f}s output={out_path.name} size={out_path.stat().st_size}",flush=True)
         sys.exit(0)
