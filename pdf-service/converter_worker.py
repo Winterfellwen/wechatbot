@@ -1,20 +1,12 @@
 """
-Subprocess worker — chunked PDF→DOCX with memory isolation.
-Chunks are small enough to keep pdf2docx memory under control.
-Blank-page-free merge: strips per-chunk section breaks (w:sectPr).
+Subprocess worker — direct pdf2docx for PDF→DOCX, LibreOffice for DOCX→PDF.
+Memory is fully reclaimed when this process exits.
 """
 import os, sys, shutil, gc, subprocess, uuid, time, zipfile
-import struct, io, zlib, math
+import struct, io, zlib
 from pathlib import Path
 
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
-CHUNK_MAX_PAGES = int(os.environ.get("CHUNK_MAX_PAGES", "15"))
-CHUNK_MAX_SIZE = int(os.environ.get("CHUNK_MAX_SIZE", "15"))
-
-def safe_unlink(p: Path):
-    try:
-        if p.exists(): p.unlink(missing_ok=True)
-    except Exception: pass
 
 def find_libreoffice() -> str | None:
     env = os.environ.get("LIBREOFFICE_PATH")
@@ -30,7 +22,6 @@ def find_libreoffice() -> str | None:
     return None
 
 
-# ========== DOCX repair (from master) ==========
 def repair_docx(path: Path):
     raw = path.read_bytes()
     out_buf = io.BytesIO()
@@ -58,85 +49,23 @@ def repair_docx(path: Path):
     path.write_bytes(out_buf.getvalue())
 
 
-# ========== DOCX merge (section-break-aware) ==========
-def _remove_sectpr(body):
-    """Remove all w:sectPr elements from an lxml body element."""
-    from docx.oxml.ns import qn
-    for sp in body.findall(qn('w:sectPr')):
-        body.remove(sp)
-
-def merge_docx(chunk_paths, output_path):
-    from docx import Document
-    from docx.oxml.ns import qn
-    merged = Document()
-    # Remove default empty paragraph
-    if merged.paragraphs:
-        merged.paragraphs[0]._element.getparent().remove(merged.paragraphs[0]._element)
-    for i, cp in enumerate(chunk_paths):
-        print(f"[worker]  Merge chunk {i+1}/{len(chunk_paths)}: {cp.name}", flush=True)
-        chunk = Document(str(cp))
-        body = chunk.element.body
-        # Strip sectPr from chunk to prevent blank pages between chunks
-        _remove_sectpr(body)
-        for element in list(body):
-            merged.element.body.append(element)
-        chunk = None; gc.collect()
-    merged.save(str(output_path))
-    merged = None; gc.collect()
-    print(f"[worker]  Merged: {output_path.name} size={output_path.stat().st_size}", flush=True)
-
-
-# ========== PDF→DOCX (chunked, low memory per chunk) ==========
-def pdf_to_docx(input_path, output_path):
-    import fitz
+def pdf_to_docx(in_path: Path, out_path: Path):
     from pdf2docx import Converter
-    pdf = fitz.open(str(input_path))
-    num_pages = len(pdf)
-    file_mb = input_path.stat().st_size / (1024 * 1024)
-    print(f"[worker] PDF: {num_pages} pages, {file_mb:.1f}MB", flush=True)
-    est_mb_pp = max(file_mb / max(num_pages, 1), 0.1)
-    ppc = max(1, min(CHUNK_MAX_PAGES, int(CHUNK_MAX_SIZE / est_mb_pp)))
-    num_chunks = math.ceil(num_pages / ppc)
-    print(f"[worker] {num_chunks} chunk(s) of ~{ppc} pages", flush=True)
-    pdf.close(); pdf = None; gc.collect()
-    if num_chunks <= 1:
-        cv = Converter(str(input_path))
-        cv.convert(str(output_path))
-        cv.close(); gc.collect()
-        repair_docx(output_path)
-        print(f"[worker] Done direct: {output_path.name}", flush=True)
-        return
-    chunk_files = []
-    try:
-        for ci in range(num_chunks):
-            sp = ci * ppc; ep = min(sp + ppc, num_pages)
-            cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
-            cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
-            src = fitz.open(str(input_path))
-            dst = fitz.open()
-            dst.insert_pdf(src, from_page=sp, to_page=ep-1)
-            dst.save(str(cp), garbage=4, deflate=True)
-            dst.close(); src.close(); gc.collect()
-            print(f"[worker] Chunk {ci+1}: p{sp+1}-{ep} → {cp.name} ({cp.stat().st_size//1024}KB)", flush=True)
-            cv = Converter(str(cp))
-            cv.convert(str(cd))
-            cv.close(); gc.collect()
-            print(f"[worker]  Chunk DOCX: {cd.name} ({cd.stat().st_size//1024}KB)", flush=True)
-            chunk_files.append(cd)
-        merge_docx(chunk_files, output_path)
-    finally:
-        for f in chunk_files: safe_unlink(f)
-        for f in UPLOAD_DIR.glob(f"{input_path.stem}_c*.pdf"): safe_unlink(f)
+    print(f"[worker] pdf2docx: {in_path.name} ({in_path.stat().st_size//1024}KB)", flush=True)
+    cv = Converter(str(in_path))
+    cv.convert(str(out_path))
+    cv.close(); gc.collect()
+    repair_docx(out_path)
+    print(f"[worker] done: {out_path.name} ({out_path.stat().st_size//1024}KB)", flush=True)
 
 
-# ========== DOCX→PDF (LibreOffice subprocess) ==========
 def kill_lo():
     try:
         subprocess.run(["pkill","-f","libreoffice"],capture_output=True,timeout=10)
         subprocess.run(["pkill","-f","soffice.bin"],capture_output=True,timeout=10)
     except: pass
 
-def docx_to_pdf(in_path, out_path):
+def docx_to_pdf(in_path: Path, out_path: Path):
     lo = find_libreoffice()
     if not lo: raise RuntimeError("LibreOffice not found")
     tag = uuid.uuid4().hex[:8]
@@ -161,7 +90,6 @@ def docx_to_pdf(in_path, out_path):
         shutil.rmtree(tmp,ignore_errors=True); shutil.rmtree(home,ignore_errors=True); kill_lo(); gc.collect()
 
 
-# ========== MAIN ==========
 def main():
     if len(sys.argv)!=5:
         print("Usage: converter_worker.py <input_path> <output_path> <from> <to>",file=sys.stderr); sys.exit(1)
