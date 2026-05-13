@@ -163,6 +163,7 @@ async def download(filename: str):
 
 
 @app.get("/health")
+@app.head("/health")
 async def health():
     queued = sum(1 for j in jobs.values() if j.get("status") == "queued")
     processing = sum(1 for j in jobs.values() if j.get("status") == "processing")
@@ -338,8 +339,19 @@ def _lo_lock():
 
 
 @app.get("/")
+@app.head("/")
 async def root():
     return {"status": "ok", "service": "PDF Converter"}
+
+
+@app.on_event("startup")
+async def _check_workers():
+    """Warn if running with multiple workers (job dict won't be shared)."""
+    import multiprocessing
+    parent = multiprocessing.parent_process()
+    if parent and parent.name != "MainProcess":
+        print("WARNING: Multiple workers detected — in-memory jobs dict is NOT shared across workers.")
+        print("Set --workers 1 or use a single process (Render default).")
 
 
 @app.get("/debug")
