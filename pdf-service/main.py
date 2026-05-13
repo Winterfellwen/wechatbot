@@ -29,7 +29,7 @@ async def limit_body_size(request: Request, call_next):
         cl = request.headers.get("content-length")
         if cl and int(cl) > int(MAX_FILE_SIZE * 1.5):
             from fastapi.responses import JSONResponse
-            return JSONResponse(status_code=413, content={"detail": "Request too large"})
+            return JSONResponse(status_code=413, content={"detail": f"Request too large. Max: {MAX_FILE_SIZE} bytes"})
     return await call_next(request)
 
 
@@ -49,7 +49,7 @@ async def _log_memory_periodically():
     asyncio.create_task(_loop())
 
 # === Config ===
-MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 10 * 1024 * 1024))  # 10MB
+MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 100 * 1024 * 1024))  # 100MB
 MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT", "1"))  # one at a time
 JOB_CLEANUP_AGE = 3600
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
