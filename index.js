@@ -332,16 +332,20 @@ app.listen(PORT, () => {
 const SELF_URL = process.env.RENDER_EXTERNAL_URL || config.frontend.apiBaseUrl;
 const KEEPALIVE_INTERVAL = config.pdfService.keepaliveInterval;
 
-// Pre-warm Python service immediately on startup (cascading cold start mitigation)
+// Pre-warm all PDF backends immediately on startup
 function warmPythonService() {
-  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
+  pdfBackends.forEach(function(url) {
+    fetchWithTimeout(url + '/health', {}, 30000).catch(function() {});
+  });
 }
 setTimeout(warmPythonService, 1000);
 
-setInterval(() => {
+setInterval(function() {
   console.log('Keepalive: warming services');
-  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
-  fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(() => {});
+  pdfBackends.forEach(function(url) {
+    fetchWithTimeout(url + '/health', {}, 30000).catch(function() {});
+  });
+  fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(function() {});
 }, KEEPALIVE_INTERVAL);
 
 app.get('/api/chat/key', (req, res) => {
@@ -409,16 +413,37 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// --- PDF backend load balancing ---
+// Supports comma-separated PDF_SERVICE_URLS or single PDF_SERVICE_URL
+const pdfBackends = (function() {
+  var raw = process.env.PDF_SERVICE_URLS || config.pdfService.url || '';
+  return raw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+})();
+console.log('PDF backends:', pdfBackends.length > 0 ? pdfBackends.join(', ') : 'NONE');
+var _rrIndex = 0;
+var _jobBackends = {};
+
+function _pickBackend() {
+  if (pdfBackends.length === 0) throw new Error('No PDF backends configured');
+  var url = pdfBackends[_rrIndex % pdfBackends.length];
+  _rrIndex++;
+  return url;
+}
+
+function _backendForJob(jobId) {
+  return _jobBackends[jobId] || pdfBackends[0];
+}
+
 // PDF conversion endpoint - submit job, return job_id immediately (client polls)
 fs.mkdirSync(config.storage.uploadDir, { recursive: true });
 fs.mkdirSync(config.storage.serveDir, { recursive: true });
 const upload = multer({ dest: config.storage.uploadDir + '/' });
-const pdfServiceUrl = config.pdfService.url;
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
   const { from, to } = req.body;
   const toFmt = to || 'docx';
+  const backend = _pickBackend();
 
     try {
     const fileBuffer = fs.readFileSync(req.file.path);
@@ -426,7 +451,7 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 
     // Submit job to Python with retry (3 min total, 60s per attempt)
     const submitRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(pdfServiceUrl + '/convert', {
+      const res = await fetchWithTimeout(backend + '/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -446,6 +471,7 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
     fs.unlinkSync(req.file.path);
 
     const { job_id } = await submitRes.json();
+    _jobBackends[job_id] = backend;
     // Return job_id immediately; client polls /api/pdf/status/:job_id
     return res.json({ job_id: job_id, status_url: '/api/pdf/status/' + job_id });
   } catch (err) {
@@ -457,9 +483,10 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 // Poll job status from Python, download result when ready
 app.get('/api/pdf/status/:jobId', async (req, res) => {
   const { jobId } = req.params;
+  const backend = _backendForJob(jobId);
   try {
     const statusRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(pdfServiceUrl + '/status/' + jobId, {}, 30000);
+      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 30000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error('查询失败: ' + errText.substring(0, 100));
@@ -473,7 +500,7 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
     } else if (status.status === 'done') {
       // Download result from Python and cache locally
       const dlRes = await retryWithTimeout(async () => {
-        const res = await fetchWithTimeout(pdfServiceUrl + '/download/' + status.result, {}, 120000);
+        const res = await fetchWithTimeout(backend + '/download/' + status.result, {}, 120000);
         if (!res.ok) throw new Error('下载转换结果失败');
         return res;
       }, 180000, 5000);
@@ -506,7 +533,7 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
 app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: '请上传文件' });
-    const pdfServiceUrl = config.pdfService.url;
+    const backend = _pickBackend();
     const { op, text, angle } = req.body;
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
@@ -517,7 +544,7 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     body.append('text', text || '');
     body.append('angle', angle || '90');
 
-    const pyRes = await fetchWithTimeout(pdfServiceUrl + '/edit', {
+    const pyRes = await fetchWithTimeout(backend + '/edit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
