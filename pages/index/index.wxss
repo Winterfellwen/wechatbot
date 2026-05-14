@@ -134,6 +134,7 @@
   width: 6rpx;
   border-radius: 3rpx;
   background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);
+  animation: slideInRight 0.4s ease both;
 }
 
 /* ========== 卡片入场动画 ========== */
