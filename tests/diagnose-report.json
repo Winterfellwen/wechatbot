@@ -1,0 +1,1637 @@
+{
+  "time": "2026-05-14T04:49:43.311Z",
+  "project": "wechatbot",
+  "summary": {
+    "pagesSuccess": 26,
+    "pagesFail": 0,
+    "totalEntries": 0,
+    "errors": 0,
+    "warnings": 0,
+    "exceptions": 0,
+    "testModules": {
+      "pageTraversal": {
+        "name": "页面遍历",
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0
+      },
+      "searchTest": {
+        "name": "搜索功能",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "elementExists": {
+        "name": "元素存在性检查",
+        "passed": 45,
+        "failed": 19,
+        "skipped": 0
+      },
+      "buttonNav": {
+        "name": "按钮交互与跳转验证",
+        "passed": 1,
+        "failed": 4,
+        "skipped": 0
+      },
+      "tabBar": {
+        "name": "TabBar 切换",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "formInput": {
+        "name": "表单输入",
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0
+      },
+      "pageData": {
+        "name": "页面数据校验",
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "scrollTest": {
+        "name": "滚动/下拉刷新",
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "categories": {},
+  "noiseSummary": [],
+  "pageDetails": [
+    {
+      "name": "首页",
+      "path": "pages/index/index",
+      "status": "✓ pages/index/index"
+    },
+    {
+      "name": "我的",
+      "path": "pages/user/user",
+      "status": "✓ pages/user/user"
+    },
+    {
+      "name": "PDF工具",
+      "path": "pdf/pages/index/index",
+      "status": "✓ pdf/pages/index/index"
+    },
+    {
+      "name": "PDF转换",
+      "path": "pdf/pages/convert/convert",
+      "status": "✓ pdf/pages/convert/convert"
+    },
+    {
+      "name": "PDF编辑",
+      "path": "pdf/pages/edit/edit",
+      "status": "✓ pdf/pages/edit/edit"
+    },
+    {
+      "name": "日语学习",
+      "path": "japanese/pages/learn/learn",
+      "status": "✓ japanese/pages/learn/learn"
+    },
+    {
+      "name": "日语课文",
+      "path": "japanese/pages/lesson/lesson",
+      "status": "✓ japanese/pages/lesson/lesson"
+    },
+    {
+      "name": "日语课程",
+      "path": "japanese/pages/course/course",
+      "status": "✓ japanese/pages/course/course"
+    },
+    {
+      "name": "日语单词本",
+      "path": "japanese/pages/wordbook/wordbook",
+      "status": "✓ japanese/pages/wordbook/wordbook"
+    },
+    {
+      "name": "日语语法",
+      "path": "japanese/pages/grammar/grammar",
+      "status": "✓ japanese/pages/grammar/grammar"
+    },
+    {
+      "name": "日语语法33",
+      "path": "japanese/pages/grammar/grammar33",
+      "status": "✓ japanese/pages/grammar/grammar33"
+    },
+    {
+      "name": "日语教科书",
+      "path": "japanese/pages/textbook/textbook",
+      "status": "✓ japanese/pages/textbook/textbook"
+    },
+    {
+      "name": "日语排行榜",
+      "path": "japanese/pages/leaderboard/leaderboard",
+      "status": "✓ japanese/pages/leaderboard/leaderboard"
+    },
+    {
+      "name": "德语学习",
+      "path": "german/pages/learn/learn",
+      "status": "✓ german/pages/learn/learn"
+    },
+    {
+      "name": "德语挑战",
+      "path": "german/pages/learn/challenge",
+      "status": "✓ german/pages/learn/challenge"
+    },
+    {
+      "name": "德语结果",
+      "path": "german/pages/learn/result",
+      "status": "✓ german/pages/learn/result"
+    },
+    {
+      "name": "德语复习",
+      "path": "german/pages/learn/review",
+      "status": "✓ german/pages/learn/review"
+    },
+    {
+      "name": "德语课文",
+      "path": "german/pages/lesson/lesson",
+      "status": "✓ german/pages/lesson/lesson"
+    },
+    {
+      "name": "德语课程",
+      "path": "german/pages/course/course",
+      "status": "✓ german/pages/course/course"
+    },
+    {
+      "name": "德语单词本",
+      "path": "german/pages/wordbook/wordbook",
+      "status": "✓ german/pages/wordbook/wordbook"
+    },
+    {
+      "name": "德语语法",
+      "path": "german/pages/grammar/grammar",
+      "status": "✓ german/pages/grammar/grammar"
+    },
+    {
+      "name": "德语教科书",
+      "path": "german/pages/textbook/textbook",
+      "status": "✓ german/pages/textbook/textbook"
+    },
+    {
+      "name": "德语排行榜",
+      "path": "german/pages/leaderboard/leaderboard",
+      "status": "✓ german/pages/leaderboard/leaderboard"
+    },
+    {
+      "name": "Word文档",
+      "path": "word/pages/index/index",
+      "status": "✓ word/pages/index/index"
+    },
+    {
+      "name": "Word编辑器",
+      "path": "word/pages/editor/editor",
+      "status": "✓ word/pages/editor/editor"
+    },
+    {
+      "name": "智能老师",
+      "path": "smart-teacher/pages/chat/chat",
+      "status": "✓ smart-teacher/pages/chat/chat"
+    }
+  ],
+  "moduleDetails": [
+    {
+      "module": "pageTraversal",
+      "details": [
+        {
+          "page": "首页",
+          "status": "✓"
+        },
+        {
+          "page": "我的",
+          "status": "✓"
+        },
+        {
+          "page": "PDF工具",
+          "status": "✓"
+        },
+        {
+          "page": "PDF转换",
+          "status": "✓"
+        },
+        {
+          "page": "PDF编辑",
+          "status": "✓"
+        },
+        {
+          "page": "日语学习",
+          "status": "✓"
+        },
+        {
+          "page": "日语课文",
+          "status": "✓"
+        },
+        {
+          "page": "日语课程",
+          "status": "✓"
+        },
+        {
+          "page": "日语单词本",
+          "status": "✓"
+        },
+        {
+          "page": "日语语法",
+          "status": "✓"
+        },
+        {
+          "page": "日语语法33",
+          "status": "✓"
+        },
+        {
+          "page": "日语教科书",
+          "status": "✓"
+        },
+        {
+          "page": "日语排行榜",
+          "status": "✓"
+        },
+        {
+          "page": "德语学习",
+          "status": "✓"
+        },
+        {
+          "page": "德语挑战",
+          "status": "✓"
+        },
+        {
+          "page": "德语结果",
+          "status": "✓"
+        },
+        {
+          "page": "德语复习",
+          "status": "✓"
+        },
+        {
+          "page": "德语课文",
+          "status": "✓"
+        },
+        {
+          "page": "德语课程",
+          "status": "✓"
+        },
+        {
+          "page": "德语单词本",
+          "status": "✓"
+        },
+        {
+          "page": "德语语法",
+          "status": "✓"
+        },
+        {
+          "page": "德语教科书",
+          "status": "✓"
+        },
+        {
+          "page": "德语排行榜",
+          "status": "✓"
+        },
+        {
+          "page": "Word文档",
+          "status": "✓"
+        },
+        {
+          "page": "Word编辑器",
+          "status": "✓"
+        },
+        {
+          "page": "智能老师",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "首页",
+      "details": [
+        {
+          "selector": "user-header",
+          "desc": "顶部用户信息栏",
+          "status": "✓"
+        },
+        {
+          "selector": "entry-grid",
+          "desc": "学习工具网格",
+          "status": "✓"
+        },
+        {
+          "selector": "teacher-card",
+          "desc": "智能老师卡片",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "首页",
+      "details": [
+        {
+          "label": "日语",
+          "status": "✗ 未找到按钮"
+        },
+        {
+          "label": "德语",
+          "status": "✗ 未找到按钮"
+        },
+        {
+          "label": "Word",
+          "status": "✗ 未找到按钮"
+        },
+        {
+          "label": "PDF",
+          "status": "✗ 未找到按钮"
+        }
+      ]
+    },
+    {
+      "module": "formInput",
+      "page": "首页",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "首页",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "首页",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "我的",
+      "details": [
+        {
+          "selector": "user-header",
+          "desc": "用户信息头",
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "action-item",
+          "desc": "操作按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "action-item-danger",
+          "desc": "删除账号按钮",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "我的",
+      "details": [
+        {
+          "label": "button",
+          "status": "✓ pages/user/user"
+        }
+      ]
+    },
+    {
+      "module": "formInput",
+      "page": "我的",
+      "details": [
+        {
+          "label": "用户页-昵称输入",
+          "field": "input",
+          "status": "✗ 未找到第0个"
+        }
+      ]
+    },
+    {
+      "module": "pageData",
+      "page": "我的",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "我的",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "PDF工具",
+      "details": [
+        {
+          "selector": "upload-btn",
+          "desc": "上传按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "convert-btn",
+          "desc": "转换按钮",
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "section-card",
+          "desc": "功能卡片",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "PDF工具",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "PDF工具",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "PDF工具",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "PDF工具",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "PDF转换",
+      "details": [
+        {
+          "selector": "back-btn",
+          "desc": "返回按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "convert-btn",
+          "desc": "转换按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "top-nav-bar",
+          "desc": "顶部导航栏",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "PDF转换",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "PDF转换",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "PDF转换",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "PDF转换",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "PDF编辑",
+      "details": [
+        {
+          "selector": "op-card",
+          "desc": "操作选项",
+          "status": "✓"
+        },
+        {
+          "selector": "do-btn",
+          "desc": "执行按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "download-btn",
+          "desc": "下载按钮",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "PDF编辑",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "PDF编辑",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "PDF编辑",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "PDF编辑",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语学习",
+      "details": [
+        {
+          "selector": "path-scroll",
+          "desc": "学习路径滚动区",
+          "status": "✓"
+        },
+        {
+          "selector": "nav-item",
+          "desc": "导航项",
+          "status": "✓"
+        },
+        {
+          "selector": "picker",
+          "desc": "等级选择器",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语学习",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语学习",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语学习",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语学习",
+      "details": [
+        {
+          "label": "日语学习-滚动",
+          "status": "✓ 下拉手势完成"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语课文",
+      "details": [
+        {
+          "selector": "study-body",
+          "desc": "课文主体",
+          "status": "✓"
+        },
+        {
+          "selector": "start-quiz-btn",
+          "desc": "开始测验按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "audio-btn-big",
+          "desc": "音频播放按钮",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语课文",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语课文",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语课文",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语课文",
+      "details": [
+        {
+          "label": "日语课文-滚动",
+          "status": "✓ 下拉手势完成"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语课程",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "view",
+          "desc": "页面视图",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语课程",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语课程",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语课程",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语课程",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语单词本",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "word-item",
+          "desc": "单词项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语单词本",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语单词本",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语单词本",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语单词本",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语语法",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "grammar-item",
+          "desc": "语法项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语语法",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语语法",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语语法",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语语法",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语语法33",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "grammar-item",
+          "desc": "语法项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语语法33",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语语法33",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语语法33",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语语法33",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语教科书",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "lesson-item",
+          "desc": "课文项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语教科书",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语教科书",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语教科书",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语教科书",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语排行榜",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "rank-item",
+          "desc": "排行项",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语排行榜",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语排行榜",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语排行榜",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语排行榜",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语学习",
+      "details": [
+        {
+          "selector": "path-scroll",
+          "desc": "学习路径滚动区",
+          "status": "✓"
+        },
+        {
+          "selector": "nav-item",
+          "desc": "导航项",
+          "status": "✓"
+        },
+        {
+          "selector": "picker",
+          "desc": "等级选择器",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语学习",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语学习",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语学习",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语学习",
+      "details": [
+        {
+          "label": "德语学习-滚动",
+          "status": "✓ 下拉手势完成"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语挑战",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "challenge-item",
+          "desc": "挑战项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语挑战",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语挑战",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语挑战",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语挑战",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语结果",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "result-summary",
+          "desc": "结果汇总",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语结果",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语结果",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语结果",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语结果",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语复习",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "review-item",
+          "desc": "复习项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语复习",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语复习",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语复习",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语复习",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语课文",
+      "details": [
+        {
+          "selector": "body-scroll",
+          "desc": "课文滚动区",
+          "status": "✓"
+        },
+        {
+          "selector": "play-btn",
+          "desc": "播放按钮",
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "start-quiz-btn",
+          "desc": "开始测验按钮",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语课文",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语课文",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语课文",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语课文",
+      "details": [
+        {
+          "label": "德语课文-滚动",
+          "status": "✓ 下拉手势完成"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语课程",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "course-card",
+          "desc": "课程卡片",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语课程",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语课程",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语课程",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语课程",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语单词本",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "word-item",
+          "desc": "单词项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语单词本",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语单词本",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语单词本",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语单词本",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语语法",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "grammar-item",
+          "desc": "语法项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语语法",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语语法",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语语法",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语语法",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语教科书",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "lesson-item",
+          "desc": "课文项",
+          "status": "✗ 未找到"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语教科书",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语教科书",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语教科书",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语教科书",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语排行榜",
+      "details": [
+        {
+          "selector": "container",
+          "desc": "页面容器",
+          "status": "✓"
+        },
+        {
+          "selector": "rank-item",
+          "desc": "排行项",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语排行榜",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语排行榜",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语排行榜",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语排行榜",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "searchTest",
+      "page": "Word文档",
+      "details": [
+        {
+          "status": "✓ 搜索输入绑定正常"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "Word文档",
+      "details": [
+        {
+          "selector": "search-bar",
+          "desc": "搜索栏",
+          "status": "✓"
+        },
+        {
+          "selector": "new-btn",
+          "desc": "新建按钮",
+          "status": "✓"
+        },
+        {
+          "selector": "import-btn",
+          "desc": "导入按钮",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "Word文档",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "Word文档",
+      "details": [
+        {
+          "label": "文档列表-搜索输入",
+          "field": "input",
+          "status": "✓ 输入 \"测试\""
+        }
+      ]
+    },
+    {
+      "module": "pageData",
+      "page": "Word文档",
+      "details": [
+        {
+          "field": "searchKey",
+          "status": "✓ string=\"测试\""
+        },
+        {
+          "field": "docs",
+          "status": "✓ array[3]"
+        },
+        {
+          "field": "sortField",
+          "status": "✓ undefined (可选)"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "Word文档",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "Word编辑器",
+      "details": [
+        {
+          "selector": "mode-btn",
+          "desc": "编辑/预览切换",
+          "status": "✓"
+        },
+        {
+          "selector": "tool-row",
+          "desc": "格式工具栏",
+          "status": "✓"
+        },
+        {
+          "selector": "save-btn-top",
+          "desc": "保存按钮",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "Word编辑器",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "Word编辑器",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "Word编辑器",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "Word编辑器",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "智能老师",
+      "details": [
+        {
+          "selector": "msg-list",
+          "desc": "消息列表",
+          "status": "✓"
+        },
+        {
+          "selector": "quick-asks",
+          "desc": "快捷提问",
+          "status": "✓"
+        },
+        {
+          "selector": "send-btn",
+          "desc": "发送按钮",
+          "status": "✓"
+        }
+      ]
+    },
+    {
+      "module": "buttonNav",
+      "page": "智能老师",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "智能老师",
+      "details": [
+        {
+          "label": "智能老师-消息输入",
+          "field": "input",
+          "status": "✓ 输入 \"你好\""
+        }
+      ]
+    },
+    {
+      "module": "pageData",
+      "page": "智能老师",
+      "details": [
+        {
+          "field": "inputText",
+          "status": "✓ string=\"你好\""
+        },
+        {
+          "field": "messages",
+          "status": "✓ array[0]"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "智能老师",
+      "details": [
+        {
+          "label": "智能老师-滚动",
+          "status": "✓ 下拉手势完成"
+        }
+      ]
+    },
+    {
+      "module": "tabBar",
+      "details": [
+        {
+          "tab": "首页",
+          "status": "✓ pages/index/index"
+        },
+        {
+          "tab": "我的",
+          "status": "✓ pages/user/user"
+        }
+      ]
+    }
+  ]
+}

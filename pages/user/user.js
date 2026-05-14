@@ -75,6 +75,10 @@ Page({
     });
   },
 
+  onShareAppMessage: function () {
+    return { title: '多功能小机器人 - 我的', path: '/pages/user/user' };
+  },
+
   // --- Login ---
   handleLogin: function () {
     var that = this;

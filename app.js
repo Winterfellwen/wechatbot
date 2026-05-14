@@ -4,6 +4,10 @@ App({
     userInfo: null,
     isLoggedIn: false
   },
+
+  onShareAppMessage: function () {
+    return { title: '多功能小机器人', path: '/pages/index/index' };
+  },
   
   isValidAvatarUrl: function(url) {
     if (!url) return false;

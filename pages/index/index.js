@@ -69,6 +69,10 @@ Page({
     this.setData({ userInfo: { avatarUrl: '/images/avatar-default.png' } });
   },
 
+  onShareAppMessage: function () {
+    return { title: '多功能小机器人', path: '/pages/index/index' };
+  },
+
   handleEntryTap: function (e) {
     var type = e.currentTarget.dataset.type;
     if (type === 'japanese') {
