@@ -182,7 +182,7 @@ Page({
 
     var apiMessages = this._buildApiMessages(messages);
 
-    // 优先直连 OpenRouter，失败则回退到 Render 代理
+    // 优先直连 OpenRouter，HTTP 错误或网络失败则回退 Render 代理
     initOpenRouter().then(function () {
       var maxTokens = hasImage ? 1024 : (openRouterConfig.maxTokens || 500);
       wx.request({
@@ -195,7 +195,13 @@ Page({
           'X-Title': 'SmartTeacherBot'
         },
         data: { model: openRouterConfig.model, messages: apiMessages, max_tokens: maxTokens },
-        success: function (res) { that._handleResponse(res); },
+        success: function (res) {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            that._handleResponse(res);
+          } else {
+            that._proxyFallback(apiMessages);
+          }
+        },
         fail: function () { that._proxyFallback(apiMessages); }
       });
     }).catch(function () {
