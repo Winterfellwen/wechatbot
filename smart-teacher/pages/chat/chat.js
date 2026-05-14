@@ -120,41 +120,14 @@ Page({
   },
 
   typeWriter: function (msgIndex, fullText, callback) {
-    var that = this;
-    var displayText = '';
-    var index = 0;
-    var BATCH_MIN = 3;
-    var BATCH_MAX = 5;
+    if (callback) callback();
+  },
 
-    if (!that.data.messages[msgIndex] || that.data.messages[msgIndex].role !== 'ai' || !fullText) {
-      if (callback) callback();
-      return;
-    }
-
-    function typeNext() {
-      if (index >= fullText.length) {
-        var finalUpdate = {};
-        finalUpdate['messages[' + msgIndex + '].content'] = fullText;
-        finalUpdate['messages[' + msgIndex + '].displayContent'] = null;
-        that.setData(finalUpdate);
-        if (callback) callback();
-        return;
-      }
-
-      var hasNewline = false;
-      for (var i = 0; i < BATCH_MAX && index < fullText.length; i++, index++) {
-        displayText += fullText[index];
-        if (fullText[index] === '\n') { hasNewline = true; break; }
-        if (i >= BATCH_MIN && (index % 10 === 0 || fullText[index + 1] === undefined)) break;
-      }
-
-      var updateData = {};
-      updateData['messages[' + msgIndex + '].displayContent'] = displayText;
-      that.setData(updateData);
-      if (index % 15 === 0) that.scrollToBottom();
-      setTimeout(typeNext, hasNewline ? 80 : 50);
-    }
-    typeNext();
+  // 长按复制文本
+  copyText: function (e) {
+    var text = e.currentTarget.dataset.text;
+    if (!text) return;
+    wx.setClipboardData({ data: text, success: function () { wx.showToast({ title: '已复制', icon: 'none' }); } });
   },
 
   // 通用响应处理（直连 & 代理 返回格式相同）
@@ -180,12 +153,9 @@ Page({
       reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
     }
 
-    var aiMsgIndex = that.data.messages.length;
-    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply, displayContent: undefined };
-    that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false }, function () {
-      that.scrollToBottom();
-      that.typeWriter(aiMsgIndex, reply);
-    });
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply };
+    that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
+    that.scrollToBottom();
   },
 
   // 构建 API 消息体（OpenRouter 格式）

@@ -42,8 +42,8 @@
           </view>
         </view>
         <view class="msg-content">
-          <view class="bubble ai-bubble">
-            <text class="bubble-text">{{item.displayContent || item.content}}</text>
+          <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
+            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
           </view>
           <!-- 图片消息 -->
           <image 
@@ -59,12 +59,12 @@
       <!-- 用户消息 -->
       <view wx:if="{{item.role === 'user'}}" class="msg-row user">
         <view class="msg-content user-msg-content">
-          <view class="bubble user-bubble">
-            <text class="bubble-text">{{item.content}}</text>
+          <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
+            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
           </view>
           <!-- 图片消息 -->
           <image 
-            wx:if="{{item.imageUrl && item.imageUrl.indexOf('base64,') === -1}}" 
+            wx:if="{{item.imageUrl}}" 
             class="msg-image user-img" 
             src="{{item.imageUrl}}" 
             mode="widthFix" 
