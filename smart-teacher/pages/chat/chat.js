@@ -49,6 +49,7 @@ Page({
   },
 
   onLoad: function () {
+    var that = this;
     initOpenRouter().catch(function (err) {
       console.error('[chat] initOpenRouter failed:', err);
       that.setData({ _configError: true });

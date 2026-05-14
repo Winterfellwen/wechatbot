@@ -31,7 +31,7 @@ const config = {
     apiKey: process.env.OPENROUTER_KEY || null,
     model: 'nvidia/nemotron-nano-12b-v2-vl:free',
     apiUrl: 'https://openrouter.ai/api/v1',
-    maxTokens: 500,
+    maxTokens: 500
   },
 
   // Azure TTS 配置
