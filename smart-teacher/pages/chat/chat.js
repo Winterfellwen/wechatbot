@@ -40,7 +40,7 @@ Page({
     this.sendMessage(q, '');
   },
 
-  // 选择图片 — 自动压缩到 800px 以内再编码
+  // 选择图片 — 自动压缩到 1200px + quality 60 控制体积
   chooseImage: function () {
     var that = this;
     wx.chooseImage({
@@ -51,7 +51,7 @@ Page({
         var path = res.tempFilePaths[0];
         wx.compressImage({
           src: path,
-          quality: 80,
+          quality: 60,
           success: function (compressed) {
             wx.getFileSystemManager().readFile({
               filePath: compressed.tempFilePath,
@@ -226,6 +226,8 @@ Page({
           if (!reply) {
             reply = '抱歉，现在访问的人数过多，请重试。';
           }
+        } else if (res.statusCode === 413) {
+          reply = '图片太大或消息过长（超过10MB限制），请压缩图片后重试。';
         } else if (res.data && res.data.error) {
           var err = res.data.error;
           var errMsg = typeof err === 'string' ? err : (err.message || JSON.stringify(err));
