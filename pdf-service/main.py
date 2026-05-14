@@ -234,7 +234,6 @@ async def edit_pdf(req: EditRequest):
                     fontsize=48,
                     color=(0.6, 0.6, 0.6),
                     overlay=False,
-                    rotate=30,
                 )
         elif req.op == "rotate":
             angle = int(req.angle or "90")
