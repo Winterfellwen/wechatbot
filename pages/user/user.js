@@ -141,33 +141,27 @@ Page({
     });
   },
 
+  // --- Utilities ---
+  _showConfirm: function(title, content) {
+    return new Promise(function(resolve) {
+      wx.showModal({ title: title, content: content, success: function(res) { resolve(res.confirm); } });
+    });
+  },
+
   // --- Delete account ---
   handleDeleteAccount: function () {
     var that = this;
-    wx.showModal({
-      title: '注销账号',
-      content: '此操作不可恢复，确定要注销账号吗？',
-      success: function (res) {
-        if (!res.confirm) return;
-        wx.showModal({
-          title: '再次确认',
-          content: '注销后所有数据将被永久删除',
-          success: function (res2) {
-            if (!res2.confirm) return;
-            loginLib.deleteAccount().then(function () {
-              // 服务端已清 token，只清理本地存储即可，不再调 logout 接口
-              wx.removeStorageSync('auth_token');
-              wx.removeStorageSync('auth_user');
-              var app = getApp();
-              if (app) app.globalData.userInfo = null;
-              that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null });
-              wx.showToast({ title: '账号已注销', icon: 'success' });
-            }).catch(function () {
-              wx.showToast({ title: '注销失败', icon: 'none' });
-            });
-          }
-        });
-      }
-    });
+    this._showConfirm('注销账号', '此操作不可恢复，确定要注销账号吗？')
+      .then(function(confirmed) { if (!confirmed) return Promise.reject('cancelled'); return that._showConfirm('再次确认', '注销后所有数据将被永久删除'); })
+      .then(function(confirmed2) { if (!confirmed2) return Promise.reject('cancelled'); return loginLib.deleteAccount(); })
+      .then(function () {
+        wx.removeStorageSync('auth_token');
+        wx.removeStorageSync('auth_user');
+        var app = getApp();
+        if (app) app.globalData.userInfo = null;
+        that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null });
+        wx.showToast({ title: '账号已注销', icon: 'success' });
+      })
+      .catch(function (err) { if (err !== 'cancelled') wx.showToast({ title: '注销失败', icon: 'none' }); });
   }
 });

@@ -1,4 +1,6 @@
 var retry = require('../../../utils/retry');
+var CONFIG = require('../../../utils/config');
+var SERVER = CONFIG.SERVER;
 
 Page({
   data: {
@@ -79,7 +81,7 @@ Page({
     // Phase 1: upload file, get job_id
     r.operate(function(retry, stop, ctx) {
       var task = wx.uploadFile({
-        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
+        url: SERVER + '/api/pdf/convert',
         filePath: that.data.filePath,
         name: 'file',
         formData: { from: that.data.fromFormat, to: that.data.toFormat },
@@ -114,7 +116,7 @@ Page({
     var that = this;
     r.operate(function(retry, stop) {
       wx.request({
-        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/status/' + jobId,
+        url: SERVER + '/api/pdf/status/' + jobId,
         timeout: 60000,
         success: function(res) {
           if (!that.data.converting || that.data.currentJobId !== jobId) {

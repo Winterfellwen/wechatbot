@@ -1,4 +1,6 @@
 var retry = require('../../../utils/retry');
+var CONFIG = require('../../../utils/config');
+var SERVER = CONFIG.SERVER;
 
 Page({
   data: {
@@ -38,7 +40,7 @@ Page({
 
     r.operate(function(retry, stop) {
       wx.uploadFile({
-        url: 'https://wechatbot-g6ez.onrender.com/api/pdf/edit',
+        url: SERVER + '/api/pdf/edit',
         filePath: that.data.filePath,
         name: 'file',
         formData: {

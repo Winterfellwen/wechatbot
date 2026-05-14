@@ -1,3 +1,5 @@
+var CONFIG = require('../../../utils/config');
+var SERVER = CONFIG.SERVER;
 
 Page({
   data: {
@@ -67,7 +69,7 @@ Page({
     that.setData({ converting: true });
 
     wx.uploadFile({
-      url: 'https://wechatbot-g6ez.onrender.com/api/pdf/convert',
+      url: SERVER + '/api/pdf/convert',
       filePath: that.data.filePath,
       name: 'file',
       formData: {
