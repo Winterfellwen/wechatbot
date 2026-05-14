@@ -344,6 +344,17 @@ setInterval(() => {
   fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(() => {});
 }, KEEPALIVE_INTERVAL);
 
+app.get('/api/chat/key', (req, res) => {
+  const apiKey = config.openrouter.apiKey;
+  if (!apiKey) return res.status(500).json({ error: 'OpenRouter API key not configured' });
+  res.json({
+    key: apiKey,
+    model: config.openrouter.model,
+    apiUrl: config.openrouter.apiUrl,
+    maxTokens: config.openrouter.maxTokens
+  });
+});
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, model } = req.body;

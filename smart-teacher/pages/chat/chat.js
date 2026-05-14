@@ -1,9 +1,40 @@
 // smart-teacher/pages/chat/chat.js
-// 现代AI聊天 - 支持打字机效果
+// 现代AI聊天 - 直连 OpenRouter，Render 仅提供 API Key
 
 var CONFIG = require('../../../utils/config');
 var SERVER = CONFIG.SERVER;
 var msgIdCounter = 0;
+
+var openRouterConfig = null;
+var configLoaded = false;
+var configLoading = null;
+
+function initOpenRouter() {
+  if (openRouterConfig && configLoaded) return Promise.resolve();
+  if (configLoading) return configLoading;
+  configLoading = new Promise(function(resolve, reject) {
+    wx.request({
+      url: SERVER + '/api/chat/key',
+      timeout: 5000,
+      success: function(res) {
+        if (res.statusCode === 200 && res.data && res.data.key) {
+          openRouterConfig = res.data;
+          configLoaded = true;
+          configLoading = null;
+          resolve();
+        } else {
+          configLoading = null;
+          reject(new Error('Failed to get OpenRouter config'));
+        }
+      },
+      fail: function(err) {
+        configLoading = null;
+        reject(err);
+      }
+    });
+  });
+  return configLoading;
+}
 
 Page({
   data: {
@@ -13,7 +44,15 @@ Page({
     scrollTop: 0,
     previewImage: '',
     hasInput: false,
-    _imageBase64: ''
+    _imageBase64: '',
+    _configError: false
+  },
+
+  onLoad: function () {
+    initOpenRouter().catch(function (err) {
+      console.error('[chat] initOpenRouter failed:', err);
+      that.setData({ _configError: true });
+    });
   },
 
   // 滚动到底部
@@ -40,7 +79,7 @@ Page({
     this.sendMessage(q, '');
   },
 
-  // 选择图片 — 自动压缩到 1200px + quality 60 控制体积
+  // 选择图片 — 自动压缩再编码
   chooseImage: function () {
     var that = this;
     wx.chooseImage({
@@ -106,7 +145,7 @@ Page({
     this.sendMessage(text, image);
   },
 
-  // 打字机效果 — 批量显示（每次 3-5 字符减少 setData 次数）
+  // 打字机效果 — 批量显示
   typeWriter: function (msgIndex, fullText, callback) {
     var that = this;
     var displayText = '';
@@ -114,8 +153,8 @@ Page({
     var messages = that.data.messages;
     var BATCH_MIN = 3;
     var BATCH_MAX = 5;
-    
-    if (!messages[msgIndex] || messages[msgIndex].role !== 'ai' || fullText === null || fullText === undefined || fullText === '') {
+
+    if (!messages[msgIndex] || messages[msgIndex].role !== 'ai' || !fullText) {
       if (callback) callback();
       return;
     }
@@ -129,7 +168,7 @@ Page({
         if (callback) callback();
         return;
       }
-      
+
       var batchSize = BATCH_MIN;
       var hasNewline = false;
       for (var i = 0; i < BATCH_MAX && index < fullText.length; i++, index++) {
@@ -140,29 +179,29 @@ Page({
           batchSize = i + 1; break;
         }
       }
-      
+
       var updateData = {};
       updateData['messages[' + msgIndex + '].displayContent'] = displayText;
       that.setData(updateData);
-      
+
       if (index % 15 === 0 || index >= fullText.length) {
         that.scrollToBottom();
       }
-      
+
       var delay = hasNewline ? 80 : (batchSize > BATCH_MIN ? 40 : 50);
       setTimeout(typeNext, delay);
     }
-    
+
     typeNext();
   },
 
-  // 发送消息核心
+  // 发送消息核心 — 直连 OpenRouter
   sendMessage: function (text, imageBase64) {
     if (this.data.loading) return;
 
+    var that = this;
     var hasImage = !!imageBase64;
 
-    // 用户消息
     var userMsg = {
       id: ++msgIdCounter,
       role: 'user',
@@ -181,7 +220,7 @@ Page({
     });
     this.scrollToBottom();
 
-    // 构建API消息
+    // 构建 API 消息（OpenRouter/OpenAI 格式）
     var apiMessages = [
       {
         role: 'system',
@@ -189,20 +228,15 @@ Page({
       }
     ];
 
-    for (var i = 0; i < this.data.messages.length; i++) {
-      var m = this.data.messages[i];
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
       if (m.role === 'user') {
         var msgHasImage = m.imageUrl && m.imageUrl.indexOf('base64,') > -1;
         if (msgHasImage) {
           var parts = [];
-          if (m.content) {
-            parts.push({ type: 'text', text: m.content });
-          }
+          if (m.content) parts.push({ type: 'text', text: m.content });
           var b64 = m.imageUrl.split('base64,')[1];
-          parts.push({
-            type: 'image_url',
-            image_url: { url: 'data:image/jpeg;base64,' + b64 }
-          });
+          parts.push({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64 } });
           apiMessages.push({ role: 'user', content: parts });
         } else {
           apiMessages.push({ role: 'user', content: m.content || '' });
@@ -212,69 +246,79 @@ Page({
       }
     }
 
-    var that = this;
+    // 确保配置已加载
+    initOpenRouter().then(function () {
+      var maxTokens = hasImage ? 1024 : (openRouterConfig.maxTokens || 500);
 
-    wx.request({
-      url: SERVER + '/api/chat',
-      method: 'POST',
-      header: { 'Content-Type': 'application/json' },
-      data: { messages: apiMessages },
-      success: function (res) {
-        var reply = '';
-        if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
-          reply = res.data.choices[0].message.content || '';
-          if (!reply) {
-            reply = '抱歉，现在访问的人数过多，请重试。';
-          }
-        } else if (res.statusCode === 413) {
-          reply = '图片太大或消息过长（超过10MB限制），请压缩图片后重试。';
-        } else if (res.data && res.data.error) {
-          var err = res.data.error;
-          var errMsg = typeof err === 'string' ? err : (err.message || JSON.stringify(err));
-          if (errMsg.indexOf('User not found') > -1 || errMsg.indexOf('401') > -1) {
-            reply = 'API密钥无效或未配置，请联系管理员。';
-          } else if (errMsg.indexOf('Insufficient credits') > -1 || errMsg.indexOf('402') > -1) {
-            reply = 'API额度不足，免费模型需要账号至少充值一次。';
-          } else if (errMsg.indexOf('429') > -1 || errMsg.indexOf('rate limit') > -1) {
-            reply = '请求过于频繁，请稍后再试。';
+      wx.request({
+        url: openRouterConfig.apiUrl + '/chat/completions',
+        method: 'POST',
+        timeout: 60000,
+        header: {
+          'Authorization': 'Bearer ' + openRouterConfig.key,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://wechatbot-g6ez.onrender.com',
+          'X-Title': 'SmartTeacherBot'
+        },
+        data: {
+          model: openRouterConfig.model,
+          messages: apiMessages,
+          max_tokens: maxTokens
+        },
+        success: function (res) {
+          var reply = '';
+          if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
+            reply = res.data.choices[0].message.content || '';
+            if (!reply) reply = '抱歉，现在访问的人数过多，请重试。';
+          } else if (res.statusCode === 413) {
+            reply = '图片太大或消息过长，请压缩图片后重试。';
+          } else if (res.data && res.data.error) {
+            var err = res.data.error;
+            var errMsg = typeof err === 'string' ? err : (err.message || JSON.stringify(err));
+            if (errMsg.indexOf('401') > -1 || errMsg.indexOf('Insufficient credits') > -1) {
+              reply = 'API额度不足或密钥无效，请联系管理员。';
+            } else if (errMsg.indexOf('429') > -1 || errMsg.indexOf('rate limit') > -1) {
+              reply = '请求过于频繁，请稍后再试。';
+            } else {
+              reply = '出错了：' + errMsg;
+            }
           } else {
-            reply = '出错了：' + errMsg;
+            reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
           }
-        } else {
-          reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
-        }
 
-        // 消息索引 - 指向刚添加的AI消息位置
-        var aiMsgIndex = that.data.messages.length;
-        
-        var aiMsg = {
-          id: ++msgIdCounter,
-          role: 'ai',
-          content: reply,
-          displayContent: undefined  // 用 undefined 而不是空字符串
-        };
+          var aiMsgIndex = that.data.messages.length;
+          var aiMsg = {
+            id: ++msgIdCounter,
+            role: 'ai',
+            content: reply,
+            displayContent: undefined
+          };
 
-        that.setData({
-          messages: that.data.messages.concat([aiMsg]),
-          loading: false
-        }, function() {
+          that.setData({
+            messages: that.data.messages.concat([aiMsg]),
+            loading: false
+          }, function () {
+            that.scrollToBottom();
+            that.typeWriter(aiMsgIndex, reply);
+          });
+        },
+        fail: function () {
+          var aiMsg = {
+            id: ++msgIdCounter,
+            role: 'ai',
+            content: '网络请求失败，请检查网络后重试。'
+          };
+          that.setData({
+            messages: that.data.messages.concat([aiMsg]),
+            loading: false
+          });
           that.scrollToBottom();
-          // setData 完成后才启动打字机效果
-          that.typeWriter(aiMsgIndex, reply);
-        });
-      },
-      fail: function () {
-        var aiMsg = {
-          id: ++msgIdCounter,
-          role: 'ai',
-          content: '网络请求失败，请检查网络后重试。'
-        };
-        that.setData({
-          messages: that.data.messages.concat([aiMsg]),
-          loading: false
-        });
-        that.scrollToBottom();
-      }
+        }
+      });
+    }).catch(function (err) {
+      that.setData({ loading: false });
+      wx.showToast({ title: '无法获取API配置', icon: 'none' });
+      console.error('[chat] initOpenRouter failed:', err);
     });
   }
 });
