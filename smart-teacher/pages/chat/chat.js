@@ -119,17 +119,6 @@ Page({
     this.sendMessage(text, image);
   },
 
-  typeWriter: function (msgIndex, fullText, callback) {
-    if (callback) callback();
-  },
-
-  // 长按复制文本
-  copyText: function (e) {
-    var text = e.currentTarget.dataset.text;
-    if (!text) return;
-    wx.setClipboardData({ data: text, success: function () { wx.showToast({ title: '已复制', icon: 'none' }); } });
-  },
-
   // 通用响应处理（直连 & 代理 返回格式相同）
   _handleResponse: function (res) {
     var that = this;
