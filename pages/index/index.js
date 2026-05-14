@@ -1,4 +1,5 @@
 var loginLib = require('../../utils/login');
+var validation = require('../../utils/validation');
 
 Page({
   data: {
@@ -18,42 +19,10 @@ Page({
     return '夜深了';
   },
 
-  isValidAvatarUrl: function(url) {
-    if (!url) return false;
-    if (url.indexOf('/images/') === 0) return true;
-    if (url.indexOf('http') !== 0) return false;
-    if (url.indexOf('__tmp__') >= 0) return false;
-    if (url.indexOf('wxfile://') >= 0) return false;
-    if (url.indexOf('127.0.0.1') >= 0) return false;
-    if (url.indexOf('localhost') >= 0) return false;
-    return true;
-  },
-
-  isValidNickname: function(nick) {
-    if (!nick) return false;
-    var trimmed = nick.trim();
-    if (trimmed.length === 0) return false;
-    if (trimmed.indexOf('微信用户') === 0) return false;
-    if (trimmed === '游客') return false;
-    return true;
-  },
-
-  getDisplayUserInfo: function(user) {
-    if (!user) return { avatarUrl: '/images/avatar-default.png', nickName: '游客' };
-    var display = { avatarUrl: '/images/avatar-default.png', nickName: '游客' };
-    if (this.isValidAvatarUrl(user.avatarUrl)) {
-      display.avatarUrl = user.avatarUrl;
-    }
-    if (this.isValidNickname(user.nickName)) {
-      display.nickName = user.nickName;
-    }
-    return display;
-  },
-
   onShow: function () {
     var loggedIn = loginLib.isLoggedIn();
     var user = loggedIn ? loginLib.getUserInfo() : null;
-    var displayUserInfo = this.getDisplayUserInfo(user);
+    var displayUserInfo = validation.getDisplayUserInfo(user, '游客');
     this.setData({
       isLoggedIn: loggedIn,
       userInfo: user,

@@ -1,9 +1,11 @@
 // utils/login.js
 // Shared login module — single source of truth for auth state
 
-var SERVER = 'https://wechatbot-g6ez.onrender.com';
-var STORAGE_TOKEN = 'auth_token';
-var STORAGE_USER = 'auth_user';
+var CONFIG = require('./config');
+
+var SERVER = CONFIG.SERVER;
+var STORAGE_TOKEN = CONFIG.STORAGE_KEYS.TOKEN;
+var STORAGE_USER = CONFIG.STORAGE_KEYS.USER;
 
 function request(method, path, data, needAuth) {
   return new Promise(function (resolve, reject) {
@@ -65,7 +67,7 @@ module.exports = {
 
   logout: function () {
     request('POST', '/api/auth/logout', {}, true)
-      .catch(function () {}); // fire-and-forget
+      .catch(function (err) { console.warn('[logout] server logout failed:', err); });
     wx.removeStorageSync(STORAGE_TOKEN);
     wx.removeStorageSync(STORAGE_USER);
     var app = getApp();

@@ -1,4 +1,5 @@
 var loginLib = require('../../utils/login');
+var validation = require('../../utils/validation');
 
 Page({
   data: {
@@ -9,46 +10,14 @@ Page({
     nickName: ''
   },
 
-  isValidAvatarUrl: function(url) {
-    if (!url) return false;
-    if (url.indexOf('/images/') === 0) return true;
-    if (url.indexOf('http') !== 0) return false;
-    if (url.indexOf('__tmp__') >= 0) return false;
-    if (url.indexOf('wxfile://') >= 0) return false;
-    if (url.indexOf('127.0.0.1') >= 0) return false;
-    if (url.indexOf('localhost') >= 0) return false;
-    return true;
-  },
-
-  isValidNickname: function(nick) {
-    if (!nick) return false;
-    var trimmed = nick.trim();
-    if (trimmed.length === 0) return false;
-    if (trimmed.indexOf('微信用户') === 0) return false;
-    if (trimmed === '游客') return false;
-    return true;
-  },
-
-  getDisplayUserInfo: function(user) {
-    if (!user) return null;
-    var display = { avatarUrl: '/images/avatar-default.png', nickName: '微信用户' };
-    if (this.isValidAvatarUrl(user.avatarUrl)) {
-      display.avatarUrl = user.avatarUrl;
-    }
-    if (this.isValidNickname(user.nickName)) {
-      display.nickName = user.nickName;
-    }
-    return display;
-  },
-
   validateUserInfo: function(user) {
     var needsUpdate = false;
     var updates = {};
-    if (user && !this.isValidAvatarUrl(user.avatarUrl)) {
+    if (user && !validation.isValidAvatarUrl(user.avatarUrl)) {
       updates.avatarUrl = '/images/avatar-default.png';
       needsUpdate = true;
     }
-    if (user && !this.isValidNickname(user.nickName)) {
+    if (user && !validation.isValidNickname(user.nickName)) {
       updates.nickName = '';
       needsUpdate = true;
     }
@@ -59,19 +28,19 @@ Page({
     var that = this;
     var loggedIn = loginLib.isLoggedIn();
     var user = loggedIn ? loginLib.getUserInfo() : null;
-    var displayUserInfo = this.getDisplayUserInfo(user);
+    var displayUserInfo = validation.getDisplayUserInfo(user, '微信用户');
     if (user) {
-      var validation = this.validateUserInfo(user);
-      if (validation.needsUpdate) {
-        user = Object.assign({}, user, validation.updates);
-        loginLib.updateProfile(validation.updates).catch(function(){});
+      var result = this.validateUserInfo(user);
+      if (result.needsUpdate) {
+        user = Object.assign({}, user, result.updates);
+        loginLib.updateProfile(result.updates).catch(function(err) { console.warn('[user] auto-fix profile failed:', err); });
       }
     }
     this.setData({
       isLoggedIn: loggedIn,
       userInfo: user,
       displayUserInfo: displayUserInfo,
-      showNickInput: user && !this.isValidNickname(user.nickName) || false
+      showNickInput: user && !validation.isValidNickname(user.nickName) || false
     });
   },
 

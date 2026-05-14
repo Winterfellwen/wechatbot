@@ -1,4 +1,7 @@
 // app.js
+var validation = require('./utils/validation');
+var CONFIG = require('./utils/config');
+
 App({  
   globalData: {
     userInfo: null,
@@ -8,42 +11,32 @@ App({
   onShareAppMessage: function () {
     return { title: '多功能小机器人', path: '/pages/index/index' };
   },
-  
-  isValidAvatarUrl: function(url) {
-    if (!url) return false;
-    if (url.indexOf('/images/') === 0) return true;
-    if (url.indexOf('http') !== 0) return false;
-    if (url.indexOf('__tmp__') >= 0) return false;
-    if (url.indexOf('wxfile://') >= 0) return false;
-    if (url.indexOf('127.0.0.1') >= 0) return false;
-    if (url.indexOf('localhost') >= 0) return false;
-    return true;
-  },
 
   checkLoginStatus() {
-    const userInfo = wx.getStorageSync('auth_user');
+    var STORAGE_USER = CONFIG.STORAGE_KEYS.USER;
+    var userInfo = wx.getStorageSync(STORAGE_USER);
     if (userInfo) {
-      if (!this.isValidAvatarUrl(userInfo.avatarUrl)) {
+      if (!validation.isValidAvatarUrl(userInfo.avatarUrl)) {
         userInfo.avatarUrl = '/images/avatar-default.png';
-        wx.setStorageSync('auth_user', userInfo);
+        wx.setStorageSync(STORAGE_USER, userInfo);
       }
       this.globalData.userInfo = userInfo;
       this.globalData.isLoggedIn = true;
     }
   },
-  
+
   setUserInfo(userInfo) {
-    if (userInfo && !this.isValidAvatarUrl(userInfo.avatarUrl)) {
+    if (userInfo && !validation.isValidAvatarUrl(userInfo.avatarUrl)) {
       userInfo.avatarUrl = '/images/avatar-default.png';
     }
     this.globalData.userInfo = userInfo;
     this.globalData.isLoggedIn = true;
-    wx.setStorageSync('auth_user', userInfo);
+    wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, userInfo);
   },
-  
+
   clearUserInfo() {
     this.globalData.userInfo = null;
     this.globalData.isLoggedIn = false;
-    wx.removeStorageSync('auth_user');
+    wx.removeStorageSync(CONFIG.STORAGE_KEYS.USER);
   }
 });

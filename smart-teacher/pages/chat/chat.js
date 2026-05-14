@@ -1,7 +1,8 @@
 // smart-teacher/pages/chat/chat.js
 // 现代AI聊天 - 支持打字机效果
 
-var SERVER = 'https://wechatbot-g6ez.onrender.com';
+var CONFIG = require('../../../utils/config');
+var SERVER = CONFIG.SERVER;
 var msgIdCounter = 0;
 
 Page({
@@ -39,7 +40,7 @@ Page({
     this.sendMessage(q, '');
   },
 
-  // 选择图片
+  // 选择图片 — 自动压缩到 800px 以内再编码
   chooseImage: function () {
     var that = this;
     wx.chooseImage({
@@ -48,14 +49,33 @@ Page({
       sourceType: ['album', 'camera'],
       success: function (res) {
         var path = res.tempFilePaths[0];
-        wx.getFileSystemManager().readFile({
-          filePath: path,
-          encoding: 'base64',
-          success: function (readRes) {
-            that.setData({
-              previewImage: path,
-              _imageBase64: readRes.data,
-              hasInput: true
+        wx.compressImage({
+          src: path,
+          quality: 80,
+          success: function (compressed) {
+            wx.getFileSystemManager().readFile({
+              filePath: compressed.tempFilePath,
+              encoding: 'base64',
+              success: function (readRes) {
+                that.setData({
+                  previewImage: compressed.tempFilePath,
+                  _imageBase64: readRes.data,
+                  hasInput: true
+                });
+              }
+            });
+          },
+          fail: function () {
+            wx.getFileSystemManager().readFile({
+              filePath: path,
+              encoding: 'base64',
+              success: function (readRes) {
+                that.setData({
+                  previewImage: path,
+                  _imageBase64: readRes.data,
+                  hasInput: true
+                });
+              }
             });
           }
         });
@@ -86,45 +106,51 @@ Page({
     this.sendMessage(text, image);
   },
 
-  // 打字机效果 - 逐字显示
+  // 打字机效果 — 批量显示（每次 3-5 字符减少 setData 次数）
   typeWriter: function (msgIndex, fullText, callback) {
     var that = this;
     var displayText = '';
     var index = 0;
     var messages = that.data.messages;
+    var BATCH_MIN = 3;
+    var BATCH_MAX = 5;
     
-    // 确保消息存在、fullText有效且是AI消息
     if (!messages[msgIndex] || messages[msgIndex].role !== 'ai' || fullText === null || fullText === undefined || fullText === '') {
       if (callback) callback();
       return;
     }
 
     function typeNext() {
-      if (index < fullText.length) {
-        displayText += fullText[index];
-        index++;
-        
-        // 更新显示文本
-        var updateData = {};
-        updateData['messages[' + msgIndex + '].displayContent'] = displayText;
-        that.setData(updateData);
-        
-        // 每隔几个字符滚动一次
-        if (index % 10 === 0 || index === fullText.length) {
-          that.scrollToBottom();
-        }
-        
-        // 根据文本长度调整打字速度
-        var delay = fullText[index - 1] === '\n' ? 80 : (index % 30 === 0 ? 40 : 15);
-        setTimeout(typeNext, delay);
-      } else {
-        // 打字完成，清理displayContent
+      if (index >= fullText.length) {
         var finalUpdate = {};
         finalUpdate['messages[' + msgIndex + '].content'] = fullText;
         finalUpdate['messages[' + msgIndex + '].displayContent'] = null;
         that.setData(finalUpdate);
         if (callback) callback();
+        return;
       }
+      
+      var batchSize = BATCH_MIN;
+      var hasNewline = false;
+      for (var i = 0; i < BATCH_MAX && index < fullText.length; i++, index++) {
+        var ch = fullText[index];
+        displayText += ch;
+        if (ch === '\n') { batchSize = i + 1; hasNewline = true; break; }
+        if (i >= BATCH_MIN && (index % 10 === 0 || fullText[index + 1] === undefined)) {
+          batchSize = i + 1; break;
+        }
+      }
+      
+      var updateData = {};
+      updateData['messages[' + msgIndex + '].displayContent'] = displayText;
+      that.setData(updateData);
+      
+      if (index % 15 === 0 || index >= fullText.length) {
+        that.scrollToBottom();
+      }
+      
+      var delay = hasNewline ? 80 : (batchSize > BATCH_MIN ? 40 : 50);
+      setTimeout(typeNext, delay);
     }
     
     typeNext();
