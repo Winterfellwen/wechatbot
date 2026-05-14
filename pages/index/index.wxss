@@ -367,6 +367,8 @@
 
 .teacher-left {
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .teacher-icon-wrap {
