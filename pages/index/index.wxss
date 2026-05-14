@@ -313,6 +313,15 @@
   filter: grayscale(100%); 
 }
 
+/* 智能老师初始隐藏（Observer 触发后再显示） */
+.teacher-card:not(.visible) {
+  opacity: 0;
+  transform: translateY(30rpx);
+}
+.teacher-card.visible {
+  animation: fadeInUp 0.5s ease both;
+}
+
 /* ========== 智能老师卡片 ========== */
 .teacher-card {
   display: flex;

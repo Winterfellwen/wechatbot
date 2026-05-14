@@ -5,7 +5,8 @@ Page({
     userInfo: null,
     displayUserInfo: null,
     isLoggedIn: false,
-    greeting: '你好'
+    greeting: '你好',
+    teacherVisible: false
   },
 
   getGreeting: function () {
@@ -67,6 +68,21 @@ Page({
 
   onAvatarError: function () {
     this.setData({ userInfo: { avatarUrl: '/images/avatar-default.png' } });
+  },
+
+  onReady: function () {
+    var that = this;
+    this._observer = wx.createIntersectionObserver(this);
+    this._observer.relativeToViewport({ bottom: 100 }).observe('.teacher-card', function (res) {
+      if (res.intersectionRatio > 0) {
+        that.setData({ teacherVisible: true });
+        that._observer.disconnect();
+      }
+    });
+  },
+
+  onUnload: function () {
+    if (this._observer) { this._observer.disconnect(); }
   },
 
   onShareAppMessage: function () {

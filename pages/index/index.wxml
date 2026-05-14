@@ -63,7 +63,7 @@
     <view class="section-header">
       <text class="section-title">智能助手</text>
     </view>
-    <view class="teacher-card" bindtap="handleEntryTap" data-type="teacher">
+    <view class="teacher-card {{teacherVisible ? 'visible' : ''}}" bindtap="handleEntryTap" data-type="teacher">
       <view class="teacher-left">
         <view class="teacher-icon-wrap">
           <image class="teacher-icon" src="/images/avatar-teacher.jpg" mode="aspectFill"></image>
