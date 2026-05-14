@@ -181,3 +181,27 @@ page {
 .success-toast { background: #22C55E !important; }
 .error-toast { background: #EF4444 !important; }
 .warning-toast { background: #F97316 !important; }
+
+/* ========== 全局动画 ========== */
+
+/* 淡入上浮 - 卡片入场 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 从右滑入 */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40rpx); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* 呼吸脉动 - 装饰元素 */
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.08); }
+}
+
+/* 按钮/卡片点击缩放反馈 */
+.card-tap { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-tap:active { transform: scale(0.96); }
