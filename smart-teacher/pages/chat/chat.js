@@ -250,6 +250,10 @@ Page({
     });
   },
 
+  copyText: function (e) {
+    wx.setClipboardData({ data: e.currentTarget.dataset.text || '' });
+  },
+
   _showError: function (msg) {
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
     this.setData({ messages: this.data.messages.concat([aiMsg]), loading: false });

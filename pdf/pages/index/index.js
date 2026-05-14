@@ -9,6 +9,7 @@ Page({
     fromFormat: '',
     toFormat: '',
     converting: false,
+    activeTab: 'convert',
     targetOptions: [],
     files: [],
     currentJobId: null,
@@ -58,7 +59,7 @@ Page({
         that.setData({
           fileName: name, filePath: file.path, fromFormat: fromFmt,
           toFormat: targets[0].value, targetOptions: targets,
-          files: [], currentJobId: null
+          activeTab: 'convert', files: [], currentJobId: null
         });
       }
     });
@@ -198,6 +199,14 @@ Page({
     this._saveResults();
   },
 
+  switchTab: function(e) {
+    this.setData({ activeTab: e.currentTarget.dataset.tab });
+  },
+  goEdit: function() {
+    wx.navigateTo({
+      url: '../edit/edit?file=' + encodeURIComponent(this.data.fileName) + '&path=' + encodeURIComponent(this.data.filePath)
+    });
+  },
   clearFile: function() {
     this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], currentJobId: null, converting: false, progressText: '' });
   }

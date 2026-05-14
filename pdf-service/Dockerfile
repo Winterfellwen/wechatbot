@@ -3,6 +3,7 @@ FROM python:3.12-slim
 RUN apt-get update -qq && \
     apt-get install -y \
         libreoffice-writer \
+        default-jre-headless \
         fonts-noto-cjk \
         fonts-wqy-microhei \
         fonts-liberation \

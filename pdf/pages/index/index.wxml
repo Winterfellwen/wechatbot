@@ -14,8 +14,14 @@
     </view>
   </view>
 
+  <!-- Tab: 转换 / 编辑 -->
+  <view wx:if="{{fileName}}" class="tab-bar">
+    <view class="tab-item {{activeTab === 'convert' ? 'active' : ''}}" bindtap="switchTab" data-tab="convert">转换</view>
+    <view wx:if="{{fromFormat === 'pdf'}}" class="tab-item {{activeTab === 'edit' ? 'active' : ''}}" bindtap="switchTab" data-tab="edit">编辑</view>
+  </view>
+
   <!-- Has file: convert area -->
-  <view wx:if="{{fileName}}" class="convert-section">
+  <view wx:if="{{fileName && activeTab === 'convert'}}" class="convert-section">
     <view class="file-card">
       <view class="file-info">
         <text class="file-name">{{fileName}}</text>
@@ -38,6 +44,35 @@
         {{converting ? (progressText || '处理中...') : '开始转换'}}
       </view>
     </view>
+  </view>
+
+  <!-- 编辑区域 -->
+  <view wx:if="{{fileName && fromFormat === 'pdf' && activeTab === 'edit'}}" class="edit-section">
+    <view class="edit-card" bindtap="goEdit">
+      <text class="edit-card-icon">T</text>
+      <view class="edit-card-info">
+        <text class="edit-card-title">添加水印</text>
+        <text class="edit-card-desc">在PDF页面上添加自定义文字水印</text>
+      </view>
+      <text class="edit-card-arrow">›</text>
+    </view>
+    <view class="edit-card" bindtap="goEdit">
+      <text class="edit-card-icon">↻</text>
+      <view class="edit-card-info">
+        <text class="edit-card-title">旋转页面</text>
+        <text class="edit-card-desc">旋转PDF页面的方向</text>
+      </view>
+      <text class="edit-card-arrow">›</text>
+    </view>
+    <view class="edit-card" bindtap="goEdit">
+      <text class="edit-card-icon">⊞</text>
+      <view class="edit-card-info">
+        <text class="edit-card-title">合并PDF</text>
+        <text class="edit-card-desc">上传两个文件进行合并</text>
+      </view>
+      <text class="edit-card-arrow">›</text>
+    </view>
+    <view class="edit-tip">编辑功能将打开新页面进行处理</view>
   </view>
 
   <!-- 转换结果列表 -->

@@ -8,7 +8,7 @@ import shutil
 import time
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
@@ -142,6 +142,13 @@ class ConvertRequest(BaseModel):
     to_fmt: str = "docx"
 
 
+class EditRequest(BaseModel):
+    file_base64: str = Field(..., max_length=int(MAX_FILE_SIZE * 1.4))
+    op: str = ""
+    text: str = ""
+    angle: str = "90"
+
+
 @app.post("/convert")
 async def convert(req: ConvertRequest):
     _cleanup_old_jobs()
@@ -198,6 +205,59 @@ async def download(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     ext = path.suffix[1:]
     return FileResponse(path, filename=f"converted.{ext}", media_type="application/octet-stream")
+
+
+# ── Edit (watermark / rotate / merge) ────────────────────
+
+@app.post("/edit")
+async def edit_pdf(req: EditRequest):
+    tmp = None
+    try:
+        raw = base64.b64decode(req.file_base64)
+        if len(raw) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail=f"File too large ({len(raw)} bytes). Max: {MAX_FILE_SIZE}")
+
+        tmp = UPLOAD_DIR / f"edit_{uuid.uuid4().hex}.pdf"
+        tmp.write_bytes(raw)
+
+        import fitz  # PyMuPDF
+
+        doc = fitz.open(str(tmp))
+
+        if req.op == "watermark":
+            text = req.text or "WATERMARK"
+            for page in doc:
+                r = page.rect
+                page.insert_text(
+                    fitz.Point(r.width * 0.1, r.height * 0.5),
+                    text,
+                    fontsize=48,
+                    color=(0.6, 0.6, 0.6),
+                    overlay=False,
+                    rotate=30,
+                )
+        elif req.op == "rotate":
+            angle = int(req.angle or "90")
+            for page in doc:
+                page.set_rotation((page.rotation or 0) + angle)
+        elif req.op == "merge":
+            doc.insert_pdf(doc)
+        else:
+            doc.close()
+            raise HTTPException(status_code=400, detail=f"Unknown operation: {req.op}")
+
+        out_bytes = doc.tobytes(garbage=4, deflate=True)
+        doc.close()
+
+        return Response(content=out_bytes, media_type="application/pdf")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp and tmp.exists():
+            _safe_unlink(tmp)
 
 
 @app.get("/health")

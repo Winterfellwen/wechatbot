@@ -131,6 +131,68 @@ page {
   margin-top: 8rpx; 
 }
 
+/* ========== Tab 切换 ========== */
+.tab-bar {
+  display: flex;
+  margin: 0 32rpx 24rpx;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 6rpx;
+  box-shadow: var(--shadow);
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 10rpx;
+  transition: all 0.2s;
+}
+.tab-item.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(99, 102, 241, 0.3);
+}
+
+/* ========== 编辑区域 ========== */
+.edit-section { padding: 0 32rpx 24rpx; }
+.edit-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: var(--bg-card);
+  border: 2rpx solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  transition: all 0.2s;
+}
+.edit-card:active {
+  transform: scale(0.98);
+  border-color: var(--primary);
+  background: #fafbff;
+}
+.edit-card-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 14rpx;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.edit-card-info { flex: 1; min-width: 0; }
+.edit-card-title { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
+.edit-card-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
+.edit-card-arrow { font-size: 36rpx; color: var(--text-muted); flex-shrink: 0; }
+.edit-tip { font-size: 22rpx; color: var(--text-muted); text-align: center; margin-top: 8rpx; }
+
 /* ========== 转换区域 ========== */
 .convert-section { 
   padding: 32rpx; 
