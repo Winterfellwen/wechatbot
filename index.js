@@ -538,15 +538,16 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
 
+    var body = new URLSearchParams();
+    body.append('file_base64', fileBase64);
+    body.append('op', op || '');
+    body.append('text', text || '');
+    body.append('angle', angle || '90');
+
     const pyRes = await fetchWithTimeout(backend + '/edit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file_base64: fileBase64,
-        op: op || '',
-        text: text || '',
-        angle: angle || '90'
-      })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
     }, 120000);
 
     if (!pyRes.ok) {

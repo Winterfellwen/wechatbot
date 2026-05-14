@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import time
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -142,11 +142,7 @@ class ConvertRequest(BaseModel):
     to_fmt: str = "docx"
 
 
-class EditRequest(BaseModel):
-    file_base64: str = Field(..., max_length=int(MAX_FILE_SIZE * 1.4))
-    op: str = ""
-    text: str = ""
-    angle: str = "90"
+
 
 
 @app.post("/convert")
@@ -210,10 +206,28 @@ async def download(filename: str):
 # ── Edit (watermark / rotate / merge) ────────────────────
 
 @app.post("/edit")
-async def edit_pdf(req: EditRequest):
+async def edit_pdf(request: Request):
+    """Accept both JSON and form-urlencoded body."""
     tmp = None
     try:
-        raw = base64.b64decode(req.file_base64)
+        ct = request.headers.get("content-type", "")
+        if "application/json" in ct:
+            body = await request.json()
+            file_base64 = body.get("file_base64", "")
+            op = body.get("op", "")
+            text = body.get("text", "")
+            angle = body.get("angle", "90")
+        else:
+            form = await request.form()
+            file_base64 = form.get("file_base64", "")
+            op = form.get("op", "")
+            text = form.get("text", "")
+            angle = form.get("angle", "90")
+
+        if not file_base64:
+            raise HTTPException(status_code=400, detail="Missing file_base64")
+
+        raw = base64.b64decode(file_base64)
         if len(raw) > MAX_FILE_SIZE:
             raise HTTPException(status_code=413, detail=f"File too large ({len(raw)} bytes). Max: {MAX_FILE_SIZE}")
 
@@ -224,26 +238,26 @@ async def edit_pdf(req: EditRequest):
 
         doc = fitz.open(str(tmp))
 
-        if req.op == "watermark":
-            text = req.text or "WATERMARK"
+        if op == "watermark":
+            wm_text = text or "WATERMARK"
             for page in doc:
                 r = page.rect
                 page.insert_text(
                     fitz.Point(r.width * 0.1, r.height * 0.5),
-                    text,
+                    wm_text,
                     fontsize=48,
                     color=(0.6, 0.6, 0.6),
                     overlay=False,
                 )
-        elif req.op == "rotate":
-            angle = int(req.angle or "90")
+        elif op == "rotate":
+            rot_angle = int(angle or "90")
             for page in doc:
-                page.set_rotation((page.rotation or 0) + angle)
-        elif req.op == "merge":
+                page.set_rotation((page.rotation or 0) + rot_angle)
+        elif op == "merge":
             doc.insert_pdf(doc)
         else:
             doc.close()
-            raise HTTPException(status_code=400, detail=f"Unknown operation: {req.op}")
+            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
 
         out_bytes = doc.tobytes(garbage=4, deflate=True)
         doc.close()
