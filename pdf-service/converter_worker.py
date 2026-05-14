@@ -259,9 +259,73 @@ def pdf_to_docx(input_path, output_path):
         print(f"[worker] Merging {num_chunks} DOCX with image preservation...", flush=True)
         merge_docx(chunk_docxs, output_path)
         print(f"[worker] Merged: {output_path.name}", flush=True)
+        fix_type3_fonts(output_path, replacement_font="Calibri")
     finally:
         for f in chunk_pdfs: safe_unlink(f)
         for f in chunk_docxs: safe_unlink(f)
+
+
+def fix_type3_fonts(docx_path: Path, replacement_font: str = "Calibri"):
+    """Replace Type3 font references with a standard font to fix Word fallback overlap."""
+    raw = docx_path.read_bytes()
+    in_buf = io.BytesIO(raw)
+    out_buf = io.BytesIO()
+
+    font_added = False
+    with zipfile.ZipFile(in_buf, 'r') as zin:
+        font_names = set()
+        try:
+            ft_data = zin.read('word/fontTable.xml')
+            ft_doc = etree.fromstring(ft_data)
+            for font_el in ft_doc.iter(f'{{{W}}}font'):
+                name = font_el.get(f'{{{W}}}name')
+                if name:
+                    font_names.add(name)
+        except KeyError:
+            ft_data = None
+
+        with zipfile.ZipFile(out_buf, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for info in zin.infolist():
+                name = info.filename
+                data = zin.read(name)
+
+                if name in ('word/document.xml', 'word/styles.xml', 'word/numbering.xml'):
+                    doc = etree.fromstring(data)
+                    changed = False
+                    for rf in doc.iter(f'{{{W}}}rFonts'):
+                        for attr in list(rf.attrib):
+                            val = rf.attrib[attr]
+                            if 'Type3' in val:
+                                rf.set(attr, replacement_font)
+                                changed = True
+                    if changed:
+                        data = etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+
+                elif name == 'word/fontTable.xml' and replacement_font not in font_names:
+                    ft = etree.fromstring(data)
+                    font_el = etree.SubElement(ft, f'{{{W}}}font')
+                    font_el.set(f'{{{W}}}name', replacement_font)
+                    family = etree.SubElement(font_el, f'{{{W}}}family')
+                    family.set(f'{{{W}}}val', 'auto')
+                    data = etree.tostring(ft, xml_declaration=True, encoding='UTF-8', standalone=True)
+                    font_added = True
+
+                zout.writestr(info, data)
+
+    docx_path.write_bytes(out_buf.getvalue())
+    if font_added:
+        print(f"[worker] Added '{replacement_font}' to fontTable", flush=True)
+
+    # Report Type3 fix status (count from original decompressed XML)
+    type3_count = 0
+    try:
+        with zipfile.ZipFile(io.BytesIO(raw)) as zc:
+            for name in zc.namelist():
+                if name.endswith('.xml'):
+                    type3_count += zc.read(name).count(b'Type3')
+    except: pass
+    if type3_count:
+        print(f"[worker] Replaced {type3_count} Type3 font references with '{replacement_font}'", flush=True)
 
 
 def safe_unlink(p: Path):
