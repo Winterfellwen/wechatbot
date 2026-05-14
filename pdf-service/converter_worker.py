@@ -93,8 +93,10 @@ def merge_docx(chunk_paths, output_path):
         # Parse base body
         base_doc = etree.parse(str(base / 'word' / 'document.xml'))
         base_body = base_doc.find(f'{{{W}}}body')
-        for sp in base_body.findall(f'{{{W}}}sectPr'):
-            base_body.remove(sp)
+        # Save base sectPr (page layout), remove temporarily, re-append after merge
+        base_sectPr = base_body.find(f'{{{W}}}sectPr')
+        if base_sectPr is not None:
+            base_body.remove(base_sectPr)
 
         # Parse base rels
         base_rels = etree.parse(str(base / 'word' / '_rels' / 'document.xml.rels'))
@@ -184,6 +186,10 @@ def merge_docx(chunk_paths, output_path):
                 new_body = etree.fromstring(body_str.encode())
                 for child in list(new_body):
                     base_body.append(child)
+
+        # Restore base sectPr at end of body (defines page layout for merged doc)
+        if base_sectPr is not None:
+            base_body.append(base_sectPr)
 
         # Write back
         base_doc.write(str(base / 'word' / 'document.xml'),
