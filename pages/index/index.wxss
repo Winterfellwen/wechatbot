@@ -36,6 +36,7 @@
   background: rgba(255, 255, 255, 0.08);
   top: -80rpx;
   right: -40rpx;
+  animation: pulse 3s ease-in-out infinite;
 }
 
 .header-bg::before {
@@ -47,6 +48,7 @@
   background: rgba(255, 255, 255, 0.05);
   bottom: -60rpx;
   left: 40rpx;
+  animation: pulse 4s ease-in-out infinite 0.5s;
 }
 
 .user-info {
@@ -86,18 +88,21 @@
   font-size: 26rpx;
   color: rgba(255, 255, 255, 0.85);
   margin-bottom: 4rpx;
+  animation: slideInRight 0.6s ease both;
 }
 
 .user-nickname {
   font-size: 36rpx;
   font-weight: 600;
   color: #ffffff;
+  animation: slideInRight 0.6s ease 0.15s both;
 }
 
 .user-status {
   font-size: 24rpx;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 6rpx;
+  animation: slideInRight 0.6s ease 0.3s both;
 }
 
 /* ========== 内容分区 ========== */
