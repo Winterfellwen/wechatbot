@@ -181,48 +181,78 @@ Page({
     this.scrollToBottom();
 
     var apiMessages = this._buildApiMessages(messages);
+    var startTime = Date.now();
 
-    // 优先直连 OpenRouter，HTTP 错误或网络失败则回退 Render 代理
     initOpenRouter().then(function () {
-      var maxTokens = hasImage ? 1024 : (openRouterConfig.maxTokens || 500);
-      wx.request({
-        url: openRouterConfig.apiUrl + '/chat/completions',
-        method: 'POST', timeout: 60000,
-        header: {
-          'Authorization': 'Bearer ' + openRouterConfig.key,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://wechatbot-g6ez.onrender.com',
-          'X-Title': 'SmartTeacherBot'
-        },
-        data: { model: openRouterConfig.model, messages: apiMessages, max_tokens: maxTokens },
-        success: function (res) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            that._handleResponse(res);
-          } else {
-            that._proxyFallback(apiMessages);
-          }
-        },
-        fail: function () { that._proxyFallback(apiMessages); }
-      });
+      that._attemptRequest(0, startTime, apiMessages, hasImage);
     }).catch(function () {
-      that._proxyFallback(apiMessages);
+      openRouterConfig = null;
+      that._attemptRequest(0, startTime, apiMessages, hasImage);
     });
   },
 
-  // 回退：通过 Render 代理转发
-  _proxyFallback: function (apiMessages) {
+  // 递归重试 — 超过 30s 才提示"当前使用人数过多"
+  _attemptRequest: function (retryCount, startTime, apiMessages, hasImage) {
+    if (Date.now() - startTime >= 30000) {
+      this._showError('当前使用人数过多，请稍后再试');
+      return;
+    }
     var that = this;
+    if (openRouterConfig) {
+      that._tryDirect(apiMessages, hasImage, function (ok, res) {
+        if (ok) { that._handleResponse(res); return; }
+        that._tryProxy(apiMessages, function (ok2, res2) {
+          if (ok2) { that._handleResponse(res2); return; }
+          that._scheduleRetry(retryCount, startTime, apiMessages, hasImage);
+        });
+      });
+    } else {
+      that._tryProxy(apiMessages, function (ok, res) {
+        if (ok) { that._handleResponse(res); return; }
+        that._scheduleRetry(retryCount, startTime, apiMessages, hasImage);
+      });
+    }
+  },
+
+  _scheduleRetry: function (retryCount, startTime, apiMessages, hasImage) {
+    var that = this;
+    var delay = Math.min(2000 * Math.pow(1.5, retryCount), 8000);
+    setTimeout(function () {
+      that._attemptRequest(retryCount + 1, startTime, apiMessages, hasImage);
+    }, delay);
+  },
+
+  _tryDirect: function (apiMessages, hasImage, callback) {
+    var maxTokens = hasImage ? 1024 : (openRouterConfig.maxTokens || 500);
+    wx.request({
+      url: openRouterConfig.apiUrl + '/chat/completions',
+      method: 'POST', timeout: 15000,
+      header: {
+        'Authorization': 'Bearer ' + openRouterConfig.key,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://wechatbot-g6ez.onrender.com',
+        'X-Title': 'SmartTeacherBot'
+      },
+      data: { model: openRouterConfig.model, messages: apiMessages, max_tokens: maxTokens },
+      success: function (res) { callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res); },
+      fail: function () { callback(false, null); }
+    });
+  },
+
+  _tryProxy: function (apiMessages, callback) {
     wx.request({
       url: SERVER + '/api/chat',
-      method: 'POST', timeout: 120000,
+      method: 'POST', timeout: 15000,
       header: { 'Content-Type': 'application/json' },
       data: { messages: apiMessages },
-      success: function (res) { that._handleResponse(res); },
-      fail: function () {
-        var aiMsg = { id: ++msgIdCounter, role: 'ai', content: '网络请求失败，请检查网络后重试。' };
-        that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
-        that.scrollToBottom();
-      }
+      success: function (res) { callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res); },
+      fail: function () { callback(false, null); }
     });
+  },
+
+  _showError: function (msg) {
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
+    this.setData({ messages: this.data.messages.concat([aiMsg]), loading: false });
+    this.scrollToBottom();
   }
 });
