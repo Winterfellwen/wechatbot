@@ -32,6 +32,7 @@
   background: rgba(255, 255, 255, 0.08);
   top: -60rpx;
   right: -40rpx;
+  animation: pulse 3s ease-in-out infinite;
 }
 
 .login-content {
@@ -118,6 +119,7 @@
   background: rgba(255, 255, 255, 0.08);
   top: -60rpx;
   right: -30rpx;
+  animation: pulse 3.5s ease-in-out infinite 0.3s;
 }
 
 .profile-info {
@@ -177,14 +179,16 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 20rpx;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
   min-height: 44rpx;
   display: flex;
   align-items: center;
+  animation: pulse 2s ease-in-out 3;
 }
 
 .edit-badge:active {
   background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
 }
 
 .edit-badge-text {
@@ -258,16 +262,18 @@
   align-items: center;
   padding: 32rpx 20rpx;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
   min-height: 100rpx;
 }
 
 .action-item:active {
   background: #F8FAFC;
+  transform: scale(0.97);
 }
 
 .action-item-danger:active {
   background: #FEF2F2;
+  transform: scale(0.97);
 }
 
 .action-icon-wrap {
