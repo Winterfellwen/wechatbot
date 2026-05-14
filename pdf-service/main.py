@@ -254,7 +254,11 @@ async def edit_pdf(request: Request):
             for page in doc:
                 page.set_rotation((page.rotation or 0) + rot_angle)
         elif op == "merge":
-            doc.insert_pdf(doc)
+            new_doc = fitz.open()
+            new_doc.insert_pdf(doc)
+            new_doc.insert_pdf(doc)
+            doc.close()
+            doc = new_doc
         else:
             doc.close()
             raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
