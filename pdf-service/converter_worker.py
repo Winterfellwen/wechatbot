@@ -59,11 +59,22 @@ def repair_docx(path: Path):
 
 # ========== ZIP-level DOCX merge (preserves images) ==========
 
-def _next_id(existing, prefix='rId'):
+def _next_rId(existing):
     n = 1
-    while f'{prefix}{n}' in existing:
+    while True:
+        c = f'rId{n}'
+        if c not in existing:
+            return c
         n += 1
-    return f'{prefix}{n}'
+
+def _next_media_num(existing):
+    max_n = 0
+    import re
+    for name in existing:
+        m = re.match(r'image(\d+)\.', name)
+        if m:
+            max_n = max(max_n, int(m.group(1)))
+    return max_n + 1
 
 def merge_docx(chunk_paths, output_path):
     """Merge DOCX chunks preserving images via ZIP-level manipulation."""
@@ -127,7 +138,7 @@ def merge_docx(chunk_paths, output_path):
                             # Add rel to base
                             rels_root.append(rel)
                         else:
-                            new_id = _next_id(existing_rIds)
+                            new_id = _next_rId(existing_rIds)
                             rId_map[old_id] = new_id
                             existing_rIds.add(new_id)
                             rel.set('Id', new_id)
@@ -138,11 +149,8 @@ def merge_docx(chunk_paths, output_path):
                     media_name = target.split('/')[-1]
                     ext = media_name.rsplit('.', 1)[-1] if '.' in media_name else 'png'
 
-                    new_media_name = _next_id(existing_media, 'image')
-                    if '.' in media_name:
-                        new_media_name = f'{new_media_name}.{ext}'
-                    else:
-                        new_media_name = str(new_media_name)
+                    new_num = _next_media_num(existing_media)
+                    new_media_name = f'image{new_num}.{ext}'
 
                     media_data = z.read(f'word/{target}')
                     (media_dir / new_media_name).write_bytes(media_data)
@@ -155,8 +163,7 @@ def merge_docx(chunk_paths, output_path):
                         ext_node.set('ContentType', f'image/{ext}')
                         registered_exts.add(ext)
 
-                    # New rId
-                    new_id = _next_id(existing_rIds)
+                    new_id = _next_rId(existing_rIds)
                     existing_rIds.add(new_id)
                     rId_map[old_id] = new_id
 
