@@ -60,16 +60,9 @@
       <view wx:if="{{item.role === 'user'}}" class="msg-row user">
         <view class="msg-content user-msg-content">
           <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
-            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
+            <text wx:if="{{item.content}}" class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
+            <image wx:if="{{item.imageUrl}}" class="bubble-image" src="{{item.imageUrl}}" mode="widthFix" bindtap="previewImage" data-url="{{item.imageUrl}}"></image>
           </view>
-          <!-- 图片消息 -->
-          <image 
-            wx:if="{{item.imageUrl}}" 
-            class="msg-image user-img" 
-            src="{{item.imageUrl}}" 
-            mode="widthFix" 
-            bindtap="previewImage" 
-            data-url="{{item.imageUrl}}"></image>
         </view>
         <view class="user-avatar-wrapper">
           <view class="avatar user-avatar">
@@ -101,17 +94,6 @@
 
     <view class="list-bottom" id="msg-bottom"></view>
   </scroll-view>
-
-  <!-- 快捷问题 -->
-  <view wx:if="{{messages.length <= 1 && !loading}}" class="quick-section">
-    <text class="quick-title">试试这样问</text>
-    <scroll-view class="quick-asks" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="quick-tag" bindtap="onQuickAsk" data-q="帮我解释一下这个语法">帮我解释这个语法</view>
-      <view class="quick-tag" bindtap="onQuickAsk" data-q="这道题怎么做？">这道题怎么做</view>
-      <view class="quick-tag" bindtap="onQuickAsk" data-q="帮我翻译这段话">帮我翻译</view>
-      <view class="quick-tag" bindtap="onQuickAsk" data-q="检查一下语法">检查语法</view>
-    </scroll-view>
-  </view>
 
   <!-- 底部输入栏 -->
   <view class="input-section">

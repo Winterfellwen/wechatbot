@@ -258,6 +258,15 @@
   color: #FFFFFF;
 }
 
+/* 气泡内图片 */
+.bubble-image {
+  display: block;
+  max-width: 300rpx;
+  max-height: 400rpx;
+  border-radius: 16rpx;
+  margin: 4rpx 0;
+}
+
 /* ========== 图片消息 ========== */
 .msg-image {
   max-width: 380rpx;
@@ -313,45 +322,6 @@
     transform: translateY(-8rpx);
     opacity: 1;
   }
-}
-
-/* ========== 快捷问题 ========== */
-.quick-section {
-  padding: 0 32rpx 16rpx;
-  flex-shrink: 0;
-}
-
-.quick-title {
-  font-size: 22rpx;
-  color: #999999;
-  margin-bottom: 16rpx;
-  display: block;
-}
-
-.quick-asks {
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-}
-
-.quick-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 16rpx 28rpx;
-  background: #FFFFFF;
-  border-radius: 100rpx;
-  font-size: 26rpx;
-  color: #2563EB;
-  margin-right: 16rpx;
-  white-space: nowrap;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-  border: 1rpx solid rgba(37, 99, 235, 0.12);
-  transition: all 0.2s ease;
-}
-
-.quick-tag:active {
-  transform: scale(0.96);
-  background: rgba(37, 99, 235, 0.08);
-  border-color: rgba(37, 99, 235, 0.3);
 }
 
 /* ========== 底部输入区 ========== */

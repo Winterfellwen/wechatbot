@@ -69,12 +69,6 @@ Page({
     });
   },
 
-  onQuickAsk: function (e) {
-    var q = e.currentTarget.dataset.q;
-    this.setData({ inputText: q, hasInput: true });
-    this.sendMessage(q, '');
-  },
-
   chooseImage: function () {
     var that = this;
     wx.chooseImage({
