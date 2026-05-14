@@ -56,7 +56,7 @@ function createRetrier(page, options) {
         function retry(reason) {
           if (!active) return;
           if (expireCheck()) return;
-          updateProgress('重试中 第' + attempt + '次' + (reason ? ' - ' + reason : ''));
+          updateProgress('运行中 第' + attempt + '次' + (reason ? ' - ' + reason : ''));
           setTimeout(run, 2000);
         },
         function stop(msg) {

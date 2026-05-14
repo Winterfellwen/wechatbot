@@ -399,3 +399,15 @@
   color: rgba(255, 255, 255, 0.6);
   font-weight: 300;
 }
+
+/* ========== 底部注脚 ========== */
+.footer {
+  text-align: center;
+  padding: 40rpx 24rpx 80rpx;
+}
+
+.footer-text {
+  font-size: 22rpx;
+  color: #94A3B8;
+  line-height: 1.5;
+}

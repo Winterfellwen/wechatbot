@@ -78,4 +78,9 @@
       </view>
     </view>
   </view>
+
+  <!-- 底部注脚 -->
+  <view class="footer">
+    <text class="footer-text">温信锐(Peter Wen)AI功能测试小程序</text>
+  </view>
 </view>
