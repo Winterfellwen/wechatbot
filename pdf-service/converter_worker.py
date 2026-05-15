@@ -13,8 +13,8 @@ R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 CT = 'http://schemas.openxmlformats.org/package/2006/content-types'
 
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
-CHUNK_MAX_PAGES = int(os.environ.get("CHUNK_MAX_PAGES", "15"))
-CHUNK_MAX_SIZE = int(os.environ.get("CHUNK_MAX_SIZE", "15"))  # MB
+CHUNK_MAX_PAGES = int(os.environ.get("CHUNK_MAX_PAGES", "10"))   # pages per chunk
+CHUNK_MAX_SIZE = int(os.environ.get("CHUNK_MAX_SIZE", "5"))     # MB per chunk
 
 def find_libreoffice() -> str | None:
     env = os.environ.get("LIBREOFFICE_PATH")
@@ -238,23 +238,25 @@ def pdf_to_docx(input_path, output_path):
     print(f"[worker] Splitting into {num_chunks} chunks (~{ppc}p each)", flush=True)
     chunk_pdfs, chunk_docxs = [], []
     try:
-        for ci in range(num_chunks):
-            sp = ci * ppc; ep = min(sp + ppc, num_pages)
-            cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
-            cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
-            chunk_pdfs.append(cp); chunk_docxs.append(cd)
+    for ci in range(num_chunks):
+        t_chunk = time.time()
+        sp = ci * ppc; ep = min(sp + ppc, num_pages)
+        cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
+        cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
+        chunk_pdfs.append(cp); chunk_docxs.append(cd)
 
-            src = fitz.open(str(input_path))
-            dst = fitz.open()
-            dst.insert_pdf(src, from_page=sp, to_page=ep-1)
-            dst.save(str(cp), garbage=4, deflate=True)
-            dst.close(); src.close(); gc.collect()
-            print(f"[worker]  Chunk {ci+1}: p{sp+1}-{ep} -> {cp.name}", flush=True)
+        src = fitz.open(str(input_path))
+        dst = fitz.open()
+        dst.insert_pdf(src, from_page=sp, to_page=ep-1)
+        dst.save(str(cp), garbage=4, deflate=True)
+        dst.close(); src.close(); gc.collect()
+        print(f"[worker]  Chunk {ci+1}: p{sp+1}-{ep} -> {cp.name} ({cp.stat().st_size//1024}KB) split={time.time()-t_chunk:.1f}s", flush=True)
 
-            cv = Converter(str(cp))
-            cv.convert(str(cd))
-            cv.close(); gc.collect()
-            print(f"[worker]  Chunk DOCX: {cd.name} ({cd.stat().st_size//1024}KB)", flush=True)
+        cv = Converter(str(cp))
+        cv.convert(str(cd))
+        cv.close(); gc.collect()
+        csz = cd.stat().st_size // 1024 if cd.exists() else 0
+        print(f"[worker]  Chunk {ci+1} DOCX: {cd.name} ({csz}KB) convert={time.time()-t_chunk:.1f}s", flush=True)
 
         print(f"[worker] Merging {num_chunks} DOCX with image preservation...", flush=True)
         merge_docx(chunk_docxs, output_path)
@@ -366,6 +368,11 @@ def docx_to_pdf(in_path, out_path):
         shutil.rmtree(tmp,ignore_errors=True); shutil.rmtree(home,ignore_errors=True); kill_lo(); gc.collect()
 
 
+def mem_mb():
+    try:
+        import os; return int(open('/proc/self/status').read().split('VmRSS:')[1].split()[0]) // 1024
+    except: return -1
+
 def main():
     if len(sys.argv)!=5:
         print("Usage: converter_worker.py <input_path> <output_path> <from> <to>",file=sys.stderr); sys.exit(1)
@@ -374,13 +381,13 @@ def main():
     try:
         t0=time.time()
         s = in_path.stat().st_size
-        print(f"[worker] start {from_fmt}->{to_fmt} {in_path.name} {s//1024}KB",flush=True)
+        print(f"[worker] start {from_fmt}->{to_fmt} {in_path.name} {s//1024}KB RSS={mem_mb()}MB",flush=True)
         if from_fmt=="pdf" and to_fmt=="docx": pdf_to_docx(in_path, out_path)
         elif from_fmt=="docx" and to_fmt=="pdf": docx_to_pdf(in_path, out_path)
         else: print(f"Unsupported: {from_fmt}->{to_fmt}",file=sys.stderr); sys.exit(1)
-        print(f"[worker] done in {time.time()-t0:.1f}s out={out_path.name} sz={out_path.stat().st_size}",flush=True)
+        print(f"[worker] done in {time.time()-t0:.1f}s out={out_path.name} sz={out_path.stat().st_size} RSS={mem_mb()}MB",flush=True)
         sys.exit(0)
     except Exception as e:
-        print(f"[worker] error: {e}",file=sys.stderr,flush=True); sys.exit(1)
+        print(f"[worker] error: {e} RSS={mem_mb()}MB",file=sys.stderr,flush=True); sys.exit(1)
 
 if __name__=="__main__": main()

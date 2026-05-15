@@ -437,19 +437,25 @@ function _backendForJob(jobId) {
 // PDF conversion endpoint - submit job, return job_id immediately (client polls)
 fs.mkdirSync(config.storage.uploadDir, { recursive: true });
 fs.mkdirSync(config.storage.serveDir, { recursive: true });
-const upload = multer({ dest: config.storage.uploadDir + '/' });
+const upload = multer({
+  dest: config.storage.uploadDir + '/',
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
+});
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
   const { from, to } = req.body;
   const toFmt = to || 'docx';
   const backend = _pickBackend();
+  const t0 = Date.now();
 
-    try {
+  try {
     const fileBuffer = fs.readFileSync(req.file.path);
+    const sizeKB = Math.round(fileBuffer.length / 1024);
     const fileBase64 = fileBuffer.toString('base64');
+    console.log(`[pdf] submit ${sizeKB}KB ${req.file.originalname || '?'} to ${backend}`);
 
-    // Submit job to Python with retry (3 min total, 60s per attempt)
+    // Submit job to Python with retry (3 min total, 120s per attempt for large files)
     const submitRes = await retryWithTimeout(async () => {
       const res = await fetchWithTimeout(backend + '/convert', {
         method: 'POST',
@@ -460,22 +466,22 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
           from_fmt: from || 'pdf',
           to_fmt: toFmt
         })
-      }, 60000);
+      }, 120000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error(errText);
       }
       return res;
     }, 180000, 5000);
-    
+
     fs.unlinkSync(req.file.path);
 
     const { job_id } = await submitRes.json();
     _jobBackends[job_id] = backend;
-    // Return job_id immediately; client polls /api/pdf/status/:job_id
+    console.log(`[pdf] submit OK job=${job_id} backend=${backend} (${Date.now()-t0}ms)`);
     return res.json({ job_id: job_id, status_url: '/api/pdf/status/' + job_id });
   } catch (err) {
-    console.error('Convert error:', err.message);
+    console.error(`[pdf] submit FAIL (${Date.now()-t0}ms):`, err.message);
     res.status(500).json({ error: err.message.substring(0, 200) });
   }
 });
@@ -484,20 +490,22 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 app.get('/api/pdf/status/:jobId', async (req, res) => {
   const { jobId } = req.params;
   const backend = _backendForJob(jobId);
+  const t0 = Date.now();
   try {
     const statusRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 30000);
+      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 60000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error('查询失败: ' + errText.substring(0, 100));
       }
       return res;
-    }, 60000, 3000);
+    }, 300000, 3000);
 
     const status = await statusRes.json();
     if (status.status === 'pending' || status.status === 'processing') {
       return res.json({ status: 'processing' });
     } else if (status.status === 'done') {
+      console.log(`[pdf] status done job=${jobId} (${Date.now()-t0}ms)`);
       // Download result from Python and cache locally
       const dlRes = await retryWithTimeout(async () => {
         const res = await fetchWithTimeout(backend + '/download/' + status.result, {}, 120000);
@@ -516,16 +524,18 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       }
       const outFile = config.storage.serveDir + '/conv_' + jobId;
       fs.writeFileSync(outFile, Buffer.from(buffer));
+      console.log(`[pdf] download cached job=${jobId} (${Math.round(buffer.byteLength/1024)}KB, ${Date.now()-t0}ms)`);
       return res.json({
         status: 'done',
          url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}`
       });
     } else if (status.status === 'error') {
+      console.error(`[pdf] status error job=${jobId}:`, status.error);
       return res.json({ status: 'error', error: status.error || '转换失败' });
     }
     return res.json(status);
   } catch (err) {
-    console.error('Status poll error:', err.message);
+    console.error(`[pdf] status FAIL job=${jobId} (${Date.now()-t0}ms):`, err.message);
     res.status(500).json({ error: err.message.substring(0, 200) });
   }
 });
@@ -537,6 +547,8 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     const { op, text, angle } = req.body;
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
+    const t0 = Date.now();
+    console.log(`[pdf] edit op=${op} size=${Math.round(fileBuffer.length/1024)}KB backend=${backend}`);
 
     var body = new URLSearchParams();
     body.append('file_base64', fileBase64);
