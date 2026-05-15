@@ -216,6 +216,17 @@ def pdf_to_docx(in_path, out_path):
     """LibreOffice first (fast), fallback to pdf2docx (reliable)."""
     lo = find_libreoffice()
     if lo:
+        # Clean PDF: remove object streams (PDF 1.5+) that LibreOffice can't parse
+        import fitz
+        clean_path = UPLOAD_DIR / f"clean_{uuid.uuid4().hex[:8]}.pdf"
+        try:
+            src = fitz.open(str(in_path))
+            src.save(str(clean_path), garbage=4, deflate=False, clean=True)
+            src.close()
+        except Exception as e:
+            print(f"[worker] PDF clean failed ({e}), using original", flush=True)
+            clean_path = in_path
+
         tag = uuid.uuid4().hex[:8]
         home = UPLOAD_DIR / f"lo_home_{tag}"; home.mkdir(parents=True, exist_ok=True)
         tmp = UPLOAD_DIR / f"lo_out_{tag}"; tmp.mkdir(exist_ok=True)
@@ -226,7 +237,7 @@ def pdf_to_docx(in_path, out_path):
             env["SAL_DISABLE_OPENGL_CHECK"] = "1"
             env["SAL_VIDEO_DISABLE_ACCELERATE"] = "1"
             cmd = [lo, f"-env:UserInstallation=file://{home}", "--headless", "--norestore",
-                   "--nofirststartwizard", "--convert-to", "docx:MS Word 2007 XML", "--outdir", str(tmp), str(in_path)]
+                   "--nofirststartwizard", "--convert-to", "docx:MS Word 2007 XML", "--outdir", str(tmp), str(clean_path)]
             kill_lo()
             t0 = time.time()
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
@@ -240,6 +251,7 @@ def pdf_to_docx(in_path, out_path):
             else:
                 print(f"[worker] LibreOffice failed, falling back to pdf2docx. stderr: {(r.stderr or '')[:300]}", flush=True)
         finally:
+            if clean_path != in_path and clean_path.exists(): safe_unlink(clean_path)
             shutil.rmtree(tmp, ignore_errors=True); shutil.rmtree(home, ignore_errors=True); kill_lo(); gc.collect()
 
     # Fallback: pdf2docx with chunking
