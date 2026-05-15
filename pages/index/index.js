@@ -70,6 +70,8 @@ Page({
       wx.navigateTo({ url: '/pdf/pages/index/index' });
     } else if (type === 'teacher') {
       wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
+    } else if (type === 'ai-convert') {
+      wx.navigateTo({ url: '/ai-convert/pages/index/index' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
     }

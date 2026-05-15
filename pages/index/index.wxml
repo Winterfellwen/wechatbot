@@ -55,6 +55,14 @@
         <text class="entry-title">PDF工具</text>
         <text class="entry-desc">PDF处理工具</text>
       </view>
+
+      <view class="entry-card card-ai" bindtap="handleEntryTap" data-type="ai-convert">
+        <view class="card-icon-wrap icon-bg-ai">
+          <text class="icon-ai-text">AI</text>
+        </view>
+        <text class="entry-title">AI 文档转换</text>
+        <text class="entry-desc">AI自动优化格式</text>
+      </view>
     </view>
   </view>
 
