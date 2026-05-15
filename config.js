@@ -26,6 +26,11 @@ const config = {
     keepaliveInterval: 10 * 60 * 1000, // 10 minutes
   },
 
+  // AI 文档转换服务配置
+  docAiService: {
+    url: process.env.DOC_AI_SERVICE_URL || 'http://localhost:3002',
+  },
+
   // OpenRouter API 配置
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
