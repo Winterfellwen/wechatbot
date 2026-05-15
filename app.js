@@ -8,6 +8,52 @@ App({
     isLoggedIn: false
   },
 
+  onLaunch: function() {
+    this.checkAutoDownload();
+  },
+
+  onShow: function() {
+    this.checkAutoDownload();
+  },
+
+  checkAutoDownload: function() {
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    var pendingDownloads = records.filter(function(r) {
+      return r.status === 'done' && !r.downloaded && r.resultUrl;
+    });
+    if (pendingDownloads.length === 0) return;
+
+    var record = pendingDownloads[0];
+    this._autoDownload(record);
+  },
+
+  _autoDownload: function(record) {
+    var that = this;
+    wx.downloadFile({
+      url: CONFIG.SERVER + record.resultUrl,
+      success: function(res) {
+        if (res.statusCode === 200) {
+          var fs = wx.getFileSystemManager();
+          var savedPath = wx.env.USER_DATA_PATH + '/' + record.fileName;
+          try { fs.saveFileSync(res.tempFilePath, savedPath); } catch(e) { savedPath = res.tempFilePath; }
+          var records = wx.getStorageSync('pdf_task_records') || [];
+          for (var i = 0; i < records.length; i++) {
+            if (records[i].jobId === record.jobId) {
+              records[i].localPath = savedPath;
+              records[i].downloaded = true;
+              break;
+            }
+          }
+          wx.setStorageSync('pdf_task_records', records);
+          wx.showToast({ title: '文件已自动下载', icon: 'success' });
+        }
+      },
+      fail: function() {
+        console.log('Auto download failed for job:', record.jobId);
+      }
+    });
+  },
+
   onShareAppMessage: function () {
     return { title: '多功能小机器人', path: '/pages/index/index' };
   },
