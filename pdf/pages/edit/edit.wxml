@@ -32,7 +32,7 @@
   </view>
 
   <view class="do-btn-wrap">
-    <view class="do-btn {{processing ? 'disabled' : ''}}" bindtap="doOperation">{{processing ? '处理中...' : '开始处理'}}</view>
+    <view class="do-btn {{processing ? 'disabled' : ''}} {{uploading ? 'disabled' : ''}}" bindtap="doOperation">{{processing ? (progressText || '处理中...') : '开始处理'}}</view>
   </view>
 
   <view wx:if="{{resultUrl}}" class="result-section">
