@@ -2,6 +2,7 @@ import os
 import sys
 import base64
 import uuid
+import json
 import asyncio
 import subprocess
 import shutil
@@ -49,10 +50,33 @@ MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT", "1"))  # one at a time
 JOB_CLEANUP_AGE = 3600
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
 OUTPUT_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-outputs"
+JOBS_FILE = UPLOAD_DIR / "jobs.json"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # Track memory pressure — if /tmp is nearly full, reject new jobs
 _LOW_MEM_MODE = False
+
+
+def _save_jobs():
+    """Persist jobs dict to disk."""
+    try:
+        JOBS_FILE.write_text(json.dumps(jobs))
+    except Exception as e:
+        print(f"[jobs] save failed: {e}", flush=True)
+
+
+def _load_jobs():
+    """Load jobs dict from disk on startup."""
+    global jobs
+    if JOBS_FILE.exists():
+        try:
+            jobs = json.loads(JOBS_FILE.read_text())
+            print(f"[jobs] loaded {len(jobs)} jobs from disk", flush=True)
+        except Exception as e:
+            print(f"[jobs] load failed: {e}", flush=True)
+            jobs = {}
+    else:
+        jobs = {}
 
 
 def find_libreoffice() -> str | None:
@@ -108,6 +132,7 @@ def _cleanup_old_jobs():
             _safe_unlink(p)
         for p in Path(OUTPUT_DIR).glob(f"{jid}.*"):
             _safe_unlink(p)
+    _save_jobs()
 
 
 def _write_input(job_id: str, file_data: bytes, ext_in: str) -> Path:
@@ -132,7 +157,30 @@ async def _queue_worker():
 
 @app.on_event("startup")
 async def _start_workers():
+    _load_jobs()
     asyncio.create_task(_queue_worker())
+    # Re-queue pending jobs from disk
+    pending = [(jid, j) for jid, j in jobs.items() if j.get("status") in ("queued", "processing")]
+    if pending:
+        print(f"[jobs] re-queueing {len(pending)} pending jobs", flush=True)
+        for jid, j in pending:
+            # Check if input file still exists
+            input_path = UPLOAD_DIR / f"{jid}_in.*"
+            matches = list(UPLOAD_DIR.glob(f"{jid}_in.*"))
+            if matches:
+                input_file = matches[0]
+                ext_in = input_file.suffix[1:] if input_file.suffix else "pdf"
+                filename = j.get("filename", f"{jid}.{ext_in}")
+                from_fmt = j.get("from_fmt", "pdf")
+                to_fmt = j.get("to_fmt", "docx")
+                j["status"] = "queued"
+                await _queue.put((jid, input_file, filename, from_fmt, to_fmt))
+                _save_jobs()
+            else:
+                # Input file lost (server restart cleared /tmp)
+                j["status"] = "error"
+                j["error"] = "服务器重启，输入文件丢失，请重新上传"
+                _save_jobs()
 
 
 class ConvertRequest(BaseModel):
@@ -170,8 +218,10 @@ async def convert(req: ConvertRequest):
     pos = _queue_position
 
     jobs[job_id] = {
-        "status": "queued", "queue_position": pos, "size": size, "created_at": time.time()
+        "status": "queued", "queue_position": pos, "size": size, "created_at": time.time(),
+        "filename": req.filename, "from_fmt": req.from_fmt, "to_fmt": req.to_fmt
     }
+    _save_jobs()
 
     await _queue.put((job_id, input_path, req.filename, req.from_fmt, req.to_fmt))
 
@@ -347,12 +397,14 @@ def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str,
     input_path = Path(input_path_str)
     if not input_path.exists():
         jobs[job_id] = {"status": "error", "error": "Input file lost", "created_at": time.time()}
+        _save_jobs()
         return
 
     out_name = f"{job_id}.{to_fmt}"
     output_path = OUTPUT_DIR / out_name
     try:
         jobs[job_id]["status"] = "processing"
+        _save_jobs()
 
         proc = subprocess.run(
             [sys.executable, str(CONVERTER_SCRIPT), str(input_path), str(output_path), from_fmt, to_fmt],
@@ -372,11 +424,15 @@ def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str,
         if not output_path.exists():
             raise RuntimeError("Worker finished but output file not found")
 
-        jobs[job_id] = {"status": "done", "result": out_name, "created_at": time.time()}
+        jobs[job_id] = {"status": "done", "result": out_name, "created_at": time.time(),
+                        "filename": filename, "from_fmt": from_fmt, "to_fmt": to_fmt}
+        _save_jobs()
     except subprocess.TimeoutExpired:
         jobs[job_id] = {"status": "error", "error": f"Conversion timed out ({CONVERT_TIMEOUT}s)", "created_at": time.time()}
+        _save_jobs()
     except Exception as e:
         jobs[job_id] = {"status": "error", "error": str(e), "created_at": time.time()}
+        _save_jobs()
     finally:
         _safe_unlink(input_path)
 
