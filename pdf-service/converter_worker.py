@@ -368,27 +368,66 @@ def kill_lo():
     except: pass
 
 def docx_to_pdf(in_path, out_path):
+    """DOCX → images → PDF: render each page as image, embed in PDF."""
+    import fitz
+    
+    # Step 1: DOCX → intermediate PDF via LibreOffice
     lo = find_libreoffice()
     if not lo: raise RuntimeError("LibreOffice not found")
+    
     tag = uuid.uuid4().hex[:8]
     home = UPLOAD_DIR/f"lo_home_{tag}"; home.mkdir(parents=True,exist_ok=True)
     tmp = UPLOAD_DIR/f"lo_out_{tag}"; tmp.mkdir(exist_ok=True)
+    inter_pdf = None
     try:
         env = os.environ.copy()
         for k in ("SAL_USE_VCLPLUGIN",): env.pop(k,None)
         env["HOME"]=str(home); env["SAL_DISABLE_OPENGL_CHECK"]="1"
-        env["SAL_VIDEO_DISABLE_ACCELERATE"]="1"; env["LIBREOFFICE_MEMORY_MULTIPLIER"]="0.3"
+        env["SAL_VIDEO_DISABLE_ACCELERATE"]="1"
         cmd=[lo,f"-env:UserInstallation=file://{home}","--headless","--norestore",
              "--nofirststartwizard","--convert-to","pdf:writer_pdf_Export","--outdir",str(tmp),str(in_path)]
         kill_lo()
+        t0 = time.time()
         r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
-        if r.returncode!=0:
+        print(f"[worker] LO docx→pdf: rc={r.returncode} time={time.time()-t0:.1f}s", flush=True)
+        if r.returncode!=0 or not list(tmp.glob("*.pdf")):
             kill_lo(); r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
+            print(f"[worker] LO retry: rc={r.returncode}", flush=True)
         pfs=list(tmp.glob("*.pdf"))
-        if not pfs: raise RuntimeError(f"LO no PDF. stderr: {(r.stderr or '')[:1000]}")
-        if pfs[0].stat().st_size==0: raise RuntimeError("LO empty PDF")
-        shutil.copy2(pfs[0], out_path)
+        if not pfs: raise RuntimeError(f"LO no PDF. stderr: {(r.stderr or '')[:500]}")
+        inter_pdf = pfs[0]
+        print(f"[worker] Intermediate PDF: {inter_pdf.name} ({inter_pdf.stat().st_size//1024}KB)", flush=True)
+        
+        # Step 2: Render each page as high-res image
+        src = fitz.open(str(inter_pdf))
+        num_pages = len(src)
+        print(f"[worker] Rendering {num_pages} pages as images...", flush=True)
+        
+        # Step 3: Create new PDF with images
+        dst = fitz.open()
+        zoom = 2.0  # 2x = 144 DPI for good quality
+        mat = fitz.Matrix(zoom, zoom)
+        
+        for i in range(num_pages):
+            page = src[i]
+            pix = page.get_pixmap(matrix=mat)
+            
+            # Create new page with same dimensions
+            new_page = dst.new_page(width=page.rect.width, height=page.rect.height)
+            
+            # Insert image covering the whole page
+            img_rect = fitz.Rect(0, 0, page.rect.width, page.rect.height)
+            new_page.insert_image(img_rect, pixmap=pix)
+            
+            pix = None  # free memory
+            
+        src.close()
+        dst.save(str(out_path), garbage=4, deflate=True)
+        dst.close()
+        print(f"[worker] Image-PDF created: {out_path.stat().st_size//1024}KB", flush=True)
+        
     finally:
+        if inter_pdf and inter_pdf.exists(): safe_unlink(inter_pdf)
         shutil.rmtree(tmp,ignore_errors=True); shutil.rmtree(home,ignore_errors=True); kill_lo(); gc.collect()
 
 
