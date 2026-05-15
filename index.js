@@ -493,13 +493,13 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
   const t0 = Date.now();
   try {
     const statusRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 60000);
+      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 120000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error('查询失败: ' + errText.substring(0, 100));
       }
       return res;
-    }, 300000, 3000);
+    }, 600000, 3000);
 
     const status = await statusRes.json();
     if (status.status === 'pending' || status.status === 'processing') {
@@ -508,10 +508,10 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       console.log(`[pdf] status done job=${jobId} (${Date.now()-t0}ms)`);
       // Download result from Python and cache locally
       const dlRes = await retryWithTimeout(async () => {
-        const res = await fetchWithTimeout(backend + '/download/' + status.result, {}, 120000);
+        const res = await fetchWithTimeout(backend + '/download/' + status.result, {}, 300000);
         if (!res.ok) throw new Error('下载转换结果失败');
         return res;
-      }, 180000, 5000);
+      }, 600000, 5000);
 
       const buffer = await dlRes.arrayBuffer();
       // Verify file header to avoid "bad magic number" errors

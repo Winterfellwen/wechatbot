@@ -293,7 +293,7 @@ async def health():
 # fully reclaimed when the worker exits. The main process stays lean.
 
 CONVERTER_SCRIPT = Path(__file__).parent / "converter_worker.py"
-CONVERT_TIMEOUT = int(os.environ.get("CONVERT_TIMEOUT", 360))  # 6 min per conversion
+CONVERT_TIMEOUT = int(os.environ.get("CONVERT_TIMEOUT", 600))  # 10 min per conversion
 
 
 def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str, to_fmt: str):

@@ -3,7 +3,7 @@
 
 function createRetrier(page, options) {
   options = options || {};
-  var TOTAL_TIMEOUT = options.totalTimeout || 300000;
+  var TOTAL_TIMEOUT = options.totalTimeout || 600000;
   var startTime = Date.now();
   var active = true;
 
