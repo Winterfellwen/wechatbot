@@ -22,23 +22,9 @@ Page({
   },
 
   onUnload: function() {
-    if (this.data.uploading) {
-      wx.showModal({
-        title: '提示',
-        content: '上传已被取消，任务已保存至记录页',
-        showCancel: false
-      });
-      if (this.data.currentJobId) {
-        this._saveTaskRecord({
-          jobId: this.data.currentJobId,
-          type: 'convert',
-          fileName: this.data.fileName,
-          from: this.data.fromFormat,
-          to: this.data.toFormat,
-          status: 'processing',
-          createdAt: Date.now()
-        });
-      }
+    // 页面卸载时清理状态，不阻塞用户
+    if (this.data.uploading || this.data.converting) {
+      this.setData({ uploading: false, converting: false, progressText: '' });
     }
   },
 
@@ -155,7 +141,7 @@ Page({
             createdAt: Date.now(),
             resultUrl: '/api/pdf/status/' + data.job_id
           });
-          wx.showToast({ title: '已加入队列，可在记录页查看', icon: 'none', duration: 2000 });
+          wx.showToast({ title: '文件已上传，完成后会有提示，或者可以在纪录里找到下载', icon: 'none', duration: 3000 });
           that._retryPoll(r, data.job_id);
         },
         fail: function() {
