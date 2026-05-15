@@ -179,41 +179,59 @@ page {
   box-shadow: 0 4rpx 16rpx rgba(99, 102, 241, 0.3);
 }
 
-/* ========== 编辑区域 ========== */
-.edit-section { padding: 0 32rpx 24rpx; }
-.edit-card {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  background: var(--bg-card);
-  border: 2rpx solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 24rpx;
-  margin-bottom: 16rpx;
-  transition: all 0.2s;
+/* ========== 编辑操作列表 ========== */
+.edit-op-list { padding: 0 32rpx 24rpx; display: flex; flex-direction: column; gap: 16rpx; }
+.edit-op-card {
+  display: flex; align-items: center; gap: 20rpx;
+  background: var(--bg-card); border: 2rpx solid var(--border);
+  border-radius: var(--radius-sm); padding: 24rpx;
 }
-.edit-card:active {
-  transform: scale(0.98);
-  border-color: var(--primary);
-  background: #fafbff;
+.edit-op-card.selected { border-color: var(--primary); background: #fafbff; }
+.edit-op-icon {
+  width: 64rpx; height: 64rpx; border-radius: 14rpx;
+  background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+  font-size: 32rpx; color: var(--primary); flex-shrink: 0;
 }
-.edit-card-icon {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 14rpx;
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  color: var(--primary);
-  flex-shrink: 0;
+.edit-op-card.selected .edit-op-icon { background: var(--primary); color: #fff; }
+.edit-op-info { flex: 1; }
+.edit-op-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
+.edit-op-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
+
+/* ========== 合并入口 ========== */
+.merge-entry {
+  display: flex; align-items: center; gap: 20rpx;
+  background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
+  border: 2rpx solid var(--primary-light);
+  border-radius: var(--radius-sm); padding: 24rpx;
+  margin: 0 32rpx 24rpx;
 }
-.edit-card-info { flex: 1; min-width: 0; }
-.edit-card-title { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
-.edit-card-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
-.edit-card-arrow { font-size: 36rpx; color: var(--text-muted); flex-shrink: 0; }
-.edit-tip { font-size: 22rpx; color: var(--text-muted); text-align: center; margin-top: 8rpx; }
+.merge-icon { font-size: 40rpx; color: var(--primary); }
+.merge-info { flex: 1; }
+.merge-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
+.merge-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
+.merge-arrow { font-size: 36rpx; color: var(--primary); }
+
+/* ========== 选项面板 ========== */
+.options-panel { padding: 0 32rpx 20rpx; }
+.opt-label { font-size: 26rpx; color: var(--text-secondary); display: block; margin-bottom: 12rpx; }
+.opt-input { border: 2rpx solid var(--border); border-radius: 12rpx; padding: 20rpx 24rpx; font-size: 30rpx; background: #fff; }
+
+/* ========== 处理按钮 ========== */
+.do-btn-wrap { padding: 20rpx 32rpx; }
+.do-btn {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  border-radius: 16rpx; padding: 28rpx; text-align: center;
+  color: #fff; font-size: 32rpx; font-weight: bold;
+}
+.do-btn.disabled { opacity: 0.5; }
+
+/* ========== 结果区域 ========== */
+.result-section { padding: 30rpx 32rpx; text-align: center; }
+.result-title { font-size: 30rpx; color: #22C55E; font-weight: bold; display: block; }
+.download-btn {
+  margin-top: 20rpx; background: #22C55E; border-radius: 14rpx;
+  padding: 24rpx; color: #fff; font-size: 28rpx; display: inline-block;
+}
 
 /* ========== 转换区域 ========== */
 .convert-section { 

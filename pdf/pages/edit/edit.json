@@ -1,1 +1,5 @@
-{ "navigationBarTitleText": "在线编辑" }
+{
+  "navigationBarTitleText": "合并 PDF",
+  "navigationBarBackgroundColor": "#6366F1",
+  "navigationBarTextStyle": "white"
+}

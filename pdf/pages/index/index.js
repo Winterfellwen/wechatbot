@@ -10,14 +10,20 @@ Page({
     toFormat: '',
     uploading: false,
     activeTab: 'convert',
-    targetOptions: []
+    targetOptions: [],
+    // 编辑功能状态
+    editOp: '',
+    textContent: '',
+    rotateAngle: 90,
+    editUploading: false,
+    editResultUrl: ''
   },
 
   onLoad: function() {},
 
   onUnload: function() {
-    if (this.data.uploading) {
-      this.setData({ uploading: false });
+    if (this.data.uploading || this.data.editUploading) {
+      this.setData({ uploading: false, editUploading: false });
     }
   },
 
@@ -35,6 +41,7 @@ Page({
     wx.setStorageSync('pdf_task_records', records);
   },
 
+  // === 转换功能 ===
   uploadFile: function() {
     var that = this;
     wx.chooseMessageFile({
@@ -57,8 +64,7 @@ Page({
 
         that.setData({
           fileName: name, filePath: file.path, fromFormat: fromFmt,
-          toFormat: targets[0].value, targetOptions: targets,
-          activeTab: 'convert', uploading: false
+          toFormat: targets[0].value, targetOptions: targets
         });
       }
     });
@@ -103,7 +109,6 @@ Page({
             that.setData({ uploading: false });
             return stop(data.error || '提交失败');
           }
-          // 保存任务记录
           that._saveTaskRecord({
             jobId: data.job_id,
             type: 'convert',
@@ -114,7 +119,6 @@ Page({
             createdAt: Date.now(),
             resultUrl: '/api/pdf/status/' + data.job_id
           });
-          // 重置页面
           that.setData({
             fileName: '', filePath: '', fromFormat: '', toFormat: '',
             targetOptions: [], uploading: false
@@ -132,23 +136,77 @@ Page({
     });
   },
 
+  clearFile: function() {
+    this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], uploading: false });
+  },
+
+  // === 编辑功能（水印、旋转） ===
+  selectEditOp: function(e) {
+    this.setData({ editOp: e.currentTarget.dataset.op, editResultUrl: '' });
+  },
+
+  onTextInput: function(e) { this.setData({ textContent: e.detail.value }); },
+
+  doEditOp: function() {
+    if (!this.data.filePath) { wx.showToast({ title: '请先上传文件', icon: 'none' }); return; }
+    if (!this.data.editOp) { wx.showToast({ title: '请选择操作', icon: 'none' }); return; }
+    if (this.data.editUploading) { wx.showToast({ title: '正在处理中', icon: 'none' }); return; }
+
+    var that = this;
+    that.setData({ editUploading: true });
+
+    var r = retry.createRetrier(that, { totalTimeout: 60000, maxRetries: 3 });
+
+    r.operate(function(retry, stop) {
+      wx.uploadFile({
+        url: SERVER + '/api/pdf/edit',
+        filePath: that.data.filePath,
+        name: 'file',
+        formData: {
+          op: that.data.editOp,
+          text: that.data.textContent || '',
+          angle: String(that.data.rotateAngle)
+        },
+        timeout: 60000,
+        success: function(res) {
+          that.setData({ editUploading: false });
+          var data = {};
+          try { data = JSON.parse(res.data); } catch(e) {}
+          if (data.url) {
+            that.setData({ editResultUrl: data.url });
+            wx.showToast({ title: '处理成功', icon: 'success' });
+          } else {
+            stop(data.error || '处理失败');
+          }
+        },
+        fail: function() {
+          that.setData({ editUploading: false });
+          retry('网络错误');
+        }
+      });
+    });
+  },
+
+  downloadEditResult: function() {
+    if (!this.data.editResultUrl) return;
+    wx.downloadFile({
+      url: this.data.editResultUrl,
+      success: function(res) {
+        wx.openDocument({ filePath: res.tempFilePath, showMenu: true, fileType: 'pdf' });
+      }
+    });
+  },
+
+  // === 导航 ===
   switchTab: function(e) {
     this.setData({ activeTab: e.currentTarget.dataset.tab });
   },
 
-  goEdit: function() {
-    wx.navigateTo({
-      url: '../edit/edit?file=' + encodeURIComponent(this.data.fileName) + '&path=' + encodeURIComponent(this.data.filePath)
-    });
+  goMerge: function() {
+    wx.navigateTo({ url: '../edit/edit' });
   },
 
   goRecords: function() {
-    wx.navigateTo({
-      url: '../records/records'
-    });
-  },
-
-  clearFile: function() {
-    this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], uploading: false });
+    wx.navigateTo({ url: '../records/records' });
   }
 });
