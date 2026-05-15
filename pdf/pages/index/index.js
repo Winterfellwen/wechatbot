@@ -22,9 +22,7 @@ Page({
   onLoad: function() {},
 
   onUnload: function() {
-    if (this.data.uploading || this.data.editUploading) {
-      this.setData({ uploading: false, editUploading: false });
-    }
+    // 页面卸载时不做任何操作，避免 webviewId 错误
   },
 
   _saveTaskRecord: function(record) {

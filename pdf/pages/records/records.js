@@ -4,8 +4,7 @@ var SERVER = CONFIG.SERVER;
 Page({
   data: {
     activeTab: 'all',
-    records: [],
-    polling: false
+    records: []
   },
 
   onLoad: function() {
@@ -23,7 +22,7 @@ Page({
   },
 
   onUnload: function() {
-    this._stopPolling();
+    // 页面卸载时不做任何操作，避免 webviewId 错误
   },
 
   _loadRecords: function() {
@@ -37,18 +36,18 @@ Page({
   },
 
   _startPolling: function() {
-    if (this.data.polling) return;
-    this.setData({ polling: true });
+    if (this._polling) return;
+    this._polling = true;
     this._poll();
   },
 
   _stopPolling: function() {
-    this.setData({ polling: false });
+    this._polling = false;
   },
 
   _poll: function() {
     var that = this;
-    if (!this.data.polling) return;
+    if (!this._polling) return;
 
     var records = wx.getStorageSync('pdf_task_records') || [];
     var pendingJobs = [];

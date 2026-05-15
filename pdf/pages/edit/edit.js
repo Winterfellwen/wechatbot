@@ -13,9 +13,7 @@ Page({
   },
 
   onUnload: function() {
-    if (this.data.processing) {
-      this.setData({ processing: false, progressText: '' });
-    }
+    // 页面卸载时不做任何操作，避免 webviewId 错误
   },
 
   _saveTaskRecord: function(record) {
