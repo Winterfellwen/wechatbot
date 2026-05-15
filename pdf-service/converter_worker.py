@@ -220,13 +220,28 @@ def pdf_to_docx(in_path, out_path):
     pdf = fitz.open(str(in_path))
     num_pages = len(pdf)
     file_mb = in_path.stat().st_size / (1024 * 1024)
-    print(f"[worker] pdf2docx: {num_pages}p {file_mb:.1f}MB", flush=True)
+
+    # Count images to adjust chunk size
+    total_images = sum(len(pdf[i].get_images()) for i in range(num_pages))
+    images_per_page = total_images / max(num_pages, 1)
+    print(f"[worker] pdf2docx: {num_pages}p {file_mb:.1f}MB {total_images}img ({images_per_page:.1f}img/p)", flush=True)
 
     # Smart chunk sizing: balance speed vs memory
-    # ~15 pages/chunk keeps memory ~300-350MB (safe on 512MB Render)
-    # Fewer chunks = less merge overhead = faster
-    est_mb_pp = max(file_mb / max(num_pages, 1), 0.05)
-    ppc = max(1, min(15, int(7.5 / est_mb_pp)))  # 7.5MB target per chunk
+    # Image-heavy PDFs need smaller chunks (images consume more memory)
+    # Text-heavy PDFs can use larger chunks
+    if images_per_page > 2:
+        # Image-heavy: smaller chunks to avoid OOM
+        ppc = max(3, min(8, int(15 / images_per_page)))
+        print(f"[worker] Image-heavy mode: ppc={ppc}", flush=True)
+    elif images_per_page > 0.5:
+        # Mixed content
+        ppc = max(5, min(12, int(20 / images_per_page)))
+        print(f"[worker] Mixed mode: ppc={ppc}", flush=True)
+    else:
+        # Text-heavy: larger chunks for speed
+        ppc = max(10, min(20, int(30 / max(images_per_page, 0.1))))
+        print(f"[worker] Text-heavy mode: ppc={ppc}", flush=True)
+
     num_chunks = math.ceil(num_pages / ppc)
     pdf.close(); gc.collect()
 
