@@ -14,7 +14,7 @@
       <view class="record-card" bindtap="openFile" data-idx="{{idx}}">
         <view class="record-header">
           <text class="record-icon">{{record.type === 'convert' ? '📄' : '✏️'}}</text>
-          <text class="record-name">{{record.fileName}}</text>
+          <text class="record-name">{{utils.getDisplayName(record)}}</text>
           <text class="record-del" data-idx="{{idx}}" catchtap="deleteRecord">×</text>
         </view>
         <view class="record-info">

@@ -30,9 +30,22 @@ function getFilteredRecords(records, activeTab) {
   return filtered;
 }
 
+function getDisplayName(record) {
+  if (!record) return '';
+  var name = record.fileName;
+  if (record.type === 'convert' && record.to) {
+    var dotIndex = name.lastIndexOf('.');
+    if (dotIndex > 0) {
+      name = name.substring(0, dotIndex) + '.' + record.to;
+    }
+  }
+  return name;
+}
+
 module.exports = {
   getStatusText: getStatusText,
   getStatusClass: getStatusClass,
   formatDuration: formatDuration,
-  getFilteredRecords: getFilteredRecords
+  getFilteredRecords: getFilteredRecords,
+  getDisplayName: getDisplayName
 };
