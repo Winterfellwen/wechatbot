@@ -215,6 +215,7 @@ def merge_docx(chunk_paths, output_path):
 def pdf_to_docx(in_path, out_path):
     """LibreOffice first (fast), fallback to pdf2docx (reliable)."""
     lo = find_libreoffice()
+    print(f"[worker] LibreOffice path: {'available' if lo else 'NOT found'}", flush=True)
     if lo:
         # Clean PDF: remove object streams (PDF 1.5+) that LibreOffice can't parse
         import fitz
@@ -223,6 +224,8 @@ def pdf_to_docx(in_path, out_path):
             src = fitz.open(str(in_path))
             src.save(str(clean_path), garbage=4, deflate=False, clean=True)
             src.close()
+            clean_size = clean_path.stat().st_size
+            print(f"[worker] PDF cleaned: {in_path.stat().st_size//1024}KB -> {clean_size//1024}KB", flush=True)
         except Exception as e:
             print(f"[worker] PDF clean failed ({e}), using original", flush=True)
             clean_path = in_path
@@ -238,18 +241,31 @@ def pdf_to_docx(in_path, out_path):
             env["SAL_VIDEO_DISABLE_ACCELERATE"] = "1"
             cmd = [lo, f"-env:UserInstallation=file://{home}", "--headless", "--norestore",
                    "--nofirststartwizard", "--convert-to", "docx:MS Word 2007 XML", "--outdir", str(tmp), str(clean_path)]
+            print(f"[worker] LO cmd: {' '.join(cmd[:6])}...", flush=True)
             kill_lo()
             t0 = time.time()
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
+            elapsed = time.time() - t0
+            print(f"[worker] LO attempt 1: rc={r.returncode} time={elapsed:.1f}s", flush=True)
+            if r.stdout: print(f"[worker] LO stdout: {r.stdout[:200]}", flush=True)
+            if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
             if r.returncode != 0 or not list(tmp.glob("*.docx")):
-                kill_lo(); r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
+                print(f"[worker] LO attempt 1 failed, retrying...", flush=True)
+                kill_lo()
+                t0 = time.time()
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
+                elapsed = time.time() - t0
+                print(f"[worker] LO attempt 2: rc={r.returncode} time={elapsed:.1f}s", flush=True)
+                if r.stdout: print(f"[worker] LO stdout: {r.stdout[:200]}", flush=True)
+                if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
             pfs = list(tmp.glob("*.docx"))
+            print(f"[worker] LO result files: {[str(p.name) for p in pfs]}", flush=True)
             if pfs and pfs[0].stat().st_size > 0:
                 shutil.copy2(pfs[0], out_path)
                 print(f"[worker] LibreOffice PDF→DOCX in {time.time()-t0:.1f}s ({out_path.stat().st_size//1024}KB)", flush=True)
                 return
             else:
-                print(f"[worker] LibreOffice failed, falling back to pdf2docx. stderr: {(r.stderr or '')[:300]}", flush=True)
+                print(f"[worker] LibreOffice failed, falling back to pdf2docx", flush=True)
         finally:
             if clean_path != in_path and clean_path.exists(): safe_unlink(clean_path)
             shutil.rmtree(tmp, ignore_errors=True); shutil.rmtree(home, ignore_errors=True); kill_lo(); gc.collect()
