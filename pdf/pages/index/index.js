@@ -13,11 +13,33 @@ Page({
     targetOptions: [],
     files: [],
     currentJobId: null,
-    results: []
+    results: [],
+    uploading: false
   },
 
   onLoad: function() {
     this._restoreResult();
+  },
+
+  onUnload: function() {
+    if (this.data.uploading) {
+      wx.showModal({
+        title: '提示',
+        content: '上传已被取消，任务已保存至记录页',
+        showCancel: false
+      });
+      if (this.data.currentJobId) {
+        this._saveTaskRecord({
+          jobId: this.data.currentJobId,
+          type: 'convert',
+          fileName: this.data.fileName,
+          from: this.data.fromFormat,
+          to: this.data.toFormat,
+          status: 'processing',
+          createdAt: Date.now()
+        });
+      }
+    }
   },
 
   _restoreResult: function() {
@@ -34,6 +56,20 @@ Page({
 
   _saveResults: function() {
     wx.setStorageSync('pdf_convert_results', this.data.results);
+  },
+
+  _saveTaskRecord: function(record) {
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].jobId === record.jobId) {
+        records[i] = Object.assign({}, records[i], record);
+        wx.setStorageSync('pdf_task_records', records);
+        return;
+      }
+    }
+    records.unshift(record);
+    if (records.length > 50) records = records.slice(0, 50);
+    wx.setStorageSync('pdf_task_records', records);
   },
 
   uploadFile: function() {
@@ -59,7 +95,7 @@ Page({
         that.setData({
           fileName: name, filePath: file.path, fromFormat: fromFmt,
           toFormat: targets[0].value, targetOptions: targets,
-          activeTab: 'convert', files: [], currentJobId: null
+          activeTab: 'convert', files: [], currentJobId: null, uploading: false
         });
       }
     });
@@ -74,38 +110,57 @@ Page({
       wx.showToast({ title: '请先上传文件', icon: 'none' });
       return;
     }
+    if (this.data.uploading) {
+      wx.showToast({ title: '正在上传中，请勿重复提交', icon: 'none' });
+      return;
+    }
     var that = this;
-    that.setData({ converting: true, currentJobId: null, progressText: '准备中...' });
+    that.setData({ converting: true, uploading: true, currentJobId: null, progressText: '准备中...' });
 
-    var r = retry.createRetrier(that);
+    var r = retry.createRetrier(that, { totalTimeout: 60000, maxRetries: 3 });
 
-    // Phase 1: upload file, get job_id
     r.operate(function(retry, stop, ctx) {
       var task = wx.uploadFile({
         url: SERVER + '/api/pdf/convert',
         filePath: that.data.filePath,
         name: 'file',
         formData: { from: that.data.fromFormat, to: that.data.toFormat },
-        timeout: 120000,
+        timeout: 60000,
         success: function(res) {
           if (res.statusCode !== 200) {
             if (res.statusCode >= 500) return retry('服务器错误');
             var errData = {};
             try { errData = JSON.parse(res.data || '{}'); } catch(e) {}
+            that.setData({ uploading: false });
             return stop(errData.error || '提交失败(' + res.statusCode + ')');
           }
           var data = {};
           try { data = JSON.parse(res.data); } catch(e) {}
-          if (!data.job_id && !data.url) return stop(data.error || '提交失败');
+          if (!data.job_id && !data.url) {
+            that.setData({ uploading: false });
+            return stop(data.error || '提交失败');
+          }
           if (data.url) {
-            // legacy: direct URL, skip poll
+            that.setData({ uploading: false });
             return that._retryDownload(r, data.url);
           }
-          // job submitted, start polling
-          that.setData({ currentJobId: data.job_id });
+          that.setData({ currentJobId: data.job_id, uploading: false });
+          that._saveTaskRecord({
+            jobId: data.job_id,
+            type: 'convert',
+            fileName: that.data.fileName,
+            from: that.data.fromFormat,
+            to: that.data.toFormat,
+            status: 'queued',
+            createdAt: Date.now(),
+            resultUrl: '/api/pdf/status/' + data.job_id
+          });
           that._retryPoll(r, data.job_id);
         },
-        fail: function() { retry('网络错误'); }
+        fail: function() {
+          that.setData({ uploading: false });
+          retry('网络错误');
+        }
       });
       task.onProgressUpdate(function(prog) {
         r.updateProgress('上传中 ' + prog.progress + '%');
@@ -127,10 +182,12 @@ Page({
           if (res.statusCode !== 200 || !res.data) return setTimeout(retry, 5000);
           var d = res.data;
           if (d.status === 'done' && d.url) {
+            that._updateRecordStatus(jobId, 'done', d.url);
             that._retryDownload(r, d.url);
           } else if (d.status === 'error') {
             var errMsg = d.error || '转换失败';
             console.error('PDF转换失败:', errMsg);
+            that._updateRecordStatus(jobId, 'error', '', errMsg);
             wx.showModal({
               title: '转换失败',
               content: errMsg.length > 200 ? errMsg.substring(0, 200) + '...' : errMsg,
@@ -146,6 +203,21 @@ Page({
         fail: function() { setTimeout(retry, 5000); }
       });
     });
+  },
+
+  _updateRecordStatus: function(jobId, status, url, errorMsg) {
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].jobId === jobId) {
+        records[i].status = status;
+        records[i].completedAt = Date.now();
+        records[i].duration = Math.round((records[i].completedAt - records[i].createdAt) / 1000);
+        if (url) records[i].resultUrl = url.replace(SERVER, '');
+        if (errorMsg) records[i].errorMsg = errorMsg;
+        break;
+      }
+    }
+    wx.setStorageSync('pdf_task_records', records);
   },
 
   _retryDownload: function(r, url) {
@@ -175,6 +247,8 @@ Page({
           }
           that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
           that._saveResults();
+          that._updateRecordStatus(that.data.currentJobId || '', 'done', url);
+          wx.showToast({ title: '转换成功', icon: 'success' });
         },
         fail: function() { retry('网络错误'); }
       });
@@ -202,12 +276,20 @@ Page({
   switchTab: function(e) {
     this.setData({ activeTab: e.currentTarget.dataset.tab });
   },
+
   goEdit: function() {
     wx.navigateTo({
       url: '../edit/edit?file=' + encodeURIComponent(this.data.fileName) + '&path=' + encodeURIComponent(this.data.filePath)
     });
   },
+
+  goRecords: function() {
+    wx.navigateTo({
+      url: '../records/records'
+    });
+  },
+
   clearFile: function() {
-    this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], currentJobId: null, converting: false, progressText: '' });
+    this.setData({ fileName: '', filePath: '', fromFormat: '', toFormat: '', targetOptions: [], currentJobId: null, converting: false, progressText: '', uploading: false });
   }
 });
