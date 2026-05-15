@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="status-card">
+    <view class="status-icon">
+      <image wx:if="{{status==='pending'}}" src="/images/loading.gif" mode="aspectFit"></image>
+      <image wx:elif="{{status==='processing'}}" src="/images/loading.gif" mode="aspectFit"></image>
+      <image wx:elif="{{status==='done'}}" src="/images/success.png" mode="aspectFit"></image>
+      <image wx:elif="{{status==='error'}}" src="/images/error.png" mode="aspectFit"></image>
+    </view>
+    <text class="status-text">{{statusText}}</text>
+    <text wx:if="{{errorMsg}}" class="error-msg">{{errorMsg}}</text>
+  </view>
+
+  <view class="info">
+    <text class="info-item">文件：{{fileName}}</text>
+    <text class="info-item">目标格式：{{targetFormat.toUpperCase()}}</text>
+    <text class="info-item">AI 模式：{{modeText}}</text>
+  </view>
+
+  <button wx:if="{{status==='done' && downloadUrl}}" class="download-btn" bindtap="download">下载文件</button>
+  <button wx:if="{{status==='error'}}" class="retry-btn" bindtap="goBack">重新上传</button>
+</view>
