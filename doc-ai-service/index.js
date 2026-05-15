@@ -1,8 +1,17 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 const config = require('./config');
 const { createQueue } = require('./queue');
+const pdfExtractor = require('./extractors/pdf');
+const docxExtractor = require('./extractors/docx');
+const htmlExtractor = require('./extractors/html');
+const htmlAssembler = require('./assemblers/html');
+const docxAssembler = require('./assemblers/docx');
+const pdfAssembler = require('./assemblers/pdf');
+const { callAI } = require('./ai');
 
 const app = express();
 app.use(cors());
@@ -12,9 +21,90 @@ fs.mkdirSync(config.uploadsDir, { recursive: true });
 fs.mkdirSync(config.outputsDir, { recursive: true });
 
 const queue = createQueue();
+const upload = multer({ dest: config.uploadsDir + '/', limits: { fileSize: config.limits.fileSize } });
+
+const extractors = { pdf: pdfExtractor, docx: docxExtractor, html: htmlExtractor };
+const assemblers = { html: htmlAssembler, docx: docxAssembler, pdf: pdfAssembler };
+
+const formatMap = { '.pdf': 'pdf', '.docx': 'docx', '.html': 'html' };
+
+async function processJob(jobId) {
+  const job = queue.getJob(jobId);
+  if (!job) throw new Error('Job not found');
+
+  console.log(`[process] job=${jobId} ${job.sourceFmt}→${job.targetFmt} mode=${job.mode}`);
+
+  const extractor = extractors[job.sourceFmt];
+  if (!extractor) throw new Error(`Unsupported source format: ${job.sourceFmt}`);
+
+  const result = await extractor.extract(job.filePath);
+
+  const aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
+
+  const assembler = assemblers[job.targetFmt];
+  if (!assembler) throw new Error(`Unsupported target format: ${job.targetFmt}`);
+
+  const outName = `${jobId}.${job.targetFmt}`;
+  const outPath = path.join(config.outputsDir, outName);
+  await assembler.assemble(aiHtml, outPath, result.title || '');
+
+  queue.updateJob(jobId, { resultFile: outName });
+
+  fs.unlink(job.filePath, () => {});
+}
+
+app.post('/convert', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '请上传文件' });
+
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const sourceFmt = formatMap[ext];
+    if (!sourceFmt) return res.status(400).json({ error: '不支持的文件格式，仅支持 .pdf .docx .html' });
+
+    const targetFmt = req.body.to;
+    if (!targetFmt || !formatMap['.' + targetFmt]) return res.status(400).json({ error: '目标格式无效' });
+
+    const mode = req.body.mode || 'polish';
+    if (!['polish', 'format', 'summarize'].includes(mode)) return res.status(400).json({ error: 'AI 模式无效' });
+
+    const fileName = req.file.originalname;
+    const jobId = require('crypto').randomUUID().replace(/-/g, '');
+
+    queue.addJob(jobId, {
+      filePath: req.file.path,
+      fileName,
+      sourceFmt,
+      targetFmt,
+      mode,
+      status: 'pending',
+    });
+
+    res.json({ job_id: jobId });
+  } catch (err) {
+    console.error('[convert] error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/status/:jobId', (req, res) => {
+  const job = queue.getJob(req.params.jobId);
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  const resp = { status: job.status };
+  if (job.status === 'done') resp.resultFile = job.resultFile;
+  if (job.status === 'error') resp.error = job.error;
+  res.json(resp);
+});
+
+app.get('/download/:filename', (req, res) => {
+  const filePath = path.join(config.outputsDir, req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
+  res.download(filePath);
+});
 
 app.all('/', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
 app.all('/health', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
+
+module.exports = { processJob };
 
 const PORT = config.port;
 app.listen(PORT, () => {
