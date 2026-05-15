@@ -375,6 +375,8 @@ def docx_to_pdf(in_path, out_path):
     lo = find_libreoffice()
     if not lo: raise RuntimeError("LibreOffice not found")
     
+    print(f"[worker] docx_to_pdf input: {in_path.name} ({in_path.stat().st_size//1024}KB)", flush=True)
+    
     tag = uuid.uuid4().hex[:8]
     home = UPLOAD_DIR/f"lo_home_{tag}"; home.mkdir(parents=True,exist_ok=True)
     tmp = UPLOAD_DIR/f"lo_out_{tag}"; tmp.mkdir(exist_ok=True)
@@ -392,12 +394,15 @@ def docx_to_pdf(in_path, out_path):
         r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
         elapsed = time.time()-t0
         print(f"[worker] LO docx→pdf: rc={r.returncode} time={elapsed:.1f}s", flush=True)
-        if r.stdout: print(f"[worker] LO stdout: {r.stdout[:300]}", flush=True)
-        if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
+        if r.stdout: print(f"[worker] LO stdout: {r.stdout[:500]}", flush=True)
+        if r.stderr: print(f"[worker] LO stderr: {r.stderr[:1000]}", flush=True)
+        
+        # List all files in tmp directory
+        all_files = list(tmp.iterdir())
+        print(f"[worker] LO tmp dir ({len(all_files)} files): {[f.name for f in all_files[:10]]}", flush=True)
         
         pfs=list(tmp.glob("*.pdf"))
-        print(f"[worker] LO result files: {[str(p.name) for p in pfs]}", flush=True)
-        print(f"[worker] LO tmp dir contents: {list(tmp.iterdir())}", flush=True)
+        print(f"[worker] LO PDF files: {[str(p.name) for p in pfs]}", flush=True)
         
         if not pfs:
             # Retry once
@@ -406,10 +411,10 @@ def docx_to_pdf(in_path, out_path):
             r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
             elapsed = time.time()-t0
             print(f"[worker] LO retry: rc={r.returncode} time={elapsed:.1f}s", flush=True)
-            if r.stdout: print(f"[worker] LO stdout: {r.stdout[:300]}", flush=True)
-            if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
+            if r.stdout: print(f"[worker] LO stdout: {r.stdout[:500]}", flush=True)
+            if r.stderr: print(f"[worker] LO stderr: {r.stderr[:1000]}", flush=True)
             pfs=list(tmp.glob("*.pdf"))
-            print(f"[worker] LO retry result files: {[str(p.name) for p in pfs]}", flush=True)
+            print(f"[worker] LO retry PDF files: {[str(p.name) for p in pfs]}", flush=True)
             if not pfs: raise RuntimeError(f"LO no PDF after retry. stderr: {(r.stderr or '')[:500]}")
         
         inter_pdf = pfs[0]
@@ -417,7 +422,8 @@ def docx_to_pdf(in_path, out_path):
         
         # Verify it's a valid PDF
         with open(str(inter_pdf), 'rb') as f:
-            header = f.read(5)
+            header = f.read(10)
+            print(f"[worker] Intermediate PDF header: {header}", flush=True)
             if not header.startswith(b'%PDF'):
                 raise RuntimeError(f"Intermediate file is not a valid PDF. Header: {header}")
         
