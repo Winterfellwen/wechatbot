@@ -96,13 +96,20 @@ app.get('/status/:jobId', (req, res) => {
 });
 
 app.get('/download/:filename', (req, res) => {
-  const filePath = path.join(config.outputsDir, req.params.filename);
+  const filePath = path.resolve(config.outputsDir, req.params.filename);
+  if (!filePath.startsWith(path.resolve(config.outputsDir))) return res.status(403).json({ error: 'Forbidden' });
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
   res.download(filePath);
 });
 
 app.all('/', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
 app.all('/health', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
+
+app.use((err, req, res, next) => {
+  console.error('[error]', err.message);
+  if (err.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ error: '文件大小超过限制（最大 20MB）' });
+  res.status(500).json({ error: err.message || 'Internal error' });
+});
 
 module.exports = { processJob };
 
