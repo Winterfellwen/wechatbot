@@ -41,8 +41,8 @@
     </view>
 
     <view class="convert-btn-wrap">
-      <view class="convert-btn {{converting ? 'loading' : ''}} {{uploading ? 'disabled' : ''}}" bindtap="doConvert">
-        {{converting ? (progressText || '处理中...') : '开始转换'}}
+      <view class="convert-btn {{uploading ? 'disabled' : ''}}" bindtap="doConvert">
+        {{uploading ? '上传中...' : '开始转换'}}
       </view>
     </view>
   </view>
@@ -74,17 +74,6 @@
       <text class="edit-card-arrow">›</text>
     </view>
     <view class="edit-tip">编辑功能将打开新页面进行处理</view>
-  </view>
-
-  <!-- 转换结果列表 -->
-  <view wx:if="{{results.length > 0}}" class="result-section">
-    <view class="result-card" wx:for="{{results}}" wx:key="time" bindtap="openResult" data-idx="{{index}}">
-      <view class="result-header">
-        <text class="result-icon">✓</text>
-        <text class="result-title">{{item.name}}</text>
-        <text class="result-del" data-idx="{{index}}" catchtap="removeResult">×</text>
-      </view>
-    </view>
   </view>
 
   <view class="bottom-nav">
