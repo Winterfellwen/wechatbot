@@ -3,6 +3,14 @@ const path = require('path');
 const config = {
   port: process.env.PORT || 3002,
   dataDir: process.env.DOC_AI_DATA_DIR || '/tmp/doc-ai',
+  bigmodel: {
+    apiKey: process.env.BIGMODEL_KEY || null,
+    model: process.env.BIGMODEL_MODEL || 'glm-4.7-flash',
+    apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    maxTokens: 4096,
+    timeout: 60000,
+    retries: 2,
+  },
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
     model: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-nano-12b-v2-vl:free',

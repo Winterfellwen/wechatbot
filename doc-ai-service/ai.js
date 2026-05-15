@@ -1,5 +1,10 @@
 const config = require('./config');
 
+const PROVIDERS = [
+  { name: 'BigModel', key: 'bigmodel', label: '智谱AI' },
+  { name: 'OpenRouter', key: 'openrouter', label: 'OpenRouter' },
+];
+
 function buildPrompt(sourceText, sourceFormat, targetFormat, mode, title) {
   const modeInstructions = {
     polish: '润色文档内容：修正语法错误，优化表达方式，保持原意不变。改善段落结构和可读性。',
@@ -27,67 +32,81 @@ ${modeInstructions[mode] || modeInstructions.polish}
   ];
 }
 
-async function callAI(sourceText, sourceFormat, targetFormat, mode, title) {
-  if (!config.openrouter.apiKey) {
-    throw new Error('AI 服务未配置：OPENROUTER_KEY 环境变量缺失，请管理员在 Render Dashboard 中设置');
+function parseAIResponse(content) {
+  const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
+  if (htmlMatch) return htmlMatch[1].trim();
+
+  const cheerio = require('cheerio');
+  const $ = cheerio.load(content);
+  if ($('html').length > 0 || $('body').length > 0 || $('*').length > 0) {
+    return $.html();
   }
+
+  throw new Error('AI 输出无法解析为合法 HTML');
+}
+
+async function callProvider(cfg, messages, mode) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), cfg.timeout);
+
+  try {
+    const response = await fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cfg.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        max_tokens: mode === 'summarize' ? 2000 : cfg.maxTokens,
+        temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => 'Unknown');
+      throw new Error(`${response.status}: ${errText.substring(0, 100)}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    if (!content) throw new Error('AI 返回内容为空');
+    return content;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callAI(sourceText, sourceFormat, targetFormat, mode, title) {
   const messages = buildPrompt(sourceText, sourceFormat, targetFormat, mode, title);
-  let lastError;
+  const errors = [];
 
-  for (let attempt = 1; attempt <= config.openrouter.retries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), config.openrouter.timeout);
+  for (const provider of PROVIDERS) {
+    const cfg = config[provider.key];
+    if (!cfg.apiKey) {
+      console.log(`[ai] ${provider.name} skipped: no API key`);
+      continue;
+    }
 
+    for (let attempt = 1; attempt <= cfg.retries; attempt++) {
       try {
-        const response = await fetch(config.openrouter.apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${config.openrouter.apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://doc-ai-service.onrender.com',
-            'X-Title': 'DocAIService',
-          },
-          body: JSON.stringify({
-            model: config.openrouter.model,
-            messages,
-            max_tokens: mode === 'summarize' ? 2000 : config.openrouter.maxTokens,
-            temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
-          }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const errText = await response.text().catch(() => 'Unknown');
-          throw new Error(`OpenRouter ${response.status}: ${errText.substring(0, 100)}`);
+        const content = await callProvider(cfg, messages, mode);
+        return parseAIResponse(content);
+      } catch (err) {
+        errors.push(`[${provider.name}] attempt ${attempt}/${cfg.retries}: ${err.message}`);
+        console.error(`[ai] ${provider.name} attempt ${attempt}/${cfg.retries} failed:`, err.message);
+        if (attempt < cfg.retries) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
         }
-
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content || '';
-
-        const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
-        if (htmlMatch) return htmlMatch[1].trim();
-
-        const cheerio = require('cheerio');
-        const $ = cheerio.load(content);
-        if ($('html').length > 0 || $('body').length > 0 || $('*').length > 0) {
-          return $.html();
-        }
-
-        throw new Error('AI 输出无法解析为合法 HTML');
-      } finally {
-        clearTimeout(timer);
-      }
-    } catch (err) {
-      lastError = err;
-      console.error(`[ai] attempt ${attempt}/${config.openrouter.retries} failed:`, err.message);
-      if (attempt < config.openrouter.retries) {
-        await new Promise(r => setTimeout(r, 1000 * attempt));
       }
     }
+
+    console.log(`[ai] ${provider.name} exhausted, falling back to next provider`);
   }
 
-  throw new Error(`AI 处理失败（已重试${config.openrouter.retries}次）: ${lastError.message}`);
+  throw new Error(`AI 处理失败（已重试所有服务商）:\n${errors.join('\n')}`);
 }
 
 module.exports = { callAI };

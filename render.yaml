@@ -15,9 +15,6 @@ services:
         sync: false
       - key: OPENROUTER_KEY
         sync: false
-      - key: PDF_SERVICE_URL
-        value: "https://pdf-converter-v2.onrender.com"
-
   - type: web
     name: pdf-converter-v2
     runtime: docker
@@ -40,4 +37,6 @@ services:
       - key: NODE_VERSION
         value: "20"
       - key: OPENROUTER_KEY
+        sync: false
+      - key: BIGMODEL_KEY
         sync: false
