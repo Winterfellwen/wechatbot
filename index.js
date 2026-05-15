@@ -444,8 +444,9 @@ const upload = multer({
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
-  const { from, to } = req.body;
-  const toFmt = to || 'docx';
+  const from = req.body.from || req.query.from || 'pdf';
+  const to = req.body.to || req.query.to || 'docx';
+  const toFmt = to;
   const backend = _pickBackend();
   const t0 = Date.now();
 
