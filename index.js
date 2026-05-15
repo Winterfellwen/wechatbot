@@ -526,12 +526,26 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       const outFile = config.storage.serveDir + '/conv_' + jobId;
       fs.writeFileSync(outFile, Buffer.from(buffer));
       console.log(`[pdf] download cached job=${jobId} (${Math.round(buffer.byteLength/1024)}KB, ${Date.now()-t0}ms)`);
+
+      // 触发订阅消息通知（如果有 openid）
+      const fileName = status.result || 'file';
+      if (req.query.openid) {
+        sendSubscribeMessage(req.query.openid, jobId, 'done', fileName).catch(console.error);
+      }
+
       return res.json({
         status: 'done',
          url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}`
       });
     } else if (status.status === 'error') {
       console.error(`[pdf] status error job=${jobId}:`, status.error);
+
+      // 触发订阅消息通知（如果有 openid）
+      const fileName = jobId || 'file';
+      if (req.query.openid) {
+        sendSubscribeMessage(req.query.openid, jobId, 'error', fileName).catch(console.error);
+      }
+
       return res.json({ status: 'error', error: status.error || '转换失败' });
     }
     return res.json(status);
@@ -589,6 +603,57 @@ app.get('/api/pdf/download/:filename', (req, res) => {
     res.status(404).json({ error: 'File not found' });
   }
 });
+
+// 获取 access_token
+let cachedAccessToken = null;
+let tokenExpireTime = 0;
+
+async function getAccessToken() {
+  if (cachedAccessToken && Date.now() < tokenExpireTime) {
+    return cachedAccessToken;
+  }
+  const res = await fetch(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${WECHAT_APP_ID}&secret=${WECHAT_APP_SECRET}`);
+  const data = await res.json();
+  if (data.access_token) {
+    cachedAccessToken = data.access_token;
+    tokenExpireTime = Date.now() + (data.expires_in - 300) * 1000;
+    return cachedAccessToken;
+  }
+  throw new Error('获取 access_token 失败');
+}
+
+// 发送订阅消息
+async function sendSubscribeMessage(openid, jobId, status, fileName) {
+  try {
+    const token = await getAccessToken();
+    const templateId = process.env.WECHAT_TEMPLATE_ID || 'YOUR_TEMPLATE_ID';
+    const page = 'pdf/pages/records/records';
+
+    const statusText = status === 'done' ? '转换完成' : '转换失败';
+    const body = {
+      touser: openid,
+      template_id: templateId,
+      page: page,
+      data: {
+        thing1: { value: fileName.substring(0, 20) },
+        thing2: { value: statusText },
+        time3: { value: new Date().toLocaleString('zh-CN') }
+      }
+    };
+
+    const res = await fetch(`https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const result = await res.json();
+    if (result.errcode !== 0) {
+      console.error('订阅消息发送失败:', result);
+    }
+  } catch (err) {
+    console.error('发送订阅消息异常:', err);
+  }
+}
 
 // Word import: receive .docx, unzip with zlib, return document.xml text
 app.post('/api/word/import', upload.single('file'), async (req, res) => {
@@ -736,4 +801,52 @@ app.get('/api/tts/download/:filename', (req, res) => {
     res.status(404).json({ error: 'File not found' });
   }
 });
+
+// 文件清理定时任务（每小时执行）
+setInterval(() => {
+  const serveDir = config.storage.serveDir;
+  if (!fs.existsSync(serveDir)) return;
+
+  const files = fs.readdirSync(serveDir);
+  const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000; // 24 小时
+
+  // 检查磁盘使用率
+  let totalSize = 0;
+  const fileStats = files.map(f => {
+    const stat = fs.statSync(serveDir + '/' + f);
+    totalSize += stat.size;
+    return { name: f, mtime: stat.mtimeMs, size: stat.size };
+  });
+
+  // 删除超过 24 小时的文件
+  fileStats.forEach(f => {
+    if (now - f.mtime > maxAge) {
+      try {
+        fs.unlinkSync(serveDir + '/' + f.name);
+        console.log(`[cleanup] deleted old file: ${f.name}`);
+      } catch(e) {}
+    }
+  });
+
+  // 如果磁盘使用率 > 85%，按 LRU 删除
+  // 简化处理：保留最近 100 个文件
+  const remaining = fs.readdirSync(serveDir);
+  if (remaining.length > 100) {
+    const sorted = remaining.map(f => ({
+      name: f,
+      mtime: fs.statSync(serveDir + '/' + f).mtimeMs
+    })).sort((a, b) => a.mtime - b.mtime);
+
+    const toDelete = sorted.slice(0, sorted.length - 100);
+    toDelete.forEach(f => {
+      try {
+        fs.unlinkSync(serveDir + '/' + f.name);
+        console.log(`[cleanup] LRU deleted: ${f.name}`);
+      } catch(e) {}
+    });
+  }
+
+  console.log(`[cleanup] done. files: ${fs.readdirSync(serveDir).length}, totalSize: ${Math.round(totalSize/1024/1024)}MB`);
+}, 60 * 60 * 1000);
 
