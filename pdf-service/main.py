@@ -242,14 +242,15 @@ async def edit_pdf(request: Request):
             wm_text = text or "WATERMARK"
             for page in doc:
                 r = page.rect
-                # Draw watermark text centered and rotated
-                tw = fitz.TextWriter(page.rect)
-                tw.append(
-                    fitz.Point(r.width / 2, r.height / 2),
+                # Center watermark, 45 degree rotation, semi-transparent gray
+                page.insert_text(
+                    fitz.Point(r.width * 0.15, r.height * 0.5),
                     wm_text,
-                    fontsize=60,
+                    fontsize=56,
+                    color=(0.5, 0.5, 0.5),
+                    overlay=True,
+                    rotate=45,
                 )
-                tw.write_text(page, overlay=True, opacity=0.3)
         elif op == "rotate":
             rot_angle = int(angle or "90")
             for page in doc:

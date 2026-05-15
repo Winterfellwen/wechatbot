@@ -613,12 +613,18 @@ app.post('/api/pdf/edit/merge2', upload.single('file2'), async (req, res) => {
 });
 
 // 执行合并
-app.post('/api/pdf/edit/merge', async (req, res) => {
+app.post('/api/pdf/edit/merge', upload.single('file'), async (req, res) => {
   try {
-    const { file_base64, merge_id } = req.body;
-    if (!file_base64 || !merge_id || !mergeFiles[merge_id]) {
+    const { merge_id } = req.body;
+    if (!req.file) return res.status(400).json({ error: '请上传第一个文件' });
+    if (!merge_id || !mergeFiles[merge_id]) {
+      fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: '缺少文件数据' });
     }
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+    fs.unlinkSync(req.file.path);
+
     const backend = _pickBackend();
     const t0 = Date.now();
 
@@ -626,7 +632,7 @@ app.post('/api/pdf/edit/merge', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        file1_base64: file_base64,
+        file1_base64: fileBase64,
         file2_base64: mergeFiles[merge_id]
       })
     }, 120000);

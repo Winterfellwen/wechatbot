@@ -18,6 +18,20 @@ Page({
     }
   },
 
+  _saveTaskRecord: function(record) {
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].jobId === record.jobId) {
+        records[i] = Object.assign({}, records[i], record);
+        wx.setStorageSync('pdf_task_records', records);
+        return;
+      }
+    }
+    records.unshift(record);
+    if (records.length > 50) records = records.slice(0, 50);
+    wx.setStorageSync('pdf_task_records', records);
+  },
+
   uploadFile1: function() {
     var that = this;
     wx.chooseMessageFile({
@@ -101,6 +115,20 @@ Page({
             try { data = JSON.parse(res.data); } catch(e) {}
             if (data.url) {
               that.setData({ resultUrl: data.url });
+              // 保存任务记录
+              that._saveTaskRecord({
+                jobId: 'merge_' + Date.now(),
+                type: 'edit',
+                fileName: that.data.file1Name + ' + ' + that.data.file2Name,
+                operation: 'merge',
+                status: 'done',
+                createdAt: Date.now(),
+                completedAt: Date.now(),
+                duration: 0,
+                resultUrl: data.url.replace(SERVER, ''),
+                downloaded: false,
+                localPath: ''
+              });
               wx.showToast({ title: '合并成功', icon: 'success' });
             } else {
               wx.showToast({ title: data.error || '合并失败', icon: 'none' });

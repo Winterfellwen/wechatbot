@@ -174,6 +174,20 @@ Page({
           try { data = JSON.parse(res.data); } catch(e) {}
           if (data.url) {
             that.setData({ editResultUrl: data.url });
+            // 保存任务记录
+            that._saveTaskRecord({
+              jobId: 'edit_' + Date.now(),
+              type: 'edit',
+              fileName: that.data.fileName,
+              operation: that.data.editOp,
+              status: 'done',
+              createdAt: Date.now(),
+              completedAt: Date.now(),
+              duration: 0,
+              resultUrl: data.url.replace(SERVER, ''),
+              downloaded: false,
+              localPath: ''
+            });
             wx.showToast({ title: '处理成功', icon: 'success' });
           } else {
             stop(data.error || '处理失败');
