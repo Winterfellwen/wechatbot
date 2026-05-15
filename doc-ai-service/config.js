@@ -5,10 +5,10 @@ const config = {
   dataDir: process.env.DOC_AI_DATA_DIR || '/tmp/doc-ai',
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
-    model: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-nano-12b-v2-vl:free',
+    model: process.env.OPENROUTER_MODEL || 'google/gemma-2-9b-it:free',
     apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
     maxTokens: 4096,
-    timeout: 20000,
+    timeout: 90000,
     retries: 3,
   },
   limits: {

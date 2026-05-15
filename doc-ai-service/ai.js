@@ -28,6 +28,9 @@ ${modeInstructions[mode] || modeInstructions.polish}
 }
 
 async function callAI(sourceText, sourceFormat, targetFormat, mode, title) {
+  if (!config.openrouter.apiKey) {
+    throw new Error('AI 服务未配置：OPENROUTER_KEY 环境变量缺失，请管理员在 Render Dashboard 中设置');
+  }
   const messages = buildPrompt(sourceText, sourceFormat, targetFormat, mode, title);
   let lastError;
 
