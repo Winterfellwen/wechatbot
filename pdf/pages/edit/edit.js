@@ -88,6 +88,7 @@ Page({
               createdAt: Date.now(),
               resultUrl: '/api/pdf/status/' + data.job_id
             });
+            wx.showToast({ title: '已加入队列，可在记录页查看', icon: 'none', duration: 2000 });
             that._pollEditStatus(r, data.job_id);
           } else if (data.url) {
             that.setData({ resultUrl: data.url, processing: false, progressText: '' });
@@ -120,12 +121,16 @@ Page({
 
   _pollEditStatus: function(r, jobId) {
     var that = this;
-    r.operate(function(retry, stop) {
+    function poll() {
       wx.request({
         url: SERVER + '/api/pdf/status/' + jobId,
         timeout: 60000,
         success: function(res) {
-          if (res.statusCode !== 200 || !res.data) return setTimeout(retry, 5000);
+          if (res.statusCode !== 200 || !res.data) {
+            r.updateProgress('查询状态失败，重试中...');
+            setTimeout(poll, 5000);
+            return;
+          }
           var d = res.data;
           if (d.status === 'done' && d.url) {
             that.setData({ resultUrl: d.url, processing: false, progressText: '' });
@@ -133,14 +138,19 @@ Page({
             wx.showToast({ title: '处理成功', icon: 'success' });
           } else if (d.status === 'error') {
             that._updateRecordStatus(jobId, 'error', '', d.error);
-            stop(d.error || '处理失败');
+            r.fail(d.error || '处理失败');
           } else {
-            setTimeout(retry, 3000);
+            r.updateProgress('处理中');
+            setTimeout(poll, 3000);
           }
         },
-        fail: function() { setTimeout(retry, 5000); }
+        fail: function() {
+          r.updateProgress('网络错误，重试中...');
+          setTimeout(poll, 5000);
+        }
       });
-    });
+    }
+    poll();
   },
 
   _updateRecordStatus: function(jobId, status, url, errorMsg) {

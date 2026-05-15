@@ -155,6 +155,7 @@ Page({
             createdAt: Date.now(),
             resultUrl: '/api/pdf/status/' + data.job_id
           });
+          wx.showToast({ title: '已加入队列，可在记录页查看', icon: 'none', duration: 2000 });
           that._retryPoll(r, data.job_id);
         },
         fail: function() {
@@ -170,16 +171,19 @@ Page({
 
   _retryPoll: function(r, jobId) {
     var that = this;
-    r.operate(function(retry, stop) {
+    // 轮询不消耗重试预算，使用独立循环
+    function poll() {
+      if (!that.data.converting || that.data.currentJobId !== jobId) return;
       wx.request({
         url: SERVER + '/api/pdf/status/' + jobId,
         timeout: 60000,
         success: function(res) {
-          if (!that.data.converting || that.data.currentJobId !== jobId) {
-            r.cancel();
+          if (!that.data.converting || that.data.currentJobId !== jobId) return;
+          if (res.statusCode !== 200 || !res.data) {
+            r.updateProgress('查询状态失败，重试中...');
+            setTimeout(poll, 5000);
             return;
           }
-          if (res.statusCode !== 200 || !res.data) return setTimeout(retry, 5000);
           var d = res.data;
           if (d.status === 'done' && d.url) {
             that._updateRecordStatus(jobId, 'done', d.url);
@@ -194,15 +198,19 @@ Page({
               showCancel: false,
               confirmText: '确定'
             });
-            stop(errMsg);
+            r.fail(errMsg);
           } else {
             r.updateProgress('转换中');
-            setTimeout(retry, 3000);
+            setTimeout(poll, 3000);
           }
         },
-        fail: function() { setTimeout(retry, 5000); }
+        fail: function() {
+          r.updateProgress('网络错误，重试中...');
+          setTimeout(poll, 5000);
+        }
       });
-    });
+    }
+    poll();
   },
 
   _updateRecordStatus: function(jobId, status, url, errorMsg) {

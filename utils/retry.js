@@ -52,18 +52,14 @@ function createRetrier(page, options) {
     function run() {
       if (!active) return;
       if (expireCheck()) return;
-      if (retryCount + 1 > MAX_RETRIES) {
-        fail('重试次数已达上限，请检查网络后重试');
-        return;
-      }
       attempt++;
-      retryCount++;
 
       fn(
         function retry(reason) {
           if (!active) return;
           if (expireCheck()) return;
-          if (retryCount + 1 > MAX_RETRIES) {
+          retryCount++;
+          if (retryCount >= MAX_RETRIES) {
             fail('重试次数已达上限，请检查网络后重试');
             return;
           }
