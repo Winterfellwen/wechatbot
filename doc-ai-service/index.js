@@ -3,6 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const config = require('./config');
 const { createQueue } = require('./queue');
 const pdfExtractor = require('./extractors/pdf');
@@ -27,6 +28,11 @@ const extractors = { pdf: pdfExtractor, docx: docxExtractor, html: htmlExtractor
 const assemblers = { html: htmlAssembler, docx: docxAssembler, pdf: pdfAssembler };
 
 const formatMap = { '.pdf': 'pdf', '.docx': 'docx', '.html': 'html' };
+
+let commitHash = 'unknown';
+try {
+  commitHash = execSync('git rev-parse --short HEAD', { timeout: 3000 }).toString().trim();
+} catch (_) {}
 
 async function processJob(jobId) {
   const job = queue.getJob(jobId);
@@ -103,7 +109,7 @@ app.get('/download/:filename', (req, res) => {
 });
 
 app.all('/', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
-app.all('/health', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service' }));
+app.all('/health', (req, res) => res.json({ status: 'ok', service: 'doc-ai-service', commit: commitHash }));
 
 app.use((err, req, res, next) => {
   console.error('[error]', err.message);
@@ -115,6 +121,6 @@ module.exports = { processJob };
 
 const PORT = config.port;
 app.listen(PORT, () => {
-  console.log(`doc-ai-service running on port ${PORT}`);
+  console.log(`doc-ai-service running on port ${PORT} (commit ${commitHash})`);
   queue.resumePending();
 });
