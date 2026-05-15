@@ -238,25 +238,25 @@ def pdf_to_docx(input_path, output_path):
     print(f"[worker] Splitting into {num_chunks} chunks (~{ppc}p each)", flush=True)
     chunk_pdfs, chunk_docxs = [], []
     try:
-    for ci in range(num_chunks):
-        t_chunk = time.time()
-        sp = ci * ppc; ep = min(sp + ppc, num_pages)
-        cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
-        cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
-        chunk_pdfs.append(cp); chunk_docxs.append(cd)
+        for ci in range(num_chunks):
+            t_chunk = time.time()
+            sp = ci * ppc; ep = min(sp + ppc, num_pages)
+            cp = UPLOAD_DIR / f"{input_path.stem}_c{ci}.pdf"
+            cd = UPLOAD_DIR / f"{input_path.stem}_c{ci}.docx"
+            chunk_pdfs.append(cp); chunk_docxs.append(cd)
 
-        src = fitz.open(str(input_path))
-        dst = fitz.open()
-        dst.insert_pdf(src, from_page=sp, to_page=ep-1)
-        dst.save(str(cp), garbage=4, deflate=True)
-        dst.close(); src.close(); gc.collect()
-        print(f"[worker]  Chunk {ci+1}: p{sp+1}-{ep} -> {cp.name} ({cp.stat().st_size//1024}KB) split={time.time()-t_chunk:.1f}s", flush=True)
+            src = fitz.open(str(input_path))
+            dst = fitz.open()
+            dst.insert_pdf(src, from_page=sp, to_page=ep-1)
+            dst.save(str(cp), garbage=4, deflate=True)
+            dst.close(); src.close(); gc.collect()
+            print(f"[worker]  Chunk {ci+1}: p{sp+1}-{ep} -> {cp.name} ({cp.stat().st_size//1024}KB) split={time.time()-t_chunk:.1f}s", flush=True)
 
-        cv = Converter(str(cp))
-        cv.convert(str(cd))
-        cv.close(); gc.collect()
-        csz = cd.stat().st_size // 1024 if cd.exists() else 0
-        print(f"[worker]  Chunk {ci+1} DOCX: {cd.name} ({csz}KB) convert={time.time()-t_chunk:.1f}s", flush=True)
+            cv = Converter(str(cp))
+            cv.convert(str(cd))
+            cv.close(); gc.collect()
+            csz = cd.stat().st_size // 1024 if cd.exists() else 0
+            print(f"[worker]  Chunk {ci+1} DOCX: {cd.name} ({csz}KB) convert={time.time()-t_chunk:.1f}s", flush=True)
 
         print(f"[worker] Merging {num_chunks} DOCX with image preservation...", flush=True)
         merge_docx(chunk_docxs, output_path)
