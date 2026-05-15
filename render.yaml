@@ -28,3 +28,16 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
+
+  - type: web
+    name: doc-ai-service
+    runtime: node
+    rootDir: doc-ai-service
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: OPENROUTER_KEY
+        sync: false
