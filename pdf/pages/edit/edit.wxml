@@ -11,6 +11,16 @@
   </view>
   <view wx:else class="no-file"><text>请先在主页上传文件</text></view>
 
+  <!-- 合并模式：第二个文件选择 -->
+  <view wx:if="{{operation === 'merge'}}" class="file-display file-display-2">
+    <text class="fl">第二个文件</text>
+    <view wx:if="{{fileName2}}" class="fv-row">
+      <text class="fv">{{fileName2}}</text>
+      <text class="fv-del" bindtap="clearSecondFile">×</text>
+    </view>
+    <view wx:else class="fv-add" bindtap="uploadSecondFile">+ 选择PDF文件</view>
+  </view>
+
   <view class="op-list">
     <view class="op-card {{operation === 'watermark' ? 'selected' : ''}}" bindtap="selectOp" data-op="watermark">
       <text class="op-icon">T</text>
@@ -22,7 +32,7 @@
     </view>
     <view class="op-card {{operation === 'merge' ? 'selected' : ''}}" bindtap="selectOp" data-op="merge">
       <text class="op-icon">⊞</text>
-      <view class="op-info"><text class="op-name">合并PDF</text><text class="op-desc">上传两个文件进行合并</text></view>
+      <view class="op-info"><text class="op-name">合并PDF</text><text class="op-desc">将两个PDF文件合并为一个</text></view>
     </view>
   </view>
 

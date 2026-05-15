@@ -595,6 +595,62 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   }
 });
 
+// 合并PDF：接收第二个文件
+const mergeFiles = {};
+app.post('/api/pdf/edit/merge2', upload.single('file2'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '请上传第二个文件' });
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+    const mergeId = 'merge_' + Date.now();
+    mergeFiles[mergeId] = fileBase64;
+    fs.unlinkSync(req.file.path);
+    res.json({ merge_id: mergeId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 执行合并
+app.post('/api/pdf/edit/merge', async (req, res) => {
+  try {
+    const { file_base64, merge_id } = req.body;
+    if (!file_base64 || !merge_id || !mergeFiles[merge_id]) {
+      return res.status(400).json({ error: '缺少文件数据' });
+    }
+    const backend = _pickBackend();
+    const t0 = Date.now();
+
+    const pyRes = await fetchWithTimeout(backend + '/edit/merge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file1_base64: file_base64,
+        file2_base64: mergeFiles[merge_id]
+      })
+    }, 120000);
+
+    delete mergeFiles[merge_id];
+
+    if (!pyRes.ok) {
+      const err = await pyRes.json();
+      return res.status(400).json(err);
+    }
+
+    const buffer = await pyRes.arrayBuffer();
+    const outFile = config.storage.serveDir + '/edit_' + Date.now() + '.pdf';
+    fs.mkdirSync(config.storage.serveDir, { recursive: true });
+    fs.writeFileSync(outFile, Buffer.from(buffer));
+    console.log(`[pdf] merge done (${Date.now()-t0}ms)`);
+
+    res.json({ url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/pdf/download/:filename', (req, res) => {
   const filePath = config.storage.serveDir + '/' + req.params.filename;
   if (fs.existsSync(filePath)) {

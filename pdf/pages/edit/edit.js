@@ -6,6 +6,8 @@ Page({
   data: {
     fileName: '',
     filePath: '',
+    fileName2: '',
+    filePath2: '',
     operation: '',
     processing: false,
     progressText: '',
@@ -37,14 +39,47 @@ Page({
 
   onTextInput: function(e) { this.setData({ textContent: e.detail.value }); },
 
+  uploadSecondFile: function() {
+    var that = this;
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      extension: ['pdf'],
+      success: function(res) {
+        var file = res.tempFiles[0];
+        that.setData({
+          fileName2: file.name,
+          filePath2: file.path
+        });
+      }
+    });
+  },
+
+  clearSecondFile: function() {
+    this.setData({ fileName2: '', filePath2: '' });
+  },
+
   doOperation: function() {
     if (!this.data.filePath) { wx.showToast({ title: '请先上传文件', icon: 'none' }); return; }
     if (!this.data.operation) { wx.showToast({ title: '请选择操作', icon: 'none' }); return; }
+    if (this.data.operation === 'merge' && !this.data.filePath2) {
+      wx.showToast({ title: '合并PDF需要选择第二个文件', icon: 'none' });
+      return;
+    }
     if (this.data.uploading) { wx.showToast({ title: '正在处理中', icon: 'none' }); return; }
 
     var that = this;
     that.setData({ processing: true, uploading: true, progressText: '处理中...' });
 
+    if (that.data.operation === 'merge') {
+      that._doMerge();
+    } else {
+      that._doSingleOp();
+    }
+  },
+
+  _doSingleOp: function() {
+    var that = this;
     var r = retry.createRetrier(that, { totalTimeout: 60000, maxRetries: 3 });
 
     r.operate(function(retry, stop) {
@@ -54,7 +89,7 @@ Page({
         name: 'file',
         formData: {
           op: that.data.operation,
-          text: that.data.textContent,
+          text: that.data.textContent || '',
           angle: String(that.data.rotateAngle)
         },
         timeout: 60000,
@@ -62,20 +97,7 @@ Page({
           that.setData({ uploading: false });
           var data = {};
           try { data = JSON.parse(res.data); } catch(e) {}
-          if (data.job_id) {
-            that.setData({ currentJobId: data.job_id });
-            that._saveTaskRecord({
-              jobId: data.job_id,
-              type: 'edit',
-              fileName: that.data.fileName,
-              operation: that.data.operation,
-              status: 'queued',
-              createdAt: Date.now(),
-              resultUrl: '/api/pdf/status/' + data.job_id
-            });
-            wx.showToast({ title: '文件已上传，完成后会有提示，或者可以在纪录里找到下载', icon: 'none', duration: 3000 });
-            that._pollEditStatus(r, data.job_id);
-          } else if (data.url) {
+          if (data.url) {
             that.setData({ resultUrl: data.url, processing: false, progressText: '' });
             wx.showToast({ title: '处理成功', icon: 'success' });
           } else {
@@ -87,6 +109,58 @@ Page({
           retry('网络错误');
         }
       });
+    });
+  },
+
+  _doMerge: function() {
+    var that = this;
+    var mergeId = '';
+
+    // Step 1: Upload second file
+    wx.uploadFile({
+      url: SERVER + '/api/pdf/edit/merge2',
+      filePath: that.data.filePath2,
+      name: 'file2',
+      timeout: 60000,
+      success: function(res2) {
+        var data2 = {};
+        try { data2 = JSON.parse(res2.data); } catch(e) {}
+        if (!data2.merge_id) {
+          that.setData({ processing: false, uploading: false, progressText: '' });
+          wx.showToast({ title: data2.error || '第二个文件上传失败', icon: 'none' });
+          return;
+        }
+        mergeId = data2.merge_id;
+
+        // Step 2: Upload first file and trigger merge
+        wx.uploadFile({
+          url: SERVER + '/api/pdf/edit/merge',
+          filePath: that.data.filePath,
+          name: 'file',
+          formData: { merge_id: mergeId },
+          timeout: 120000,
+          success: function(res) {
+            that.setData({ uploading: false });
+            var data = {};
+            try { data = JSON.parse(res.data); } catch(e) {}
+            if (data.url) {
+              that.setData({ resultUrl: data.url, processing: false, progressText: '' });
+              wx.showToast({ title: '合并成功', icon: 'success' });
+            } else {
+              that.setData({ processing: false, progressText: '' });
+              wx.showToast({ title: data.error || '合并失败', icon: 'none' });
+            }
+          },
+          fail: function() {
+            that.setData({ processing: false, uploading: false, progressText: '' });
+            wx.showToast({ title: '网络错误', icon: 'none' });
+          }
+        });
+      },
+      fail: function() {
+        that.setData({ processing: false, uploading: false, progressText: '' });
+        wx.showToast({ title: '第二个文件上传失败', icon: 'none' });
+      }
     });
   },
 

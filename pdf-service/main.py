@@ -242,23 +242,22 @@ async def edit_pdf(request: Request):
             wm_text = text or "WATERMARK"
             for page in doc:
                 r = page.rect
-                page.insert_text(
-                    fitz.Point(r.width * 0.1, r.height * 0.5),
+                # Draw watermark text centered and rotated
+                tw = fitz.TextWriter(page.rect)
+                tw.append(
+                    fitz.Point(r.width / 2, r.height / 2),
                     wm_text,
-                    fontsize=48,
-                    color=(0.6, 0.6, 0.6),
-                    overlay=False,
+                    fontsize=60,
                 )
+                tw.write_text(page, overlay=True, opacity=0.3)
         elif op == "rotate":
             rot_angle = int(angle or "90")
             for page in doc:
                 page.set_rotation((page.rotation or 0) + rot_angle)
         elif op == "merge":
-            new_doc = fitz.open()
-            new_doc.insert_pdf(doc)
-            new_doc.insert_pdf(doc)
+            # Merge is handled by /edit/merge endpoint
             doc.close()
-            doc = new_doc
+            raise HTTPException(status_code=400, detail="Use /edit/merge for two-file merge")
         else:
             doc.close()
             raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
@@ -275,6 +274,53 @@ async def edit_pdf(request: Request):
     finally:
         if tmp and tmp.exists():
             _safe_unlink(tmp)
+
+
+@app.post("/edit/merge")
+async def merge_pdfs(request: Request):
+    """Merge two PDF files."""
+    tmp1 = tmp2 = None
+    try:
+        body = await request.json()
+        file1_base64 = body.get("file1_base64", "")
+        file2_base64 = body.get("file2_base64", "")
+
+        if not file1_base64 or not file2_base64:
+            raise HTTPException(status_code=400, detail="Missing file data")
+
+        import fitz
+
+        raw1 = base64.b64decode(file1_base64)
+        raw2 = base64.b64decode(file2_base64)
+
+        tmp1 = UPLOAD_DIR / f"merge1_{uuid.uuid4().hex}.pdf"
+        tmp2 = UPLOAD_DIR / f"merge2_{uuid.uuid4().hex}.pdf"
+        tmp1.write_bytes(raw1)
+        tmp2.write_bytes(raw2)
+
+        doc1 = fitz.open(str(tmp1))
+        doc2 = fitz.open(str(tmp2))
+
+        new_doc = fitz.open()
+        new_doc.insert_pdf(doc1)
+        new_doc.insert_pdf(doc2)
+
+        out_bytes = new_doc.tobytes(garbage=4, deflate=True)
+        doc1.close()
+        doc2.close()
+        new_doc.close()
+
+        return Response(content=out_bytes, media_type="application/pdf")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp1 and tmp1.exists():
+            _safe_unlink(tmp1)
+        if tmp2 and tmp2.exists():
+            _safe_unlink(tmp2)
 
 
 @app.get("/health")

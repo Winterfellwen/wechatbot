@@ -5,8 +5,12 @@
 .header-title { flex: 1; text-align: center; font-size: 32rpx; font-weight: bold; color: #333; }
 .header-placeholder { width: 100rpx; }
 .file-display { padding: 24rpx 30rpx; background: #fff; margin: 2rpx 0; }
+.file-display-2 { border-top: 2rpx dashed #E2E8F0; }
 .fl { font-size: 24rpx; color: #94A3B8; display: block; }
 .fv { font-size: 28rpx; color: #333; font-weight: bold; display: block; margin-top: 4rpx; word-break: break-all; }
+.fv-row { display: flex; align-items: center; justify-content: space-between; }
+.fv-del { font-size: 40rpx; color: #94A3B8; padding: 0 10rpx; }
+.fv-add { font-size: 28rpx; color: #6366F1; margin-top: 4rpx; }
 .no-file { padding: 60rpx; text-align: center; color: #94A3B8; font-size: 28rpx; }
 .op-list { padding: 30rpx; display: flex; flex-direction: column; gap: 16rpx; }
 .op-card { display: flex; align-items: center; gap: 24rpx; background: #fff; border: 2rpx solid #E2E8F0; border-radius: 16rpx; padding: 28rpx; }
