@@ -32,6 +32,17 @@ Page({
         content: '上传已被取消，任务已保存至记录页',
         showCancel: false
       });
+      // 保存当前状态到记录
+      if (this.data.currentJobId) {
+        this._saveTaskRecord({
+          jobId: this.data.currentJobId,
+          type: 'edit',
+          fileName: this.data.fileName,
+          operation: this.data.operation,
+          status: 'processing',
+          createdAt: Date.now()
+        });
+      }
     }
   },
 

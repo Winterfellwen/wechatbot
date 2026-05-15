@@ -245,9 +245,11 @@ Page({
               try { rmFs.unlinkSync(removed[i].path); } catch(e) {}
             }
           }
-          that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
           that._saveResults();
-          that._updateRecordStatus(that.data.currentJobId || '', 'done', url);
+          // 更新记录 - capture jobId before clearing
+          var jobId = that.data.currentJobId;
+          that.setData({ converting: false, progressText: '', currentJobId: null, results: results });
+          that._updateRecordStatus(jobId || '', 'done', url);
           wx.showToast({ title: '转换成功', icon: 'success' });
         },
         fail: function() { retry('网络错误'); }
