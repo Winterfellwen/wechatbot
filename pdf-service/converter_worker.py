@@ -387,27 +387,46 @@ def docx_to_pdf(in_path, out_path):
         cmd=[lo,f"-env:UserInstallation=file://{home}","--headless","--norestore",
              "--nofirststartwizard","--convert-to","pdf:writer_pdf_Export","--outdir",str(tmp),str(in_path)]
         kill_lo()
+        print(f"[worker] LO cmd: {' '.join(cmd[:5])}...", flush=True)
         t0 = time.time()
         r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
-        print(f"[worker] LO docx→pdf: rc={r.returncode} time={time.time()-t0:.1f}s", flush=True)
+        elapsed = time.time()-t0
+        print(f"[worker] LO docx→pdf: rc={r.returncode} time={elapsed:.1f}s", flush=True)
         if r.stdout: print(f"[worker] LO stdout: {r.stdout[:300]}", flush=True)
         if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
-        if r.returncode!=0 or not list(tmp.glob("*.pdf")):
+        
+        pfs=list(tmp.glob("*.pdf"))
+        print(f"[worker] LO result files: {[str(p.name) for p in pfs]}", flush=True)
+        print(f"[worker] LO tmp dir contents: {list(tmp.iterdir())}", flush=True)
+        
+        if not pfs:
+            # Retry once
             print(f"[worker] LO attempt 1 failed, retrying...", flush=True)
             kill_lo(); t0 = time.time()
             r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
-            print(f"[worker] LO retry: rc={r.returncode} time={time.time()-t0:.1f}s", flush=True)
+            elapsed = time.time()-t0
+            print(f"[worker] LO retry: rc={r.returncode} time={elapsed:.1f}s", flush=True)
             if r.stdout: print(f"[worker] LO stdout: {r.stdout[:300]}", flush=True)
             if r.stderr: print(f"[worker] LO stderr: {r.stderr[:500]}", flush=True)
-        pfs=list(tmp.glob("*.pdf"))
-        print(f"[worker] LO result files: {[str(p.name) for p in pfs]}", flush=True)
-        if not pfs: raise RuntimeError(f"LO no PDF. stderr: {(r.stderr or '')[:500]}")
+            pfs=list(tmp.glob("*.pdf"))
+            print(f"[worker] LO retry result files: {[str(p.name) for p in pfs]}", flush=True)
+            if not pfs: raise RuntimeError(f"LO no PDF after retry. stderr: {(r.stderr or '')[:500]}")
+        
         inter_pdf = pfs[0]
         print(f"[worker] Intermediate PDF: {inter_pdf.name} ({inter_pdf.stat().st_size//1024}KB)", flush=True)
         
+        # Verify it's a valid PDF
+        with open(str(inter_pdf), 'rb') as f:
+            header = f.read(5)
+            if not header.startswith(b'%PDF'):
+                raise RuntimeError(f"Intermediate file is not a valid PDF. Header: {header}")
+        
         # Step 2: Render each page as high-res image
         print(f"[worker] Opening intermediate PDF with fitz...", flush=True)
-        src = fitz.open(str(inter_pdf))
+        try:
+            src = fitz.open(str(inter_pdf))
+        except Exception as e:
+            raise RuntimeError(f"fitz.open failed: {e}")
         num_pages = len(src)
         print(f"[worker] Rendering {num_pages} pages as images...", flush=True)
         
@@ -440,7 +459,7 @@ def docx_to_pdf(in_path, out_path):
         print(f"[worker] Image-PDF created: {out_path.stat().st_size//1024}KB", flush=True)
         
     except Exception as e:
-        print(f"[worker] docx_to_pdf error at step: {e}", flush=True)
+        print(f"[worker] docx_to_pdf error: {type(e).__name__}: {e}", flush=True)
         raise
     finally:
         if inter_pdf and inter_pdf.exists(): safe_unlink(inter_pdf)
