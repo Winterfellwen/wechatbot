@@ -213,32 +213,88 @@ def merge_docx(chunk_paths, output_path):
 
 # ========== PDF→DOCX (direct or chunked) ==========
 def pdf_to_docx(in_path, out_path):
-    """Use LibreOffice for PDF→DOCX — 10-50x faster than pdf2docx, no OOM risk."""
+    """LibreOffice first (fast), fallback to pdf2docx (reliable)."""
     lo = find_libreoffice()
-    if not lo: raise RuntimeError("LibreOffice not found")
-    tag = uuid.uuid4().hex[:8]
-    home = UPLOAD_DIR / f"lo_home_{tag}"; home.mkdir(parents=True, exist_ok=True)
-    tmp = UPLOAD_DIR / f"lo_out_{tag}"; tmp.mkdir(exist_ok=True)
+    if lo:
+        tag = uuid.uuid4().hex[:8]
+        home = UPLOAD_DIR / f"lo_home_{tag}"; home.mkdir(parents=True, exist_ok=True)
+        tmp = UPLOAD_DIR / f"lo_out_{tag}"; tmp.mkdir(exist_ok=True)
+        try:
+            env = os.environ.copy()
+            for k in ("SAL_USE_VCLPLUGIN",): env.pop(k, None)
+            env["HOME"] = str(home)
+            env["SAL_DISABLE_OPENGL_CHECK"] = "1"
+            env["SAL_VIDEO_DISABLE_ACCELERATE"] = "1"
+            cmd = [lo, f"-env:UserInstallation=file://{home}", "--headless", "--norestore",
+                   "--nofirststartwizard", "--convert-to", "docx:MS Word 2007 XML", "--outdir", str(tmp), str(in_path)]
+            kill_lo()
+            t0 = time.time()
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
+            if r.returncode != 0 or not list(tmp.glob("*.docx")):
+                kill_lo(); r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
+            pfs = list(tmp.glob("*.docx"))
+            if pfs and pfs[0].stat().st_size > 0:
+                shutil.copy2(pfs[0], out_path)
+                print(f"[worker] LibreOffice PDF→DOCX in {time.time()-t0:.1f}s ({out_path.stat().st_size//1024}KB)", flush=True)
+                return
+            else:
+                print(f"[worker] LibreOffice failed, falling back to pdf2docx. stderr: {(r.stderr or '')[:300]}", flush=True)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True); shutil.rmtree(home, ignore_errors=True); kill_lo(); gc.collect()
+
+    # Fallback: pdf2docx with chunking
+    import fitz
+    from pdf2docx import Converter
+
+    pdf = fitz.open(str(in_path))
+    num_pages = len(pdf)
+    file_mb = in_path.stat().st_size / (1024 * 1024)
+    print(f"[worker] pdf2docx fallback: {num_pages}p {file_mb:.1f}MB", flush=True)
+
+    est_mb_pp = max(file_mb / max(num_pages, 1), 0.1)
+    ppc = max(1, min(CHUNK_MAX_PAGES, int(CHUNK_MAX_SIZE / est_mb_pp)))
+    num_chunks = math.ceil(num_pages / ppc)
+    pdf.close(); gc.collect()
+
+    if num_chunks <= 1:
+        print(f"[worker] Direct pdf2docx...", flush=True)
+        cv = Converter(str(in_path))
+        cv.convert(str(out_path))
+        cv.close(); gc.collect()
+        repair_docx(out_path)
+        print(f"[worker] Done: {out_path.name}", flush=True)
+        return
+
+    print(f"[worker] Splitting into {num_chunks} chunks (~{ppc}p each)", flush=True)
+    chunk_pdfs, chunk_docxs = [], []
     try:
-        env = os.environ.copy()
-        for k in ("SAL_USE_VCLPLUGIN",): env.pop(k, None)
-        env["HOME"] = str(home)
-        env["SAL_DISABLE_OPENGL_CHECK"] = "1"
-        env["SAL_VIDEO_DISABLE_ACCELERATE"] = "1"
-        cmd = [lo, f"-env:UserInstallation=file://{home}", "--headless", "--norestore",
-               "--nofirststartwizard", "--convert-to", "docx:MS Word 2007 XML", "--outdir", str(tmp), str(in_path)]
-        kill_lo()
-        t0 = time.time()
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
-        if r.returncode != 0 or not list(tmp.glob("*.docx")):
-            kill_lo(); r = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
-        pfs = list(tmp.glob("*.docx"))
-        if not pfs: raise RuntimeError(f"LO no DOCX. stderr: {(r.stderr or '')[:500]}")
-        if pfs[0].stat().st_size == 0: raise RuntimeError("LO empty DOCX")
-        shutil.copy2(pfs[0], out_path)
-        print(f"[worker] LibreOffice PDF→DOCX in {time.time()-t0:.1f}s ({out_path.stat().st_size//1024}KB)", flush=True)
+        for ci in range(num_chunks):
+            t_chunk = time.time()
+            sp = ci * ppc; ep = min(sp + ppc, num_pages)
+            cp = UPLOAD_DIR / f"{in_path.stem}_c{ci}.pdf"
+            cd = UPLOAD_DIR / f"{in_path.stem}_c{ci}.docx"
+            chunk_pdfs.append(cp); chunk_docxs.append(cd)
+
+            src = fitz.open(str(in_path))
+            dst = fitz.open()
+            dst.insert_pdf(src, from_page=sp, to_page=ep-1)
+            dst.save(str(cp), garbage=4, deflate=True)
+            dst.close(); src.close(); gc.collect()
+            print(f"[worker]  Chunk {ci+1}: p{sp+1}-{ep} -> {cp.name} ({cp.stat().st_size//1024}KB) split={time.time()-t_chunk:.1f}s", flush=True)
+
+            cv = Converter(str(cp))
+            cv.convert(str(cd))
+            cv.close(); gc.collect()
+            csz = cd.stat().st_size // 1024 if cd.exists() else 0
+            print(f"[worker]  Chunk {ci+1} DOCX: {cd.name} ({csz}KB) convert={time.time()-t_chunk:.1f}s", flush=True)
+
+        print(f"[worker] Merging {num_chunks} DOCX...", flush=True)
+        merge_docx(chunk_docxs, out_path)
+        print(f"[worker] Merged: {out_path.name}", flush=True)
+        fix_type3_fonts(out_path, replacement_font="Calibri")
     finally:
-        shutil.rmtree(tmp, ignore_errors=True); shutil.rmtree(home, ignore_errors=True); kill_lo(); gc.collect()
+        for f in chunk_pdfs: safe_unlink(f)
+        for f in chunk_docxs: safe_unlink(f)
 
 
 def fix_type3_fonts(docx_path: Path, replacement_font: str = "Calibri"):
