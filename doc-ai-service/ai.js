@@ -36,43 +36,45 @@ async function callAI(sourceText, sourceFormat, targetFormat, mode, title) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), config.openrouter.timeout);
 
-      const response = await fetch(config.openrouter.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.openrouter.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://doc-ai-service.onrender.com',
-          'X-Title': 'DocAIService',
-        },
-        body: JSON.stringify({
-          model: config.openrouter.model,
-          messages,
-          max_tokens: mode === 'summarize' ? 2000 : config.openrouter.maxTokens,
-          temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
-        }),
-        signal: controller.signal,
-      });
+      try {
+        const response = await fetch(config.openrouter.apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${config.openrouter.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://doc-ai-service.onrender.com',
+            'X-Title': 'DocAIService',
+          },
+          body: JSON.stringify({
+            model: config.openrouter.model,
+            messages,
+            max_tokens: mode === 'summarize' ? 2000 : config.openrouter.maxTokens,
+            temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
+          }),
+          signal: controller.signal,
+        });
 
-      clearTimeout(timer);
+        if (!response.ok) {
+          const errText = await response.text().catch(() => 'Unknown');
+          throw new Error(`OpenRouter ${response.status}: ${errText.substring(0, 100)}`);
+        }
 
-      if (!response.ok) {
-        const errText = await response.text().catch(() => 'Unknown');
-        throw new Error(`OpenRouter ${response.status}: ${errText.substring(0, 100)}`);
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+
+        const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
+        if (htmlMatch) return htmlMatch[1].trim();
+
+        const cheerio = require('cheerio');
+        const $ = cheerio.load(content);
+        if ($('html').length > 0 || $('body').length > 0 || $('*').length > 0) {
+          return $.html();
+        }
+
+        throw new Error('AI 输出无法解析为合法 HTML');
+      } finally {
+        clearTimeout(timer);
       }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '';
-
-      const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
-      if (htmlMatch) return htmlMatch[1].trim();
-
-      const cheerio = require('cheerio');
-      const $ = cheerio.load(content);
-      if ($('html').length > 0 || $('body').length > 0 || $('*').length > 0) {
-        return $.html();
-      }
-
-      throw new Error('AI 输出无法解析为合法 HTML');
     } catch (err) {
       lastError = err;
       console.error(`[ai] attempt ${attempt}/${config.openrouter.retries} failed:`, err.message);
