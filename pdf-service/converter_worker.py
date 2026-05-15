@@ -371,11 +371,10 @@ def docx_to_pdf(in_path, out_path):
     """DOCX → images → PDF: render each page as image, embed in PDF."""
     import fitz
     
-    # Step 1: DOCX → intermediate PDF via LibreOffice
     lo = find_libreoffice()
     if not lo: raise RuntimeError("LibreOffice not found")
     
-    print(f"[worker] docx_to_pdf input: {in_path.name} ({in_path.stat().st_size//1024}KB)", flush=True)
+    print(f"[worker] docx_to_pdf: {in_path.name} ({in_path.stat().st_size//1024}KB)", flush=True)
     
     tag = uuid.uuid4().hex[:8]
     home = UPLOAD_DIR/f"lo_home_{tag}"; home.mkdir(parents=True,exist_ok=True)
@@ -389,84 +388,50 @@ def docx_to_pdf(in_path, out_path):
         cmd=[lo,f"-env:UserInstallation=file://{home}","--headless","--norestore",
              "--nofirststartwizard","--convert-to","pdf:writer_pdf_Export","--outdir",str(tmp),str(in_path)]
         kill_lo()
-        print(f"[worker] LO cmd: {' '.join(cmd[:5])}...", flush=True)
         t0 = time.time()
         r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
-        elapsed = time.time()-t0
-        print(f"[worker] LO docx→pdf: rc={r.returncode} time={elapsed:.1f}s", flush=True)
-        if r.stdout: print(f"[worker] LO stdout: {r.stdout[:500]}", flush=True)
-        if r.stderr: print(f"[worker] LO stderr: {r.stderr[:1000]}", flush=True)
-        
-        # List all files in tmp directory
-        all_files = list(tmp.iterdir())
-        print(f"[worker] LO tmp dir ({len(all_files)} files): {[f.name for f in all_files[:10]]}", flush=True)
+        print(f"[worker] LO docx→pdf: rc={r.returncode} time={time.time()-t0:.1f}s", flush=True)
         
         pfs=list(tmp.glob("*.pdf"))
-        print(f"[worker] LO PDF files: {[str(p.name) for p in pfs]}", flush=True)
-        
         if not pfs:
-            # Retry once
-            print(f"[worker] LO attempt 1 failed, retrying...", flush=True)
             kill_lo(); t0 = time.time()
             r=subprocess.run(cmd,capture_output=True,text=True,timeout=300,env=env)
-            elapsed = time.time()-t0
-            print(f"[worker] LO retry: rc={r.returncode} time={elapsed:.1f}s", flush=True)
-            if r.stdout: print(f"[worker] LO stdout: {r.stdout[:500]}", flush=True)
-            if r.stderr: print(f"[worker] LO stderr: {r.stderr[:1000]}", flush=True)
+            print(f"[worker] LO retry: rc={r.returncode} time={time.time()-t0:.1f}s", flush=True)
             pfs=list(tmp.glob("*.pdf"))
-            print(f"[worker] LO retry PDF files: {[str(p.name) for p in pfs]}", flush=True)
             if not pfs: raise RuntimeError(f"LO no PDF after retry. stderr: {(r.stderr or '')[:500]}")
         
         inter_pdf = pfs[0]
         print(f"[worker] Intermediate PDF: {inter_pdf.name} ({inter_pdf.stat().st_size//1024}KB)", flush=True)
         
-        # Verify it's a valid PDF
+        # Verify PDF header
         with open(str(inter_pdf), 'rb') as f:
-            header = f.read(10)
-            print(f"[worker] Intermediate PDF header: {header}", flush=True)
+            header = f.read(5)
             if not header.startswith(b'%PDF'):
-                raise RuntimeError(f"Intermediate file is not a valid PDF. Header: {header}")
+                raise RuntimeError(f"Not a valid PDF. Header: {header}")
         
-        # Step 2: Render each page as high-res image
-        print(f"[worker] Opening intermediate PDF with fitz...", flush=True)
-        try:
-            src = fitz.open(str(inter_pdf))
-        except Exception as e:
-            raise RuntimeError(f"fitz.open failed: {e}")
+        # Render pages as images and create new PDF
+        src = fitz.open(str(inter_pdf))
         num_pages = len(src)
         print(f"[worker] Rendering {num_pages} pages as images...", flush=True)
         
-        # Step 3: Create new PDF with images
         dst = fitz.open()
-        zoom = 2.0  # 2x = 144 DPI for good quality
+        zoom = 2.0  # 144 DPI
         mat = fitz.Matrix(zoom, zoom)
         
         for i in range(num_pages):
-            t_page = time.time()
             page = src[i]
-            print(f"[worker]  Rendering page {i+1}/{num_pages}...", flush=True)
             pix = page.get_pixmap(matrix=mat)
-            
-            # Create new page with same dimensions
             new_page = dst.new_page(width=page.rect.width, height=page.rect.height)
-            
-            # Insert image covering the whole page
             img_rect = fitz.Rect(0, 0, page.rect.width, page.rect.height)
             new_page.insert_image(img_rect, pixmap=pix)
-            
-            print(f"[worker]  Page {i+1} done in {time.time()-t_page:.1f}s", flush=True)
-            pix = None  # free memory
+            pix = None
             gc.collect()
             
         src.close()
-        print(f"[worker] Saving output PDF...", flush=True)
         dst.save(str(out_path), garbage=4, deflate=True)
         dst.close()
         print(f"[worker] Image-PDF created: {out_path.stat().st_size//1024}KB", flush=True)
         
-    except Exception as e:
-        print(f"[worker] docx_to_pdf error: {type(e).__name__}: {e}", flush=True)
-        raise
     finally:
         if inter_pdf and inter_pdf.exists(): safe_unlink(inter_pdf)
         shutil.rmtree(tmp,ignore_errors=True); shutil.rmtree(home,ignore_errors=True); kill_lo(); gc.collect()
