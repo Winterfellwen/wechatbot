@@ -1,0 +1,126 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20rpx;
+}
+
+.tab-bar {
+  display: flex;
+  background: rgba(255,255,255,0.2);
+  border-radius: 16rpx;
+  padding: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  color: rgba(255,255,255,0.7);
+  font-size: 28rpx;
+  border-radius: 12rpx;
+}
+
+.tab-item.active {
+  background: rgba(255,255,255,0.9);
+  color: #6366F1;
+  font-weight: 600;
+}
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.record-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.1);
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.record-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.record-name {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-del {
+  font-size: 40rpx;
+  color: #9ca3af;
+  padding: 0 10rpx;
+}
+
+.record-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.record-type {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.record-status {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.status-queued { background: #fef3c7; color: #92400e; }
+.status-processing { background: #dbeafe; color: #1e40af; }
+.status-done { background: #d1fae5; color: #065f46; }
+.status-error { background: #fee2e2; color: #991b1b; }
+
+.record-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-time {
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+
+.retry-btn {
+  background: #6366F1;
+  color: white;
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100rpx 0;
+  color: rgba(255,255,255,0.7);
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+}
