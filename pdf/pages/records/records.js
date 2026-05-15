@@ -47,7 +47,8 @@ Page({
       return;
     }
     if (record.localPath) {
-      wx.openDocument({ filePath: record.localPath, showMenu: true });
+      var fileType = record.to || (record.type === 'edit' ? 'pdf' : 'docx');
+      wx.openDocument({ filePath: record.localPath, fileType: fileType, showMenu: true });
     } else {
       this._downloadAndOpen(record);
     }
@@ -62,7 +63,11 @@ Page({
         wx.hideLoading();
         if (res.statusCode === 200) {
           var fs = wx.getFileSystemManager();
-          var savedPath = wx.env.USER_DATA_PATH + '/' + record.fileName;
+          // 使用转换后的格式作为扩展名
+          var baseName = record.fileName.replace(/\.[^.]+$/, '');
+          var ext = record.to || 'pdf';
+          var savedName = baseName + '.' + ext;
+          var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
           try { fs.saveFileSync(res.tempFilePath, savedPath); } catch(e) { savedPath = res.tempFilePath; }
           var records = wx.getStorageSync('pdf_task_records') || [];
           for (var i = 0; i < records.length; i++) {
