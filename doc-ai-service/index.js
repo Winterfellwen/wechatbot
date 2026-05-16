@@ -1,4 +1,4 @@
-// Polyfill for Promise.withResolvers (pdfjs-dist v4 needs Node 22+)
+// Polyfills for canvas + pdfjs-dist (Node 20 compatibility)
 if (!Promise.withResolvers) {
   Promise.withResolvers = function() {
     let resolve, reject;
@@ -6,6 +6,10 @@ if (!Promise.withResolvers) {
     return { promise, resolve, reject };
   };
 }
+try {
+  const { ImageData } = require('canvas');
+  if (typeof global.ImageData === 'undefined') global.ImageData = ImageData;
+} catch (_) {}
 
 const express = require('express');
 const cors = require('cors');
@@ -75,6 +79,7 @@ async function processJob(jobId) {
         imageGroups, result.text, aiHtml,
         job.sourceFmt, job.targetFmt, job.mode, result.title || '', result.totalPages
       );
+      queue.updateJob(jobId, { visionNotice: '视觉精修已完成' });
     } catch (err) {
       console.error(`[process] vision enhancement failed, using text AI result:`, err.message);
       queue.updateJob(jobId, { visionNotice: `跳过视觉精修: ${err.message.substring(0, 100)}` });
