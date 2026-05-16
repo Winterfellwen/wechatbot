@@ -13,6 +13,8 @@ const htmlAssembler = require('./assemblers/html');
 const docxAssembler = require('./assemblers/docx');
 const pdfAssembler = require('./assemblers/pdf');
 const { callAI } = require('./ai');
+const { tileImages } = require('./lib/tiler');
+const { callVisionAI } = require('./ai-vision');
 
 const app = express();
 app.use(cors());
@@ -45,7 +47,33 @@ async function processJob(jobId) {
 
   const result = await extractor.extract(job.filePath);
 
-  const aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
+  let aiHtml;
+  const hasImages = result.images && result.images.length > 0;
+  const skipVision = job.sourceFmt === 'html' || !hasImages;
+
+  if (!skipVision) {
+    try {
+      const imageGroups = await tileImages(result.images, config.vision);
+      console.log(`[process] vision AI: ${result.totalPages} pages → ${imageGroups.length} tile groups`);
+      aiHtml = await callVisionAI(
+        imageGroups, result.text, result.html || '',
+        job.sourceFmt, job.targetFmt, job.mode, result.title || '', result.totalPages
+      );
+    } catch (err) {
+      console.error(`[process] vision AI failed, falling back to text AI:`, err.message);
+      aiHtml = null;
+    }
+  }
+
+  if (!aiHtml) {
+    console.log('[process] using text AI fallback');
+    aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
+  }
+
+  // 第二轮（polish/format/summarize）
+  if (job.mode !== 'raw') {
+    aiHtml = await callAI(aiHtml, 'html', job.targetFmt, job.mode, result.title || '');
+  }
 
   const assembler = assemblers[job.targetFmt];
   if (!assembler) throw new Error(`Unsupported target format: ${job.targetFmt}`);
