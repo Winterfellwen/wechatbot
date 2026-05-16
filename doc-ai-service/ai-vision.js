@@ -54,8 +54,7 @@ async function callVisionProvider(provider, contentParts, mode) {
 
   const model = provider.modelField ? cfg[provider.modelField] || cfg.model : cfg.model;
   const isBigModel = cfg.apiUrl.includes('bigmodel');
-  // Vision calls use a shorter timeout (image processing should be faster or not worth waiting)
-  const timeout = isBigModel ? cfg.timeout : 60000;
+  const timeout = isBigModel ? 90000 : 120000;
 
   const retries = cfg.retries || 2;
   for (let attempt = 1; attempt <= retries; attempt++) {
