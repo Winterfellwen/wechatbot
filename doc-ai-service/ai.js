@@ -5,17 +5,21 @@ const PROVIDERS = [
   { name: 'OpenRouter', key: 'openrouter', label: 'OpenRouter' },
 ];
 
-function buildPrompt(sourceText, sourceFormat, targetFormat, mode, title) {
+function buildPrompt(sourceText, sourceFormat, targetFormat, mode, title, imageInfo) {
   const modeInstructions = {
     polish: '润色文档内容：修正语法错误，优化表达方式，保持原意不变。改善段落结构和可读性。',
     format: '格式化文档：优化标题层级，整理段落结构，美化表格和列表，使其布局清晰专业。',
     summarize: '提取文档的核心内容，生成结构化摘要。保留关键信息、主要论点和结论。省略次要细节。',
   };
 
+  const imageNote = imageInfo
+    ? `\n原文档包含 ${imageInfo.count} 张图片。请在合适的位置使用 <img src="placeholder" alt="图片描述"> 插入图片占位符，根据上下文判断图片位置（头像、证件照、图表等）。`
+    : '';
+
   return [
     { role: 'system', content: `你是一个文档转换专家。你需要将${sourceFormat}格式的文档转换为${targetFormat}格式。
 ${modeInstructions[mode] || modeInstructions.polish}
-
+${imageNote}
 你必须严格按照以下格式输出，不要包含任何其他内容：
 \`\`\`html
 <!DOCTYPE html>
@@ -80,8 +84,8 @@ async function callProvider(cfg, messages, mode) {
   }
 }
 
-async function callAI(sourceText, sourceFormat, targetFormat, mode, title) {
-  const messages = buildPrompt(sourceText, sourceFormat, targetFormat, mode, title);
+async function callAI(sourceText, sourceFormat, targetFormat, mode, title, imageInfo) {
+  const messages = buildPrompt(sourceText, sourceFormat, targetFormat, mode, title, imageInfo);
   const errors = [];
 
   for (const provider of PROVIDERS) {

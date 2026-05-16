@@ -56,6 +56,22 @@ try {
   commitHash = execSync('git rev-parse --short HEAD', { timeout: 3000 }).toString().trim();
 } catch (_) {}
 
+function injectExtractedImages(html, images) {
+  if (!images || images.length === 0) return html;
+  const cheerio = require('cheerio');
+  const $ = cheerio.load(html);
+  const imgTags = $('img');
+  if (imgTags.length === 0) return html;
+
+  imgTags.each((i) => {
+    if (i < images.length) {
+      const dataUri = `data:image/jpeg;base64,${images[i].toString('base64')}`;
+      $(imgTags[i]).attr('src', dataUri);
+    }
+  });
+  return $.html();
+}
+
 function needsVision(result, sourceFmt) {
   if (sourceFmt === 'html' || !result.images || result.images.length === 0) return false;
   if (result.totalPages > 1) return true;
@@ -74,8 +90,13 @@ async function processJob(jobId) {
 
   const result = await extractor.extract(job.filePath);
 
+  // Pass image info to AI so it knows where to place <img> tags
+  const imageInfo = result.images && result.images.length > 0
+    ? { count: result.images.length }
+    : null;
+
   // Single text AI call (mode instructions baked into prompt)
-  let aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
+  let aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '', imageInfo);
 
   // Optional vision post-processing (only for complex layout docs)
   if (needsVision(result, job.sourceFmt)) {
@@ -91,6 +112,11 @@ async function processJob(jobId) {
       console.error(`[process] vision enhancement failed, using text AI result:`, err.message);
       queue.updateJob(jobId, { visionNotice: `跳过视觉精修: ${err.message.substring(0, 100)}` });
     }
+  }
+
+  // Inject actual extracted images into AI-generated <img> tags
+  if (result.images && result.images.length > 0) {
+    aiHtml = injectExtractedImages(aiHtml, result.images);
   }
 
   const assembler = assemblers[job.targetFmt];
