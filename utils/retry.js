@@ -30,7 +30,7 @@ function createRetrier(page, options) {
     if (page.data.processing !== undefined) update.processing = false;
     update.currentJobId = null;
     setData(update);
-    wx.showToast({ title: '操作超时，请稍后重试', icon: 'none', duration: 3000 });
+    wx.showToast({ title: '操作超时，请稍后重试或在记录中查看进度', icon: 'none', duration: 3000 });
     return true;
   }
 
@@ -63,7 +63,7 @@ function createRetrier(page, options) {
             fail('重试次数已达上限，请检查网络后重试');
             return;
           }
-          updateProgress('运行中 第' + attempt + '次' + (reason ? ' - ' + reason : ''));
+          updateProgress('网络异常，正在重试 (' + attempt + '/' + MAX_RETRIES + ')' + (reason ? ' - ' + reason : ''));
           setTimeout(run, 2000);
         },
         function stop(msg) {

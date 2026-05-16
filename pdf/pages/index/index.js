@@ -74,11 +74,11 @@ Page({
 
   doConvert: function() {
     if (!this.data.filePath) {
-      wx.showToast({ title: '请先上传文件', icon: 'none' });
+      wx.showToast({ title: '请先选择要处理的文件', icon: 'none' });
       return;
     }
     if (this.data.uploading) {
-      wx.showToast({ title: '正在上传中，请勿重复提交', icon: 'none' });
+      wx.showToast({ title: '文件正在上传中，请耐心等待', icon: 'none' });
       return;
     }
     var that = this;
@@ -121,7 +121,7 @@ Page({
             fileName: '', filePath: '', fromFormat: '', toFormat: '',
             targetOptions: [], uploading: false
           });
-          wx.showToast({ title: '文件已上传，完成后会有提示，或者可以在纪录里找到下载', icon: 'none', duration: 3000 });
+          wx.showToast({ title: '文件已提交，处理完成后将自动通知您，也可在记录中查看下载', icon: 'none', duration: 3000 });
         },
         fail: function() {
           that.setData({ uploading: false });
@@ -146,9 +146,9 @@ Page({
   onTextInput: function(e) { this.setData({ textContent: e.detail.value }); },
 
   doEditOp: function() {
-    if (!this.data.filePath) { wx.showToast({ title: '请先上传文件', icon: 'none' }); return; }
-    if (!this.data.editOp) { wx.showToast({ title: '请选择操作', icon: 'none' }); return; }
-    if (this.data.editUploading) { wx.showToast({ title: '正在处理中', icon: 'none' }); return; }
+    if (!this.data.filePath) { wx.showToast({ title: '请先选择要处理的文件', icon: 'none' }); return; }
+    if (!this.data.editOp) { wx.showToast({ title: '请选择要执行的操作', icon: 'none' }); return; }
+    if (this.data.editUploading) { wx.showToast({ title: '正在处理中，请耐心等待', icon: 'none' }); return; }
 
     var that = this;
     that.setData({ editUploading: true });
@@ -186,7 +186,7 @@ Page({
               downloaded: false,
               localPath: ''
             });
-            wx.showToast({ title: '处理成功', icon: 'success' });
+            wx.showToast({ title: '处理完成', icon: 'success' });
           } else {
             stop(data.error || '处理失败');
           }

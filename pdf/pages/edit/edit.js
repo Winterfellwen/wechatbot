@@ -76,9 +76,9 @@ Page({
   },
 
   doMerge: function() {
-    if (!this.data.file1Path) { wx.showToast({ title: '请选择第一个文件', icon: 'none' }); return; }
-    if (!this.data.file2Path) { wx.showToast({ title: '请选择第二个文件', icon: 'none' }); return; }
-    if (this.data.processing) { wx.showToast({ title: '正在处理中', icon: 'none' }); return; }
+    if (!this.data.file1Path) { wx.showToast({ title: '请先选择第一个 PDF 文件', icon: 'none' }); return; }
+    if (!this.data.file2Path) { wx.showToast({ title: '请先选择第二个 PDF 文件', icon: 'none' }); return; }
+    if (this.data.processing) { wx.showToast({ title: '正在合并中，请耐心等待', icon: 'none' }); return; }
 
     var that = this;
     that.setData({ processing: true, progressText: '上传中...' });
@@ -94,7 +94,7 @@ Page({
         try { data2 = JSON.parse(res2.data); } catch(e) {}
         if (!data2.merge_id) {
           that.setData({ processing: false, progressText: '' });
-          wx.showToast({ title: data2.error || '第二个文件上传失败', icon: 'none' });
+          wx.showToast({ title: data2.error || '第二个文件上传失败，请重试', icon: 'none' });
           return;
         }
         var mergeId = data2.merge_id;
@@ -127,20 +127,20 @@ Page({
                 downloaded: false,
                 localPath: ''
               });
-              wx.showToast({ title: '合并成功', icon: 'success' });
+              wx.showToast({ title: '合并完成', icon: 'success' });
             } else {
-              wx.showToast({ title: data.error || '合并失败', icon: 'none' });
+              wx.showToast({ title: data.error || '合并失败，请检查文件格式后重试', icon: 'none' });
             }
           },
           fail: function() {
             that.setData({ processing: false, progressText: '' });
-            wx.showToast({ title: '网络错误', icon: 'none' });
+            wx.showToast({ title: '网络连接异常，请检查网络后重试', icon: 'none' });
           }
         });
       },
       fail: function() {
         that.setData({ processing: false, progressText: '' });
-        wx.showToast({ title: '第二个文件上传失败', icon: 'none' });
+        wx.showToast({ title: '第二个文件上传失败，请重试', icon: 'none' });
       }
     });
   },

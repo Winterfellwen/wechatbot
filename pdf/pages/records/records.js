@@ -51,6 +51,28 @@ Page({
 
     var records = wx.getStorageSync('pdf_task_records') || [];
     var pendingJobs = [];
+    var now = Date.now();
+    var TIMEOUT = 30 * 60 * 1000; // 30 分钟超时
+
+    // 检查超时任务
+    var changed = false;
+    for (var i = 0; i < records.length; i++) {
+      if ((records[i].status === 'queued' || records[i].status === 'processing') &&
+          (now - records[i].createdAt) > TIMEOUT) {
+        records[i].status = 'error';
+        records[i].errorMsg = '任务处理超时，请重新提交';
+        records[i].completedAt = now;
+        records[i].duration = Math.round((now - records[i].createdAt) / 1000);
+        changed = true;
+      }
+    }
+    if (changed) {
+      that._saveRecords(records);
+    }
+
+    // 重新获取最新记录
+    records = wx.getStorageSync('pdf_task_records') || [];
+    pendingJobs = [];
     for (var i = 0; i < records.length; i++) {
       if (records[i].status === 'queued' || records[i].status === 'processing') {
         pendingJobs.push(records[i]);
@@ -68,7 +90,7 @@ Page({
       url: SERVER + job.resultUrl,
       timeout: 30000,
       success: function(res) {
-        if (!that.data.polling) return;
+        if (!that._polling) return;
         if (res.statusCode !== 200 || !res.data) {
           setTimeout(function() { that._poll(); }, 5000);
           return;
@@ -82,7 +104,7 @@ Page({
               allRecords[i].completedAt = Date.now();
               allRecords[i].duration = Math.round((allRecords[i].completedAt - allRecords[i].createdAt) / 1000);
               allRecords[i].resultUrl = d.url.replace(SERVER, '');
-              wx.showToast({ title: '转换完成，可在记录页下载', icon: 'success', duration: 2000 });
+              wx.showToast({ title: '文件已转换完成，可在记录中下载', icon: 'success', duration: 2000 });
             } else if (d.status === 'error') {
               allRecords[i].status = 'error';
               allRecords[i].completedAt = Date.now();
@@ -113,7 +135,7 @@ Page({
     var record = this._getFilteredRecords()[idx];
     if (!record) return;
     if (record.status !== 'done') {
-      wx.showToast({ title: '文件尚未完成', icon: 'none' });
+      wx.showToast({ title: '文件正在处理中，请稍后再试', icon: 'none' });
       return;
     }
     if (record.localPath) {
@@ -160,12 +182,12 @@ Page({
           that._saveRecords(records);
           wx.openDocument({ filePath: savedPath, showMenu: true });
         } else {
-          wx.showToast({ title: '下载失败', icon: 'none' });
+          wx.showToast({ title: '下载失败，请检查网络后重试', icon: 'none' });
         }
       },
       fail: function() {
         wx.hideLoading();
-        wx.showToast({ title: '下载失败', icon: 'none' });
+        wx.showToast({ title: '下载失败，请检查网络后重试', icon: 'none' });
       }
     });
   },
@@ -174,7 +196,7 @@ Page({
     var idx = e.currentTarget.dataset.idx;
     var record = this._getFilteredRecords()[idx];
     if (!record || record.status !== 'error') return;
-    wx.showToast({ title: '重试功能开发中', icon: 'none' });
+    wx.showToast({ title: '重试功能即将上线，敬请期待', icon: 'none' });
   },
 
   deleteRecord: function(e) {
@@ -184,7 +206,7 @@ Page({
     var that = this;
     wx.showModal({
       title: '确认删除',
-      content: '确定要删除这条记录吗？',
+      content: '确定要删除此记录吗？删除后无法恢复',
       success: function(res) {
         if (res.confirm) {
           var records = wx.getStorageSync('pdf_task_records') || [];

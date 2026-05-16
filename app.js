@@ -45,11 +45,11 @@ App({
             }
           }
           wx.setStorageSync('pdf_task_records', records);
-          wx.showToast({ title: '文件已自动下载', icon: 'success' });
+          wx.showToast({ title: '已完成的任务文件已自动下载', icon: 'success' });
         }
       },
       fail: function() {
-        console.log('Auto download failed for job:', record.jobId);
+        // 自动下载失败，静默忽略（用户可在记录页手动下载）
       }
     });
   },

@@ -1,20 +1,68 @@
 function fixJson(content) {
-  // Remove markdown code fences
-  content = content.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '');
+  if (typeof content !== 'string') {
+    throw new TypeError('Expected a string input');
+  }
+
+  // Remove markdown code fences — use specific fence pattern
+  content = content.replace(/```json\s*\n?/g, '').replace(/```\s*\n?/g, '');
   content = content.trim();
 
-  // Fix trailing commas before } or ]
-  content = content.replace(/,\s*([}\]])/g, '$1');
-
-  // Fix unescaped newlines in strings
+  // Fix trailing commas before } or ] — only outside of strings
+  // Uses a two-pass approach: first match strings to protect them, then fix commas
+  const stringPlaceholder = '__JSON_STRING_PLACEHOLDER_';
+  const strings = [];
   content = content.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
-    return match.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+    const idx = strings.length;
+    strings.push(match);
+    return stringPlaceholder + idx + stringPlaceholder;
   });
+  content = content.replace(/,\s*([}\]])/g, '$1');
+  content = content.replace(
+    new RegExp(stringPlaceholder + '(\\d+)' + stringPlaceholder, 'g'),
+    (_, idx) => strings[parseInt(idx, 10)]
+  );
 
-  return content;
+  // Fix unescaped newlines in strings — use safe iterative approach instead of regex with *
+  const result = [];
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+    if (escaped) {
+      result.push(ch);
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\') {
+      result.push(ch);
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      result.push(ch);
+      continue;
+    }
+    if (inString && (ch === '\n' || ch === '\r' || ch === '\t')) {
+      result.push(ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : '\\t');
+      continue;
+    }
+    result.push(ch);
+  }
+  return result.join('');
 }
 
 function parseAIResponse(content) {
+  if (content == null) {
+    return { doc: null, error: 'Input is null or undefined' };
+  }
+  if (typeof content === 'object') {
+    return { doc: content, error: null };
+  }
+  if (typeof content !== 'string') {
+    return { doc: null, error: 'Expected string or object input' };
+  }
+
   // Try direct parse first
   try {
     const doc = JSON.parse(content);
