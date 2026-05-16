@@ -10,6 +10,7 @@ const config = {
     maxTokens: 4096,
     timeout: 60000,
     retries: 2,
+    visionModel: 'glm-4.6v-flash',
   },
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
@@ -22,6 +23,14 @@ const config = {
   limits: {
     fileSize: 20 * 1024 * 1024,
     allowedExts: ['.pdf', '.docx', '.html'],
+  },
+  vision: {
+    viewportWidth: 900,
+    viewportHeight: 1200,
+    pdfRenderScale: 2,
+    jpegQuality: 80,
+    tileGrid: { cols: 2 },
+    maxPagesPerTile: 4,
   },
 };
 
