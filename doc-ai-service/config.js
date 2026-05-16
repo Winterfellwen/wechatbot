@@ -10,7 +10,7 @@ const config = {
     maxTokens: 4096,
     timeout: 60000,
     retries: 2,
-    visionModel: 'glm-4.6v-flash',
+    visionModel: process.env.BIGMODEL_VISION_MODEL || 'glm-4.6v-flash',
   },
   openrouter: {
     apiKey: process.env.OPENROUTER_KEY || null,
