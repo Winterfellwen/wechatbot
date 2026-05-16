@@ -10,6 +10,7 @@ try {
   const canvas = require('canvas');
   if (typeof global.ImageData === 'undefined') global.ImageData = canvas.ImageData;
   if (typeof global.Image === 'undefined') global.Image = canvas.Image;
+  if (typeof global.Canvas === 'undefined') global.Canvas = canvas.Canvas;
   if (typeof global.HTMLCanvasElement === 'undefined') global.HTMLCanvasElement = canvas.Canvas;
 } catch (_) {}
 
