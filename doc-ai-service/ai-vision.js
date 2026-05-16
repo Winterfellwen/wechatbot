@@ -2,8 +2,8 @@ const config = require('./config');
 const cheerio = require('cheerio');
 
 const VISION_PROVIDERS = [
-  { name: 'BigModel', key: 'bigmodel', modelField: 'visionModel' },
   { name: 'OpenRouter', key: 'openrouter', modelField: 'visionModel' },
+  { name: 'BigModel', key: 'bigmodel', modelField: 'visionModel' },
 ];
 
 function buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages) {
@@ -54,12 +54,14 @@ async function callVisionProvider(provider, contentParts, mode) {
 
   const model = provider.modelField ? cfg[provider.modelField] || cfg.model : cfg.model;
   const isBigModel = cfg.apiUrl.includes('bigmodel');
+  // Vision calls use a shorter timeout (image processing should be faster or not worth waiting)
+  const timeout = isBigModel ? cfg.timeout : 60000;
 
   const retries = cfg.retries || 2;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), cfg.timeout);
+      const timer = setTimeout(() => controller.abort(), timeout);
 
       try {
         const body = {
