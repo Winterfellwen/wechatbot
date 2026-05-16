@@ -1,6 +1,13 @@
 const fs = require('fs');
 
 function assemble(htmlContent, outputPath, title) {
+  // AI may already return a complete HTML page; detect and use as-is
+  const trimmed = htmlContent.trim();
+  if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+    fs.writeFileSync(outputPath, trimmed, 'utf8');
+    return outputPath;
+  }
+
   const fullHtml = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>${title || 'Document'}</title>
