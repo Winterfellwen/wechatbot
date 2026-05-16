@@ -7,8 +7,10 @@ if (!Promise.withResolvers) {
   };
 }
 try {
-  const { ImageData } = require('canvas');
-  if (typeof global.ImageData === 'undefined') global.ImageData = ImageData;
+  const canvas = require('canvas');
+  if (typeof global.ImageData === 'undefined') global.ImageData = canvas.ImageData;
+  if (typeof global.Image === 'undefined') global.Image = canvas.Image;
+  if (typeof global.HTMLCanvasElement === 'undefined') global.HTMLCanvasElement = canvas.Canvas;
 } catch (_) {}
 
 const express = require('express');

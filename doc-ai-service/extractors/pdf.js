@@ -1,8 +1,8 @@
+const pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
 const { createCanvas } = require('canvas');
 const config = require('../config');
 
 async function extract(filePath) {
-  const pdfjsLib = await import('pdfjs-dist');
   const doc = await pdfjsLib.getDocument(filePath).promise;
   const images = [];
   const pageTexts = [];
