@@ -1,6 +1,11 @@
 const config = require('./config');
 const cheerio = require('cheerio');
 
+const VISION_PROVIDERS = [
+  { name: 'BigModel', key: 'bigmodel', modelField: 'visionModel' },
+  { name: 'OpenRouter', key: 'openrouter', modelField: 'visionModel' },
+];
+
 function buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages) {
   const modeInstructions = {
     raw: '保持文档原有结构和内容，准确还原文本、表格、图片和布局。',
@@ -43,24 +48,12 @@ function parseVisionResponse(content) {
   throw new Error('视觉 AI 输出无法解析为合法 HTML');
 }
 
-async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt, mode, title, totalPages) {
-  const cfg = config.bigmodel;
-  if (!cfg.apiKey) throw new Error('BIGMODEL_KEY 未配置');
+async function callVisionProvider(provider, contentParts, mode) {
+  const cfg = config[provider.key];
+  if (!cfg || !cfg.apiKey) throw new Error(`${provider.name} API key 未配置`);
 
-  const prompt = buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages);
-
-  const contentParts = [
-    { type: 'text', text: prompt },
-    ...imageGroups.map(g => ({
-      type: 'image_url',
-      image_url: { url: `data:image/jpeg;base64,${g.buffer.toString('base64')}` },
-    })),
-    { type: 'text', text: `以下是从文档中提取的文本（供参考，布局以截图为准）：\n\n${text.substring(0, 25000)}` },
-  ];
-
-  if (htmlContent && htmlContent.length < 10000) {
-    contentParts.push({ type: 'text', text: `原始 HTML（供结构参考）：\n\n${htmlContent}` });
-  }
+  const model = provider.modelField ? cfg[provider.modelField] || cfg.model : cfg.model;
+  const isBigModel = cfg.apiUrl.includes('bigmodel');
 
   const retries = cfg.retries || 2;
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -69,19 +62,21 @@ async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt
       const timer = setTimeout(() => controller.abort(), cfg.timeout);
 
       try {
+        const body = {
+          model,
+          messages: [{ role: 'user', content: contentParts }],
+          max_tokens: 32000,
+          temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
+        };
+        if (isBigModel) body.thinking = { type: 'disabled' };
+
         const response = await fetch(cfg.apiUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${cfg.apiKey}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            model: cfg.visionModel,
-            messages: [{ role: 'user', content: contentParts }],
-            max_tokens: 32000,
-            temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
-            thinking: { type: 'disabled' },
-          }),
+          body: JSON.stringify(body),
           signal: controller.signal,
         });
 
@@ -99,15 +94,53 @@ async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt
       }
     } catch (err) {
       const isRateLimit = err.message.includes('429') || err.message.includes('1305');
-      if (attempt < retries && isRateLimit) {
-        const delay = 2000 * attempt;
-        console.log(`[vision] attempt ${attempt}/${retries} rate limited, retrying in ${delay}ms`);
+      const isLastAttempt = attempt >= retries;
+      if (isRateLimit && !isLastAttempt) {
+        const delay = 3000 * attempt;
+        console.log(`[vision] ${provider.name} attempt ${attempt}/${retries} rate limited, retrying in ${delay}ms`);
         await new Promise(r => setTimeout(r, delay));
+      } else if (isRateLimit && isLastAttempt) {
+        console.log(`[vision] ${provider.name} exhausted (rate limited), falling back`);
+        throw err;
       } else {
         throw err;
       }
     }
   }
+}
+
+async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt, mode, title, totalPages) {
+  const prompt = buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages);
+
+  const contentParts = [
+    { type: 'text', text: prompt },
+    ...imageGroups.map(g => ({
+      type: 'image_url',
+      image_url: { url: `data:image/jpeg;base64,${g.buffer.toString('base64')}` },
+    })),
+    { type: 'text', text: `以下是从文档中提取的文本（供参考，布局以截图为准）：\n\n${text.substring(0, 25000)}` },
+  ];
+
+  if (htmlContent && htmlContent.length < 10000) {
+    contentParts.push({ type: 'text', text: `原始 HTML（供结构参考）：\n\n${htmlContent}` });
+  }
+
+  const errors = [];
+  for (const provider of VISION_PROVIDERS) {
+    const cfg = config[provider.key];
+    if (!cfg || !cfg.apiKey) {
+      console.log(`[vision] ${provider.name} skipped: no API key`);
+      continue;
+    }
+    try {
+      return await callVisionProvider(provider, contentParts, mode);
+    } catch (err) {
+      errors.push(`[${provider.name}] ${err.message}`);
+      console.error(`[vision] ${provider.name} failed:`, err.message);
+    }
+  }
+
+  throw new Error(`所有视觉 AI 服务商均失败:\n${errors.join('\n')}`);
 }
 
 module.exports = { callVisionAI };
