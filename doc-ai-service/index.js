@@ -6,13 +6,17 @@ if (!Promise.withResolvers) {
     return { promise, resolve, reject };
   };
 }
-try {
-  const canvas = require('canvas');
-  if (typeof global.ImageData === 'undefined') global.ImageData = canvas.ImageData;
-  if (typeof global.Image === 'undefined') global.Image = canvas.Image;
-  if (typeof global.Canvas === 'undefined') global.Canvas = canvas.Canvas;
-  if (typeof global.HTMLCanvasElement === 'undefined') global.HTMLCanvasElement = canvas.Canvas;
-} catch (_) {}
+// Must set canvas globals BEFORE pdfjs-dist is loaded
+const _canvas = require('canvas');
+if (!globalThis.ImageData) globalThis.ImageData = _canvas.ImageData;
+if (!globalThis.Image) globalThis.Image = _canvas.Image;
+if (!globalThis.Canvas) globalThis.Canvas = _canvas.Canvas;
+if (!globalThis.HTMLCanvasElement) globalThis.HTMLCanvasElement = _canvas.Canvas;
+// Also set on global for older Node.js
+if (!global.ImageData) global.ImageData = _canvas.ImageData;
+if (!global.Image) global.Image = _canvas.Image;
+if (!global.Canvas) global.Canvas = _canvas.Canvas;
+if (!global.HTMLCanvasElement) global.HTMLCanvasElement = _canvas.Canvas;
 
 const express = require('express');
 const cors = require('cors');
