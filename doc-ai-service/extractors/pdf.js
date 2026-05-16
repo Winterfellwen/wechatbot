@@ -25,8 +25,7 @@ async function extract(filePath) {
     pageTexts.push(pageText);
 
     if (i === 1) {
-      const lines = pageText.split('\n').filter(Boolean);
-      title = lines[0] || '';
+      title = doc.info?.Title || pageText.split('\n').filter(Boolean)[0] || '';
     }
   }
 

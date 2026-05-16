@@ -1,4 +1,5 @@
 const config = require('./config');
+const cheerio = require('cheerio');
 
 function buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages) {
   const modeInstructions = {
@@ -34,7 +35,6 @@ function parseVisionResponse(content) {
   const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
   if (htmlMatch) return htmlMatch[1].trim();
 
-  const cheerio = require('cheerio');
   const $ = cheerio.load(content);
   if ($('html').length > 0 || $('body').length > 0) {
     return $.html();

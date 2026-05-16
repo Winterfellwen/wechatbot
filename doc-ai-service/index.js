@@ -72,7 +72,11 @@ async function processJob(jobId) {
 
   // 第二轮（polish/format/summarize）
   if (job.mode !== 'raw') {
-    aiHtml = await callAI(aiHtml, 'html', job.targetFmt, job.mode, result.title || '');
+    try {
+      aiHtml = await callAI(aiHtml, 'html', job.targetFmt, job.mode, result.title || '');
+    } catch (err) {
+      console.error(`[process] second pass AI failed, using first pass result:`, err.message);
+    }
   }
 
   const assembler = assemblers[job.targetFmt];
