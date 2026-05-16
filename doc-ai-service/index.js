@@ -99,7 +99,7 @@ app.post('/convert', upload.single('file'), async (req, res) => {
     if (!targetFmt || !formatMap['.' + targetFmt]) return res.status(400).json({ error: '目标格式无效' });
 
     const mode = req.body.mode || 'polish';
-    if (!['polish', 'format', 'summarize'].includes(mode)) return res.status(400).json({ error: 'AI 模式无效' });
+    if (!['raw', 'polish', 'format', 'summarize'].includes(mode)) return res.status(400).json({ error: 'AI 模式无效' });
 
     const fileName = req.file.originalname;
     const jobId = require('crypto').randomUUID().replace(/-/g, '');
