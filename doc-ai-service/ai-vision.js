@@ -62,37 +62,51 @@ async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt
     contentParts.push({ type: 'text', text: `原始 HTML（供结构参考）：\n\n${htmlContent}` });
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), cfg.timeout);
+  const retries = cfg.retries || 2;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), cfg.timeout);
 
-  try {
-    const response = await fetch(cfg.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${cfg.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: cfg.visionModel,
-        messages: [{ role: 'user', content: contentParts }],
-        max_tokens: 32000,
-        temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
-        thinking: { type: 'disabled' },
-      }),
-      signal: controller.signal,
-    });
+      try {
+        const response = await fetch(cfg.apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${cfg.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: cfg.visionModel,
+            messages: [{ role: 'user', content: contentParts }],
+            max_tokens: 32000,
+            temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
+            thinking: { type: 'disabled' },
+          }),
+          signal: controller.signal,
+        });
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => 'Unknown');
-      throw new Error(`${response.status}: ${errText.substring(0, 100)}`);
+        if (!response.ok) {
+          const errText = await response.text().catch(() => 'Unknown');
+          throw new Error(`${response.status}: ${errText.substring(0, 100)}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+        if (!content) throw new Error('视觉 AI 返回内容为空');
+        return parseVisionResponse(content);
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch (err) {
+      const isRateLimit = err.message.includes('429') || err.message.includes('1305');
+      if (attempt < retries && isRateLimit) {
+        const delay = 2000 * attempt;
+        console.log(`[vision] attempt ${attempt}/${retries} rate limited, retrying in ${delay}ms`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    if (!content) throw new Error('视觉 AI 返回内容为空');
-    return parseVisionResponse(content);
-  } finally {
-    clearTimeout(timer);
   }
 }
 
