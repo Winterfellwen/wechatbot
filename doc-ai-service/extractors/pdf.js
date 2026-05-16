@@ -26,7 +26,21 @@ async function extract(filePath) {
     images.push(jpegBuf);
 
     const textContent = await page.getTextContent();
-    const pageText = textContent.items.map(item => item.str).join(' ');
+    // Group text items by y-position to preserve line breaks
+    let lastY = null;
+    const lines = [];
+    let currentLine = '';
+    for (const item of textContent.items) {
+      const y = item.transform[5];
+      if (lastY !== null && Math.abs(y - lastY) > 2) {
+        lines.push(currentLine.trim());
+        currentLine = '';
+      }
+      currentLine += item.str;
+      lastY = y;
+    }
+    if (currentLine.trim()) lines.push(currentLine.trim());
+    const pageText = lines.join('\n');
     pageTexts.push(pageText);
 
     if (i === 1) {

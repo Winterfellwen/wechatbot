@@ -13,13 +13,23 @@ function buildPrompt(sourceText, sourceFormat, targetFormat, mode, title, imageI
   };
 
   const imageNote = imageInfo
-    ? `\n原文档包含 ${imageInfo.count} 张图片。请在合适的位置使用 <img src="placeholder" alt="图片描述"> 插入图片占位符，根据上下文判断图片位置（头像、证件照、图表等）。`
+    ? `\n⚠️ 重要：原文档包含 ${imageInfo.count} 张图片。你必须在 HTML 中插入恰好 ${imageInfo.count} 个 <img src="placeholder" alt="描述"> 标签。常见位置：简历头部（头像/照片）、工作经验部分（公司Logo）、项目部分（项目截图）、教育部分（学校Logo）等。每张图片都要有独立的占位符，不要省略任何一张。`
     : '';
+
+  const textPreservationNote = `
+⚠️ 严格保留原文中的所有事实信息，不得修改、替换或省略：
+- 公司名称（如 "Kyndryl Technology Co., Ltd." 不能改为 "Computer Services"）
+- 人名、职位、联系方式（邮箱、电话必须逐字保留）
+- 日期、时间、地点、数字
+- 证书名称、学校名称、专业名称
+- 项目名称、技术名词（如 VMware, AWS, Azure 等）
+仅优化排版和格式，不改变任何实质性内容。`;
 
   return [
     { role: 'system', content: `你是一个文档转换专家。你需要将${sourceFormat}格式的文档转换为${targetFormat}格式。
 ${modeInstructions[mode] || modeInstructions.polish}
 ${imageNote}
+${textPreservationNote}
 你必须严格按照以下格式输出，不要包含任何其他内容：
 \`\`\`html
 <!DOCTYPE html>

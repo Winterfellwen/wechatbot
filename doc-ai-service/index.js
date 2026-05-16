@@ -59,17 +59,35 @@ try {
 function injectExtractedImages(html, images) {
   if (!images || images.length === 0) return html;
   const cheerio = require('cheerio');
-  const $ = cheerio.load(html);
+  const $ = cheerio.load(html, null, false);
   const imgTags = $('img');
-  if (imgTags.length === 0) return html;
 
+  // Replace AI-placed <img> tags with actual images
   imgTags.each((i) => {
     if (i < images.length) {
       const dataUri = `data:image/jpeg;base64,${images[i].toString('base64')}`;
       $(imgTags[i]).attr('src', dataUri);
     }
   });
-  return $.html();
+
+  // If AI placed fewer images than available, inject remaining at logical positions
+  if (imgTags.length < images.length) {
+    // Try <body> first, then fall back to root element
+    let container = $('body');
+    if (container.length === 0) {
+      container = $.root();
+    }
+    if (container.length > 0) {
+      for (let i = imgTags.length; i < images.length; i++) {
+        const dataUri = `data:image/jpeg;base64,${images[i].toString('base64')}`;
+        container.append(`<img src="${dataUri}" alt="Document image ${i+1}" style="max-width:400px;display:block;margin:10px auto;" />`);
+      }
+    }
+  }
+
+  // Return only the body content to avoid double-wrapping when assembler adds its own HTML structure
+  const bodyContent = $('body').length > 0 ? $('body').html() : $.html();
+  return bodyContent;
 }
 
 function needsVision(result, sourceFmt) {
