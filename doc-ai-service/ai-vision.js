@@ -8,10 +8,10 @@ const VISION_PROVIDERS = [
 
 function buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages) {
   const modeInstructions = {
-    raw: '保持文档原有结构和内容，准确还原文本、表格、图片和布局。',
-    polish: '润色文档内容：修正语法错误，优化表达方式，保持原意不变。改善段落结构和可读性。保留原始布局和图片。',
-    format: '格式化文档：优化标题层级，整理段落结构，美化表格和列表，使其布局清晰专业。保留所有内容。',
-    summarize: '提取文档的核心内容，生成结构化摘要。保留关键信息、主要论点和结论。省略次要细节。',
+    raw: '保持原有结构和内容。',
+    polish: '润色表达方式，修正语法。',
+    format: '优化标题层级和段落结构。',
+    summarize: '提取核心内容生成摘要。',
   };
 
   const groupList = imageGroups
@@ -19,20 +19,19 @@ function buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, total
     .join('，');
 
   return [
-    `你是一个文档转换专家。将${sourceFmt}格式文档转换为${targetFmt}格式。`,
+    `你是一个文档布局优化专家。用户已将${sourceFmt}文档转换为${targetFmt}（附后），`,
+    '你需要参考原始文档截图，修复转换结果中的布局问题。',
     modeInstructions[mode] || modeInstructions.raw,
     '',
-    `截图说明：本文档共${totalPages}页，发送${imageGroups.length}张合并图：`,
+    `截图：共${totalPages}页，${imageGroups.length}张合并图：`,
     groupList,
     '',
-    '请仔细观察截图中的布局、表格、图片、文本框和排版样式。',
-    '同时参考提取文本获取准确文字内容。',
-    '截图和文本不一致时，以截图视觉布局为准，用文本补充准确文字。',
+    '你的任务：',
+    '1. 对比截图和下方 HTML，修复布局/表格/图片/标题问题',
+    '2. 补充截图中有但 HTML 中缺失的结构元素',
+    '3. 保持文字内容不变，只调整结构和样式',
     '',
-    '输出完整 HTML，包含 DOCTYPE、html、head、body 标签，保留原始布局和结构。',
-    '表格用 <table>，图片用 <img src="data:...">，标题用 <h1>-<h3>。',
-    '',
-    '只输出 HTML 代码，用 ```html ... ``` 包裹，不输出其他内容。',
+    '输出完整 HTML，用 ```html ... ``` 包裹。',
   ].join('\n');
 }
 
@@ -110,7 +109,7 @@ async function callVisionProvider(provider, contentParts, mode) {
   }
 }
 
-async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt, mode, title, totalPages) {
+async function callVisionAI(imageGroups, text, textAiHtml, sourceFmt, targetFmt, mode, title, totalPages) {
   const prompt = buildVisionPrompt(sourceFmt, targetFmt, mode, title, imageGroups, totalPages);
 
   const contentParts = [
@@ -119,12 +118,9 @@ async function callVisionAI(imageGroups, text, htmlContent, sourceFmt, targetFmt
       type: 'image_url',
       image_url: { url: `data:image/jpeg;base64,${g.buffer.toString('base64')}` },
     })),
-    { type: 'text', text: `以下是从文档中提取的文本（供参考，布局以截图为准）：\n\n${text.substring(0, 25000)}` },
+    { type: 'text', text: `以下是文本 AI 已生成的 HTML（请参考截图修复其布局）：\n\n${textAiHtml.substring(0, 15000)}` },
+    { type: 'text', text: `原始提取文本（供参考）：\n\n${text.substring(0, 10000)}` },
   ];
-
-  if (htmlContent && htmlContent.length < 10000) {
-    contentParts.push({ type: 'text', text: `原始 HTML（供结构参考）：\n\n${htmlContent}` });
-  }
 
   const errors = [];
   for (const provider of VISION_PROVIDERS) {

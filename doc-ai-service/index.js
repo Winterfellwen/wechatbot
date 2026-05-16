@@ -45,6 +45,13 @@ try {
   commitHash = execSync('git rev-parse --short HEAD', { timeout: 3000 }).toString().trim();
 } catch (_) {}
 
+function needsVision(result, sourceFmt) {
+  if (sourceFmt === 'html' || !result.images || result.images.length === 0) return false;
+  if (result.totalPages > 1) return true;
+  if (result.text && /\t|\|{2,}| {4,}/.test(result.text)) return true;
+  return false;
+}
+
 async function processJob(jobId) {
   const job = queue.getJob(jobId);
   if (!job) throw new Error('Job not found');
@@ -56,36 +63,21 @@ async function processJob(jobId) {
 
   const result = await extractor.extract(job.filePath);
 
-  let aiHtml;
-  const hasImages = result.images && result.images.length > 0;
-  const skipVision = job.sourceFmt === 'html' || !hasImages;
+  // Single text AI call (mode instructions baked into prompt)
+  let aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
 
-  if (!skipVision) {
+  // Optional vision post-processing (only for complex layout docs)
+  if (needsVision(result, job.sourceFmt)) {
     try {
       const imageGroups = await tileImages(result.images, config.vision);
-      console.log(`[process] vision AI: ${result.totalPages} pages → ${imageGroups.length} tile groups`);
+      console.log(`[process] vision enhancement: ${result.totalPages} pages → ${imageGroups.length} tile groups`);
       aiHtml = await callVisionAI(
-        imageGroups, result.text, result.html || '',
+        imageGroups, result.text, aiHtml,
         job.sourceFmt, job.targetFmt, job.mode, result.title || '', result.totalPages
       );
     } catch (err) {
-      console.error(`[process] vision AI failed, falling back to text AI:`, err.message);
-      queue.updateJob(jobId, { visionError: err.message.substring(0, 200) });
-      aiHtml = null;
-    }
-  }
-
-  if (!aiHtml) {
-    console.log('[process] using text AI fallback');
-    aiHtml = await callAI(result.text || result.html, job.sourceFmt, job.targetFmt, job.mode, result.title || '');
-  }
-
-  // 第二轮（polish/format/summarize）
-  if (job.mode !== 'raw') {
-    try {
-      aiHtml = await callAI(aiHtml, 'html', job.targetFmt, job.mode, result.title || '');
-    } catch (err) {
-      console.error(`[process] second pass AI failed, using first pass result:`, err.message);
+      console.error(`[process] vision enhancement failed, using text AI result:`, err.message);
+      queue.updateJob(jobId, { visionNotice: `跳过视觉精修: ${err.message.substring(0, 100)}` });
     }
   }
 
@@ -140,7 +132,7 @@ app.get('/status/:jobId', (req, res) => {
   const resp = { status: job.status };
   if (job.status === 'done') resp.resultFile = job.resultFile;
   if (job.status === 'error') resp.error = job.error;
-  if (job.visionError) resp.visionError = job.visionError;
+  if (job.visionNotice) resp.visionNotice = job.visionNotice;
   res.json(resp);
 });
 
