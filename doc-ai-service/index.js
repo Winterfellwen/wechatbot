@@ -8,15 +8,15 @@ if (!Promise.withResolvers) {
 }
 // Must set canvas globals BEFORE pdfjs-dist is loaded
 const _canvas = require('canvas');
-if (!globalThis.ImageData) globalThis.ImageData = _canvas.ImageData;
-if (!globalThis.Image) globalThis.Image = _canvas.Image;
-if (!globalThis.Canvas) globalThis.Canvas = _canvas.Canvas;
-if (!globalThis.HTMLCanvasElement) globalThis.HTMLCanvasElement = _canvas.Canvas;
-// Also set on global for older Node.js
-if (!global.ImageData) global.ImageData = _canvas.ImageData;
-if (!global.Image) global.Image = _canvas.Image;
-if (!global.Canvas) global.Canvas = _canvas.Canvas;
-if (!global.HTMLCanvasElement) global.HTMLCanvasElement = _canvas.Canvas;
+const _setGlobal = (name, val) => {
+  if (!globalThis[name]) globalThis[name] = val;
+  if (!global[name]) global[name] = val;
+};
+_setGlobal('ImageData', _canvas.ImageData);
+_setGlobal('Image', _canvas.Image);
+_setGlobal('HTMLImageElement', _canvas.Image);
+_setGlobal('Canvas', _canvas.Canvas);
+_setGlobal('HTMLCanvasElement', _canvas.Canvas);
 
 const express = require('express');
 const cors = require('cors');
