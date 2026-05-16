@@ -1,9 +1,14 @@
-const pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
-const { createCanvas } = require('canvas');
+// Set canvas globals BEFORE pdfjs-dist loads
+const { createCanvas, Image } = require('canvas');
+if (!globalThis.Image) globalThis.Image = Image;
+if (!globalThis.HTMLImageElement) globalThis.HTMLImageElement = Image;
+
+const pdfjsLib = require('pdfjs-dist');
 const config = require('../config');
 
 async function extract(filePath) {
-  const doc = await pdfjsLib.getDocument(filePath).promise;
+  const loadingTask = pdfjsLib.getDocument(filePath);
+  const doc = await loadingTask.promise;
   const images = [];
   const pageTexts = [];
   const scale = config.vision.pdfRenderScale;
