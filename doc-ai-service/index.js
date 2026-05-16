@@ -70,6 +70,7 @@ async function processJob(jobId) {
       );
     } catch (err) {
       console.error(`[process] vision AI failed, falling back to text AI:`, err.message);
+      queue.updateJob(jobId, { visionError: err.message.substring(0, 200) });
       aiHtml = null;
     }
   }
@@ -139,6 +140,7 @@ app.get('/status/:jobId', (req, res) => {
   const resp = { status: job.status };
   if (job.status === 'done') resp.resultFile = job.resultFile;
   if (job.status === 'error') resp.error = job.error;
+  if (job.visionError) resp.visionError = job.visionError;
   res.json(resp);
 });
 
