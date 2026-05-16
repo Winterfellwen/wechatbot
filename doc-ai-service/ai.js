@@ -61,6 +61,7 @@ async function callProvider(cfg, messages, mode) {
         messages,
         max_tokens: mode === 'summarize' ? 2000 : cfg.maxTokens,
         temperature: mode === 'polish' ? 0.3 : mode === 'format' ? 0.2 : 0.5,
+        ...(cfg.apiUrl.includes('bigmodel') ? { thinking: { type: 'disabled' } } : {}),
       }),
       signal: controller.signal,
     });
@@ -71,13 +72,8 @@ async function callProvider(cfg, messages, mode) {
     }
 
     const data = await response.json();
-    console.log(`[ai] ${cfg.model} raw response choices length:`, data.choices?.length);
-    if (data.choices?.[0]) {
-      console.log(`[ai] ${cfg.model} response keys:`, Object.keys(data.choices[0]));
-      console.log(`[ai] ${cfg.model} message:`, JSON.stringify(data.choices[0].message || {}).substring(0, 200));
-    }
     const content = data.choices?.[0]?.message?.content || data.choices?.[0]?.delta?.content || '';
-    if (!content) throw new Error(`AI 返回内容为空: finish_reason=${data.choices?.[0]?.finish_reason}`);
+    if (!content) throw new Error('AI 返回内容为空');
     return content;
   } finally {
     clearTimeout(timer);
