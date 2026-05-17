@@ -9,5 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: curl -sSfo /dev/null --max-time 60 https://wechatbot-g6ez.onrender.com/api/health
-      - run: curl -sSfo /dev/null --max-time 60 https://pdf-converter-v2.onrender.com/health
         timeout-minutes: 2
