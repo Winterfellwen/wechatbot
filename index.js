@@ -136,16 +136,9 @@ var wxRes = await fetch(
     var user, token;
     if (userResult.rows.length > 0) {
       var existing = userResult.rows[0];
-      if (existing.deleted) {
-        token = generateToken();
-        await pool.query('UPDATE users SET deleted = false, token = $1, updatedAt = NOW() WHERE openid = $2', [token, openid]);
-        var updatedResult = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
-        user = updatedResult.rows[0];
-      } else {
-        token = generateToken();
-        await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
-        user = existing;
-      }
+      token = generateToken();
+      await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
+      user = existing;
     } else {
       var countResult = await pool.query('SELECT COUNT(*) FROM users');
       var count = parseInt(countResult.rows[0].count) + 1;
@@ -200,7 +193,7 @@ app.delete('/api/users/me', requireAuth, async (req, res) => {
   try {
     await client.query('BEGIN');
     await client.query('DELETE FROM jp_lesson_scores WHERE openid = $1', [req.user.openid]);
-    await client.query('UPDATE users SET deleted = true, token = NULL WHERE openid = $1', [req.user.openid]);
+    await client.query('DELETE FROM users WHERE openid = $1', [req.user.openid]);
     await client.query('COMMIT');
     res.json({ ok: true });
   } catch (err) {
