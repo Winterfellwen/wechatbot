@@ -66,9 +66,11 @@ def extract_text_and_tables(pdf_path):
                             'headers': [str(c) if c else '' for c in table[0]],
                             'rows': [[str(c) if c else '' for c in row] for row in table[1:]]
                         })
-    except Exception:
-        from PyPDF2.errors import FileNotDecryptedError
-        raise FileNotDecryptedError("PDF is encrypted and cannot be opened")
+    except Exception as e:
+        error_msg = str(e).lower()
+        if 'encrypted' in error_msg or 'password' in error_msg or 'decrypt' in error_msg:
+            raise ValueError(f"PDF is encrypted: {pdf_path.name}") from e
+        raise ValueError(f"Failed to open PDF: {pdf_path.name} - {e}") from e
 
     return sections, page_count
 
