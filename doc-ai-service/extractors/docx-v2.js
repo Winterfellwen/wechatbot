@@ -39,9 +39,12 @@ function extractImages(docxPath) {
 }
 
 function extractText(docxPath) {
+  const pandocPath = 'C:\\Users\\winte\\AppData\\Local\\Pandoc\\pandoc.exe';
+  
   try {
-    // Use execSync with shell command instead of execFileSync for better compatibility
-    const result = execSync(`pandoc "${docxPath}" -t json`, {
+    // Use execFileSync with full path for reliability
+    const { execFileSync } = require('child_process');
+    const result = execFileSync(pandocPath, [docxPath, '-t', 'json'], {
       encoding: 'utf-8',
       timeout: 120000,
       maxBuffer: 50 * 1024 * 1024,
@@ -50,7 +53,8 @@ function extractText(docxPath) {
   } catch (err) {
     console.error('[docx-v2] Pandoc JSON extraction failed, falling back to plain text:', err.message);
     try {
-      const text = execSync(`pandoc "${docxPath}" -t plain`, {
+      const { execFileSync } = require('child_process');
+      const text = execFileSync(pandocPath, [docxPath, '-t', 'plain'], {
         encoding: 'utf-8',
         timeout: 120000,
         maxBuffer: 50 * 1024 * 1024,
