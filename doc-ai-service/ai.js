@@ -13,50 +13,63 @@ function buildPrompt(sourceText, sourceFormat, targetFormat, mode, title, imageI
   };
 
   const imageNote = imageInfo
-    ? `\n⚠️ 重要：原文档包含 ${imageInfo.count} 张图片。你必须在 HTML 中插入恰好 ${imageInfo.count} 个 <img src="placeholder" alt="描述"> 标签。常见位置：简历头部（头像/照片）、工作经验部分（公司Logo）、项目部分（项目截图）、教育部分（学校Logo）等。每张图片都要有独立的占位符，不要省略任何一张。`
+    ? `\n⚠️ 重要：原文档包含 ${imageInfo.count} 张图片。你必须在输出中包含 ${imageInfo.count} 个 image section，每个 image section 的 index 从 0 开始递增。`
     : '';
 
   const textPreservationNote = `
 ⚠️ 严格保留原文中的所有事实信息，不得修改、替换或省略：
-- 公司名称（如 "Kyndryl Technology Co., Ltd." 不能改为 "Computer Services"）
-- 人名、职位、联系方式（邮箱、电话必须逐字保留）
+- 公司名称、人名、职位、联系方式（邮箱、电话必须逐字保留）
 - 日期、时间、地点、数字
 - 证书名称、学校名称、专业名称
 - 项目名称、技术名词（如 VMware, AWS, Azure 等）
 仅优化排版和格式，不改变任何实质性内容。`;
+
+  const schemaExample = JSON.stringify({
+    title: title || 'Document',
+    sections: [
+      { type: 'heading', level: 1, text: 'John Doe' },
+      { type: 'paragraph', children: [{ text: 'Software Engineer with 5 years experience.', bold: false }] },
+      { type: 'heading', level: 2, text: 'Work Experience' },
+      { type: 'paragraph', children: [{ text: 'Company Name', bold: true }, { text: ' - Software Engineer' }] },
+      { type: 'list', items: ['Led team of 5 developers', 'Delivered project 2 weeks early'], ordered: false },
+      { type: 'image', index: 0, width: 400, height: 300, alignment: 'center' },
+    ],
+  }, null, 2);
 
   return [
     { role: 'system', content: `你是一个文档转换专家。你需要将${sourceFormat}格式的文档转换为${targetFormat}格式。
 ${modeInstructions[mode] || modeInstructions.polish}
 ${imageNote}
 ${textPreservationNote}
-你必须严格按照以下格式输出，不要包含任何其他内容：
-\`\`\`html
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>${title || 'Document'}</title></head>
-<body>
-<!-- 在此输出完整的 HTML 内容 -->
-</body>
-</html>
+
+你必须输出一个 JSON 对象，包含 sections 数组。每个 section 必须是以下类型之一：
+- heading: { type: "heading", level: 1-4, text: "标题文本" }
+- paragraph: { type: "paragraph", children: [{ text: "文本", bold: false, italic: false }], alignment: "left" }
+- image: { type: "image", index: 数字, width: 宽度, height: 高度, alignment: "center" }
+- table: { type: "table", headers: ["列1"], rows: [["行1列1"]] }
+- list: { type: "list", items: ["项目1"], ordered: false }
+
+示例输出：
+\`\`\`json
+${schemaExample}
 \`\`\`
 
-不输出任何解释、前言、后语。只输出上述格式包裹的 HTML 代码。` },
+不输出任何解释、前言、后语。只输出 JSON。` },
     { role: 'user', content: `以下是需要处理的文档内容：\n\n${sourceText.substring(0, 30000)}` },
   ];
 }
 
 function parseAIResponse(content) {
-  const htmlMatch = content.match(/```html\s*([\s\S]*?)```/);
-  if (htmlMatch) return htmlMatch[1].trim();
-
-  const cheerio = require('cheerio');
-  const $ = cheerio.load(content);
-  if ($('html').length > 0 || $('body').length > 0 || $('*').length > 0) {
-    return $.html();
-  }
-
-  throw new Error('AI 输出无法解析为合法 HTML');
+  const { parseAIResponse: parseJson } = require('./lib/json-fixer');
+  const { validate } = require('./lib/json-schema');
+  
+  const { doc, error } = parseJson(content);
+  if (error) throw new Error(`AI JSON 解析失败: ${error}`);
+  
+  const validation = validate(doc);
+  if (!validation.valid) throw new Error(`AI JSON 验证失败: ${validation.error}`);
+  
+  return doc;
 }
 
 async function callProvider(cfg, messages, mode) {
