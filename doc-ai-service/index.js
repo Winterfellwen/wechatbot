@@ -35,6 +35,10 @@ const pdfAssembler = require('./assemblers/pdf');
 const { callAI } = require('./ai');
 const { tileImages } = require('./lib/tiler');
 const { callVisionAI } = require('./ai-vision');
+const pdfExtractorV2 = require('./extractors/pdf-v2');
+const docxExtractorV2 = require('./extractors/docx-v2');
+const docxAssemblerV2 = require('./assemblers/docx-v2');
+const { validate } = require('./lib/json-schema');
 
 const app = express();
 app.use(cors());
@@ -48,6 +52,8 @@ const upload = multer({ dest: config.uploadsDir + '/', limits: { fileSize: confi
 
 const extractors = { pdf: pdfExtractor, docx: docxExtractor, html: htmlExtractor };
 const assemblers = { html: htmlAssembler, docx: docxAssembler, pdf: pdfAssembler };
+
+const USE_V2_PIPELINE = process.env.USE_V2_PIPELINE === 'true';
 
 const formatMap = { '.pdf': 'pdf', '.docx': 'docx', '.html': 'html' };
 
@@ -97,7 +103,62 @@ function needsVision(result, sourceFmt) {
   return false;
 }
 
+async function processJobV2(jobId) {
+  const job = queue.getJob(jobId);
+  if (!job) throw new Error('Job not found');
+
+  console.log(`[process-v2] job=${jobId} ${job.sourceFmt}→${job.targetFmt} mode=${job.mode}`);
+
+  const extractor = job.sourceFmt === 'pdf' ? pdfExtractorV2 : docxExtractorV2;
+  const result = await extractor.extract(job.filePath);
+
+  const imageInfo = result.images && result.images.length > 0
+    ? { count: result.images.length }
+    : null;
+
+  const aiJson = await callAI(result.text, job.sourceFmt, job.targetFmt, job.mode, result.title || '', imageInfo);
+
+  const validation = validate(aiJson);
+  if (!validation.valid) {
+    console.error(`[process-v2] AI JSON validation failed: ${validation.error}, falling back to v1`);
+    return processJob(jobId);
+  }
+
+  const outName = `${jobId}.${job.targetFmt}`;
+  const outPath = path.join(config.outputsDir, outName);
+
+  if (job.targetFmt === 'docx') {
+    await docxAssemblerV2.assemble(aiJson, outPath, result.images);
+  } else if (job.targetFmt === 'pdf') {
+    const jsonPath = path.join(config.outputsDir, `${jobId}.json`);
+    const imagesDir = path.join(config.outputsDir, `${jobId}-images`);
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    fs.writeFileSync(jsonPath, JSON.stringify(aiJson));
+    if (result.images) {
+      result.images.forEach((img, i) => {
+        fs.writeFileSync(path.join(imagesDir, `img-${i}.jpg`), img);
+      });
+    }
+
+    const scriptPath = path.join(__dirname, '../pdf-service/assemblers/pdf.py');
+    execSync(`python "${scriptPath}" "${jsonPath}" "${imagesDir}" "${outPath}"`, {
+      timeout: 120000,
+    });
+
+    fs.unlinkSync(jsonPath);
+    fs.rmSync(imagesDir, { recursive: true, force: true });
+  }
+
+  queue.updateJob(jobId, { resultFile: outName });
+  fs.unlink(job.filePath, () => {});
+}
+
 async function processJob(jobId) {
+  if (USE_V2_PIPELINE) {
+    return processJobV2(jobId);
+  }
+
   const job = queue.getJob(jobId);
   if (!job) throw new Error('Job not found');
 
