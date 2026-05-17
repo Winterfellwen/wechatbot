@@ -666,56 +666,6 @@ app.get('/api/pdf/download/:filename', (req, res) => {
   }
 });
 
-// --- AI 文档转换服务代理 ---
-const DOC_AI_URL = config.docAiService.url;
-
-app.post('/api/doc-ai/convert', upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: '请上传文件' });
-  try {
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const formData = new FormData();
-    const blob = new Blob([fileBuffer], { type: 'application/octet-stream' });
-    formData.append('file', blob, req.file.originalname);
-    formData.append('to', req.body.to || 'html');
-    formData.append('mode', req.body.mode || 'polish');
-
-    const resp = await fetchWithTimeout(DOC_AI_URL + '/convert', {
-      method: 'POST',
-      body: formData,
-    }, 120000);
-
-    const data = await resp.json();
-    res.status(resp.status).json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    try { fs.unlinkSync(req.file.path); } catch (e) {}
-  }
-});
-
-app.get('/api/doc-ai/status/:jobId', async (req, res) => {
-  try {
-    const resp = await fetchWithTimeout(DOC_AI_URL + '/status/' + req.params.jobId, {}, 30000);
-    const data = await resp.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/doc-ai/download/:filename', async (req, res) => {
-  try {
-    const resp = await fetchWithTimeout(DOC_AI_URL + '/download/' + req.params.filename, {}, 60000);
-    if (!resp.ok) return res.status(resp.status).json({ error: '文件不存在' });
-    const buffer = await resp.arrayBuffer();
-    res.set('Content-Type', resp.headers.get('content-type') || 'application/octet-stream');
-    res.set('Content-Disposition', resp.headers.get('content-disposition') || `attachment; filename="${req.params.filename}"`);
-    res.send(Buffer.from(buffer));
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // 获取 access_token
 let cachedAccessToken = null;
 let tokenExpireTime = 0;

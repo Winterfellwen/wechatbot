@@ -15,28 +15,3 @@ services:
         sync: false
       - key: OPENROUTER_KEY
         sync: false
-  - type: web
-    name: pdf-converter-v2
-    runtime: docker
-    rootDir: pdf-service
-    dockerfilePath: Dockerfile
-    plan: free
-    healthCheckPath: /health
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
-
-  - type: web
-    name: doc-ai-service
-    runtime: node
-    rootDir: doc-ai-service
-    buildCommand: npm install
-    startCommand: node index.js
-    healthCheckPath: /health
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: OPENROUTER_KEY
-        sync: false
-      - key: BIGMODEL_KEY
-        sync: false

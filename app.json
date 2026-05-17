@@ -54,13 +54,6 @@
       "pages": [
         "pages/chat/chat"
       ]
-    },
-    {
-      "root": "ai-convert",
-      "pages": [
-        "pages/index/index",
-        "pages/status/status"
-      ]
     }
   ],
   "window": {
