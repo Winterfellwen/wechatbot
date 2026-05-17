@@ -1,4 +1,4 @@
-const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, ImageRun, NumberingLevel, LevelFormat } = require('docx');
+const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, ImageRun, LevelFormat } = require('docx');
 const fs = require('fs');
 
 // DXA conversions (1 inch = 1440 DXA)
@@ -11,6 +11,8 @@ function createHeading(level, text) {
     2: HeadingLevel.HEADING_2,
     3: HeadingLevel.HEADING_3,
     4: HeadingLevel.HEADING_4,
+    5: HeadingLevel.HEADING_5,
+    6: HeadingLevel.HEADING_6,
   };
   
   return new Paragraph({
@@ -79,7 +81,9 @@ function createImage(section, imageBuffers) {
 }
 
 function createTable(section) {
-  const allRows = section.headers ? [section.headers, ...section.rows] : section.rows;
+  const headers = section.headers || [];
+  const rows = section.rows || [];
+  const allRows = headers.length > 0 ? [headers, ...rows] : rows;
   
   const tableRows = allRows.map((row, i) => {
     const cells = row.map(cell => new TableCell({
@@ -104,7 +108,8 @@ function createTable(section) {
 }
 
 function createList(section) {
-  return section.items.map((item, i) => {
+  const items = section.items || [];
+  return items.map((item, i) => {
     return new Paragraph({
       children: [new TextRun({ text: item, font: 'Arial', size: 24 })],
       bullet: {
@@ -120,6 +125,10 @@ function createList(section) {
 }
 
 async function assemble(jsonDoc, outputPath, imageBuffers) {
+  if (!jsonDoc.sections) {
+    throw new Error('Invalid document: missing sections');
+  }
+  
   const children = [];
   
   for (const section of jsonDoc.sections) {
@@ -143,6 +152,14 @@ async function assemble(jsonDoc, outputPath, imageBuffers) {
   }
   
   const doc = new Document({
+    numbering: {
+      config: [{
+        reference: 'default-list',
+        levels: [
+          { level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: { left: 720, hanging: 360 } },
+        ],
+      }],
+    },
     sections: [{
       properties: {},
       children,
