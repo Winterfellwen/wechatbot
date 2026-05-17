@@ -32,6 +32,9 @@ def escape_html(text):
 
 
 def build_pdf(json_doc, image_buffers, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     doc = SimpleDocTemplate(
         str(output_path),
         pagesize=letter,
@@ -65,7 +68,7 @@ def build_pdf(json_doc, image_buffers, output_path):
             text = section.get("text", "")
             style_name = f"Heading{level}"
             style = styles.get(style_name, styles["Heading1"])
-            story.append(Paragraph(text, style))
+            story.append(Paragraph(escape_html(text), style))
             story.append(Spacer(1, 6))
 
         elif section_type == "paragraph":
@@ -108,11 +111,16 @@ def build_pdf(json_doc, image_buffers, output_path):
                 img.drawHeight = height
                 story.append(img)
                 story.append(Spacer(1, 6))
+            else:
+                print(f"Warning: image index {index} not found", file=sys.stderr)
 
         elif section_type == "table":
             headers = section.get("headers", [])
             rows = section.get("rows", [])
             all_data = [headers] + rows if headers else rows
+
+            if not all_data:
+                continue
 
             # Escape HTML in table cells
             table_data = [
@@ -151,6 +159,9 @@ def build_pdf(json_doc, image_buffers, output_path):
                 para = Paragraph(escape_html(item), styles["CustomBody"])
                 list_items.append(ListItem(para))
 
+            if not list_items:
+                continue
+
             flowable = ListFlowable(
                 list_items,
                 bulletType="1" if ordered else "bullet",
@@ -174,8 +185,12 @@ def main():
     images_dir = Path(sys.argv[2])
     output_path = Path(sys.argv[3])
 
-    with open(json_path) as f:
-        json_doc = json.load(f)
+    try:
+        with open(json_path) as f:
+            json_doc = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError, OSError) as e:
+        print(f"Error loading JSON: {e}", file=sys.stderr)
+        sys.exit(1)
 
     # Load images as base64
     image_buffers = []
