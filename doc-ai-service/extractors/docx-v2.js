@@ -1,4 +1,4 @@
-const { execFileSync } = require('child_process');
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -24,13 +24,13 @@ function extractImages(docxPath) {
     const zip = new AdmZip(docxPath);
     const entries = zip.getEntries();
     const images = [];
-
+    
     for (const entry of entries) {
       if (entry.entryName.startsWith('word/media/')) {
         images.push(entry.getData());
       }
     }
-
+    
     return images;
   } catch (err) {
     console.error('[docx-v2] Image extraction failed:', err.message);
@@ -40,16 +40,17 @@ function extractImages(docxPath) {
 
 function extractText(docxPath) {
   try {
-    const result = execFileSync('pandoc', [docxPath, '-t', 'json'], {
+    // Use execSync with shell command instead of execFileSync for better compatibility
+    const result = execSync(`pandoc "${docxPath}" -t json`, {
       encoding: 'utf-8',
-      timeout: 120000, // Increased timeout for large DOCX files
-      maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large documents
+      timeout: 120000,
+      maxBuffer: 50 * 1024 * 1024,
     });
     return JSON.parse(result);
   } catch (err) {
     console.error('[docx-v2] Pandoc JSON extraction failed, falling back to plain text:', err.message);
     try {
-      const text = execFileSync('pandoc', [docxPath, '-t', 'plain'], {
+      const text = execSync(`pandoc "${docxPath}" -t plain`, {
         encoding: 'utf-8',
         timeout: 120000,
         maxBuffer: 50 * 1024 * 1024,
