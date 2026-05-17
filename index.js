@@ -195,11 +195,19 @@ app.put('/api/users/me', requireAuth, async (req, res) => {
 });
 
 app.delete('/api/users/me', requireAuth, async (req, res) => {
+  if (!pool) return res.status(503).json({ error: 'Database not available' });
+  const client = await pool.connect();
   try {
-    await pool.query('UPDATE users SET deleted = true, token = NULL WHERE openid = $1', [req.user.openid]);
+    await client.query('BEGIN');
+    await client.query('DELETE FROM jp_lesson_scores WHERE openid = $1', [req.user.openid]);
+    await client.query('UPDATE users SET deleted = true, token = NULL WHERE openid = $1', [req.user.openid]);
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (err) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
