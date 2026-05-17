@@ -121,7 +121,7 @@ async function processJobV2(jobId) {
   const validation = validate(aiJson);
   if (!validation.valid) {
     console.error(`[process-v2] AI JSON validation failed: ${validation.error}, falling back to v1`);
-    return processJob(jobId);
+    return processJobV1(jobId);
   }
 
   const outName = `${jobId}.${job.targetFmt}`;
@@ -154,11 +154,7 @@ async function processJobV2(jobId) {
   fs.unlink(job.filePath, () => {});
 }
 
-async function processJob(jobId) {
-  if (USE_V2_PIPELINE) {
-    return processJobV2(jobId);
-  }
-
+async function processJobV1(jobId) {
   const job = queue.getJob(jobId);
   if (!job) throw new Error('Job not found');
 
@@ -208,6 +204,13 @@ async function processJob(jobId) {
   queue.updateJob(jobId, { resultFile: outName });
 
   fs.unlink(job.filePath, () => {});
+}
+
+async function processJob(jobId) {
+  if (USE_V2_PIPELINE) {
+    return processJobV2(jobId);
+  }
+  return processJobV1(jobId);
 }
 
 app.post('/convert', upload.single('file'), async (req, res) => {
