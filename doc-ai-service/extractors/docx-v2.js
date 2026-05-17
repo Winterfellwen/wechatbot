@@ -1,6 +1,7 @@
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const AdmZip = require('adm-zip');
 
 function validateFile(filePath) {
@@ -11,8 +12,9 @@ function validateFile(filePath) {
   if (stat.size === 0) {
     throw new Error(`File is empty: ${filePath}`);
   }
+  // Accept files without extension (multer temp files) or .docx
   const ext = path.extname(filePath).toLowerCase();
-  if (ext !== '.docx') {
+  if (ext && ext !== '.docx') {
     throw new Error(`Invalid file extension: ${ext}, expected .docx`);
   }
 }
@@ -40,7 +42,8 @@ function extractText(docxPath) {
   try {
     const result = execFileSync('pandoc', [docxPath, '-t', 'json'], {
       encoding: 'utf-8',
-      timeout: 30000,
+      timeout: 120000, // Increased timeout for large DOCX files
+      maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large documents
     });
     return JSON.parse(result);
   } catch (err) {
@@ -48,7 +51,8 @@ function extractText(docxPath) {
     try {
       const text = execFileSync('pandoc', [docxPath, '-t', 'plain'], {
         encoding: 'utf-8',
-        timeout: 30000,
+        timeout: 120000,
+        maxBuffer: 50 * 1024 * 1024,
       });
       return { blocks: [{ t: 'Para', c: [{ t: 'Str', c: text }] }] };
     } catch (fallbackErr) {

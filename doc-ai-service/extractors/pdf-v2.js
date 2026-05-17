@@ -7,8 +7,12 @@ async function extract(filePath) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-extract-'));
 
   try {
+    // Multer saves files without extension; rename to add .pdf for Python validation
+    const pdfPath = path.join(tempDir, 'input.pdf');
+    fs.copyFileSync(filePath, pdfPath);
+
     const scriptPath = path.join(__dirname, '../../pdf-service/extractors/pdf.py');
-    const { status, stdout, stderr } = spawnSync('python', [scriptPath, filePath, tempDir], {
+    const { status, stdout, stderr } = spawnSync('python', [scriptPath, pdfPath, tempDir], {
       encoding: 'utf-8',
       timeout: 120000,
     });

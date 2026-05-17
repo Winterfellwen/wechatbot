@@ -93,11 +93,13 @@ def build_pdf(json_doc, image_buffers, output_path):
                 "justify": TA_JUSTIFY,
             }
 
-            para = Paragraph(
-                html,
-                styles["CustomBody"],
+            # Create style with alignment since Paragraph doesn't accept alignment kwarg
+            para_style = ParagraphStyle(
+                f'CustomBody_{align}',
+                parent=styles['CustomBody'],
                 alignment=align_map.get(align, TA_LEFT),
             )
+            para = Paragraph(html, para_style)
             story.append(para)
 
         elif section_type == "image":
