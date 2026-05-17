@@ -1,0 +1,51 @@
+// pdf/pages/records/records.wxs
+function getStatusText(status) {
+  var map = {
+    queued: '排队中',
+    processing: '处理中',
+    done: '已完成',
+    error: '失败'
+  };
+  return map[status] || status;
+}
+
+function getStatusClass(status) {
+  return 'status-' + status;
+}
+
+function formatDuration(seconds) {
+  if (!seconds) return '';
+  if (seconds < 60) return seconds + 's';
+  return Math.floor(seconds / 60) + 'm' + (seconds % 60) + 's';
+}
+
+function getFilteredRecords(records, activeTab) {
+  if (activeTab === 'all') return records;
+  var filtered = [];
+  for (var i = 0; i < records.length; i++) {
+    if (records[i].type === activeTab) {
+      filtered.push(records[i]);
+    }
+  }
+  return filtered;
+}
+
+function getDisplayName(record) {
+  if (!record) return '';
+  var name = record.fileName;
+  if (record.type === 'convert' && record.to) {
+    var dotIndex = name.lastIndexOf('.');
+    if (dotIndex > 0) {
+      name = name.substring(0, dotIndex) + '.' + record.to;
+    }
+  }
+  return name;
+}
+
+module.exports = {
+  getStatusText: getStatusText,
+  getStatusClass: getStatusClass,
+  formatDuration: formatDuration,
+  getFilteredRecords: getFilteredRecords,
+  getDisplayName: getDisplayName
+};

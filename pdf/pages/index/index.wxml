@@ -2,52 +2,115 @@
 <view class="container">
   <view class="header">
     <text class="header-title">PDF 工具箱</text>
-    <text class="header-sub">上传文件，格式转换</text>
+    <text class="header-sub">转换 · 编辑 · 合并</text>
+    <view class="records-btn" bindtap="goRecords">📋 记录</view>
   </view>
 
-  <!-- No file: upload area -->
-  <view wx:if="{{!fileName}}" class="upload-section">
-    <view class="upload-btn" bindtap="uploadFile">
-      <text class="upload-icon">+</text>
-      <text class="upload-text">选择文件</text>
-      <text class="upload-hint">支持 PDF / DOC / DOCX</text>
-    </view>
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'convert' ? 'active' : ''}}" bindtap="switchTab" data-tab="convert">格式转换</view>
+    <view class="tab-item {{activeTab === 'edit' ? 'active' : ''}}" bindtap="switchTab" data-tab="edit">编辑</view>
   </view>
 
-  <!-- Has file: convert area -->
-  <view wx:if="{{fileName}}" class="convert-section">
-    <view class="file-card">
-      <view class="file-info">
-        <text class="file-name">{{fileName}}</text>
-        <text class="file-type">{{fromFormat === 'pdf' ? 'PDF文档' : fromFormat === 'docx' ? 'Word文档' : '旧版Word'}}</text>
+  <!-- 转换 Tab -->
+  <view wx:if="{{activeTab === 'convert'}}" class="tab-content">
+    <!-- 文件选择 -->
+    <view class="upload-section">
+      <view wx:if="{{!fileName}}" class="upload-btn {{uploading ? 'disabled' : ''}}" bindtap="uploadFile">
+        <text class="upload-icon">+</text>
+        <text class="upload-text">选择文件</text>
+        <text class="upload-hint">支持 PDF / DOC / DOCX</text>
       </view>
-      <view class="file-del" bindtap="clearFile">×</view>
-    </view>
-
-    <text class="section-label">转换为</text>
-    <view class="target-list">
-      <block wx:for="{{targetOptions}}" wx:key="value">
-        <view class="target-card {{toFormat === item.value ? 'active' : ''}}" bindtap="selectTarget" data-value="{{item.value}}">
-          <text class="target-label">{{item.label}}</text>
+      <view wx:else class="file-card">
+        <view class="file-info">
+          <text class="file-name">{{fileName}}</text>
+          <text class="file-type">{{fromFormat === 'pdf' ? 'PDF文档' : fromFormat === 'docx' ? 'Word文档' : '旧版Word'}}</text>
         </view>
-      </block>
+        <view class="file-del" bindtap="clearFile">×</view>
+      </view>
     </view>
 
-    <view class="convert-btn-wrap">
-      <view class="convert-btn {{converting ? 'loading' : ''}}" bindtap="doConvert">
-        {{converting ? (progressText || '处理中...') : '开始转换'}}
+    <!-- 目标格式 -->
+    <view wx:if="{{targetOptions.length > 0}}" class="convert-section">
+      <text class="section-label">转换为</text>
+      <view class="target-list">
+        <block wx:for="{{targetOptions}}" wx:key="value">
+          <view class="target-card {{toFormat === item.value ? 'active' : ''}}" bindtap="selectTarget" data-value="{{item.value}}">
+            <text class="target-label">{{item.label}}</text>
+          </view>
+        </block>
+      </view>
+      <view class="convert-btn-wrap">
+        <view class="convert-btn {{uploading ? 'disabled' : ''}}" bindtap="doConvert">
+          {{uploading ? '上传中...' : '开始转换'}}
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 转换结果列表 -->
-  <view wx:if="{{results.length > 0}}" class="result-section">
-    <view class="result-card" wx:for="{{results}}" wx:key="time" bindtap="openResult" data-idx="{{index}}">
-      <view class="result-header">
-        <text class="result-icon">✓</text>
-        <text class="result-title">{{item.name}}</text>
-        <text class="result-del" data-idx="{{index}}" catchtap="removeResult">×</text>
+  <!-- 编辑 Tab -->
+  <view wx:if="{{activeTab === 'edit'}}" class="tab-content">
+    <!-- 文件选择 -->
+    <view class="upload-section">
+      <view wx:if="{{!fileName}}" class="upload-btn {{editUploading ? 'disabled' : ''}}" bindtap="uploadFile">
+        <text class="upload-icon">+</text>
+        <text class="upload-text">选择 PDF 文件</text>
+        <text class="upload-hint">仅支持 PDF 格式</text>
       </view>
+      <view wx:else class="file-card">
+        <view class="file-info">
+          <text class="file-name">{{fileName}}</text>
+          <text class="file-type">PDF文档</text>
+        </view>
+        <view class="file-del" bindtap="clearFile">×</view>
+      </view>
+    </view>
+
+    <!-- 编辑操作 -->
+    <view class="edit-op-list">
+      <view class="edit-op-card {{editOp === 'watermark' ? 'selected' : ''}}" bindtap="selectEditOp" data-op="watermark">
+        <text class="edit-op-icon">T</text>
+        <view class="edit-op-info">
+          <text class="edit-op-name">添加水印</text>
+          <text class="edit-op-desc">在 PDF 页面上添加文字</text>
+        </view>
+      </view>
+      <view class="edit-op-card {{editOp === 'rotate' ? 'selected' : ''}}" bindtap="selectEditOp" data-op="rotate">
+        <text class="edit-op-icon">↻</text>
+        <view class="edit-op-info">
+          <text class="edit-op-name">旋转页面</text>
+          <text class="edit-op-desc">旋转 PDF 页面方向</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 水印输入 -->
+    <view wx:if="{{editOp === 'watermark'}}" class="options-panel">
+      <text class="opt-label">水印文字</text>
+      <input class="opt-input" value="{{textContent}}" placeholder="请输入水印文字" bindinput="onTextInput" />
+    </view>
+
+    <!-- 合并入口 -->
+    <view class="merge-entry" bindtap="goMerge">
+      <text class="merge-icon">⊞</text>
+      <view class="merge-info">
+        <text class="merge-name">合并 PDF</text>
+        <text class="merge-desc">将两个 PDF 文件合并为一个</text>
+      </view>
+      <text class="merge-arrow">›</text>
+    </view>
+
+    <!-- 处理按钮 -->
+    <view wx:if="{{editOp && editOp !== 'merge'}}" class="do-btn-wrap">
+      <view class="do-btn {{editUploading ? 'disabled' : ''}}" bindtap="doEditOp">
+        {{editUploading ? '处理中...' : '开始处理'}}
+      </view>
+    </view>
+
+    <!-- 结果 -->
+    <view wx:if="{{editResultUrl}}" class="result-section">
+      <text class="result-title">处理完成</text>
+      <view class="download-btn" bindtap="downloadEditResult">下载并打开文件</view>
     </view>
   </view>
 

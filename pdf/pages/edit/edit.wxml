@@ -1,42 +1,46 @@
 <view class="container">
   <view class="header">
     <view class="back-btn" bindtap="goBack">← 返回</view>
-    <text class="header-title">在线编辑</text>
+    <text class="header-title">合并 PDF</text>
     <view class="header-placeholder"></view>
   </view>
 
-  <view class="file-display" wx:if="{{fileName}}">
-    <text class="fl">当前文件</text>
-    <text class="fv">{{fileName}}</text>
-  </view>
-  <view wx:else class="no-file"><text>请先在主页上传文件</text></view>
-
-  <view class="op-list">
-    <view class="op-card {{operation === 'watermark' ? 'selected' : ''}}" bindtap="selectOp" data-op="watermark">
-      <text class="op-icon">T</text>
-      <view class="op-info"><text class="op-name">添加水印</text><text class="op-desc">在PDF页面上添加文字</text></view>
+  <!-- 文件 1 -->
+  <view class="file-slot">
+    <text class="slot-label">第一个文件</text>
+    <view wx:if="{{file1Name}}" class="slot-content">
+      <text class="slot-name">{{file1Name}}</text>
+      <text class="slot-del" bindtap="clearFile1">×</text>
     </view>
-    <view class="op-card {{operation === 'rotate' ? 'selected' : ''}}" bindtap="selectOp" data-op="rotate">
-      <text class="op-icon">↻</text>
-      <view class="op-info"><text class="op-name">旋转页面</text><text class="op-desc">旋转PDF页面方向</text></view>
-    </view>
-    <view class="op-card {{operation === 'merge' ? 'selected' : ''}}" bindtap="selectOp" data-op="merge">
-      <text class="op-icon">⊞</text>
-      <view class="op-info"><text class="op-name">合并PDF</text><text class="op-desc">上传两个文件进行合并</text></view>
-    </view>
+    <view wx:else class="slot-add" bindtap="uploadFile1">+ 选择 PDF</view>
   </view>
 
-  <view wx:if="{{operation === 'watermark'}}" class="options-panel">
-    <text class="opt-label">水印文字</text>
-    <input class="opt-input" value="{{textContent}}" placeholder="请输入水印文字" bindinput="onTextInput" />
+  <!-- 交换按钮 -->
+  <view class="swap-btn" bindtap="swapFiles">
+    <text class="swap-icon">⇅</text>
+    <text class="swap-text">交换顺序</text>
   </view>
 
+  <!-- 文件 2 -->
+  <view class="file-slot">
+    <text class="slot-label">第二个文件</text>
+    <view wx:if="{{file2Name}}" class="slot-content">
+      <text class="slot-name">{{file2Name}}</text>
+      <text class="slot-del" bindtap="clearFile2">×</text>
+    </view>
+    <view wx:else class="slot-add" bindtap="uploadFile2">+ 选择 PDF</view>
+  </view>
+
+  <!-- 合并按钮 -->
   <view class="do-btn-wrap">
-    <view class="do-btn {{processing ? 'disabled' : ''}}" bindtap="doOperation">{{processing ? '处理中...' : '开始处理'}}</view>
+    <view class="do-btn {{processing ? 'disabled' : ''}}" bindtap="doMerge">
+      {{processing ? (progressText || '处理中...') : '开始合并'}}
+    </view>
   </view>
 
+  <!-- 结果 -->
   <view wx:if="{{resultUrl}}" class="result-section">
-    <text class="result-title">处理完成</text>
+    <text class="result-title">合并完成</text>
     <view class="download-btn" bindtap="downloadResult">下载并打开文件</view>
   </view>
 </view>

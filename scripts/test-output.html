@@ -1,0 +1,115 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>个人简历</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .contact-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .item {
+            margin-bottom: 15px;
+        }
+        .item-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .item-subtitle {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .item-desc {
+            font-size: 14px;
+            color: #666;
+            padding-left: 10px;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .skill-tag {
+            background-color: #eaf2f8;
+            color: #2980b9;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>个人简历</h1>
+    <div class="contact-info">
+        姓名：张三 &nbsp;|&nbsp; 电话：13800138000 &nbsp;|&nbsp; 邮箱：zhangsan@example.com
+    </div>
+
+    <div class="section">
+        <div class="section-title">教育背景</div>
+        <div class="item">
+            <div class="item-title">北京大学</div>
+            <div class="item-subtitle">2018 - 2022</div>
+            <div class="item-desc">计算机科学与技术 · 本科</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">工作经历</div>
+        <div class="item">
+            <div class="item-title">字节跳动</div>
+            <div class="item-subtitle">2022 - 至今</div>
+            <div class="item-desc">高级软件工程师</div>
+            <ul>
+                <li class="item-desc">负责微服务架构设计</li>
+                <li class="item-desc">主导核心模块开发</li>
+                <li class="item-desc">负责团队代码审查</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">专业技能</div>
+        <div class="skills-list">
+            <span class="skill-tag">JavaScript / TypeScript</span>
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">Go</span>
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">MySQL</span>
+            <span class="skill-tag">Redis</span>
+            <span class="skill-tag">Kafka</span>
+        </div>
+    </div>
+</body>
+</html>
+```

@@ -332,16 +332,20 @@ app.listen(PORT, () => {
 const SELF_URL = process.env.RENDER_EXTERNAL_URL || config.frontend.apiBaseUrl;
 const KEEPALIVE_INTERVAL = config.pdfService.keepaliveInterval;
 
-// Pre-warm Python service immediately on startup (cascading cold start mitigation)
+// Pre-warm all PDF backends immediately on startup
 function warmPythonService() {
-  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
+  pdfBackends.forEach(function(url) {
+    fetchWithTimeout(url + '/health', {}, 30000).catch(function() {});
+  });
 }
 setTimeout(warmPythonService, 1000);
 
-setInterval(() => {
+setInterval(function() {
   console.log('Keepalive: warming services');
-  fetchWithTimeout(config.pdfService.url + '/health', {}, 30000).catch(() => {});
-  fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(() => {});
+  pdfBackends.forEach(function(url) {
+    fetchWithTimeout(url + '/health', {}, 30000).catch(function() {});
+  });
+  fetchWithTimeout(SELF_URL + '/api/health', {}, 30000).catch(function() {});
 }, KEEPALIVE_INTERVAL);
 
 app.get('/api/chat/key', (req, res) => {
@@ -409,24 +413,52 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// --- PDF backend load balancing ---
+// Supports comma-separated PDF_SERVICE_URLS or single PDF_SERVICE_URL
+const pdfBackends = (function() {
+  var raw = process.env.PDF_SERVICE_URLS || config.pdfService.url || '';
+  return raw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+})();
+console.log('PDF backends:', pdfBackends.length > 0 ? pdfBackends.join(', ') : 'NONE');
+var _rrIndex = 0;
+var _jobBackends = {};
+
+function _pickBackend() {
+  if (pdfBackends.length === 0) throw new Error('No PDF backends configured');
+  var url = pdfBackends[_rrIndex % pdfBackends.length];
+  _rrIndex++;
+  return url;
+}
+
+function _backendForJob(jobId) {
+  return _jobBackends[jobId] || pdfBackends[0];
+}
+
 // PDF conversion endpoint - submit job, return job_id immediately (client polls)
 fs.mkdirSync(config.storage.uploadDir, { recursive: true });
 fs.mkdirSync(config.storage.serveDir, { recursive: true });
-const upload = multer({ dest: config.storage.uploadDir + '/' });
-const pdfServiceUrl = config.pdfService.url;
+const upload = multer({
+  dest: config.storage.uploadDir + '/',
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
+});
 
 app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请上传文件' });
-  const { from, to } = req.body;
-  const toFmt = to || 'docx';
+  const from = req.body.from || req.query.from || 'pdf';
+  const to = req.body.to || req.query.to || 'docx';
+  const toFmt = to;
+  const backend = _pickBackend();
+  const t0 = Date.now();
 
-    try {
+  try {
     const fileBuffer = fs.readFileSync(req.file.path);
+    const sizeKB = Math.round(fileBuffer.length / 1024);
     const fileBase64 = fileBuffer.toString('base64');
+    console.log(`[pdf] submit ${sizeKB}KB ${req.file.originalname || '?'} to ${backend}`);
 
-    // Submit job to Python with retry (3 min total, 60s per attempt)
+    // Submit job to Python with retry (3 min total, 120s per attempt for large files)
     const submitRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(pdfServiceUrl + '/convert', {
+      const res = await fetchWithTimeout(backend + '/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -435,21 +467,22 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
           from_fmt: from || 'pdf',
           to_fmt: toFmt
         })
-      }, 60000);
+      }, 120000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error(errText);
       }
       return res;
     }, 180000, 5000);
-    
+
     fs.unlinkSync(req.file.path);
 
     const { job_id } = await submitRes.json();
-    // Return job_id immediately; client polls /api/pdf/status/:job_id
+    _jobBackends[job_id] = backend;
+    console.log(`[pdf] submit OK job=${job_id} backend=${backend} (${Date.now()-t0}ms)`);
     return res.json({ job_id: job_id, status_url: '/api/pdf/status/' + job_id });
   } catch (err) {
-    console.error('Convert error:', err.message);
+    console.error(`[pdf] submit FAIL (${Date.now()-t0}ms):`, err.message);
     res.status(500).json({ error: err.message.substring(0, 200) });
   }
 });
@@ -457,26 +490,29 @@ app.post('/api/pdf/convert', upload.single('file'), async (req, res) => {
 // Poll job status from Python, download result when ready
 app.get('/api/pdf/status/:jobId', async (req, res) => {
   const { jobId } = req.params;
+  const backend = _backendForJob(jobId);
+  const t0 = Date.now();
   try {
     const statusRes = await retryWithTimeout(async () => {
-      const res = await fetchWithTimeout(pdfServiceUrl + '/status/' + jobId, {}, 30000);
+      const res = await fetchWithTimeout(backend + '/status/' + jobId, {}, 120000);
       if (!res.ok) {
         const errText = await res.text().catch(() => 'Unknown error');
         throw new Error('查询失败: ' + errText.substring(0, 100));
       }
       return res;
-    }, 60000, 3000);
+    }, 600000, 3000);
 
     const status = await statusRes.json();
     if (status.status === 'pending' || status.status === 'processing') {
       return res.json({ status: 'processing' });
     } else if (status.status === 'done') {
+      console.log(`[pdf] status done job=${jobId} (${Date.now()-t0}ms)`);
       // Download result from Python and cache locally
       const dlRes = await retryWithTimeout(async () => {
-        const res = await fetchWithTimeout(pdfServiceUrl + '/download/' + status.result, {}, 120000);
+        const res = await fetchWithTimeout(backend + '/download/' + status.result, {}, 300000);
         if (!res.ok) throw new Error('下载转换结果失败');
         return res;
-      }, 180000, 5000);
+      }, 600000, 5000);
 
       const buffer = await dlRes.arrayBuffer();
       // Verify file header to avoid "bad magic number" errors
@@ -489,16 +525,32 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
       }
       const outFile = config.storage.serveDir + '/conv_' + jobId;
       fs.writeFileSync(outFile, Buffer.from(buffer));
+      console.log(`[pdf] download cached job=${jobId} (${Math.round(buffer.byteLength/1024)}KB, ${Date.now()-t0}ms)`);
+
+      // 触发订阅消息通知（如果有 openid）
+      const fileName = status.result || 'file';
+      if (req.query.openid) {
+        sendSubscribeMessage(req.query.openid, jobId, 'done', fileName).catch(console.error);
+      }
+
       return res.json({
         status: 'done',
          url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}`
       });
     } else if (status.status === 'error') {
+      console.error(`[pdf] status error job=${jobId}:`, status.error);
+
+      // 触发订阅消息通知（如果有 openid）
+      const fileName = jobId || 'file';
+      if (req.query.openid) {
+        sendSubscribeMessage(req.query.openid, jobId, 'error', fileName).catch(console.error);
+      }
+
       return res.json({ status: 'error', error: status.error || '转换失败' });
     }
     return res.json(status);
   } catch (err) {
-    console.error('Status poll error:', err.message);
+    console.error(`[pdf] status FAIL job=${jobId} (${Date.now()-t0}ms):`, err.message);
     res.status(500).json({ error: err.message.substring(0, 200) });
   }
 });
@@ -506,10 +558,12 @@ app.get('/api/pdf/status/:jobId', async (req, res) => {
 app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: '请上传文件' });
-    const pdfServiceUrl = config.pdfService.url;
+    const backend = _pickBackend();
     const { op, text, angle } = req.body;
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileBase64 = fileBuffer.toString('base64');
+    const t0 = Date.now();
+    console.log(`[pdf] edit op=${op} size=${Math.round(fileBuffer.length/1024)}KB backend=${backend}`);
 
     var body = new URLSearchParams();
     body.append('file_base64', fileBase64);
@@ -517,7 +571,7 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
     body.append('text', text || '');
     body.append('angle', angle || '90');
 
-    const pyRes = await fetchWithTimeout(pdfServiceUrl + '/edit', {
+    const pyRes = await fetchWithTimeout(backend + '/edit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
@@ -541,6 +595,68 @@ app.post('/api/pdf/edit', upload.single('file'), async (req, res) => {
   }
 });
 
+// 合并PDF：接收第二个文件
+const mergeFiles = {};
+app.post('/api/pdf/edit/merge2', upload.single('file2'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '请上传第二个文件' });
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+    const mergeId = 'merge_' + Date.now();
+    mergeFiles[mergeId] = fileBase64;
+    fs.unlinkSync(req.file.path);
+    res.json({ merge_id: mergeId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 执行合并
+app.post('/api/pdf/edit/merge', upload.single('file'), async (req, res) => {
+  try {
+    const { merge_id } = req.body;
+    if (!req.file) return res.status(400).json({ error: '请上传第一个文件' });
+    if (!merge_id || !mergeFiles[merge_id]) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: '缺少文件数据' });
+    }
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBase64 = fileBuffer.toString('base64');
+    fs.unlinkSync(req.file.path);
+
+    const backend = _pickBackend();
+    const t0 = Date.now();
+
+    const pyRes = await fetchWithTimeout(backend + '/edit/merge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file1_base64: fileBase64,
+        file2_base64: mergeFiles[merge_id]
+      })
+    }, 120000);
+
+    delete mergeFiles[merge_id];
+
+    if (!pyRes.ok) {
+      const err = await pyRes.json();
+      return res.status(400).json(err);
+    }
+
+    const buffer = await pyRes.arrayBuffer();
+    const outFile = config.storage.serveDir + '/edit_' + Date.now() + '.pdf';
+    fs.mkdirSync(config.storage.serveDir, { recursive: true });
+    fs.writeFileSync(outFile, Buffer.from(buffer));
+    console.log(`[pdf] merge done (${Date.now()-t0}ms)`);
+
+    res.json({ url: `${req.protocol}://${req.get('host')}/api/pdf/download/${path.basename(outFile)}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/pdf/download/:filename', (req, res) => {
   const filePath = config.storage.serveDir + '/' + req.params.filename;
   if (fs.existsSync(filePath)) {
@@ -549,6 +665,57 @@ app.get('/api/pdf/download/:filename', (req, res) => {
     res.status(404).json({ error: 'File not found' });
   }
 });
+
+// 获取 access_token
+let cachedAccessToken = null;
+let tokenExpireTime = 0;
+
+async function getAccessToken() {
+  if (cachedAccessToken && Date.now() < tokenExpireTime) {
+    return cachedAccessToken;
+  }
+  const res = await fetch(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${WECHAT_APP_ID}&secret=${WECHAT_APP_SECRET}`);
+  const data = await res.json();
+  if (data.access_token) {
+    cachedAccessToken = data.access_token;
+    tokenExpireTime = Date.now() + (data.expires_in - 300) * 1000;
+    return cachedAccessToken;
+  }
+  throw new Error('获取 access_token 失败');
+}
+
+// 发送订阅消息
+async function sendSubscribeMessage(openid, jobId, status, fileName) {
+  try {
+    const token = await getAccessToken();
+    const templateId = process.env.WECHAT_TEMPLATE_ID || 'YOUR_TEMPLATE_ID';
+    const page = 'pdf/pages/records/records';
+
+    const statusText = status === 'done' ? '转换完成' : '转换失败';
+    const body = {
+      touser: openid,
+      template_id: templateId,
+      page: page,
+      data: {
+        thing1: { value: fileName.substring(0, 20) },
+        thing2: { value: statusText },
+        time3: { value: new Date().toLocaleString('zh-CN') }
+      }
+    };
+
+    const res = await fetch(`https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const result = await res.json();
+    if (result.errcode !== 0) {
+      console.error('订阅消息发送失败:', result);
+    }
+  } catch (err) {
+    console.error('发送订阅消息异常:', err);
+  }
+}
 
 // Word import: receive .docx, unzip with zlib, return document.xml text
 app.post('/api/word/import', upload.single('file'), async (req, res) => {
@@ -696,4 +863,52 @@ app.get('/api/tts/download/:filename', (req, res) => {
     res.status(404).json({ error: 'File not found' });
   }
 });
+
+// 文件清理定时任务（每小时执行）
+setInterval(() => {
+  const serveDir = config.storage.serveDir;
+  if (!fs.existsSync(serveDir)) return;
+
+  const files = fs.readdirSync(serveDir);
+  const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000; // 24 小时
+
+  // 检查磁盘使用率
+  let totalSize = 0;
+  const fileStats = files.map(f => {
+    const stat = fs.statSync(serveDir + '/' + f);
+    totalSize += stat.size;
+    return { name: f, mtime: stat.mtimeMs, size: stat.size };
+  });
+
+  // 删除超过 24 小时的文件
+  fileStats.forEach(f => {
+    if (now - f.mtime > maxAge) {
+      try {
+        fs.unlinkSync(serveDir + '/' + f.name);
+        console.log(`[cleanup] deleted old file: ${f.name}`);
+      } catch(e) {}
+    }
+  });
+
+  // 如果磁盘使用率 > 85%，按 LRU 删除
+  // 简化处理：保留最近 100 个文件
+  const remaining = fs.readdirSync(serveDir);
+  if (remaining.length > 100) {
+    const sorted = remaining.map(f => ({
+      name: f,
+      mtime: fs.statSync(serveDir + '/' + f).mtimeMs
+    })).sort((a, b) => a.mtime - b.mtime);
+
+    const toDelete = sorted.slice(0, sorted.length - 100);
+    toDelete.forEach(f => {
+      try {
+        fs.unlinkSync(serveDir + '/' + f.name);
+        console.log(`[cleanup] LRU deleted: ${f.name}`);
+      } catch(e) {}
+    });
+  }
+
+  console.log(`[cleanup] done. files: ${fs.readdirSync(serveDir).length}, totalSize: ${Math.round(totalSize/1024/1024)}MB`);
+}, 60 * 60 * 1000);
 

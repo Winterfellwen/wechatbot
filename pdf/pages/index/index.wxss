@@ -36,6 +36,23 @@ page {
   overflow: hidden;
 }
 
+.records-btn {
+  position: absolute;
+  right: 20rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: white;
+  z-index: 2;
+}
+
+.records-btn:active {
+  background: rgba(255,255,255,0.3);
+}
+
 .header::before {
   content: '';
   position: absolute;
@@ -98,6 +115,11 @@ page {
   background: #fafbff;
 }
 
+.upload-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .upload-btn::before {
   content: '';
   position: absolute;
@@ -129,6 +151,86 @@ page {
   color: var(--text-muted); 
   display: block; 
   margin-top: 8rpx; 
+}
+
+/* ========== Tab 切换 ========== */
+.tab-bar {
+  display: flex;
+  margin: 0 32rpx 24rpx;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 6rpx;
+  box-shadow: var(--shadow);
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 10rpx;
+  transition: all 0.2s;
+}
+.tab-item.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(99, 102, 241, 0.3);
+}
+
+/* ========== 编辑操作列表 ========== */
+.edit-op-list { padding: 0 32rpx 24rpx; display: flex; flex-direction: column; gap: 16rpx; }
+.edit-op-card {
+  display: flex; align-items: center; gap: 20rpx;
+  background: var(--bg-card); border: 2rpx solid var(--border);
+  border-radius: var(--radius-sm); padding: 24rpx;
+}
+.edit-op-card.selected { border-color: var(--primary); background: #fafbff; }
+.edit-op-icon {
+  width: 64rpx; height: 64rpx; border-radius: 14rpx;
+  background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+  font-size: 32rpx; color: var(--primary); flex-shrink: 0;
+}
+.edit-op-card.selected .edit-op-icon { background: var(--primary); color: #fff; }
+.edit-op-info { flex: 1; }
+.edit-op-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
+.edit-op-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
+
+/* ========== 合并入口 ========== */
+.merge-entry {
+  display: flex; align-items: center; gap: 20rpx;
+  background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
+  border: 2rpx solid var(--primary-light);
+  border-radius: var(--radius-sm); padding: 24rpx;
+  margin: 0 32rpx 24rpx;
+}
+.merge-icon { font-size: 40rpx; color: var(--primary); }
+.merge-info { flex: 1; }
+.merge-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
+.merge-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
+.merge-arrow { font-size: 36rpx; color: var(--primary); }
+
+/* ========== 选项面板 ========== */
+.options-panel { padding: 0 32rpx 20rpx; }
+.opt-label { font-size: 26rpx; color: var(--text-secondary); display: block; margin-bottom: 12rpx; }
+.opt-input { border: 2rpx solid var(--border); border-radius: 12rpx; padding: 20rpx 24rpx; font-size: 30rpx; background: #fff; }
+
+/* ========== 处理按钮 ========== */
+.do-btn-wrap { padding: 20rpx 32rpx; }
+.do-btn {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  border-radius: 16rpx; padding: 28rpx; text-align: center;
+  color: #fff; font-size: 32rpx; font-weight: bold;
+}
+.do-btn.disabled { opacity: 0.5; }
+
+/* ========== 结果区域 ========== */
+.result-section { padding: 30rpx 32rpx; text-align: center; }
+.result-title { font-size: 30rpx; color: #22C55E; font-weight: bold; display: block; }
+.download-btn {
+  margin-top: 20rpx; background: #22C55E; border-radius: 14rpx;
+  padding: 24rpx; color: #fff; font-size: 28rpx; display: inline-block;
 }
 
 /* ========== 转换区域 ========== */
@@ -304,6 +406,11 @@ page {
   background: linear-gradient(135deg, #94a3b8, #64748b);
   box-shadow: none;
   cursor: not-allowed;
+}
+
+.convert-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* ========== 结果区域 ========== */

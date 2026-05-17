@@ -2,13 +2,14 @@ import os
 import sys
 import base64
 import uuid
+import json
 import asyncio
 import subprocess
 import shutil
 import time
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
@@ -49,10 +50,33 @@ MAX_CONCURRENT = int(os.environ.get("MAX_CONCURRENT", "1"))  # one at a time
 JOB_CLEANUP_AGE = 3600
 UPLOAD_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-service"
 OUTPUT_DIR = Path(os.environ.get("PDF_TEMP_DIR", "/tmp")) / "pdf-outputs"
+JOBS_FILE = UPLOAD_DIR / "jobs.json"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # Track memory pressure — if /tmp is nearly full, reject new jobs
 _LOW_MEM_MODE = False
+
+
+def _save_jobs():
+    """Persist jobs dict to disk."""
+    try:
+        JOBS_FILE.write_text(json.dumps(jobs))
+    except Exception as e:
+        print(f"[jobs] save failed: {e}", flush=True)
+
+
+def _load_jobs():
+    """Load jobs dict from disk on startup."""
+    global jobs
+    if JOBS_FILE.exists():
+        try:
+            jobs = json.loads(JOBS_FILE.read_text())
+            print(f"[jobs] loaded {len(jobs)} jobs from disk", flush=True)
+        except Exception as e:
+            print(f"[jobs] load failed: {e}", flush=True)
+            jobs = {}
+    else:
+        jobs = {}
 
 
 def find_libreoffice() -> str | None:
@@ -108,6 +132,7 @@ def _cleanup_old_jobs():
             _safe_unlink(p)
         for p in Path(OUTPUT_DIR).glob(f"{jid}.*"):
             _safe_unlink(p)
+    _save_jobs()
 
 
 def _write_input(job_id: str, file_data: bytes, ext_in: str) -> Path:
@@ -132,7 +157,30 @@ async def _queue_worker():
 
 @app.on_event("startup")
 async def _start_workers():
+    _load_jobs()
     asyncio.create_task(_queue_worker())
+    # Re-queue pending jobs from disk
+    pending = [(jid, j) for jid, j in jobs.items() if j.get("status") in ("queued", "processing")]
+    if pending:
+        print(f"[jobs] re-queueing {len(pending)} pending jobs", flush=True)
+        for jid, j in pending:
+            # Check if input file still exists
+            input_path = UPLOAD_DIR / f"{jid}_in.*"
+            matches = list(UPLOAD_DIR.glob(f"{jid}_in.*"))
+            if matches:
+                input_file = matches[0]
+                ext_in = input_file.suffix[1:] if input_file.suffix else "pdf"
+                filename = j.get("filename", f"{jid}.{ext_in}")
+                from_fmt = j.get("from_fmt", "pdf")
+                to_fmt = j.get("to_fmt", "docx")
+                j["status"] = "queued"
+                await _queue.put((jid, input_file, filename, from_fmt, to_fmt))
+                _save_jobs()
+            else:
+                # Input file lost (server restart cleared /tmp)
+                j["status"] = "error"
+                j["error"] = "服务器重启，输入文件丢失，请重新上传"
+                _save_jobs()
 
 
 class ConvertRequest(BaseModel):
@@ -140,6 +188,9 @@ class ConvertRequest(BaseModel):
     filename: str
     from_fmt: str = "pdf"
     to_fmt: str = "docx"
+
+
+
 
 
 @app.post("/convert")
@@ -167,8 +218,10 @@ async def convert(req: ConvertRequest):
     pos = _queue_position
 
     jobs[job_id] = {
-        "status": "queued", "queue_position": pos, "size": size, "created_at": time.time()
+        "status": "queued", "queue_position": pos, "size": size, "created_at": time.time(),
+        "filename": req.filename, "from_fmt": req.from_fmt, "to_fmt": req.to_fmt
     }
+    _save_jobs()
 
     await _queue.put((job_id, input_path, req.filename, req.from_fmt, req.to_fmt))
 
@@ -200,6 +253,127 @@ async def download(filename: str):
     return FileResponse(path, filename=f"converted.{ext}", media_type="application/octet-stream")
 
 
+# ── Edit (watermark / rotate / merge) ────────────────────
+
+@app.post("/edit")
+async def edit_pdf(request: Request):
+    """Accept both JSON and form-urlencoded body."""
+    tmp = None
+    try:
+        ct = request.headers.get("content-type", "")
+        if "application/json" in ct:
+            body = await request.json()
+            file_base64 = body.get("file_base64", "")
+            op = body.get("op", "")
+            text = body.get("text", "")
+            angle = body.get("angle", "90")
+        else:
+            form = await request.form()
+            file_base64 = form.get("file_base64", "")
+            op = form.get("op", "")
+            text = form.get("text", "")
+            angle = form.get("angle", "90")
+
+        if not file_base64:
+            raise HTTPException(status_code=400, detail="Missing file_base64")
+
+        raw = base64.b64decode(file_base64)
+        if len(raw) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail=f"File too large ({len(raw)} bytes). Max: {MAX_FILE_SIZE}")
+
+        tmp = UPLOAD_DIR / f"edit_{uuid.uuid4().hex}.pdf"
+        tmp.write_bytes(raw)
+
+        import fitz  # PyMuPDF
+
+        doc = fitz.open(str(tmp))
+
+        if op == "watermark":
+            wm_text = text or "WATERMARK"
+            for page in doc:
+                r = page.rect
+                # Center watermark, 45 degree rotation, semi-transparent gray
+                page.insert_text(
+                    fitz.Point(r.width * 0.15, r.height * 0.5),
+                    wm_text,
+                    fontsize=56,
+                    color=(0.5, 0.5, 0.5),
+                    overlay=True,
+                    rotate=45,
+                )
+        elif op == "rotate":
+            rot_angle = int(angle or "90")
+            for page in doc:
+                page.set_rotation((page.rotation or 0) + rot_angle)
+        elif op == "merge":
+            # Merge is handled by /edit/merge endpoint
+            doc.close()
+            raise HTTPException(status_code=400, detail="Use /edit/merge for two-file merge")
+        else:
+            doc.close()
+            raise HTTPException(status_code=400, detail=f"Unknown operation: {op}")
+
+        out_bytes = doc.tobytes(garbage=4, deflate=True)
+        doc.close()
+
+        return Response(content=out_bytes, media_type="application/pdf")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp and tmp.exists():
+            _safe_unlink(tmp)
+
+
+@app.post("/edit/merge")
+async def merge_pdfs(request: Request):
+    """Merge two PDF files."""
+    tmp1 = tmp2 = None
+    try:
+        body = await request.json()
+        file1_base64 = body.get("file1_base64", "")
+        file2_base64 = body.get("file2_base64", "")
+
+        if not file1_base64 or not file2_base64:
+            raise HTTPException(status_code=400, detail="Missing file data")
+
+        import fitz
+
+        raw1 = base64.b64decode(file1_base64)
+        raw2 = base64.b64decode(file2_base64)
+
+        tmp1 = UPLOAD_DIR / f"merge1_{uuid.uuid4().hex}.pdf"
+        tmp2 = UPLOAD_DIR / f"merge2_{uuid.uuid4().hex}.pdf"
+        tmp1.write_bytes(raw1)
+        tmp2.write_bytes(raw2)
+
+        doc1 = fitz.open(str(tmp1))
+        doc2 = fitz.open(str(tmp2))
+
+        new_doc = fitz.open()
+        new_doc.insert_pdf(doc1)
+        new_doc.insert_pdf(doc2)
+
+        out_bytes = new_doc.tobytes(garbage=4, deflate=True)
+        doc1.close()
+        doc2.close()
+        new_doc.close()
+
+        return Response(content=out_bytes, media_type="application/pdf")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp1 and tmp1.exists():
+            _safe_unlink(tmp1)
+        if tmp2 and tmp2.exists():
+            _safe_unlink(tmp2)
+
+
 @app.get("/health")
 @app.head("/health")
 async def health():
@@ -216,19 +390,21 @@ async def health():
 # fully reclaimed when the worker exits. The main process stays lean.
 
 CONVERTER_SCRIPT = Path(__file__).parent / "converter_worker.py"
-CONVERT_TIMEOUT = int(os.environ.get("CONVERT_TIMEOUT", 360))  # 6 min per conversion
+CONVERT_TIMEOUT = int(os.environ.get("CONVERT_TIMEOUT", 600))  # 10 min per conversion
 
 
 def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str, to_fmt: str):
     input_path = Path(input_path_str)
     if not input_path.exists():
         jobs[job_id] = {"status": "error", "error": "Input file lost", "created_at": time.time()}
+        _save_jobs()
         return
 
     out_name = f"{job_id}.{to_fmt}"
     output_path = OUTPUT_DIR / out_name
     try:
         jobs[job_id]["status"] = "processing"
+        _save_jobs()
 
         proc = subprocess.run(
             [sys.executable, str(CONVERTER_SCRIPT), str(input_path), str(output_path), from_fmt, to_fmt],
@@ -248,11 +424,15 @@ def _run_convert(job_id: str, input_path_str: str, filename: str, from_fmt: str,
         if not output_path.exists():
             raise RuntimeError("Worker finished but output file not found")
 
-        jobs[job_id] = {"status": "done", "result": out_name, "created_at": time.time()}
+        jobs[job_id] = {"status": "done", "result": out_name, "created_at": time.time(),
+                        "filename": filename, "from_fmt": from_fmt, "to_fmt": to_fmt}
+        _save_jobs()
     except subprocess.TimeoutExpired:
         jobs[job_id] = {"status": "error", "error": f"Conversion timed out ({CONVERT_TIMEOUT}s)", "created_at": time.time()}
+        _save_jobs()
     except Exception as e:
         jobs[job_id] = {"status": "error", "error": str(e), "created_at": time.time()}
+        _save_jobs()
     finally:
         _safe_unlink(input_path)
 

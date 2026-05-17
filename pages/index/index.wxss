@@ -145,6 +145,7 @@
 .entry-card:nth-child(2) { animation-delay: 0.2s; }
 .entry-card:nth-child(3) { animation-delay: 0.3s; }
 .entry-card:nth-child(4) { animation-delay: 0.4s; }
+.entry-card:nth-child(5) { animation-delay: 0.5s; }
 
 /* ========== 功能卡片网格 ========== */
 .entry-grid {
@@ -191,6 +192,7 @@
 .card-german::before { background: linear-gradient(90deg, #51cf66, #37b24d); }
 .card-word::before { background: linear-gradient(90deg, #2563EB, #3B82F6); }
 .card-pdf::before { background: linear-gradient(90deg, #ff922b, #f76707); }
+.card-ai::before { background: linear-gradient(90deg, #667eea, #764ba2); }
 
 /* 卡片右上角装饰圆 */
 .entry-card::after {
@@ -209,6 +211,7 @@
 .card-german::after { background: #51cf66; }
 .card-word::after { background: #339af0; }
 .card-pdf::after { background: #ff922b; }
+.card-ai::after { background: #764ba2; }
 
 .entry-card:active::after {
   opacity: 0.1;
@@ -250,6 +253,18 @@
 .icon-bg-pdf {
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
   box-shadow: 0 6rpx 20rpx rgba(255, 146, 43, 0.2);
+}
+
+.icon-bg-ai {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  box-shadow: 0 6rpx 20rpx rgba(118, 75, 162, 0.2);
+}
+
+.icon-ai-text {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #764ba2;
+  letter-spacing: -1rpx;
 }
 
 .entry-icon {

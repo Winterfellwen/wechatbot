@@ -1,36 +1,36 @@
 {
-  "time": "2026-05-14T04:49:43.311Z",
+  "time": "2026-05-15T14:17:48.794Z",
   "project": "wechatbot",
   "summary": {
-    "pagesSuccess": 26,
+    "pagesSuccess": 27,
     "pagesFail": 0,
-    "totalEntries": 0,
-    "errors": 0,
+    "totalEntries": 3,
+    "errors": 3,
     "warnings": 0,
-    "exceptions": 0,
+    "exceptions": 1,
     "testModules": {
       "pageTraversal": {
         "name": "页面遍历",
-        "passed": 26,
+        "passed": 27,
         "failed": 0,
         "skipped": 0
       },
       "searchTest": {
         "name": "搜索功能",
-        "passed": 1,
+        "passed": 0,
         "failed": 0,
         "skipped": 0
       },
       "elementExists": {
         "name": "元素存在性检查",
-        "passed": 45,
-        "failed": 19,
+        "passed": 20,
+        "failed": 11,
         "skipped": 0
       },
       "buttonNav": {
         "name": "按钮交互与跳转验证",
-        "passed": 1,
-        "failed": 4,
+        "passed": 6,
+        "failed": 1,
         "skipped": 0
       },
       "tabBar": {
@@ -41,25 +41,43 @@
       },
       "formInput": {
         "name": "表单输入",
-        "passed": 2,
+        "passed": 1,
         "failed": 1,
         "skipped": 0
       },
       "pageData": {
         "name": "页面数据校验",
-        "passed": 5,
-        "failed": 0,
+        "passed": 7,
+        "failed": 6,
         "skipped": 0
       },
       "scrollTest": {
         "name": "滚动/下拉刷新",
-        "passed": 5,
-        "failed": 0,
+        "passed": 1,
+        "failed": 2,
         "skipped": 0
       }
     }
   },
-  "categories": {},
+  "categories": {
+    "其他错误": {
+      "count": 1,
+      "severity": "fixable",
+      "explanation": "未分类的错误，建议人工审查",
+      "examples": [
+        "页面【pdf/pages/records/records]错误:\n [object Object]"
+      ]
+    },
+    "资源/页面不存在": {
+      "count": 2,
+      "severity": "fixable",
+      "explanation": "请求的资源或页面不存在，请检查路径配置",
+      "examples": [
+        "Component is not found in path \"wx://not-found\".",
+        "Component is not found in path \"wx://not-found\"."
+      ]
+    }
+  },
   "noiseSummary": [],
   "pageDetails": [
     {
@@ -73,7 +91,7 @@
       "status": "✓ pages/user/user"
     },
     {
-      "name": "PDF工具",
+      "name": "PDF工具箱",
       "path": "pdf/pages/index/index",
       "status": "✓ pdf/pages/index/index"
     },
@@ -83,9 +101,14 @@
       "status": "✓ pdf/pages/convert/convert"
     },
     {
-      "name": "PDF编辑",
+      "name": "合并PDF",
       "path": "pdf/pages/edit/edit",
       "status": "✓ pdf/pages/edit/edit"
+    },
+    {
+      "name": "转换记录",
+      "path": "pdf/pages/records/records",
+      "status": "✓ pdf/pages/records/records"
     },
     {
       "name": "日语学习",
@@ -93,17 +116,17 @@
       "status": "✓ japanese/pages/learn/learn"
     },
     {
-      "name": "日语课文",
+      "name": "日语课程详情",
       "path": "japanese/pages/lesson/lesson",
       "status": "✓ japanese/pages/lesson/lesson"
     },
     {
-      "name": "日语课程",
+      "name": "日语课程列表",
       "path": "japanese/pages/course/course",
       "status": "✓ japanese/pages/course/course"
     },
     {
-      "name": "日语单词本",
+      "name": "日语生词本",
       "path": "japanese/pages/wordbook/wordbook",
       "status": "✓ japanese/pages/wordbook/wordbook"
     },
@@ -118,7 +141,7 @@
       "status": "✓ japanese/pages/grammar/grammar33"
     },
     {
-      "name": "日语教科书",
+      "name": "日语教材",
       "path": "japanese/pages/textbook/textbook",
       "status": "✓ japanese/pages/textbook/textbook"
     },
@@ -148,17 +171,17 @@
       "status": "✓ german/pages/learn/review"
     },
     {
-      "name": "德语课文",
+      "name": "德语课程详情",
       "path": "german/pages/lesson/lesson",
       "status": "✓ german/pages/lesson/lesson"
     },
     {
-      "name": "德语课程",
+      "name": "德语课程列表",
       "path": "german/pages/course/course",
       "status": "✓ german/pages/course/course"
     },
     {
-      "name": "德语单词本",
+      "name": "德语生词本",
       "path": "german/pages/wordbook/wordbook",
       "status": "✓ german/pages/wordbook/wordbook"
     },
@@ -168,7 +191,7 @@
       "status": "✓ german/pages/grammar/grammar"
     },
     {
-      "name": "德语教科书",
+      "name": "德语教材",
       "path": "german/pages/textbook/textbook",
       "status": "✓ german/pages/textbook/textbook"
     },
@@ -178,7 +201,7 @@
       "status": "✓ german/pages/leaderboard/leaderboard"
     },
     {
-      "name": "Word文档",
+      "name": "Word工具",
       "path": "word/pages/index/index",
       "status": "✓ word/pages/index/index"
     },
@@ -206,7 +229,7 @@
           "status": "✓"
         },
         {
-          "page": "PDF工具",
+          "page": "PDF工具箱",
           "status": "✓"
         },
         {
@@ -214,7 +237,11 @@
           "status": "✓"
         },
         {
-          "page": "PDF编辑",
+          "page": "合并PDF",
+          "status": "✓"
+        },
+        {
+          "page": "转换记录",
           "status": "✓"
         },
         {
@@ -222,15 +249,15 @@
           "status": "✓"
         },
         {
-          "page": "日语课文",
+          "page": "日语课程详情",
           "status": "✓"
         },
         {
-          "page": "日语课程",
+          "page": "日语课程列表",
           "status": "✓"
         },
         {
-          "page": "日语单词本",
+          "page": "日语生词本",
           "status": "✓"
         },
         {
@@ -242,7 +269,7 @@
           "status": "✓"
         },
         {
-          "page": "日语教科书",
+          "page": "日语教材",
           "status": "✓"
         },
         {
@@ -266,15 +293,15 @@
           "status": "✓"
         },
         {
-          "page": "德语课文",
+          "page": "德语课程详情",
           "status": "✓"
         },
         {
-          "page": "德语课程",
+          "page": "德语课程列表",
           "status": "✓"
         },
         {
-          "page": "德语单词本",
+          "page": "德语生词本",
           "status": "✓"
         },
         {
@@ -282,7 +309,7 @@
           "status": "✓"
         },
         {
-          "page": "德语教科书",
+          "page": "德语教材",
           "status": "✓"
         },
         {
@@ -290,7 +317,7 @@
           "status": "✓"
         },
         {
-          "page": "Word文档",
+          "page": "Word工具",
           "status": "✓"
         },
         {
@@ -308,13 +335,28 @@
       "page": "首页",
       "details": [
         {
-          "selector": "user-header",
-          "desc": "顶部用户信息栏",
+          "selector": "image",
+          "desc": "用户头像",
           "status": "✓"
         },
         {
-          "selector": "entry-grid",
-          "desc": "学习工具网格",
+          "selector": "entry-card",
+          "desc": "日语学习入口",
+          "status": "✓"
+        },
+        {
+          "selector": "entry-card",
+          "desc": "德语学习入口",
+          "status": "✓"
+        },
+        {
+          "selector": "entry-card",
+          "desc": "Word编辑入口",
+          "status": "✓"
+        },
+        {
+          "selector": "entry-card",
+          "desc": "PDF工具入口",
           "status": "✓"
         },
         {
@@ -329,20 +371,24 @@
       "page": "首页",
       "details": [
         {
-          "label": "日语",
-          "status": "✗ 未找到按钮"
+          "label": "日语学习",
+          "status": "✓ japanese/pages/learn/learn"
         },
         {
-          "label": "德语",
-          "status": "✗ 未找到按钮"
+          "label": "德语学习",
+          "status": "✓ japanese/pages/learn/learn"
         },
         {
-          "label": "Word",
-          "status": "✗ 未找到按钮"
+          "label": "Word编辑",
+          "status": "✓ japanese/pages/learn/learn"
         },
         {
-          "label": "PDF",
-          "status": "✗ 未找到按钮"
+          "label": "PDF工具",
+          "status": "✓ japanese/pages/learn/learn"
+        },
+        {
+          "label": "智能老师",
+          "status": "✓ japanese/pages/learn/learn"
         }
       ]
     },
@@ -356,8 +402,16 @@
       "page": "首页",
       "details": [
         {
-          "msg": "无数据校验项",
-          "status": "-"
+          "field": "isLoggedIn",
+          "status": "✓ boolean=\"true\""
+        },
+        {
+          "field": "displayUserInfo",
+          "status": "✓ object=\"[object Object]\""
+        },
+        {
+          "field": "greeting",
+          "status": "✓ string=\"夜深了\""
         }
       ]
     },
@@ -376,18 +430,18 @@
       "page": "我的",
       "details": [
         {
-          "selector": "user-header",
-          "desc": "用户信息头",
+          "selector": "login-btn",
+          "desc": "登录按钮",
           "status": "✗ 未找到"
         },
         {
-          "selector": "action-item",
-          "desc": "操作按钮",
+          "selector": "avatar",
+          "desc": "用户头像",
           "status": "✓"
         },
         {
-          "selector": "action-item-danger",
-          "desc": "删除账号按钮",
+          "selector": "action-item",
+          "desc": "功能列表项",
           "status": "✓"
         }
       ]
@@ -395,20 +449,15 @@
     {
       "module": "buttonNav",
       "page": "我的",
-      "details": [
-        {
-          "label": "button",
-          "status": "✓ pages/user/user"
-        }
-      ]
+      "details": []
     },
     {
       "module": "formInput",
       "page": "我的",
       "details": [
         {
-          "label": "用户页-昵称输入",
-          "field": "input",
+          "label": "用户页-输入昵称",
+          "field": ".nick-input",
           "status": "✗ 未找到第0个"
         }
       ]
@@ -435,48 +484,56 @@
     },
     {
       "module": "elementExists",
-      "page": "PDF工具",
+      "page": "PDF工具箱",
       "details": [
         {
-          "selector": "upload-btn",
+          "selector": "t-tabs",
+          "desc": "Tab 切换",
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "button",
           "desc": "上传按钮",
-          "status": "✓"
-        },
-        {
-          "selector": "convert-btn",
-          "desc": "转换按钮",
           "status": "✗ 未找到"
         },
         {
-          "selector": "section-card",
-          "desc": "功能卡片",
+          "selector": "picker",
+          "desc": "格式选择器",
           "status": "✗ 未找到"
         }
       ]
     },
     {
       "module": "buttonNav",
-      "page": "PDF工具",
+      "page": "PDF工具箱",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "PDF工具",
+      "page": "PDF工具箱",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "PDF工具",
+      "page": "PDF工具箱",
       "details": [
         {
-          "msg": "无数据校验项",
-          "status": "-"
+          "field": "activeTab",
+          "status": "✓ string=\"convert\""
+        },
+        {
+          "field": "fileName",
+          "status": "✓ string=\"\""
+        },
+        {
+          "field": "uploading",
+          "status": "✓ boolean=\"false\""
         }
       ]
     },
     {
       "module": "scrollTest",
-      "page": "PDF工具",
+      "page": "PDF工具箱",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -487,23 +544,7 @@
     {
       "module": "elementExists",
       "page": "PDF转换",
-      "details": [
-        {
-          "selector": "back-btn",
-          "desc": "返回按钮",
-          "status": "✓"
-        },
-        {
-          "selector": "convert-btn",
-          "desc": "转换按钮",
-          "status": "✓"
-        },
-        {
-          "selector": "top-nav-bar",
-          "desc": "顶部导航栏",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -537,20 +578,55 @@
     },
     {
       "module": "elementExists",
-      "page": "PDF编辑",
+      "page": "合并PDF",
+      "details": []
+    },
+    {
+      "module": "buttonNav",
+      "page": "合并PDF",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "合并PDF",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "合并PDF",
       "details": [
         {
-          "selector": "op-card",
-          "desc": "操作选项",
-          "status": "✓"
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "合并PDF",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "转换记录",
+      "details": [
+        {
+          "selector": "t-tabs",
+          "desc": "Tab 筛选",
+          "status": "✗ 未找到"
         },
         {
-          "selector": "do-btn",
-          "desc": "执行按钮",
-          "status": "✓"
+          "selector": "scroll-view",
+          "desc": "记录列表",
+          "status": "✗ 未找到"
         },
         {
-          "selector": "download-btn",
+          "selector": "button",
           "desc": "下载按钮",
           "status": "✗ 未找到"
         }
@@ -558,17 +634,17 @@
     },
     {
       "module": "buttonNav",
-      "page": "PDF编辑",
+      "page": "转换记录",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "PDF编辑",
+      "page": "转换记录",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "PDF编辑",
+      "page": "转换记录",
       "details": [
         {
           "msg": "无数据校验项",
@@ -578,11 +654,11 @@
     },
     {
       "module": "scrollTest",
-      "page": "PDF编辑",
+      "page": "转换记录",
       "details": [
         {
-          "msg": "无滚动测试项",
-          "status": "-"
+          "label": "转换记录-列表滚动",
+          "status": "✗ 未找到 scroll-view"
         }
       ]
     },
@@ -591,26 +667,45 @@
       "page": "日语学习",
       "details": [
         {
-          "selector": "path-scroll",
-          "desc": "学习路径滚动区",
+          "selector": "scroll-view",
+          "desc": "学习路径滚动",
           "status": "✓"
         },
         {
-          "selector": "nav-item",
-          "desc": "导航项",
+          "selector": "level-badge",
+          "desc": "等级徽章",
+          "status": "✓"
+        },
+        {
+          "selector": "path-row",
+          "desc": "课程节点",
           "status": "✓"
         },
         {
           "selector": "picker",
           "desc": "等级选择器",
           "status": "✓"
+        },
+        {
+          "selector": "nav-item",
+          "desc": "底部导航",
+          "status": "✓"
         }
       ]
     },
     {
       "module": "buttonNav",
       "page": "日语学习",
-      "details": []
+      "details": [
+        {
+          "label": "课程",
+          "status": "✓ japanese/pages/course/course"
+        },
+        {
+          "label": "排行榜",
+          "status": "✗ page destroyed"
+        }
+      ]
     },
     {
       "module": "formInput",
@@ -622,8 +717,20 @@
       "page": "日语学习",
       "details": [
         {
-          "msg": "无数据校验项",
-          "status": "-"
+          "field": "level",
+          "status": "✗ page destroyed"
+        },
+        {
+          "field": "exp",
+          "status": "✗ page destroyed"
+        },
+        {
+          "field": "pathNodes",
+          "status": "✗ page destroyed"
+        },
+        {
+          "field": "levelOptions",
+          "status": "✗ page destroyed"
         }
       ]
     },
@@ -632,45 +739,29 @@
       "page": "日语学习",
       "details": [
         {
-          "label": "日语学习-滚动",
-          "status": "✓ 下拉手势完成"
+          "label": "日语学习-路径滚动",
+          "status": "✗ 未找到 scroll-view"
         }
       ]
     },
     {
       "module": "elementExists",
-      "page": "日语课文",
-      "details": [
-        {
-          "selector": "study-body",
-          "desc": "课文主体",
-          "status": "✓"
-        },
-        {
-          "selector": "start-quiz-btn",
-          "desc": "开始测验按钮",
-          "status": "✓"
-        },
-        {
-          "selector": "audio-btn-big",
-          "desc": "音频播放按钮",
-          "status": "✗ 未找到"
-        }
-      ]
+      "page": "日语课程详情",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "日语课文",
+      "page": "日语课程详情",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "日语课文",
+      "page": "日语课程详情",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "日语课文",
+      "page": "日语课程详情",
       "details": [
         {
           "msg": "无数据校验项",
@@ -680,53 +771,7 @@
     },
     {
       "module": "scrollTest",
-      "page": "日语课文",
-      "details": [
-        {
-          "label": "日语课文-滚动",
-          "status": "✓ 下拉手势完成"
-        }
-      ]
-    },
-    {
-      "module": "elementExists",
-      "page": "日语课程",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "view",
-          "desc": "页面视图",
-          "status": "✓"
-        }
-      ]
-    },
-    {
-      "module": "buttonNav",
-      "page": "日语课程",
-      "details": []
-    },
-    {
-      "module": "formInput",
-      "page": "日语课程",
-      "details": []
-    },
-    {
-      "module": "pageData",
-      "page": "日语课程",
-      "details": [
-        {
-          "msg": "无数据校验项",
-          "status": "-"
-        }
-      ]
-    },
-    {
-      "module": "scrollTest",
-      "page": "日语课程",
+      "page": "日语课程详情",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -736,33 +781,22 @@
     },
     {
       "module": "elementExists",
-      "page": "日语单词本",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "word-item",
-          "desc": "单词项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "page": "日语课程列表",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "日语单词本",
+      "page": "日语课程列表",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "日语单词本",
+      "page": "日语课程列表",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "日语单词本",
+      "page": "日语课程列表",
       "details": [
         {
           "msg": "无数据校验项",
@@ -772,7 +806,42 @@
     },
     {
       "module": "scrollTest",
-      "page": "日语单词本",
+      "page": "日语课程列表",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "日语生词本",
+      "details": []
+    },
+    {
+      "module": "buttonNav",
+      "page": "日语生词本",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "日语生词本",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "日语生词本",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "日语生词本",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -783,18 +852,7 @@
     {
       "module": "elementExists",
       "page": "日语语法",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "grammar-item",
-          "desc": "语法项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -829,18 +887,7 @@
     {
       "module": "elementExists",
       "page": "日语语法33",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✗ 未找到"
-        },
-        {
-          "selector": "grammar-item",
-          "desc": "语法项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -874,33 +921,22 @@
     },
     {
       "module": "elementExists",
-      "page": "日语教科书",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "lesson-item",
-          "desc": "课文项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "page": "日语教材",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "日语教科书",
+      "page": "日语教材",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "日语教科书",
+      "page": "日语教材",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "日语教科书",
+      "page": "日语教材",
       "details": [
         {
           "msg": "无数据校验项",
@@ -910,7 +946,7 @@
     },
     {
       "module": "scrollTest",
-      "page": "日语教科书",
+      "page": "日语教材",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -921,18 +957,7 @@
     {
       "module": "elementExists",
       "page": "日语排行榜",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "rank-item",
-          "desc": "排行项",
-          "status": "✓"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -969,18 +994,23 @@
       "page": "德语学习",
       "details": [
         {
-          "selector": "path-scroll",
-          "desc": "学习路径滚动区",
+          "selector": "scroll-view",
+          "desc": "学习路径滚动",
+          "status": "✓"
+        },
+        {
+          "selector": "level-badge",
+          "desc": "等级徽章",
+          "status": "✓"
+        },
+        {
+          "selector": "path-row",
+          "desc": "课程节点",
           "status": "✓"
         },
         {
           "selector": "nav-item",
-          "desc": "导航项",
-          "status": "✓"
-        },
-        {
-          "selector": "picker",
-          "desc": "等级选择器",
+          "desc": "底部导航",
           "status": "✓"
         }
       ]
@@ -1000,8 +1030,16 @@
       "page": "德语学习",
       "details": [
         {
-          "msg": "无数据校验项",
-          "status": "-"
+          "field": "level",
+          "status": "✗ 期望 number, 实际 undefined"
+        },
+        {
+          "field": "exp",
+          "status": "✗ 期望 number, 实际 undefined"
+        },
+        {
+          "field": "pathNodes",
+          "status": "✓ array[15]"
         }
       ]
     },
@@ -1010,7 +1048,7 @@
       "page": "德语学习",
       "details": [
         {
-          "label": "德语学习-滚动",
+          "label": "德语学习-路径滚动",
           "status": "✓ 下拉手势完成"
         }
       ]
@@ -1018,18 +1056,7 @@
     {
       "module": "elementExists",
       "page": "德语挑战",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "challenge-item",
-          "desc": "挑战项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -1064,18 +1091,7 @@
     {
       "module": "elementExists",
       "page": "德语结果",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "result-summary",
-          "desc": "结果汇总",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -1110,18 +1126,7 @@
     {
       "module": "elementExists",
       "page": "德语复习",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "review-item",
-          "desc": "复习项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -1155,38 +1160,22 @@
     },
     {
       "module": "elementExists",
-      "page": "德语课文",
-      "details": [
-        {
-          "selector": "body-scroll",
-          "desc": "课文滚动区",
-          "status": "✓"
-        },
-        {
-          "selector": "play-btn",
-          "desc": "播放按钮",
-          "status": "✗ 未找到"
-        },
-        {
-          "selector": "start-quiz-btn",
-          "desc": "开始测验按钮",
-          "status": "✓"
-        }
-      ]
+      "page": "德语课程详情",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "德语课文",
+      "page": "德语课程详情",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "德语课文",
+      "page": "德语课程详情",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "德语课文",
+      "page": "德语课程详情",
       "details": [
         {
           "msg": "无数据校验项",
@@ -1196,53 +1185,7 @@
     },
     {
       "module": "scrollTest",
-      "page": "德语课文",
-      "details": [
-        {
-          "label": "德语课文-滚动",
-          "status": "✓ 下拉手势完成"
-        }
-      ]
-    },
-    {
-      "module": "elementExists",
-      "page": "德语课程",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "course-card",
-          "desc": "课程卡片",
-          "status": "✗ 未找到"
-        }
-      ]
-    },
-    {
-      "module": "buttonNav",
-      "page": "德语课程",
-      "details": []
-    },
-    {
-      "module": "formInput",
-      "page": "德语课程",
-      "details": []
-    },
-    {
-      "module": "pageData",
-      "page": "德语课程",
-      "details": [
-        {
-          "msg": "无数据校验项",
-          "status": "-"
-        }
-      ]
-    },
-    {
-      "module": "scrollTest",
-      "page": "德语课程",
+      "page": "德语课程详情",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -1252,33 +1195,22 @@
     },
     {
       "module": "elementExists",
-      "page": "德语单词本",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "word-item",
-          "desc": "单词项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "page": "德语课程列表",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "德语单词本",
+      "page": "德语课程列表",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "德语单词本",
+      "page": "德语课程列表",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "德语单词本",
+      "page": "德语课程列表",
       "details": [
         {
           "msg": "无数据校验项",
@@ -1288,7 +1220,42 @@
     },
     {
       "module": "scrollTest",
-      "page": "德语单词本",
+      "page": "德语课程列表",
+      "details": [
+        {
+          "msg": "无滚动测试项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "elementExists",
+      "page": "德语生词本",
+      "details": []
+    },
+    {
+      "module": "buttonNav",
+      "page": "德语生词本",
+      "details": []
+    },
+    {
+      "module": "formInput",
+      "page": "德语生词本",
+      "details": []
+    },
+    {
+      "module": "pageData",
+      "page": "德语生词本",
+      "details": [
+        {
+          "msg": "无数据校验项",
+          "status": "-"
+        }
+      ]
+    },
+    {
+      "module": "scrollTest",
+      "page": "德语生词本",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -1299,18 +1266,7 @@
     {
       "module": "elementExists",
       "page": "德语语法",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "grammar-item",
-          "desc": "语法项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -1344,33 +1300,22 @@
     },
     {
       "module": "elementExists",
-      "page": "德语教科书",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "lesson-item",
-          "desc": "课文项",
-          "status": "✗ 未找到"
-        }
-      ]
+      "page": "德语教材",
+      "details": []
     },
     {
       "module": "buttonNav",
-      "page": "德语教科书",
+      "page": "德语教材",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "德语教科书",
+      "page": "德语教材",
       "details": []
     },
     {
       "module": "pageData",
-      "page": "德语教科书",
+      "page": "德语教材",
       "details": [
         {
           "msg": "无数据校验项",
@@ -1380,7 +1325,7 @@
     },
     {
       "module": "scrollTest",
-      "page": "德语教科书",
+      "page": "德语教材",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -1391,18 +1336,7 @@
     {
       "module": "elementExists",
       "page": "德语排行榜",
-      "details": [
-        {
-          "selector": "container",
-          "desc": "页面容器",
-          "status": "✓"
-        },
-        {
-          "selector": "rank-item",
-          "desc": "排行项",
-          "status": "✓"
-        }
-      ]
+      "details": []
     },
     {
       "module": "buttonNav",
@@ -1435,72 +1369,44 @@
       ]
     },
     {
-      "module": "searchTest",
-      "page": "Word文档",
-      "details": [
-        {
-          "status": "✓ 搜索输入绑定正常"
-        }
-      ]
-    },
-    {
       "module": "elementExists",
-      "page": "Word文档",
+      "page": "Word工具",
       "details": [
         {
-          "selector": "search-bar",
-          "desc": "搜索栏",
-          "status": "✓"
-        },
-        {
-          "selector": "new-btn",
-          "desc": "新建按钮",
-          "status": "✓"
-        },
-        {
-          "selector": "import-btn",
+          "selector": "button",
           "desc": "导入按钮",
-          "status": "✓"
+          "status": "✗ 未找到"
+        },
+        {
+          "selector": "scroll-view",
+          "desc": "文档列表",
+          "status": "✗ 未找到"
         }
       ]
     },
     {
       "module": "buttonNav",
-      "page": "Word文档",
+      "page": "Word工具",
       "details": []
     },
     {
       "module": "formInput",
-      "page": "Word文档",
-      "details": [
-        {
-          "label": "文档列表-搜索输入",
-          "field": "input",
-          "status": "✓ 输入 \"测试\""
-        }
-      ]
+      "page": "Word工具",
+      "details": []
     },
     {
       "module": "pageData",
-      "page": "Word文档",
+      "page": "Word工具",
       "details": [
         {
-          "field": "searchKey",
-          "status": "✓ string=\"测试\""
-        },
-        {
-          "field": "docs",
-          "status": "✓ array[3]"
-        },
-        {
-          "field": "sortField",
-          "status": "✓ undefined (可选)"
+          "msg": "无数据校验项",
+          "status": "-"
         }
       ]
     },
     {
       "module": "scrollTest",
-      "page": "Word文档",
+      "page": "Word工具",
       "details": [
         {
           "msg": "无滚动测试项",
@@ -1513,19 +1419,14 @@
       "page": "Word编辑器",
       "details": [
         {
-          "selector": "mode-btn",
-          "desc": "编辑/预览切换",
+          "selector": "editor",
+          "desc": "编辑器",
           "status": "✓"
         },
         {
-          "selector": "tool-row",
-          "desc": "格式工具栏",
-          "status": "✓"
-        },
-        {
-          "selector": "save-btn-top",
+          "selector": "button",
           "desc": "保存按钮",
-          "status": "✓"
+          "status": "✗ 未找到"
         }
       ]
     },
@@ -1564,19 +1465,19 @@
       "page": "智能老师",
       "details": [
         {
-          "selector": "msg-list",
-          "desc": "消息列表",
+          "selector": "scroll-view",
+          "desc": "聊天消息列表",
           "status": "✓"
         },
         {
-          "selector": "quick-asks",
-          "desc": "快捷提问",
+          "selector": "input",
+          "desc": "输入框",
           "status": "✓"
         },
         {
-          "selector": "send-btn",
+          "selector": "button",
           "desc": "发送按钮",
-          "status": "✓"
+          "status": "✗ 未找到"
         }
       ]
     },
@@ -1590,9 +1491,9 @@
       "page": "智能老师",
       "details": [
         {
-          "label": "智能老师-消息输入",
+          "label": "智能老师-输入消息",
           "field": "input",
-          "status": "✓ 输入 \"你好\""
+          "status": "✓ 输入 \"你好，这是一条测试消息\""
         }
       ]
     },
@@ -1601,12 +1502,8 @@
       "page": "智能老师",
       "details": [
         {
-          "field": "inputText",
-          "status": "✓ string=\"你好\""
-        },
-        {
-          "field": "messages",
-          "status": "✓ array[0]"
+          "msg": "无数据校验项",
+          "status": "-"
         }
       ]
     },
@@ -1615,8 +1512,8 @@
       "page": "智能老师",
       "details": [
         {
-          "label": "智能老师-滚动",
-          "status": "✓ 下拉手势完成"
+          "msg": "无滚动测试项",
+          "status": "-"
         }
       ]
     },

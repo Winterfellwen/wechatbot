@@ -1,0 +1,37 @@
+<wxs src="./records.wxs" module="utils" />
+
+<view class="container">
+  <!-- 筛选 tabs -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab-item {{activeTab === 'convert' ? 'active' : ''}}" bindtap="switchTab" data-tab="convert">转换</view>
+    <view class="tab-item {{activeTab === 'edit' ? 'active' : ''}}" bindtap="switchTab" data-tab="edit">编辑</view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="record-list">
+    <block wx:for="{{utils.getFilteredRecords(records, activeTab)}}" wx:key="jobId" wx:for-item="record" wx:for-index="idx">
+      <view class="record-card" bindtap="openFile" data-idx="{{idx}}">
+        <view class="record-header">
+          <text class="record-icon">{{record.type === 'convert' ? '📄' : '✏️'}}</text>
+          <text class="record-name">{{utils.getDisplayName(record)}}</text>
+          <text class="record-del" data-idx="{{idx}}" catchtap="deleteRecord">×</text>
+        </view>
+        <view class="record-info">
+          <text class="record-type">{{record.type === 'convert' ? (record.from + ' → ' + record.to) : record.operation}}</text>
+          <text class="record-status {{utils.getStatusClass(record.status)}}">{{utils.getStatusText(record.status)}}</text>
+        </view>
+        <view class="record-footer">
+          <text class="record-time">{{record.duration ? utils.formatDuration(record.duration) : ''}}</text>
+          <view wx:if="{{record.status === 'error'}}" class="retry-btn" data-idx="{{idx}}" catchtap="retryTask">重试</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{utils.getFilteredRecords(records, activeTab).length === 0}}" class="empty-state">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无记录</text>
+  </view>
+</view>

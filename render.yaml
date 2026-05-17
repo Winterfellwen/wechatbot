@@ -15,11 +15,22 @@ services:
         sync: false
       - key: OPENROUTER_KEY
         sync: false
-      - key: PDF_SERVICE_URL
-        value: "https://pdf-converter-v2.onrender.com"
+      - key: PDF_SERVICE_URLS
+        value: "https://wechatbot-pdf01.onrender.com,https://wechatbot-pdf02.onrender.com"
 
   - type: web
-    name: pdf-converter-v2
+    name: wechatbot-pdf01
+    runtime: docker
+    rootDir: pdf-service
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+  - type: web
+    name: wechatbot-pdf02
     runtime: docker
     rootDir: pdf-service
     dockerfilePath: Dockerfile

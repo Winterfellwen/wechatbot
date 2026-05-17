@@ -1,11 +1,13 @@
 // utils/retry.js
-// 通用重试模块 — 为文件操作提供 5 分钟后台重试机制
+// 通用重试模块 — 可配置的后台重试机制（默认 1 分钟，最多 3 次重试）
 
 function createRetrier(page, options) {
   options = options || {};
-  var TOTAL_TIMEOUT = options.totalTimeout || 300000;
+  var TOTAL_TIMEOUT = options.totalTimeout || 60000;
+  var MAX_RETRIES = options.maxRetries || 3;
   var startTime = Date.now();
   var active = true;
+  var retryCount = 0;
 
   function elapsed() {
     return Math.round((Date.now() - startTime) / 1000);
@@ -28,7 +30,7 @@ function createRetrier(page, options) {
     if (page.data.processing !== undefined) update.processing = false;
     update.currentJobId = null;
     setData(update);
-    wx.showToast({ title: '操作超时，请稍后重试', icon: 'none', duration: 3000 });
+    wx.showToast({ title: '操作超时，请稍后重试或在记录中查看进度', icon: 'none', duration: 3000 });
     return true;
   }
 
@@ -56,7 +58,12 @@ function createRetrier(page, options) {
         function retry(reason) {
           if (!active) return;
           if (expireCheck()) return;
-          updateProgress('运行中 第' + attempt + '次' + (reason ? ' - ' + reason : ''));
+          retryCount++;
+          if (retryCount >= MAX_RETRIES) {
+            fail('重试次数已达上限，请检查网络后重试');
+            return;
+          }
+          updateProgress('网络异常，正在重试 (' + attempt + '/' + MAX_RETRIES + ')' + (reason ? ' - ' + reason : ''));
           setTimeout(run, 2000);
         },
         function stop(msg) {

@@ -10,7 +10,8 @@
       "pages": [
         "pages/index/index",
         "pages/convert/convert",
-        "pages/edit/edit"
+        "pages/edit/edit",
+        "pages/records/records"
       ]
     },
     {

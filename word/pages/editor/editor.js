@@ -225,14 +225,9 @@ Page({
 
         // 提取图片信息并组装图片数据
         var imageInfos = docxLib.getImageInfos(html);
-        console.log('[saveDoc] imageInfos count:', imageInfos.length, 'html length:', html.length);
         if (imageInfos.length > 0) {
-          for (var dbg = 0; dbg < imageInfos.length; dbg++) {
-            console.log('[saveDoc] image ' + dbg + ':', JSON.stringify(imageInfos[dbg]));
-          }
           // Try to use cached image data from insertImage
           var cachedKeys = Object.keys(that._imageStore);
-          console.log('[saveDoc] cached images:', cachedKeys.length);
         }
         if (imageInfos.length > 0) {
           var imageDatas = [];
@@ -349,9 +344,7 @@ Page({
               // 没指定 encoding，微信直接返回 ArrayBuffer
               buf = raw;
             }
-            console.log('[import] buf byteLength:', buf.byteLength);
             var files = that._unzip(buf);
-            console.log('[import] files keys:', Object.keys(files));
             var docXml = files['word/document.xml'];
             if (!docXml) {
               wx.showToast({ title: '无效的 DOCX 文件', icon: 'none' });
