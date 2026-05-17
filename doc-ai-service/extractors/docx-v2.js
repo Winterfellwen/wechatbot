@@ -199,27 +199,41 @@ function pandocToJsonSections(pandocJson) {
 }
 
 async function extract(filePath) {
-  validateFile(filePath);
+  // Multer saves files without extension; copy to temp dir with .docx extension
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'docx-extract-'));
+  const docxPath = path.join(tempDir, 'input.docx');
+  fs.copyFileSync(filePath, docxPath);
 
-  const images = extractImages(filePath);
-  const pandocJson = extractText(filePath);
-  const sections = pandocToJsonSections(pandocJson);
-
-  const title = sections
-    .filter(s => s.type === 'heading' && s.level === 1)
-    .map(s => s.text)[0] || '';
-
-  const text = sections.map(s =>
-    s.type === 'heading' ? s.text : s.children?.map(c => c.text).join('')
-  ).join('\n');
-
-  return {
-    text,
-    images,
-    title,
-    totalPages: 1,
-    sections,
-  };
+  try {
+    validateFile(docxPath);
+    const images = extractImages(docxPath);
+    const pandocJson = extractText(docxPath);
+    const sections = pandocToJsonSections(pandocJson);
+    
+    const title = sections
+      .filter(s => s.type === 'heading' && s.level === 1)
+      .map(s => s.text)[0] || '';
+    
+    // Convert sections to plain text for AI prompt
+    const text = sections.map(s => {
+      if (s.type === 'heading') return s.text;
+      if (s.type === 'paragraph') return s.children?.map(c => c.text).join('');
+      if (s.type === 'list') return s.items?.join('\n');
+      if (s.type === 'table') return s.rows?.map(r => r.join('\t')).join('\n');
+      return '';
+    }).filter(Boolean).join('\n');
+    
+    return {
+      text,
+      images,
+      title,
+      totalPages: 1,
+      sections,
+    };
+  } finally {
+    // Cleanup temp dir
+    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+  }
 }
 
 module.exports = { extract };
