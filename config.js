@@ -22,7 +22,7 @@ const config = {
 
   // PDF 转换服务配置
   pdfService: {
-    url: process.env.PDF_SERVICE_URL || 'https://pdf-converter-v2.onrender.com',
+    url: process.env.PDF_SERVICE_URL || 'https://wechatbot-pdf01.onrender.com',
     keepaliveInterval: 10 * 60 * 1000, // 10 minutes
   },
 

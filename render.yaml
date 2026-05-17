@@ -15,3 +15,27 @@ services:
         sync: false
       - key: OPENROUTER_KEY
         sync: false
+      - key: PDF_SERVICE_URL
+        sync: false
+
+  - type: web
+    name: wechatbot-pdf01
+    runtime: docker
+    rootDir: pdf-service
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+  - type: web
+    name: wechatbot-pdf02
+    runtime: docker
+    rootDir: pdf-service
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
