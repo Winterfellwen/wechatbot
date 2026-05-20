@@ -54,6 +54,14 @@
       "pages": [
         "pages/chat/chat"
       ]
+    },
+    {
+      "root": "ai-order",
+      "pages": [
+        "pages/index/index",
+        "pages/merchant/merchant",
+        "pages/customer/customer"
+      ]
     }
   ],
   "window": {
