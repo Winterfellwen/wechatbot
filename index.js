@@ -1,5 +1,5 @@
 const express = require('express');
-const { Pool } = require('pg');
+const mysql = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
@@ -42,8 +42,6 @@ async function fetchWithTimeout(resource, options = {}, requestTimeoutMs = 60000
   }
 }
 
-const DATABASE_URL = config.database.url;
-
 // Root health check (for Render keepalive)
 app.all('/', (req, res) => res.json({ status: 'ok', service: 'wechatbot-api' }));
 app.all('/api/health', (req, res) => res.json({ status: 'ok', service: 'wechatbot-api' }));
@@ -61,23 +59,32 @@ async function requireAuth(req, res, next) {
   var token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
   if (!token || !pool) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    var result = await pool.query('SELECT * FROM users WHERE token = $1', [token]);
-    if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid token' });
-    req.user = result.rows[0];
+    var [rows] = await pool.query('SELECT * FROM users WHERE token = ?', [token]);
+    if (rows.length === 0) return res.status(401).json({ error: 'Invalid token' });
+    req.user = rows[0];
     next();
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-console.log('DATABASE_URL:', DATABASE_URL ? 'set' : 'NOT SET');
+var db = config.database;
+console.log('MYSQL_HOST:', db.host ? 'set (' + db.host + ':' + db.port + ')' : 'NOT SET');
 
-if (!DATABASE_URL) {
-  console.error('DATABASE_URL not set - using fallback mode');
+if (!db.host || !db.password) {
+  console.error('MySQL connection not configured - using fallback mode');
 }
 
-const pool = DATABASE_URL ? new Pool({
-  connectionString: DATABASE_URL,
+const pool = (db.host && db.password) ? mysql.createPool({
+  host: db.host,
+  port: db.port,
+  user: db.user,
+  password: db.password,
+  database: db.database,
+  ssl: db.ssl,
+  waitForConnections: true,
+  connectionLimit: 5,
+  queueLimit: 0
 }) : null;
 
 const WECHAT_APP_ID = config.wechat.appId;
@@ -95,7 +102,7 @@ app.post('/api/upload/avatar', requireAuth, avatarUpload.single('avatar'), async
     var destPath = config.storage.serveDir + '/' + newName;
     fs.renameSync(req.file.path, destPath);
     var avatarUrl = `${req.protocol}://${req.get('host')}/api/avatar/${newName}`;
-    await pool.query('UPDATE users SET avatarUrl = $1, updatedAt = NOW() WHERE openid = $2', [avatarUrl, req.user.openid]);
+    await pool.query('UPDATE users SET avatarUrl = ?, updatedAt = NOW() WHERE openid = ?', [avatarUrl, req.user.openid]);
     res.json({ avatarUrl: avatarUrl });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -131,24 +138,24 @@ var wxRes = await fetch(
     if (wxData.errcode) return res.status(400).json({ error: wxData.errmsg });
     var openid = wxData.openid;
 
-    var userResult = await pool.query('SELECT * FROM users WHERE openid = $1', [openid]);
+    var [userRows] = await pool.query('SELECT * FROM users WHERE openid = ?', [openid]);
 
     var user, token;
-    if (userResult.rows.length > 0) {
-      var existing = userResult.rows[0];
+    if (userRows.length > 0) {
+      var existing = userRows[0];
       token = generateToken();
-      await pool.query('UPDATE users SET token = $1 WHERE openid = $2', [token, openid]);
+      await pool.query('UPDATE users SET token = ? WHERE openid = ?', [token, openid]);
       user = existing;
     } else {
-      var countResult = await pool.query('SELECT COUNT(*) FROM users');
-      var count = parseInt(countResult.rows[0].count) + 1;
+      var [countResult] = await pool.query('SELECT COUNT(*) AS cnt FROM users');
+      var count = parseInt(countResult[0].cnt) + 1;
       var nickName = '微信用户' + String(count).padStart(3, '0');
       token = generateToken();
-      var insertResult = await pool.query(
-        'INSERT INTO users (openid, nickName, token, createdAt, updatedAt) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+      await pool.query(
+        'INSERT INTO users (openid, nickName, token, createdAt, updatedAt) VALUES (?, ?, ?, NOW(), NOW())',
         [openid, nickName, token]
       );
-      user = insertResult.rows[0];
+      user = { openid, nickname: nickName, token, avatarurl: '' };
     }
 
     res.json({
@@ -163,7 +170,7 @@ var wxRes = await fetch(
 
 app.post('/api/auth/logout', requireAuth, async (req, res) => {
   try {
-    await pool.query('UPDATE users SET token = NULL WHERE openid = $1', [req.user.openid]);
+    await pool.query('UPDATE users SET token = NULL WHERE openid = ?', [req.user.openid]);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -176,11 +183,12 @@ app.get('/api/users/me', requireAuth, async (req, res) => {
 
 app.put('/api/users/me', requireAuth, async (req, res) => {
   try {
-    var result = await pool.query(
-      'UPDATE users SET nickName = COALESCE($1, nickName), avatarUrl = COALESCE($2, avatarUrl), updatedAt = NOW() WHERE openid = $3 RETURNING *',
+    await pool.query(
+      'UPDATE users SET nickName = COALESCE(?, nickName), avatarUrl = COALESCE(?, avatarUrl), updatedAt = NOW() WHERE openid = ?',
       [req.body.nickName || null, req.body.avatarUrl || null, req.user.openid]
     );
-    var u = result.rows[0];
+    var [uRows] = await pool.query('SELECT * FROM users WHERE openid = ?', [req.user.openid]);
+    var u = uRows[0];
     res.json({ openid: u.openid, nickName: u.nickname, avatarUrl: u.avatarurl || '' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -189,18 +197,18 @@ app.put('/api/users/me', requireAuth, async (req, res) => {
 
 app.delete('/api/users/me', requireAuth, async (req, res) => {
   if (!pool) return res.status(503).json({ error: 'Database not available' });
-  const client = await pool.connect();
+  const conn = await pool.getConnection();
   try {
-    await client.query('BEGIN');
-    await client.query('DELETE FROM jp_lesson_scores WHERE openid = $1', [req.user.openid]);
-    await client.query('DELETE FROM users WHERE openid = $1', [req.user.openid]);
-    await client.query('COMMIT');
+    await conn.beginTransaction();
+    await conn.query('DELETE FROM jp_lesson_scores WHERE openid = ?', [req.user.openid]);
+    await conn.query('DELETE FROM users WHERE openid = ?', [req.user.openid]);
+    await conn.commit();
     res.json({ ok: true });
   } catch (err) {
-    await client.query('ROLLBACK');
+    await conn.rollback();
     res.status(500).json({ error: err.message });
   } finally {
-    client.release();
+    conn.release();
   }
 });
 
@@ -213,16 +221,21 @@ app.post('/api/jp/lesson-scores', requireAuth, async (req, res) => {
     if (score <= 0) return res.json({ ok: true, message: 'Score not saved (zero or negative)' });
 
     var percentage = Math.round(score / total * 100);
-    var result = await pool.query(
+    await pool.query(
       `INSERT INTO jp_lesson_scores (openid, lesson_id, score, total, percentage, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-       ON CONFLICT(openid, lesson_id)
-       DO UPDATE SET score = EXCLUDED.score, total = EXCLUDED.total, percentage = EXCLUDED.percentage, updated_at = NOW()
-       WHERE EXCLUDED.score > jp_lesson_scores.score
-       RETURNING *`,
+       VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+       ON DUPLICATE KEY UPDATE
+         score = IF(VALUES(score) > score, VALUES(score), score),
+         total = IF(VALUES(score) > score, VALUES(total), total),
+         percentage = IF(VALUES(score) > score, VALUES(percentage), percentage),
+         updated_at = IF(VALUES(score) > score, NOW(), updated_at)`,
       [req.user.openid, lessonId, score, total, percentage]
     );
-    res.json({ ok: true, data: result.rows[0] });
+    var [dataRows] = await pool.query(
+      'SELECT * FROM jp_lesson_scores WHERE openid = ? AND lesson_id = ?',
+      [req.user.openid, lessonId]
+    );
+    res.json({ ok: true, data: dataRows[0] || null });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -231,11 +244,11 @@ app.post('/api/jp/lesson-scores', requireAuth, async (req, res) => {
 app.get('/api/jp/lesson-scores', requireAuth, async (req, res) => {
   if (!pool) return res.status(503).json({ error: 'Database not available' });
   try {
-    var result = await pool.query(
-      'SELECT lesson_id, score, total, percentage FROM jp_lesson_scores WHERE openid = $1',
+    var [rows] = await pool.query(
+      'SELECT lesson_id, score, total, percentage FROM jp_lesson_scores WHERE openid = ?',
       [req.user.openid]
     );
-    res.json({ scores: result.rows });
+    res.json({ scores: rows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -255,28 +268,34 @@ app.get('/api/init', async (req, res) => {
         province VARCHAR(100),
         city VARCHAR(100),
         language VARCHAR(50),
-        createdAt TIMESTAMP DEFAULT NOW(),
-        updatedAt TIMESTAMP DEFAULT NOW()
-      )
+        createdAt DATETIME DEFAULT NOW(),
+        updatedAt DATETIME DEFAULT NOW()
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
+    // MySQL lacks ADD COLUMN IF NOT EXISTS, check information_schema
+    var [colCheck] = await pool.query(
+      "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'deleted'"
+    );
+    if (colCheck.length === 0) {
+      await pool.query('ALTER TABLE users ADD COLUMN deleted TINYINT(1) DEFAULT 0');
+    }
 
     // Japanese lesson scores table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS jp_lesson_scores (
-        id SERIAL PRIMARY KEY,
-        openid VARCHAR(255) REFERENCES users(openid),
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        openid VARCHAR(255),
         lesson_id INTEGER NOT NULL,
         score INTEGER NOT NULL,
         total INTEGER NOT NULL,
         percentage INTEGER,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(openid, lesson_id)
-      )
+        created_at DATETIME DEFAULT NOW(),
+        updated_at DATETIME DEFAULT NOW(),
+        UNIQUE(openid, lesson_id),
+        FOREIGN KEY (openid) REFERENCES users(openid)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
-    res.json({ status: 'ok', message: 'Users table ready' });
+    res.json({ status: 'ok', message: 'Tables ready' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -296,26 +315,31 @@ async function initDB() {
         country VARCHAR(100),
         province VARCHAR(100),
         city VARCHAR(100),
-        createdAt TIMESTAMP DEFAULT NOW(),
-        updatedAt TIMESTAMP DEFAULT NOW()
-      )
+        createdAt DATETIME DEFAULT NOW(),
+        updatedAt DATETIME DEFAULT NOW()
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token VARCHAR(64)');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT false');
+    var [colCheck] = await pool.query(
+      "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'deleted'"
+    );
+    if (colCheck.length === 0) {
+      await pool.query('ALTER TABLE users ADD COLUMN deleted TINYINT(1) DEFAULT 0');
+    }
 
     // Japanese lesson scores table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS jp_lesson_scores (
-        id SERIAL PRIMARY KEY,
-        openid VARCHAR(255) REFERENCES users(openid),
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        openid VARCHAR(255),
         lesson_id INTEGER NOT NULL,
         score INTEGER NOT NULL,
         total INTEGER NOT NULL,
         percentage INTEGER,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(openid, lesson_id)
-      )
+        created_at DATETIME DEFAULT NOW(),
+        updated_at DATETIME DEFAULT NOW(),
+        UNIQUE(openid, lesson_id),
+        FOREIGN KEY (openid) REFERENCES users(openid)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
     console.log('DB initialized');
   } catch (err) {

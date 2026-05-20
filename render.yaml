@@ -7,8 +7,18 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: DATABASE_URL
+      - key: MYSQL_HOST
         sync: false
+      - key: MYSQL_PORT
+        value: "3307"
+      - key: MYSQL_USER
+        value: "admin"
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: "wechatbot"
+      - key: MYSQL_SSL
+        value: "true"
       - key: WECHAT_APP_ID
         value: "wx2510f82943d7741e"
       - key: WECHAT_APP_SECRET
@@ -16,26 +26,8 @@ services:
       - key: OPENROUTER_KEY
         sync: false
       - key: PDF_SERVICE_URLS
-        value: "https://wechatbot-pdf01.onrender.com,https://wechatbot-pdf02.onrender.com"
-
-  - type: web
-    name: wechatbot-pdf01
-    runtime: docker
-    rootDir: pdf-service
-    dockerfilePath: Dockerfile
-    plan: free
-    healthCheckPath: /health
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
-
-  - type: web
-    name: wechatbot-pdf02
-    runtime: docker
-    rootDir: pdf-service
-    dockerfilePath: Dockerfile
-    plan: free
-    healthCheckPath: /health
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.12"
+        sync: false
+      - key: PDF_SERVICE_API_KEY
+        sync: false
+      - key: TTS_API_AZURE
+        sync: false

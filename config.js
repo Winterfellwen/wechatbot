@@ -9,9 +9,14 @@ const config = {
     port: process.env.PORT || 3000,
   },
 
-  // 数据库配置
+  // 数据库配置 (MySQL via OCI VM proxy)
   database: {
-    url: process.env.DATABASE_URL || null,
+    host: process.env.MYSQL_HOST || null,
+    port: parseInt(process.env.MYSQL_PORT || '3307'),
+    user: process.env.MYSQL_USER || 'admin',
+    password: process.env.MYSQL_PASSWORD || null,
+    database: process.env.MYSQL_DATABASE || 'wechatbot',
+    ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   },
 
   // 微信配置
