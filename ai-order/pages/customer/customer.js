@@ -48,6 +48,9 @@ Page({
 
   onLoad: function(options) {
     var that = this;
+    var merchantId = options.merchantId || '';
+    msgIdCounter = 0;
+    that.setData({ merchantId: merchantId });
     that.addWelcomeMessage();
     that.loadMenu();
     initOpenRouter().catch(function(err) {
@@ -57,12 +60,16 @@ Page({
 
   loadMenu: function() {
     var that = this;
+    var url = SERVER + '/api/ai-order/menu/list';
+    if (that.data.merchantId) {
+      url += '?merchantId=' + that.data.merchantId;
+    }
     wx.request({
-      url: SERVER + '/api/ai-order/menu/list',
+      url: url,
       timeout: 5000,
       success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.menus) {
-          menuData = res.data.menus;
+        if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
+          menuData = res.data.data;
         }
       },
       fail: function(err) {
