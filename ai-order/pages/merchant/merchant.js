@@ -128,7 +128,7 @@ Page({
     wx.request({
       url: SERVER + '/api/ai-order/chat',
       method: 'POST',
-      timeout: 15000,
+      timeout: 60000,
       header: { 'Content-Type': 'application/json' },
       data: {
         messages: apiMessages,
@@ -203,25 +203,19 @@ Page({
   },
 
   _attemptRequest: function(retryCount, startTime, apiMessages) {
-    if (Date.now() - startTime >= 30000) {
+    if (Date.now() - startTime >= 180000) {
       this._showError('当前使用人数过多，请稍后再试');
       return;
     }
     var that = this;
-    if (openRouterConfig) {
-      that._tryDirect(apiMessages, function(ok, res) {
-        if (ok) { that._handleResponse(res); return; }
-        that._tryProxy(apiMessages, function(ok2, res2) {
-          if (ok2) { that._handleResponse(res2); return; }
-          that._scheduleRetry(retryCount, startTime, apiMessages);
-        });
-      });
-    } else {
-      that._tryProxy(apiMessages, function(ok, res) {
-        if (ok) { that._handleResponse(res); return; }
-        that._scheduleRetry(retryCount, startTime, apiMessages);
-      });
-    }
+    that._tryProxy(apiMessages, function(ok, res) {
+      if (ok) { that._handleResponse(res); return; }
+      if (res && res.data && res.data.error) {
+        that._handleResponse(res);
+        return;
+      }
+      that._scheduleRetry(retryCount, startTime, apiMessages);
+    });
   },
 
   _tryDirect: function(apiMessages, callback) {

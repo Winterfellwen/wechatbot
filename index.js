@@ -413,7 +413,7 @@ app.post('/api/ai-order/chat', async (req, res) => {
       max_tokens: aiOrderConfig.maxTokens
     };
 
-    const response = await fetch(aiOrderConfig.apiUrl + '/chat/completions', {
+    const response = await fetchWithTimeout(aiOrderConfig.apiUrl + '/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${aiOrderConfig.apiKey}`,
@@ -422,7 +422,7 @@ app.post('/api/ai-order/chat', async (req, res) => {
         'X-Title': 'AIOrderBot'
       },
       body: JSON.stringify(requestBody)
-    });
+    }, 30000);
 
     const data = await response.json();
 
