@@ -348,6 +348,132 @@ async function initDB() {
 }
 initDB();
 
+// --- AI 点菜 API ---
+
+// 获取 AI 配置
+app.get('/api/ai-order/config', (req, res) => {
+  const aiOrderConfig = config.aiOrder;
+  if (!aiOrderConfig || !aiOrderConfig.apiKey) {
+    return res.status(500).json({ error: 'AI Order API key not configured' });
+  }
+  res.json({
+    key: aiOrderConfig.apiKey,
+    model: aiOrderConfig.model,
+    apiUrl: aiOrderConfig.apiUrl,
+    maxTokens: aiOrderConfig.maxTokens
+  });
+});
+
+// AI 点菜对话接口
+app.post('/api/ai-order/chat', async (req, res) => {
+  try {
+    const { mode, merchantId, messages, menuData } = req.body;
+    const aiOrderConfig = config.aiOrder;
+
+    if (!aiOrderConfig || !aiOrderConfig.apiKey) {
+      return res.status(500).json({ error: { message: 'AI Order API key not configured', code: 500 } });
+    }
+
+    // 根据模式构建系统提示
+    let systemPrompt = '';
+    if (mode === 'merchant') {
+      systemPrompt = '你是餐厅菜单管理助手。帮助商家添加、删除、更新菜品。' +
+        '必需信息：菜品名、价格。可选信息：图片、描述、口味、辣度(0-5)。' +
+        '添加/删除/更新前需要商家确认。' +
+        '用中文回答，语气专业友好。';
+    } else {
+      systemPrompt = '你是智能点菜助手。根据用户口味偏好推荐菜品。' +
+        '推荐时要说明推荐理由。' +
+        '用户确认后生成虚拟订单。' +
+        '用中文回答，语气热情友好。';
+    }
+
+    // 将菜单数据加入系统提示
+    if (menuData && menuData.dishes) {
+      const onlineDishes = menuData.dishes.filter(d => d.status === 'online');
+      systemPrompt += '\n\n当前菜单：' + JSON.stringify(onlineDishes.map(d => ({
+        name: d.name,
+        price: d.price,
+        taste: d.taste,
+        spicyLevel: d.spicyLevel,
+        description: d.description
+      })));
+    }
+
+    const apiMessages = [{ role: 'system', content: systemPrompt }].concat(messages);
+
+    const requestBody = {
+      model: aiOrderConfig.model,
+      messages: apiMessages,
+      max_tokens: aiOrderConfig.maxTokens
+    };
+
+    const response = await fetch(aiOrderConfig.apiUrl + '/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${aiOrderConfig.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://wechatbot-api-vfje.onrender.com',
+        'X-Title': 'AIOrderBot'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+      console.error('AI Order API error:', response.status, errMsg);
+      return res.status(response.status >= 400 ? response.status : 500).json({
+        error: { message: errMsg, code: response.status }
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('AI Order chat error:', err);
+    res.status(500).json({ error: { message: err.message, code: 500 } });
+  }
+});
+
+// 获取菜单
+app.get('/api/ai-order/menu/list', (req, res) => {
+  const merchantId = req.query.merchantId;
+  // 先从演示数据查找
+  const demoMenus = require('./ai-order/data/demo-menus.json');
+  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  if (demoMerchant) {
+    return res.json({ success: true, data: demoMerchant, source: 'demo' });
+  }
+  // 否则返回空菜单
+  res.json({ success: true, data: { id: merchantId, name: '未知商家', dishes: [] }, source: 'empty' });
+});
+
+// 添加菜品
+app.post('/api/ai-order/menu/add', (req, res) => {
+  const { merchantId, dish } = req.body;
+  // 对于演示数据，返回成功但不实际修改（演示模式）
+  const demoMenus = require('./ai-order/data/demo-menus.json');
+  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  if (demoMerchant) {
+    return res.json({ success: true, message: '演示模式：菜品已添加到本地缓存', dish });
+  }
+  // 实际存储逻辑（localStorage 在前端处理）
+  res.json({ success: true, message: '菜品已添加', dish });
+});
+
+// 更新菜品
+app.post('/api/ai-order/menu/update', (req, res) => {
+  const { merchantId, dishId, updates } = req.body;
+  res.json({ success: true, message: '菜品已更新', dishId, updates });
+});
+
+// 删除菜品
+app.post('/api/ai-order/menu/delete', (req, res) => {
+  const { merchantId, dishId } = req.body;
+  res.json({ success: true, message: '菜品已删除', dishId });
+});
+
 const PORT = config.server.port;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
@@ -414,7 +540,7 @@ app.post('/api/chat', async (req, res) => {
       headers: {
         'Authorization': `Bearer ${openrouterKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-g6ez.onrender.com',
+        'HTTP-Referer': 'https://wechatbot-api-vfje.onrender.com',
         'X-Title': 'SmartTeacherBot'
       },
       body: JSON.stringify(requestBody)

@@ -27,7 +27,7 @@ const config = {
 
   // PDF 转换服务配置
   pdfService: {
-    url: process.env.PDF_SERVICE_URL || 'https://wechatbot-pdf01.onrender.com',
+    url: process.env.PDF_SERVICE_URL || '',
     keepaliveInterval: 10 * 60 * 1000, // 10 minutes
   },
 
@@ -57,10 +57,18 @@ const config = {
     serveDir: '/tmp/serve',
   },
 
+  // AI 点菜专用配置
+  aiOrder: {
+    apiKey: process.env.AI_ORDER_KEY || process.env.OPENROUTER_KEY || null,
+    model: process.env.AI_ORDER_MODEL || 'nvidia/nemotron-nano-12b-v2-vl:free',
+    apiUrl: 'https://openrouter.ai/api/v1',
+    maxTokens: 800
+  },
+
   // 微信小程序配置的 API 基础 URL（前端使用）
   frontend: {
-    apiBaseUrl: process.env.API_BASE_URL || 'https://wechatbot-g6ez.onrender.com',
-    ttsKeyUrl: process.env.TTS_KEY_URL || 'https://wechatbot-g6ez.onrender.com/api/tts/key',
+    apiBaseUrl: process.env.API_BASE_URL || 'https://wechatbot-api-vfje.onrender.com',
+    ttsKeyUrl: process.env.TTS_KEY_URL || 'https://wechatbot-api-vfje.onrender.com/api/tts/key',
   }
 };
 
