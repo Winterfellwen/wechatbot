@@ -5,6 +5,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
+const demoMenus = require('./ai-order/data/demo-menus.json');
 
 const app = express();
 app.set('trust proxy', 'loopback');
@@ -374,6 +375,10 @@ app.post('/api/ai-order/chat', async (req, res) => {
       return res.status(500).json({ error: { message: 'AI Order API key not configured', code: 500 } });
     }
 
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: { message: 'Messages array is required and must not be empty', code: 400 } });
+    }
+
     // 根据模式构建系统提示
     let systemPrompt = '';
     if (mode === 'merchant') {
@@ -439,8 +444,10 @@ app.post('/api/ai-order/chat', async (req, res) => {
 // 获取菜单
 app.get('/api/ai-order/menu/list', (req, res) => {
   const merchantId = req.query.merchantId;
+  if (!merchantId) {
+    return res.status(400).json({ success: false, error: 'merchantId query parameter is required' });
+  }
   // 先从演示数据查找
-  const demoMenus = require('./ai-order/data/demo-menus.json');
   const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, data: demoMerchant, source: 'demo' });
@@ -453,7 +460,6 @@ app.get('/api/ai-order/menu/list', (req, res) => {
 app.post('/api/ai-order/menu/add', (req, res) => {
   const { merchantId, dish } = req.body;
   // 对于演示数据，返回成功但不实际修改（演示模式）
-  const demoMenus = require('./ai-order/data/demo-menus.json');
   const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, message: '演示模式：菜品已添加到本地缓存', dish });
