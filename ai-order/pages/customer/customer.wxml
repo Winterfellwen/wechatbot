@@ -1,16 +1,5 @@
 <!--ai-order/pages/customer/customer.wxml-->
 <view class="chat-container">
-  <!-- 顶部标题栏 -->
-  <view class="header">
-    <view class="header-avatar">
-      <image class="header-avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
-    </view>
-    <view class="header-info">
-      <text class="header-title">智能点菜</text>
-      <text class="header-status">在线</text>
-    </view>
-  </view>
-
   <!-- 消息列表 -->
   <scroll-view
     class="msg-list"
@@ -33,6 +22,20 @@
         <view class="msg-content">
           <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
             <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
+          </view>
+          <!-- 推荐菜品卡片 -->
+          <view wx:if="{{item.recommendations && item.recommendations.length > 0}}" class="dish-cards">
+            <view wx:for="{{item.recommendations}}" wx:key="id" class="dish-card" data-dish="{{item}}">
+              <view class="dish-info">
+                <text class="dish-name">{{item.name}}</text>
+                <text class="dish-price">¥{{item.price}}</text>
+                <view class="dish-tags">
+                  <text class="dish-tag taste-tag">{{item.taste}}</text>
+                  <text wx:if="{{item.spicyLevel > 0}}" class="dish-tag spicy-tag">辣度: {{item.spicyLevel}}</text>
+                </view>
+              </view>
+              <view class="dish-order-btn" catchtap="onOrderDish" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">点这个</view>
+            </view>
           </view>
         </view>
       </view>
@@ -74,6 +77,34 @@
 
     <view class="list-bottom" id="msg-bottom"></view>
   </scroll-view>
+
+  <!-- 购物车摘要 -->
+  <view wx:if="{{cart.length > 0}}" class="cart-bar">
+    <view class="cart-info">
+      <text class="cart-text">已选 {{cart.length}} 道菜</text>
+      <text class="cart-total">合计: ¥{{totalPrice}}</text>
+    </view>
+    <view class="cart-order-btn" catchtap="onConfirmOrder">确认下单</view>
+  </view>
+
+  <!-- 订单确认弹窗 -->
+  <view wx:if="{{showOrderDialog}}" class="order-overlay" catchtap="onCloseOrder">
+    <view class="order-dialog" catchtap="">
+      <text class="order-dialog-title">确认订单</text>
+      <view wx:for="{{cart}}" wx:key="id" class="order-dish-item">
+        <text>{{item.name}}</text>
+        <text>¥{{item.price}}</text>
+      </view>
+      <view class="order-total-row">
+        <text>合计</text>
+        <text>¥{{totalPrice}}</text>
+      </view>
+      <view class="order-actions">
+        <view class="order-cancel-btn" catchtap="onCloseOrder">取消</view>
+        <view class="order-confirm-btn" catchtap="onSubmitOrder">确认下单</view>
+      </view>
+    </view>
+  </view>
 
   <!-- 底部输入栏 -->
   <view class="input-section">

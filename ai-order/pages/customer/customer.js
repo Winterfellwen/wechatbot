@@ -43,7 +43,10 @@ Page({
     inputText: '',
     loading: false,
     scrollTop: 0,
-    hasInput: false
+    hasInput: false,
+    cart: [],
+    totalPrice: 0,
+    showOrderDialog: false
   },
 
   onLoad: function(options) {
@@ -166,7 +169,20 @@ Page({
       reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
     }
 
-    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply };
+    var recommendations = [];
+    if (menuData && menuData.dishes && reply.indexOf('出错了') === -1) {
+      var matched = {};
+      for (var d = 0; d < menuData.dishes.length; d++) {
+        var dish = menuData.dishes[d];
+        if (dish.status !== 'online') continue;
+        if (reply.indexOf(dish.name) > -1 && !matched[dish.id]) {
+          recommendations.push({ id: dish.id, name: dish.name, price: dish.price, taste: dish.taste, spicyLevel: dish.spicyLevel });
+          matched[dish.id] = true;
+        }
+      }
+    }
+
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply, recommendations: recommendations };
     that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
     that.scrollToBottom();
   },
@@ -251,6 +267,49 @@ Page({
     setTimeout(function() {
       that._attemptRequest(retryCount + 1, startTime, apiMessages);
     }, delay);
+  },
+
+  onOrderDish: function(e) {
+    var dish = { id: e.currentTarget.dataset.dishid, name: e.currentTarget.dataset.name, price: e.currentTarget.dataset.price };
+    var cart = this.data.cart;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id === dish.id) {
+        wx.showToast({ title: '已在购物车中', icon: 'none' });
+        return;
+      }
+    }
+    cart.push(dish);
+    var total = 0;
+    for (var j = 0; j < cart.length; j++) {
+      total += parseFloat(cart[j].price);
+    }
+    this.setData({ cart: cart, totalPrice: total });
+    wx.showToast({ title: '已加入购物车', icon: 'success' });
+  },
+
+  onConfirmOrder: function() {
+    this.setData({ showOrderDialog: true });
+  },
+
+  onCloseOrder: function() {
+    this.setData({ showOrderDialog: false });
+  },
+
+  onSubmitOrder: function() {
+    var that = this;
+    var cart = this.data.cart;
+    var dishNames = [];
+    for (var i = 0; i < cart.length; i++) {
+      dishNames.push(cart[i].name);
+    }
+    this.setData({ showOrderDialog: false });
+    var orderMsg = {
+      id: ++msgIdCounter,
+      role: 'ai',
+      content: '✅ 订单已确认！\n您点的菜品：' + dishNames.join('、') + '\n合计：¥' + this.data.totalPrice + '\n\n感谢您使用智能点菜，祝您用餐愉快！'
+    };
+    that.setData({ messages: that.data.messages.concat([orderMsg]), cart: [], totalPrice: 0 });
+    that.scrollToBottom();
   },
 
   copyText: function(e) {
