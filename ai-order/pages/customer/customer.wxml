@@ -1,0 +1,101 @@
+<!--ai-order/pages/customer/customer.wxml-->
+<view class="chat-container">
+  <!-- 顶部标题栏 -->
+  <view class="header">
+    <view class="header-avatar">
+      <image class="header-avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
+    </view>
+    <view class="header-info">
+      <text class="header-title">智能点菜</text>
+      <text class="header-status">在线</text>
+    </view>
+  </view>
+
+  <!-- 消息列表 -->
+  <scroll-view
+    class="msg-list"
+    scroll-y
+    scroll-top="{{scrollTop}}"
+    scroll-with-animation
+    enhanced
+    bounces
+    show-scrollbar="{{false}}">
+
+    <!-- 消息列表 -->
+    <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg-wrapper">
+      <!-- AI 消息 -->
+      <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
+        <view class="ai-avatar-wrapper">
+          <view class="avatar ai-avatar">
+            <image class="avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
+          </view>
+        </view>
+        <view class="msg-content">
+          <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
+            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 用户消息 -->
+      <view wx:if="{{item.role === 'user'}}" class="msg-row user">
+        <view class="msg-content user-msg-content">
+          <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
+            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
+          </view>
+        </view>
+        <view class="user-avatar-wrapper">
+          <view class="avatar user-avatar">
+            <text class="avatar-text">我</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- AI 正在输入 -->
+    <view wx:if="{{loading}}" class="msg-wrapper">
+      <view class="msg-row ai">
+        <view class="ai-avatar-wrapper">
+          <view class="avatar ai-avatar">
+            <image class="avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
+          </view>
+        </view>
+        <view class="msg-content">
+          <view class="bubble ai-bubble typing-bubble">
+            <view class="typing-indicator">
+              <view class="typing-dot"></view>
+              <view class="typing-dot"></view>
+              <view class="typing-dot"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="list-bottom" id="msg-bottom"></view>
+  </scroll-view>
+
+  <!-- 底部输入栏 -->
+  <view class="input-section">
+    <view class="input-bar">
+      <view class="input-center">
+        <input
+          class="msg-input"
+          placeholder="输入您想吃的口味..."
+          placeholder-class="input-placeholder"
+          value="{{inputText}}"
+          bindinput="onInput"
+          confirm-type="send"
+          bindconfirm="onSend"
+          cursor-spacing="20"
+        />
+      </view>
+      <view
+        class="send-btn {{hasInput ? 'active' : ''}}"
+        bindtap="onSend"
+        hover-class="{{hasInput ? 'send-btn-hover' : ''}}">
+        <text class="icon-send">↑</text>
+      </view>
+    </view>
+  </view>
+</view>
