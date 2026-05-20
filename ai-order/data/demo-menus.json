@@ -1,0 +1,70 @@
+{
+  "merchants": [
+    {
+      "id": "demo-restaurant-1",
+      "name": "川味小厨（演示）",
+      "dishes": [
+        {
+          "id": "dish-1",
+          "name": "宫保鸡丁",
+          "price": 28,
+          "image": "",
+          "description": "经典川菜，鸡肉配花生米，麻辣鲜香",
+          "taste": "麻辣",
+          "spicyLevel": 2,
+          "status": "online"
+        },
+        {
+          "id": "dish-2",
+          "name": "红烧肉",
+          "price": 32,
+          "image": "",
+          "description": "五花肉红烧，肥而不腻，入口即化",
+          "taste": "咸甜",
+          "spicyLevel": 0,
+          "status": "online"
+        },
+        {
+          "id": "dish-3",
+          "name": "麻婆豆腐",
+          "price": 18,
+          "image": "",
+          "description": "嫩豆腐配肉末，麻辣鲜香烫",
+          "taste": "麻辣",
+          "spicyLevel": 3,
+          "status": "online"
+        },
+        {
+          "id": "dish-4",
+          "name": "糖醋排骨",
+          "price": 38,
+          "image": "",
+          "description": "排骨糖醋汁，酸甜可口",
+          "taste": "酸甜",
+          "spicyLevel": 0,
+          "status": "online"
+        },
+        {
+          "id": "dish-5",
+          "name": "水煮鱼",
+          "price": 48,
+          "image": "",
+          "description": "鲜嫩鱼片配豆芽，麻辣过瘾",
+          "taste": "麻辣",
+          "spicyLevel": 3,
+          "status": "online"
+        },
+        {
+          "id": "dish-6",
+          "name": "番茄炒蛋",
+          "price": 15,
+          "image": "",
+          "description": "家常经典，酸甜适口",
+          "taste": "酸甜",
+          "spicyLevel": 0,
+          "status": "online"
+        }
+      ]
+    }
+  ]
+}
