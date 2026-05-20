@@ -1,6 +1,4 @@
 // ai-order/pages/index/index.js
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
 
 Page({
   data: {
