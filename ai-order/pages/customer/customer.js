@@ -9,6 +9,7 @@ var configLoading = null;
 var menuData = null;
 
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
+var DEMO_MERCHANT_IDS = ['demo-restaurant-1'];
 
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
@@ -124,7 +125,13 @@ Page({
       return;
     }
 
-    // 2. Try OCI direct fetch
+    // 2. Demo merchants: fetch from server only
+    if (DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
+      that._loadMenuFromServer();
+      return;
+    }
+
+    // 3. Non-demo: try OCI direct fetch (faster, no cold start)
     var ociUrl = OCI_BASE + '/menus/default/' + merchantId + '.json';
     wx.request({
       url: ociUrl,
@@ -136,7 +143,6 @@ Page({
           that._applyMenuData(res.data);
           return;
         }
-        // fallback to server
         that._loadMenuFromServer();
       },
       fail: function() {
