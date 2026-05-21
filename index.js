@@ -18,28 +18,31 @@ function getOciClient() {
   const os = require('oci-objectstorage');
   const fs = require('fs');
   const path = require('path');
-  const home = require('os').homedir();
-  // Try env-var-specified config, then default ~/.oci/config, then ./oci-config
-  const paths = [];
-  if (process.env.OCI_CONFIG_FILE) paths.push(process.env.OCI_CONFIG_FILE);
-  paths.push(path.join(home, '.oci', 'config'), './oci-config');
-  for (const p of paths) {
+  const os2 = require('os');
+  const home = os2.homedir();
+  // Try config file paths
+  const configPaths = [];
+  if (process.env.OCI_CONFIG_FILE) configPaths.push(process.env.OCI_CONFIG_FILE);
+  configPaths.push(path.join(home, '.oci', 'config'), './oci-config');
+  for (const p of configPaths) {
     try {
       if (fs.existsSync(p)) return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider(p) });
     } catch (_) {}
   }
-  // Try default provider (no args = ~/.oci/config + DEFAULT profile)
   try { return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider() }); } catch (_) {}
-  // Fallback: env vars (for Render without config file)
+  // Fallback: write a temporary config from env vars
+  const user = process.env.OCI_USER_OCID;
+  const tenancy = process.env.OCI_TENANCY_OCID;
+  const fingerprint = process.env.OCI_FINGERPRINT;
   const pk = process.env.OCI_PRIVATE_KEY;
-  if (process.env.OCI_USER_OCID && process.env.OCI_TENANCY_OCID && process.env.OCI_FINGERPRINT && pk) {
-    return new os.ObjectStorageClient({
-      authenticationDetailsProvider: new common.SimpleAuthenticationDetailsProvider(
-        process.env.OCI_TENANCY_OCID, process.env.OCI_USER_OCID,
-        process.env.OCI_FINGERPRINT, pk, null,
-        process.env.OCI_REGION || 'ap-singapore-1'
-      )
-    });
+  const region = process.env.OCI_REGION || 'ap-singapore-1';
+  if (user && tenancy && fingerprint && pk) {
+    const keyFile = path.join(os2.tmpdir(), 'oci_key.pem');
+    fs.writeFileSync(keyFile, pk, 'utf8');
+    const configContent = `[DEFAULT]\nuser=${user}\nfingerprint=${fingerprint}\ntenancy=${tenancy}\nregion=${region}\nkey_file=${keyFile}\n`;
+    const configFile = path.join(os2.tmpdir(), 'oci_config');
+    fs.writeFileSync(configFile, configContent, 'utf8');
+    return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider(configFile) });
   }
   throw new Error('OCI credentials not configured');
 }
