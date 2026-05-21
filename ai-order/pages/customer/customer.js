@@ -130,7 +130,7 @@ Page({
             if (d.status !== 'online') continue;
             d.bgStyle = (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg;
             d.avatarChar = d.name.slice(0, 1);
-            d.imageUrl = d.image ? SERVER + d.image : '';
+            d.imageUrl = d.image ? (d.image.indexOf('http') === 0 ? d.image : SERVER + d.image) : '';
             enriched.push(d);
           }
           var result = that._rebuildGroups(enriched, that.data.groupMode);
