@@ -12,7 +12,8 @@
           "description": "经典川菜，鸡肉配花生米，麻辣鲜香",
           "taste": "麻辣",
           "spicyLevel": 2,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
         },
         {
           "id": "dish-2",
@@ -22,7 +23,8 @@
           "description": "五花肉红烧，肥而不腻，入口即化",
           "taste": "咸甜",
           "spicyLevel": 0,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
         },
         {
           "id": "dish-3",
@@ -32,7 +34,8 @@
           "description": "嫩豆腐配肉末，麻辣鲜香烫",
           "taste": "麻辣",
           "spicyLevel": 3,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
         },
         {
           "id": "dish-4",
@@ -42,7 +45,8 @@
           "description": "排骨糖醋汁，酸甜可口",
           "taste": "酸甜",
           "spicyLevel": 0,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
         },
         {
           "id": "dish-5",
@@ -52,7 +56,8 @@
           "description": "鲜嫩鱼片配豆芽，麻辣过瘾",
           "taste": "麻辣",
           "spicyLevel": 3,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
         },
         {
           "id": "dish-6",
@@ -62,7 +67,41 @@
           "description": "家常经典，酸甜适口",
           "taste": "酸甜",
           "spicyLevel": 0,
-          "status": "online"
+          "status": "online",
+          "category": "菜"
+        },
+        {
+          "id": "dish-7",
+          "name": "蛋炒饭",
+          "price": 12,
+          "image": "",
+          "description": "粒粒分明的蛋炒饭，简单美味",
+          "taste": "清淡",
+          "spicyLevel": 0,
+          "status": "online",
+          "category": "主食"
+        },
+        {
+          "id": "dish-8",
+          "name": "酸辣汤",
+          "price": 16,
+          "image": "",
+          "description": "酸辣开胃，暖心暖胃",
+          "taste": "麻辣",
+          "spicyLevel": 2,
+          "status": "online",
+          "category": "汤"
+        },
+        {
+          "id": "dish-9",
+          "name": "紫菜蛋花汤",
+          "price": 10,
+          "image": "",
+          "description": "清淡鲜美的家常汤品",
+          "taste": "清淡",
+          "spicyLevel": 0,
+          "status": "online",
+          "category": "汤"
         }
       ]
     }

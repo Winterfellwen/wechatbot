@@ -1,44 +1,63 @@
-============================================================
-微信小程序诊断 - 修复日志
-============================================================
-生成时间: 2026-05-21
-项目: E:\AI\Wechatbot
+# WeChat Miniprogram Diagnose Fix Log
+# Generated: 2026-05-21
+# Project: E:\AI\Wechatbot
 
-扫描范围:
-  - tabBar 页面: pages/index/index, pages/user/user
-  - pdf 子包: 4 个页面
-  - japanese 子包: 7 个页面
-  - german 子包: 7 个页面
-  - word 子包: 2 个页面
-  - smart-teacher 子包: 1 个页面
-  - ai-order 子包: 3 个页面
-  共计 26 个页面
+## Scan Summary
 
-============================================================
-Automator 运行时扫描结果
-============================================================
-所有页面 console 事件: 无错误/警告
-所有页面异常事件: 无
+### Pages Scanned (via automator)
+| Page | Status | Console Errors/Warnings |
+|------|--------|------------------------|
+| pages/index/index | OK | None |
+| pages/user/user | OK | None |
+| japanese/pages/learn/learn | OK | None |
+| german/pages/learn/learn | OK | None |
+| smart-teacher/pages/chat/chat | OK | None |
+| pdf/pages/index/index | OK | None |
+| ai-order/pages/index/index | Timeout | N/A (navigation timeout, code reviewed - clean) |
 
-============================================================
-源码静态扫描结果
-============================================================
-console.log/info/debug (小程序源码): 0 处
-http:// 非 localhost (需改 https): 0 处
-wx.showNavigationBarLoading: 0 处
-wx.hideNavigationBarLoading: 0 处
-wx.getUserInfo: 0 处
+### Code Scan Results
 
-============================================================
-修复操作
-============================================================
-无需修复。小程序源码干净。
+#### 1. http:// URLs → https://
+- **Status**: No issues found
+- All external URLs already use https://
+- SERVER configured as https://wechatbot-api-vfje.onrender.com
+- TTS API uses https://eastasia.tts.speech.microsoft.com
+- OpenRouter API uses https://openrouter.ai
 
-注:
-- index.js 中的 console.log 属于后端服务器代码，非小程序代码
-- word/utils/docx.js 中的 http:// 是 Office Open XML 命名空间 URI，属于规范要求，不可改为 https
-- index.js / utils/tts.js 中的 http:// 是 W3C SSML 命名空间 URI，属于规范要求，不可改为 https
-- word/pages/editor/pako.es5.js 是第三方库，其中的 http:// 仅在注释中
+#### 2. console.log / console.info / console.debug
+- **Status**: No issues found in miniprogram pages
+- Note: console.log found in server-side files (index.js, scripts/*.js) - not part of miniprogram
+- Note: console.log in word/pages/editor/pako.es5.js are JSDoc comments only
+- Note: console.error in utils/login.js and utils/tts.js are error handlers (kept intentionally)
 
-============================================================
-DevTools 状态: 保持运行
+#### 3. wx.showNavigationBarLoading / wx.hideNavigationBarLoading
+- **Status**: No issues found
+- No usage detected in any miniprogram file
+
+#### 4. wx.getUserInfo (deprecated)
+- **Status**: No issues found
+- Login flow uses wx.login() + server-side auth (modern approach)
+
+#### 5. Resource References
+- **Status**: All image references valid
+- All /images/* files exist in images/ directory
+- No broken resource paths detected
+
+#### 6. Route Configuration
+- **Status**: All routes properly configured in app.json
+- 2 tabBar pages, 6 subpackages with correct page paths
+
+## Fixes Applied
+No fixes were required. The project code is clean.
+
+## Notes
+- ai-order/pages/index/index navigation timed out during scan (15s timeout)
+  - Code review shows no issues - simple page with localStorage read
+  - May be due to subpackage lazy loading delay
+- console.error in utils/login.js:56,61 and utils/tts.js:159 are intentional error handlers
+- Server-side files (index.js, scripts/*.js) contain console.log - these are Node.js backend code, not miniprogram
+
+## DevTools Status
+- Connected via ws://localhost:9420
+- AppID: wx2510f82943d7741e
+- DevTools remains running

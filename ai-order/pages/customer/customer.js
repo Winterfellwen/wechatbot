@@ -16,6 +16,10 @@ var TASTE_CONFIG = {
 };
 var TASTE_DEFAULT = { bg: 'linear-gradient(135deg, #A8A8A8, #D0D0D0)', light: '#F5F5F5' };
 
+var FILTER_CATEGORIES = [{ key: '', label: '全部' }, { key: '主食', label: '主食' }, { key: '菜', label: '菜' }, { key: '汤', label: '汤' }];
+var FILTER_PRICES = [{ key: '', label: '全部' }, { key: 'low', label: '~¥20' }, { key: 'mid', label: '¥20~¥50' }, { key: 'high', label: '¥50+' }];
+var FILTER_TASTES = [{ key: '', label: '全部' }, { key: '麻辣', label: '麻辣' }, { key: '酸甜', label: '酸甜' }, { key: '咸甜', label: '咸甜' }, { key: '清淡', label: '清淡' }];
+
 function initOpenRouter() {
   if (openRouterConfig && configLoaded) return Promise.resolve();
   if (configLoading) return configLoading;
@@ -66,6 +70,16 @@ Page({
     chatScrollToId: '',
 
     quickReplies: ['看看菜单', '有什么推荐', '今天吃啥', '辣的'],
+
+    // Filters
+    filterCategory: '',
+    filterPrice: '',
+    filterTaste: '',
+    allDishes: [],
+    FILTER_CATEGORIES: [{ key: '', label: '全部' }, { key: '主食', label: '主食' }, { key: '菜', label: '菜' }, { key: '汤', label: '汤' }],
+    FILTER_PRICES: [{ key: '', label: '全部' }, { key: 'low', label: '~¥20' }, { key: 'mid', label: '¥20~¥50' }, { key: 'high', label: '¥50+' }],
+    FILTER_TASTES: [{ key: '', label: '全部' }, { key: '麻辣', label: '麻辣' }, { key: '酸甜', label: '酸甜' }, { key: '咸甜', label: '咸甜' }, { key: '清淡', label: '清淡' }],
+
     lastOrder: null,
   },
 
@@ -123,7 +137,7 @@ Page({
               tasteGroups.push({ taste: key, dishes: groups[key], bgColor: tc.bg, lightColor: tc.light });
             }
           }
-          that.setData({ tasteGroups: tasteGroups, dishGradientMap: gradientMap });
+          that.setData({ tasteGroups: tasteGroups, dishGradientMap: gradientMap, allDishes: dishes });
         }
       },
       fail: function(err) {
@@ -131,6 +145,61 @@ Page({
         console.warn('[customer] failed to load menu:', err);
       }
     });
+  },
+
+  _rebuildTasteGroups: function(dishes) {
+    var groups = {};
+    var gradientMap = {};
+    for (var i = 0; i < dishes.length; i++) {
+      var d = dishes[i];
+      if (d.status !== 'online') continue;
+      var taste = d.taste || '其他';
+      if (!groups[taste]) groups[taste] = [];
+      groups[taste].push(d);
+      gradientMap[d.id] = d.bgStyle;
+    }
+    var tasteGroups = [];
+    var tasteOrder = ['麻辣', '酸甜', '咸甜', '清淡', '其他'];
+    for (var t = 0; t < tasteOrder.length; t++) {
+      var key = tasteOrder[t];
+      if (groups[key] && groups[key].length > 0) {
+        var tc = TASTE_CONFIG[key] || TASTE_DEFAULT;
+        tasteGroups.push({ taste: key, dishes: groups[key], bgColor: tc.bg, lightColor: tc.light });
+      }
+    }
+    return { tasteGroups: tasteGroups, dishGradientMap: gradientMap };
+  },
+
+  _applyFilters: function() {
+    var dishes = this.data.allDishes;
+    var cat = this.data.filterCategory;
+    var price = this.data.filterPrice;
+    var taste = this.data.filterTaste;
+    var filtered = [];
+    for (var i = 0; i < dishes.length; i++) {
+      var d = dishes[i];
+      if (cat && d.category !== cat) continue;
+      if (taste && d.taste !== taste) continue;
+      if (price === 'low' && d.price >= 20) continue;
+      if (price === 'mid' && (d.price < 20 || d.price > 50)) continue;
+      if (price === 'high' && d.price <= 50) continue;
+      filtered.push(d);
+    }
+    var result = this._rebuildTasteGroups(filtered);
+    this.setData({ tasteGroups: result.tasteGroups });
+  },
+
+  onFilterCategory: function(e) {
+    this.setData({ filterCategory: e.currentTarget.dataset.key });
+    this._applyFilters();
+  },
+  onFilterPrice: function(e) {
+    this.setData({ filterPrice: e.currentTarget.dataset.key });
+    this._applyFilters();
+  },
+  onFilterTaste: function(e) {
+    this.setData({ filterTaste: e.currentTarget.dataset.key });
+    this._applyFilters();
   },
 
   addWelcomeMessage: function() {
@@ -262,14 +331,32 @@ Page({
     }
 
     var recommendations = [];
+    var userAskedRec = false;
+    var msgs = that.data.messages;
+    for (var u = msgs.length - 1; u >= 0; u--) {
+      if (msgs[u].role === 'user') {
+        var txt = msgs[u].content || '';
+        if (txt.indexOf('推荐') > -1 || txt.indexOf('有什么') > -1 || txt.indexOf('吃啥') > -1) {
+          userAskedRec = true;
+        }
+        break;
+      }
+    }
     if (menuData && menuData.dishes && reply.indexOf('出错了') === -1) {
       var matched = {};
       for (var d = 0; d < menuData.dishes.length; d++) {
         var dish = menuData.dishes[d];
         if (dish.status !== 'online') continue;
         if (reply.indexOf(dish.name) > -1 && !matched[dish.id]) {
-          recommendations.push({ id: dish.id, name: dish.name, price: dish.price, taste: dish.taste, spicyLevel: dish.spicyLevel });
+          recommendations.push({ id: dish.id, name: dish.name, price: dish.price, taste: dish.taste, spicyLevel: dish.spicyLevel, category: dish.category });
           matched[dish.id] = true;
+        }
+      }
+      if (recommendations.length === 0 && userAskedRec) {
+        for (var d2 = 0; d2 < menuData.dishes.length && recommendations.length < 5; d2++) {
+          var dish2 = menuData.dishes[d2];
+          if (dish2.status !== 'online') continue;
+          recommendations.push({ id: dish2.id, name: dish2.name, price: dish2.price, taste: dish2.taste, spicyLevel: dish2.spicyLevel, category: dish2.category });
         }
       }
     }

@@ -31,6 +31,23 @@
     <view class="grid-bottom-spacer"></view>
   </scroll-view>
 
+  <!-- Filter chips -->
+  <view class="filter-bar">
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="filter-scroll">
+      <view wx:for="{{FILTER_CATEGORIES}}" wx:key="index" class="filter-chip {{filterCategory === item.key ? 'active' : ''}}" catchtap="onFilterCategory" data-key="{{item.key}}">
+        <text>{{item.label}}</text>
+      </view>
+      <view class="filter-divider"></view>
+      <view wx:for="{{FILTER_PRICES}}" wx:key="index" class="filter-chip {{filterPrice === item.key ? 'active' : ''}}" catchtap="onFilterPrice" data-key="{{item.key}}">
+        <text>{{item.label}}</text>
+      </view>
+      <view class="filter-divider"></view>
+      <view wx:for="{{FILTER_TASTES}}" wx:key="index" class="filter-chip {{filterTaste === item.key ? 'active' : ''}}" catchtap="onFilterTaste" data-key="{{item.key}}">
+        <text>{{item.label}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
   <!-- Quick chips -->
   <view class="quick-chips">
     <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="chips-scroll">
@@ -102,8 +119,8 @@
     </view>
   </view>
 
-  <!-- Cart bar -->
-  <view wx:if="{{cartItemCount > 0}}" class="cart-bar">
+  <!-- Cart bar (tap anywhere to open) -->
+  <view wx:if="{{cartItemCount > 0}}" class="cart-bar" catchtap="onCartTap">
     <view class="cart-bar-left">
       <view class="cart-icon-wrap">
         <text class="cart-icon">🛒</text>
@@ -114,7 +131,7 @@
         <text class="cart-total">¥{{totalPrice}}</text>
       </view>
     </view>
-    <view class="cart-checkout-btn" catchtap="onCartTap">
+    <view class="cart-checkout-btn">
       <text>去下单</text>
     </view>
   </view>
