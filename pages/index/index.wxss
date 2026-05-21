@@ -247,9 +247,9 @@
   box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
 }
 
-.icon-canvas {
-  width: 72rpx;
-  height: 72rpx;
+.icon-svg {
+  width: 56rpx;
+  height: 56rpx;
   display: block;
 }
 

@@ -7,7 +7,8 @@ Page({
     displayUserInfo: null,
     isLoggedIn: false,
     greeting: '你好',
-    teacherVisible: false
+    teacherVisible: false,
+    iconSrc: {}
   },
 
   getGreeting: function () {
@@ -48,171 +49,16 @@ Page({
         that._observer.disconnect();
       }
     });
-    that._drawCanvasIcons();
+    that.setData({ iconSrc: that._getIconSrc() });
   },
 
-  _drawCanvasIcons: function () {
-    var dpr = wx.getSystemInfoSync().pixelRatio || 2;
-    var that = this;
-    var drawFn = { 'learn': '_drawLearn', 'tool': '_drawTool', 'order': '_drawOrder' };
-    Object.keys(drawFn).forEach(function (id) {
-      wx.createSelectorQuery().select('#icon-' + id).node(function (res) {
-        var canvas = res.node;
-        if (!canvas) return;
-        var ctx = canvas.getContext('2d');
-        var px = 72;
-        canvas.width = px * dpr;
-        canvas.height = px * dpr;
-        ctx.scale(dpr, dpr);
-        that[drawFn[id]](ctx, px);
-      }).exec();
-    });
-  },
-
-  _drawLearn: function (ctx, px) {
-    var s = px / 100;
-    ctx.save();
-    // left page
-    ctx.beginPath();
-    ctx.moveTo(20 * s, 20 * s);
-    ctx.quadraticCurveTo(25 * s, 18 * s, 48 * s, 20 * s);
-    ctx.lineTo(48 * s, 78 * s);
-    ctx.quadraticCurveTo(25 * s, 76 * s, 20 * s, 78 * s);
-    ctx.closePath();
-    ctx.fillStyle = '#7C3AED';
-    ctx.fill();
-    // right page
-    ctx.beginPath();
-    ctx.moveTo(52 * s, 20 * s);
-    ctx.quadraticCurveTo(75 * s, 18 * s, 80 * s, 20 * s);
-    ctx.lineTo(80 * s, 78 * s);
-    ctx.quadraticCurveTo(75 * s, 76 * s, 52 * s, 78 * s);
-    ctx.closePath();
-    ctx.fillStyle = '#8B5CF6';
-    ctx.fill();
-    // spine
-    ctx.beginPath();
-    ctx.moveTo(48 * s, 20 * s);
-    ctx.lineTo(48 * s, 78 * s);
-    ctx.strokeStyle = '#5B21B6';
-    ctx.lineWidth = 2 * s;
-    ctx.stroke();
-    ctx.moveTo(52 * s, 20 * s);
-    ctx.lineTo(52 * s, 78 * s);
-    ctx.stroke();
-    // bookmark
-    ctx.beginPath();
-    ctx.moveTo(48 * s, 74 * s);
-    ctx.lineTo(42 * s, 82 * s);
-    ctx.lineTo(50 * s, 84 * s);
-    ctx.lineTo(58 * s, 82 * s);
-    ctx.lineTo(52 * s, 74 * s);
-    ctx.fillStyle = '#F59E0B';
-    ctx.fill();
-    ctx.restore();
-  },
-
-  _drawTool: function (ctx, px) {
-    var s = px / 100;
-    ctx.save();
-    // document body
-    ctx.beginPath();
-    ctx.moveTo(24 * s, 16 * s);
-    ctx.lineTo(66 * s, 16 * s);
-    ctx.lineTo(76 * s, 26 * s);
-    ctx.lineTo(76 * s, 84 * s);
-    ctx.lineTo(24 * s, 84 * s);
-    ctx.closePath();
-    ctx.fillStyle = '#EC4899';
-    ctx.fill();
-    // folded corner
-    ctx.beginPath();
-    ctx.moveTo(66 * s, 16 * s);
-    ctx.lineTo(66 * s, 26 * s);
-    ctx.lineTo(76 * s, 26 * s);
-    ctx.closePath();
-    ctx.fillStyle = '#BE185D';
-    ctx.fill();
-    // text lines
-    ctx.strokeStyle = '#FDF2F8';
-    ctx.lineWidth = 3 * s;
-    ctx.lineCap = 'round';
-    [35, 47, 59, 71].forEach(function (y) {
-      ctx.beginPath();
-      ctx.moveTo(34 * s, y * s);
-      ctx.lineTo(66 * s, y * s);
-      ctx.stroke();
-    });
-    // gear/wheel on right
-    var cx = 70 * s, cy = 50 * s, r = 16 * s;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = '#FDF2F8';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy, (r - 5 * s), 0, Math.PI * 2);
-    ctx.fillStyle = '#EC4899';
-    ctx.fill();
-    // gear teeth
-    for (var i = 0; i < 8; i++) {
-      var a = (i / 8) * Math.PI * 2;
-      ctx.save();
-      ctx.translate(cx + Math.cos(a) * (r - 1 * s), cy + Math.sin(a) * (r - 1 * s));
-      ctx.rotate(a);
-      ctx.fillStyle = '#FDF2F8';
-      ctx.fillRect(-2 * s, -3 * s, 4 * s, 6 * s);
-      ctx.restore();
-    }
-    ctx.restore();
-  },
-
-  _drawOrder: function (ctx, px) {
-    var s = px / 100;
-    ctx.save();
-    // plate (ellipse via scaled arc)
-    ctx.save();
-    ctx.scale(1.3, 1);
-    ctx.beginPath();
-    ctx.arc(38.5 * s, 56 * s, 22 * s, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fillStyle = '#F43F5E';
-    ctx.fill();
-    ctx.restore();
-    // plate inner
-    ctx.save();
-    ctx.scale(1.3, 1);
-    ctx.beginPath();
-    ctx.arc(38.5 * s, 56 * s, 14 * s, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fillStyle = '#FFF1F2';
-    ctx.fill();
-    ctx.restore();
-    // chopstick 1
-    ctx.beginPath();
-    ctx.moveTo(34 * s, 24 * s);
-    ctx.lineTo(46 * s, 56 * s);
-    ctx.strokeStyle = '#9F1239';
-    ctx.lineWidth = 3 * s;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-    // chopstick 2
-    ctx.beginPath();
-    ctx.moveTo(54 * s, 24 * s);
-    ctx.lineTo(66 * s, 56 * s);
-    ctx.strokeStyle = '#9F1239';
-    ctx.lineWidth = 3 * s;
-    ctx.stroke();
-    // steam
-    ctx.strokeStyle = '#FDA4AF';
-    ctx.lineWidth = 2 * s;
-    [62, 72, 82].forEach(function (x) {
-      ctx.beginPath();
-      ctx.moveTo(x * s, 38 * s);
-      ctx.quadraticCurveTo((x - 4) * s, 32 * s, x * s, 26 * s);
-      ctx.quadraticCurveTo((x + 4) * s, 20 * s, x * s, 14 * s);
-      ctx.stroke();
-    });
-    ctx.restore();
+  _getIconSrc: function () {
+    function svg(str) { return 'data:image/svg+xml,' + encodeURIComponent(str); }
+    return {
+      learn: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="4" fill="#fff"/><rect x="9" y="14" width="11" height="14" rx="2" fill="#C4B5FD"/><rect x="28" y="14" width="11" height="14" rx="2" fill="#C4B5FD"/><line x1="24" y1="10" x2="24" y2="38" stroke="#C4B5FD" stroke-width="3"/></svg>'),
+      tool: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="6" y="12" width="36" height="26" rx="4" fill="#fff"/><path d="M6 20 L14 20 L17 16 L31 16 L34 20 L42 20" fill="#FBCFE8" opacity=".5"/><line x1="14" y1="26" x2="34" y2="26" stroke="#FBCFE8" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="31" x2="28" y2="31" stroke="#FBCFE8" stroke-width="3" stroke-linecap="round"/></svg>'),
+      order: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M24 4 L28 20 L44 24 L28 28 L24 44 L20 28 L4 24 L20 20 Z" fill="#fff"/><circle cx="36" cy="10" r="4.5" fill="#fff" opacity=".5"/><circle cx="42" cy="37" r="3.5" fill="#fff" opacity=".35"/></svg>')
+    };
   },
 
   onUnload: function () {
