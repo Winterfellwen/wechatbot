@@ -51,7 +51,8 @@ function ociSaveMenu(userId, merchantId, menuData) {
   const os = require('oci-objectstorage');
   const { Readable } = require('stream');
   const client = getOciClient();
-  return client.getNamespace().then(nsResp => {
+  const tenancyId = client._authenticationDetailsProvider.getTenantId();
+  return client.getNamespace({ compartmentId: tenancyId }).then(nsResp => {
     const ns = nsResp.value;
     const key = `menus/${userId}/${merchantId}.json`;
     const body = JSON.stringify(menuData, null, 2);
