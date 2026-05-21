@@ -7,6 +7,35 @@ const path = require('path');
 const config = require('./config');
 const demoMenus = require('./ai-order/data/demo-menus.json');
 
+const ociConfig = config.oci;
+
+function ociMenuUrl(userId, merchantId) {
+  return `${ociConfig.baseUrl}/menus/${userId}/${merchantId}.json`;
+}
+
+function ociSaveMenu(userId, merchantId, menuData) {
+  return new Promise((resolve, reject) => {
+    const cp = require('child_process');
+    const proc = cp.spawn('python', ['oci_helper.py', 'upload', userId, merchantId], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: __dirname
+    });
+    let stdout = '', stderr = '';
+    proc.stdout.on('data', d => stdout += d);
+    proc.stderr.on('data', d => stderr += d);
+    proc.on('close', code => {
+      if (code === 0) {
+        try { resolve(JSON.parse(stdout)); }
+        catch(e) { reject(new Error('Parse error: ' + stdout)); }
+      } else {
+        reject(new Error('OCI helper exit ' + code + ': ' + stderr));
+      }
+    });
+    proc.on('error', reject);
+    proc.stdin.end(JSON.stringify(menuData));
+  });
+}
+
 const app = express();
 app.set('trust proxy', 'loopback');
 app.use(cors());
@@ -442,43 +471,54 @@ app.post('/api/ai-order/chat', async (req, res) => {
   }
 });
 
-// 获取菜单
-app.get('/api/ai-order/menu/list', (req, res) => {
+// 获取菜单（demo → OCI → 空）
+app.get('/api/ai-order/menu/list', async (req, res) => {
   const merchantId = req.query.merchantId;
   if (!merchantId) {
-    return res.status(400).json({ success: false, error: 'merchantId query parameter is required' });
+    return res.status(400).json({ success: false, error: 'merchantId required' });
   }
-  // 先从演示数据查找
   const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, data: demoMerchant, source: 'demo' });
   }
-  // 否则返回空菜单
+  try {
+    const ociUrl = ociMenuUrl('default', merchantId);
+    const resp = await fetch(ociUrl);
+    if (resp.ok) {
+      const data = await resp.json();
+      return res.json({ success: true, data, source: 'oci' });
+    }
+  } catch (_) {}
   res.json({ success: true, data: { id: merchantId, name: '未知商家', dishes: [] }, source: 'empty' });
 });
 
-// 添加菜品
-app.post('/api/ai-order/menu/add', (req, res) => {
-  const { merchantId, dish } = req.body;
-  // 对于演示数据，返回成功但不实际修改（演示模式）
+// 返回 OCI URL（客户端直读）
+app.get('/api/ai-order/menu/oci-url', (req, res) => {
+  const merchantId = req.query.merchantId;
+  if (!merchantId) return res.status(400).json({ success: false, error: 'merchantId required' });
   const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
   if (demoMerchant) {
-    return res.json({ success: true, message: '演示模式：菜品已添加到本地缓存', dish });
+    return res.json({ success: true, url: null, source: 'demo' });
   }
-  // 实际存储逻辑（localStorage 在前端处理）
-  res.json({ success: true, message: '菜品已添加', dish });
+  res.json({ success: true, url: ociMenuUrl('default', merchantId), source: 'oci' });
 });
 
-// 更新菜品
-app.post('/api/ai-order/menu/update', (req, res) => {
-  const { merchantId, dishId, updates } = req.body;
-  res.json({ success: true, message: '菜品已更新', dishId, updates });
-});
-
-// 删除菜品
-app.post('/api/ai-order/menu/delete', (req, res) => {
-  const { merchantId, dishId } = req.body;
-  res.json({ success: true, message: '菜品已删除', dishId });
+// 保存菜单到 OCI
+app.post('/api/ai-order/menu/save', async (req, res) => {
+  const { merchantId, menu } = req.body;
+  if (!merchantId || !menu) {
+    return res.status(400).json({ success: false, error: 'merchantId and menu required' });
+  }
+  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  if (demoMerchant) {
+    return res.json({ success: true, message: '演示模式：未保存到 OCI', source: 'demo' });
+  }
+  try {
+    const result = await ociSaveMenu('default', merchantId, menu);
+    res.json({ success: true, message: '菜单已保存到 OCI', url: result.url });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'OCI 保存失败：' + err.message });
+  }
 });
 
 const PORT = config.server.port;

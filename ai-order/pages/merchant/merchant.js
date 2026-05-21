@@ -60,20 +60,47 @@ Page({
 
   loadMenu: function() {
     var that = this;
-    var url = SERVER + '/api/ai-order/menu/list';
-    if (that.data.merchantId) {
-      url += '?merchantId=' + that.data.merchantId;
+    var merchantId = that.data.merchantId;
+    var cacheKey = 'menu-cache-' + merchantId;
+    var cached = wx.getStorageSync(cacheKey);
+    if (cached && cached.dishes) {
+      menuData = cached;
     }
+    var url = SERVER + '/api/ai-order/menu/list';
+    if (merchantId) url += '?merchantId=' + merchantId;
     wx.request({
       url: url,
       timeout: 5000,
       success: function(res) {
         if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
           menuData = res.data.data;
+          wx.setStorageSync(cacheKey, res.data.data);
         }
       },
       fail: function(err) {
         console.warn('[merchant] failed to load menu:', err);
+      }
+    });
+  },
+
+  saveMenu: function(menu) {
+    var that = this;
+    var merchantId = that.data.merchantId;
+    if (!merchantId || !menu) return;
+    wx.request({
+      url: SERVER + '/api/ai-order/menu/save',
+      method: 'POST',
+      timeout: 10000,
+      header: { 'Content-Type': 'application/json' },
+      data: { merchantId: merchantId, menu: menu },
+      success: function(res) {
+        if (res.data && res.data.success) {
+          wx.setStorageSync('menu-cache-' + merchantId, menu);
+          console.log('[merchant] menu saved to OCI');
+        }
+      },
+      fail: function(err) {
+        console.warn('[merchant] failed to save menu:', err);
       }
     });
   },

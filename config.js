@@ -57,6 +57,14 @@ const config = {
     serveDir: '/tmp/serve',
   },
 
+  // OCI 对象存储配置
+  oci: {
+    bucketName: 'wechatbot-demo',
+    region: 'ap-singapore-1',
+    namespace: 'axbfkubuntlt',
+    baseUrl: 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o',
+  },
+
   // AI 点菜专用配置
   aiOrder: {
     apiKey: process.env.AI_ORDER_KEY || process.env.OPENROUTER_KEY || null,

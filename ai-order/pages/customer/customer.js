@@ -8,6 +8,8 @@ var configLoaded = false;
 var configLoading = null;
 var menuData = null;
 
+var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
+
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
   '酸甜': { bg: 'linear-gradient(135deg, #FF8C00, #FFD700)', light: '#FFF8E1' },
@@ -111,37 +113,73 @@ Page({
   loadMenu: function() {
     var that = this;
     that.setData({ menuLoading: true });
-    var url = SERVER + '/api/ai-order/menu/list';
-    if (that.data.merchantId) {
-      url += '?merchantId=' + that.data.merchantId;
+    var merchantId = that.data.merchantId;
+
+    // 1. Try localStorage cache
+    var cacheKey = 'menu-cache-' + merchantId;
+    var cached = wx.getStorageSync(cacheKey);
+    if (cached && cached.dishes && cached.dishes.length > 0) {
+      that.setData({ menuLoading: false });
+      that._applyMenuData(cached);
+      return;
     }
+
+    // 2. Try OCI direct fetch
+    var ociUrl = OCI_BASE + '/menus/default/' + merchantId + '.json';
+    wx.request({
+      url: ociUrl,
+      timeout: 5000,
+      success: function(res) {
+        that.setData({ menuLoading: false });
+        if (res.statusCode === 200 && res.data && res.data.dishes) {
+          wx.setStorageSync(cacheKey, res.data);
+          that._applyMenuData(res.data);
+          return;
+        }
+        // fallback to server
+        that._loadMenuFromServer();
+      },
+      fail: function() {
+        that._loadMenuFromServer();
+      }
+    });
+  },
+
+  _loadMenuFromServer: function() {
+    var that = this;
+    var url = SERVER + '/api/ai-order/menu/list';
+    if (that.data.merchantId) url += '?merchantId=' + that.data.merchantId;
     wx.request({
       url: url,
       timeout: 5000,
       success: function(res) {
         that.setData({ menuLoading: false });
         if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
-          var rawMenu = res.data.data;
-          menuData = rawMenu;
-          var dishes = rawMenu.dishes || [];
-          var enriched = [];
-          for (var i = 0; i < dishes.length; i++) {
-            var d = dishes[i];
-            if (d.status !== 'online') continue;
-            d.bgStyle = (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg;
-            d.avatarChar = d.name.slice(0, 1);
-            d.imageUrl = d.image ? (d.image.indexOf('http') === 0 ? d.image : SERVER + d.image) : '';
-            enriched.push(d);
-          }
-          var result = that._rebuildGroups(enriched, that.data.groupMode);
-          that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap, allDishes: enriched });
+          that._applyMenuData(res.data.data);
         }
       },
-      fail: function(err) {
+      fail: function() {
         that.setData({ menuLoading: false });
-        console.warn('[customer] failed to load menu:', err);
+        console.warn('[customer] failed to load menu from server');
       }
     });
+  },
+
+  _applyMenuData: function(rawMenu) {
+    var that = this;
+    menuData = rawMenu;
+    var dishes = rawMenu.dishes || [];
+    var enriched = [];
+    for (var i = 0; i < dishes.length; i++) {
+      var d = dishes[i];
+      if (d.status !== 'online') continue;
+      d.bgStyle = (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg;
+      d.avatarChar = d.name.slice(0, 1);
+      d.imageUrl = d.image ? (d.image.indexOf('http') === 0 ? d.image : SERVER + d.image) : '';
+      enriched.push(d);
+    }
+    var result = that._rebuildGroups(enriched, that.data.groupMode);
+    that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap, allDishes: enriched });
   },
 
   _rebuildGroups: function(dishes, mode) {
