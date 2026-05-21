@@ -67,9 +67,9 @@ const config = {
 
   // AI 点菜专用配置
   aiOrder: {
-    apiKey: process.env.AI_ORDER_KEY || process.env.OPENROUTER_KEY || null,
-    model: process.env.AI_ORDER_MODEL || 'nvidia/nemotron-nano-12b-v2-vl:free',
-    apiUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.AI_ORDER_KEY || 'sk-4ccTLWfm7fdBtec24cQO1Us3N0fYUwwWWT2jdxomfgzPGTuB',
+    model: process.env.AI_ORDER_MODEL || 'hy3-preview',
+    apiUrl: process.env.AI_ORDER_API_URL || 'https://tokenhub.tencentmaas.com/v1',
     maxTokens: 800
   },
 
