@@ -9,7 +9,6 @@ var configLoading = null;
 var menuData = null;
 
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
-var DEMO_MERCHANT_IDS = ['demo-restaurant-1'];
 
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
@@ -89,6 +88,7 @@ Page({
     groupModeLabel: '按口味',
     groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     allDishes: [],
+    aiRecommendations: [],
     scrollToDishId: '',
     scrollToDishZone: '',
 
@@ -125,13 +125,7 @@ Page({
       return;
     }
 
-    // 2. Demo merchants: fetch from server only
-    if (DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
-      that._loadMenuFromServer();
-      return;
-    }
-
-    // 3. Non-demo: try OCI direct fetch (faster, no cold start)
+    // 2. Try OCI direct fetch (faster, no cold start)
     var ociUrl = OCI_BASE + '/menus/default/' + merchantId + '.json';
     wx.request({
       url: ociUrl,
@@ -185,6 +179,15 @@ Page({
       enriched.push(d);
     }
     var result = that._rebuildGroups(enriched, that.data.groupMode);
+    var aiRecs = that.data.aiRecommendations || [];
+    if (aiRecs.length > 0) {
+      result.tasteGroups.unshift({
+        taste: 'AI推荐',
+        dishes: aiRecs,
+        bgColor: 'linear-gradient(135deg, #667eea, #764ba2)',
+        lightColor: '#F0E6FF'
+      });
+    }
     that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap, allDishes: enriched });
   },
 
@@ -236,14 +239,51 @@ Page({
       if (modes[i].key === mode) { label = modes[i].label; break; }
     }
     var result = this._rebuildGroups(dishes, mode);
+    var aiRecs = this.data.aiRecommendations || [];
+    if (aiRecs.length > 0) {
+      result.tasteGroups.unshift({
+        taste: 'AI推荐',
+        dishes: aiRecs,
+        bgColor: 'linear-gradient(135deg, #667eea, #764ba2)',
+        lightColor: '#F0E6FF'
+      });
+    }
     this.setData({ groupMode: mode, groupModeLabel: label, tasteGroups: result.tasteGroups });
+  },
+
+  _applyAiRecommendations: function(recommendations) {
+    var that = this;
+    var allDishes = that.data.allDishes;
+    var enriched = [];
+    for (var i = 0; i < recommendations.length; i++) {
+      var rec = recommendations[i];
+      for (var j = 0; j < allDishes.length; j++) {
+        if (allDishes[j].id === rec.id) {
+          enriched.push(allDishes[j]);
+          break;
+        }
+      }
+    }
+    that.setData({ aiRecommendations: enriched });
+    var result = that._rebuildGroups(allDishes, that.data.groupMode);
+    if (enriched.length > 0) {
+      result.tasteGroups.unshift({
+        taste: 'AI推荐',
+        dishes: enriched,
+        bgColor: 'linear-gradient(135deg, #667eea, #764ba2)',
+        lightColor: '#F0E6FF'
+      });
+    }
+    that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap });
+    if (enriched.length > 0) {
+      that.setData({ scrollToDishZone: 'zone-AI推荐' });
+    }
   },
 
   onGroupModeChange: function(e) {
     var idx = e.detail.value;
     var modes = this.data.groupModes;
     if (modes && modes[idx]) {
-      this.clearHighlight();
       this._applyGroupMode(modes[idx].key);
     }
   },
@@ -284,7 +324,6 @@ Page({
 
   showMenuDirectly: function() {
     var that = this;
-    that.clearHighlight();
     var menuText = '📋 当前菜单：\n\n';
     if (menuData && menuData.dishes) {
       for (var i = 0; i < menuData.dishes.length; i++) {
@@ -305,7 +344,6 @@ Page({
 
   showLastOrder: function() {
     var that = this;
-    that.clearHighlight();
     var lastOrder = this.data.lastOrder;
     var msg = '';
     if (lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0) {
@@ -421,9 +459,7 @@ Page({
       }
     }
 
-    if (recommendations.length > 0) {
-      that.highlightDish(recommendations[0].id);
-    }
+    that._applyAiRecommendations(recommendations);
 
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply, recommendations: recommendations };
     that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
@@ -439,7 +475,7 @@ Page({
   sendMessage: function(text) {
     if (this.data.loading) return;
     var that = this;
-    this.clearHighlight();
+    this.setData({ aiRecommendations: [] });
 
     var userMsg = {
       id: ++msgIdCounter,
@@ -607,10 +643,6 @@ Page({
       chatExpanded: true
     });
     that._scrollChatBottom();
-  },
-
-  clearHighlight: function() {
-    this.setData({ highlightedDishId: null, scrollToDishId: '', scrollToDishZone: '' });
   },
 
   highlightDish: function(dishId) {
