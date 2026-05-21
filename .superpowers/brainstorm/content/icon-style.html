@@ -1,0 +1,65 @@
+<h2>主页图标设计方案</h2>
+<p class="subtitle">选择你喜欢的图标风格 - 点击选项查看效果</p>
+
+<div class="cards">
+  <div class="card" data-choice="minimalist" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 100 100" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="20" fill="#f0f0f0"/>
+        <path d="M50 25 L25 45 L25 75 L40 75 L40 55 L60 55 L60 75 L75 75 L75 45 Z" fill="#333" stroke="#333" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>极简线条</h3>
+      <p>简洁的几何线条，现代感强，适合科技类产品</p>
+    </div>
+  </div>
+  
+  <div class="card" data-choice="gradient" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 100 100" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#764ba2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#667eea;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="20" fill="url(#grad1)"/>
+        <path d="M50 30 L28 48 L28 72 L42 72 L42 58 L58 58 L58 72 L72 72 L72 48 Z" fill="white"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>渐变填充</h3>
+      <p>紫色渐变背景，与你的主题色 #764ba2 呼应</p>
+    </div>
+  </div>
+  
+  <div class="card" data-choice="flat" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 100 100" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="20" fill="#4CAF50"/>
+        <circle cx="50" cy="45" r="15" fill="white"/>
+        <rect x="35" y="60" width="30" height="12" rx="6" fill="white"/>
+        <path d="M30 75 L70 75 L70 78 L30 78 Z" fill="white"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>扁平化</h3>
+      <p>圆润友好，辨识度高，移动端友好</p>
+    </div>
+  </div>
+  
+  <div class="card" data-choice="neumorphism" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 100 100" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="20" fill="#e0e5ec"/>
+        <rect x="15" y="15" width="70" height="70" rx="15" fill="#e0e5ec" stroke="#a3b1c6" stroke-width="1"/>
+        <path d="M50 30 L32 45 L32 68 L45 68 L45 55 L55 55 L55 68 L68 68 L68 45 Z" fill="#764ba2"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>新拟态</h3>
+      <p>柔和阴影，立体感强，时尚现代</p>
+    </div>
+  </div>
+</div>

@@ -1,8 +1,8 @@
 <!--ai-order/pages/customer/customer.wxml-->
-<view class="customer-container">
+<view class="customer-container" bindtouchstart="onChatTouchStart" bindtouchmove="onChatTouchMove" bindtouchend="onChatTouchEnd">
 
   <!-- Dish grid area -->
-  <scroll-view class="dish-grid-area {{chatExpanded ? 'hidden' : ''}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
+  <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
     <view class="grid-header">
       <text class="grid-header-title">菜单</text>
       <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
@@ -53,27 +53,31 @@
     <view class="grid-bottom-spacer"></view>
   </scroll-view>
 
-  <!-- Chat area: compact bar when collapsed, full view when expanded -->
-  <view class="chat-area {{chatExpanded ? 'expanded' : 'compact'}}" catchtouchstart="onChatTouchStart" bindtouchend="onChatTouchEnd">
-    <!-- Compact mode: preview bar -->
-    <view hidden="{{chatExpanded}}" class="chat-compact-inner">
-      <view class="compact-preview" wx:if="{{lastAiContent}}">
-        <view class="compact-ai-avatar">
-          <text class="compact-ai-text">AI</text>
-        </view>
-        <text class="compact-preview-text">{{lastAiContent}}</text>
+  <!-- Chat compact bar: always in page flow, triggers drag expansion -->
+  <view class="chat-compact-inner" data-chat-trigger="1">
+    <view class="compact-preview" wx:if="{{lastAiContent}}">
+      <view class="compact-ai-avatar">
+        <text class="compact-ai-text">AI</text>
       </view>
+      <text class="compact-preview-text">{{lastAiContent}}</text>
     </view>
+    <view class="compact-hint" wx:if="{{!lastAiContent}}">
+      <text class="compact-hint-icon">💬</text>
+      <text class="compact-hint-text">点我咨询菜品</text>
+    </view>
+  </view>
 
-    <!-- Expanded mode: full chat with scroll and collapse bar -->
-    <view hidden="{{!chatExpanded}}" class="chat-expanded-inner">
-      <view class="chat-expand-header" catchtouchstart="cancelCollapse" catchtap="collapseChat">
+  <!-- Chat expanded overlay: fixed, slides from below -->
+  <view class="chat-area {{chatExpanded ? 'expanded' : ''}}" 
+        style="transform: translateY({{chatSlideY}}); transition: {{chatSliding ? 'none' : 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)'}}">
+    <view class="chat-expanded-inner">
+      <view class="chat-expand-header" catchtap="collapseChat">
         <view class="collapse-bar">
           <text class="collapse-arrow">▼</text>
           <text class="collapse-text">收起</text>
         </view>
       </view>
-      <scroll-view class="chat-scroll-view" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{chatScrollToId}}" scroll-with-animation bindtouchend="onChatTouchEnd">
+      <scroll-view class="chat-scroll-view" scroll-y show-scrollbar="{{false}}" scroll-top="{{chatUseScrollTop ? chatScrollTop : ''}}" scroll-into-view="{{!chatUseScrollTop ? chatScrollToId : ''}}">
         <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
           <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
             <view class="ai-avatar-mini">

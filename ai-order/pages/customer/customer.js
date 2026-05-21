@@ -93,6 +93,10 @@ Page({
     chatExpanded: false,
     chatScrollToId: '',
     chatPeeking: false,
+    chatSlideY: '100%',
+    chatSliding: false,
+    chatScrollTop: 0,
+    chatUseScrollTop: false,
     lastAiContent: '',
 
     quickReplies: ['有什么推荐', '热量低的食品', '辣的'],
@@ -824,26 +828,75 @@ Page({
   },
 
   expandChat: function() {
-    this.setData({ chatExpanded: true });
+    this.setData({
+      chatExpanded: true,
+      chatSlideY: '0%',
+      chatSliding: false
+    });
     var that = this;
     setTimeout(function() { that._scrollChatBottom(); }, 200);
   },
 
   collapseChat: function() {
-    this.setData({ chatExpanded: false });
+    this.setData({
+      chatExpanded: false,
+      chatSlideY: '100%',
+      chatSliding: false
+    });
   },
 
-  onChatTouchStart: function() {
-    this.setData({ chatExpanded: true });
+  onChatTouchStart: function(e) {
+    if (!e.target || !e.target.dataset || !e.target.dataset.chatTrigger) return;
+    this._dragActive = true;
+    this._dragStartY = e.touches[0].clientY;
+    this._maxSlide = 0;
+
+    if (!this._pageHeight) {
+      this._pageHeight = 750;
+      var that = this;
+      wx.getSystemInfo({ success: function(r) { that._pageHeight = r.windowHeight; } });
+    }
+    var threshold = this._pageHeight * 0.75;
+    if (threshold <= 0) threshold = 500;
+    this._slideThreshold = threshold;
+
+    this.setData({
+      chatUseScrollTop: true,
+      chatSliding: true,
+      chatScrollTop: 99999
+    });
+  },
+
+  onChatTouchMove: function(e) {
+    if (!this._dragActive) return;
+    var deltaY = this._dragStartY - e.touches[0].clientY;
+    var threshold = this._slideThreshold || 500;
+
+    // Slide: track maximum slide (never reduces once reached)
+    if (deltaY > this._maxSlide) {
+      this._maxSlide = Math.min(deltaY, threshold);
+    }
+    var pct = (1 - this._maxSlide / threshold) * 100;
+    var updates = { chatSlideY: Math.max(0, pct) + '%' };
+
+    // Scroll: both up and down once fully expanded
+    var scrollTop = deltaY - threshold;
+    if (scrollTop > 0 || this._maxSlide >= threshold) {
+      updates.chatScrollTop = Math.max(0, scrollTop);
+    }
+    this.setData(updates);
   },
 
   onChatTouchEnd: function() {
-    if (this._collapseTimer) clearTimeout(this._collapseTimer);
-    this.setData({ chatExpanded: false });
-  },
-
-  cancelCollapse: function() {
-    if (this._collapseTimer) clearTimeout(this._collapseTimer);
+    if (!this._dragActive) return;
+    this._dragActive = false;
+    this.setData({
+      chatSliding: false,
+      chatSlideY: '100%',
+      chatUseScrollTop: false,
+      chatScrollTop: 0
+    });
+    this._scrollChatBottom();
   },
 
   onChatBlur: function() {
@@ -855,7 +908,8 @@ Page({
   _scrollChatBottom: function() {
     var that = this;
     setTimeout(function() {
-      that.setData({ chatScrollToId: 'chat-bottom' });
+      if (that._dragActive) return;
+      that.setData({ chatScrollToId: 'chat-bottom', chatUseScrollTop: false });
     }, 100);
   },
 
