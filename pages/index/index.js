@@ -53,11 +53,11 @@ Page({
   },
 
   _getIconSrc: function () {
-    function svg(str) { return 'data:image/svg+xml,' + encodeURIComponent(str); }
+    function s(str) { return 'data:image/svg+xml,' + encodeURIComponent(str); }
     return {
-      learn: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="4" fill="#fff"/><rect x="9" y="14" width="11" height="14" rx="2" fill="#C4B5FD"/><rect x="28" y="14" width="11" height="14" rx="2" fill="#C4B5FD"/><line x1="24" y1="10" x2="24" y2="38" stroke="#C4B5FD" stroke-width="3"/></svg>'),
-      tool: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="6" y="12" width="36" height="26" rx="4" fill="#fff"/><path d="M6 20 L14 20 L17 16 L31 16 L34 20 L42 20" fill="#FBCFE8" opacity=".5"/><line x1="14" y1="26" x2="34" y2="26" stroke="#FBCFE8" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="31" x2="28" y2="31" stroke="#FBCFE8" stroke-width="3" stroke-linecap="round"/></svg>'),
-      order: svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M24 4 L28 20 L44 24 L28 28 L24 44 L20 28 L4 24 L20 20 Z" fill="#fff"/><circle cx="36" cy="10" r="4.5" fill="#fff" opacity=".5"/><circle cx="42" cy="37" r="3.5" fill="#fff" opacity=".35"/></svg>')
+      learn: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" fill="#fff"/><rect x="11" y="3" width="2" height="18" fill="rgba(255,255,255,0.3)"/></svg>'),
+      tool: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5" fill="#fff"/><path d="M16 2 L16 7 L19 7" fill="rgba(255,255,255,0.3)"/><rect x="8" y="10" width="8" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/><rect x="8" y="13" width="6" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/><rect x="8" y="16" width="7" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/></svg>'),
+      order: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="#fff"/></svg>')
     };
   },
 

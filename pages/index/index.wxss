@@ -248,8 +248,8 @@
 }
 
 .icon-svg {
-  width: 56rpx;
-  height: 56rpx;
+  width: 64rpx;
+  height: 64rpx;
   display: block;
 }
 
