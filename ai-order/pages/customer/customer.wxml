@@ -51,7 +51,7 @@
       <text class="hint-line"></text>
     </view>
 
-    <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
+    <view wx:for="{{messages}}" wx:key="id" wx:if="{{chatExpanded || index >= messages.length - 2}}" class="msg-wrapper" id="msg-{{item.id}}">
       <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
         <view class="ai-avatar-mini">
           <text class="ai-avatar-text">AI</text>

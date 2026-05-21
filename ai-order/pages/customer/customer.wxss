@@ -210,15 +210,7 @@
   transition: all 0.3s ease;
 }
 
-.chat-area.compact .msg-wrapper {
-  display: none;
-}
-.chat-area.compact .msg-wrapper:nth-last-child(-n+2 of .msg-wrapper) {
-  display: flex;
-}
-.chat-area.expanded .msg-wrapper {
-  display: flex;
-}
+/* compact/expanded visibility controlled via wx:if in WXML */
 
 .chat-collapse-hint {
   display: flex;
