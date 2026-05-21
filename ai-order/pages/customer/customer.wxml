@@ -128,6 +128,9 @@
   <view class="input-section">
     <view class="input-bar">
       <input class="msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" bindfocus="expandChat" bindblur="onChatBlur" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
+      <view class="mic-btn {{isRecording ? 'recording' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
+        <text class="icon-mic">🎤</text>
+      </view>
       <view class="send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
         <text class="icon-send">↑</text>
       </view>

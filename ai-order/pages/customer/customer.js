@@ -16,6 +16,9 @@ var wsReconnectCount = 0;
 var wsReconnectTimer = null;
 var wsHeartbeatTimer = null;
 
+var plugin = null;
+var recordRecoManager = null;
+
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
   '酸甜': { bg: 'linear-gradient(135deg, #FF8C00, #FFD700)', light: '#FFF8E1' },
@@ -71,6 +74,7 @@ Page({
     inputText: '',
     loading: false,
     hasInput: false,
+    isRecording: false,
     merchantId: '',
 
     tasteGroups: [],
@@ -116,6 +120,25 @@ Page({
     initOpenRouter().catch(function(err) {
       console.warn('[customer] direct mode unavailable, will use proxy fallback:', err);
     });
+
+    if (!plugin) {
+      try {
+        plugin = requirePlugin('WechatSI');
+        recordRecoManager = plugin.getRecordRecognitionManager();
+        recordRecoManager.onStop = function(res) {
+          that.setData({ isRecording: false });
+          if (res.result) {
+            that.setData({ inputText: res.result, hasInput: true, chatExpanded: true });
+          }
+        };
+        recordRecoManager.onError = function(res) {
+          that.setData({ isRecording: false });
+          console.error('[voice] recognition error:', res);
+        };
+      } catch (e) {
+        console.warn('[voice] WechatSI plugin not available:', e);
+      }
+    }
   },
 
   onHide: function() {
@@ -455,6 +478,22 @@ Page({
     if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
     wsReconnectCount = 999;
     if (wsTask) { try { wsTask.close({}); } catch (_) {} wsTask = null; }
+  },
+
+  _startVoiceInput: function() {
+    if (this.data.loading) return;
+    if (!recordRecoManager) {
+      wx.showToast({ title: '语音识别不可用', icon: 'none' });
+      return;
+    }
+    this.setData({ isRecording: true });
+    recordRecoManager.start({ duration: 60000, lang: 'zh_CN' });
+  },
+
+  _stopVoiceInput: function() {
+    if (!this.data.isRecording) return;
+    this.setData({ isRecording: false });
+    if (recordRecoManager) recordRecoManager.stop();
   },
 
   _onWsMessage: function(res) {

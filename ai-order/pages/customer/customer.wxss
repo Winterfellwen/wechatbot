@@ -481,6 +481,38 @@
   line-height: 1;
 }
 
+.mic-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8rpx;
+  background: #F2F2F7;
+  transition: all 0.2s ease;
+}
+
+.mic-btn.recording {
+  background: linear-gradient(135deg, #f5576c, #ff6b81);
+  animation: micPulse 0.8s ease-in-out infinite;
+}
+
+.icon-mic {
+  font-size: 30rpx;
+  line-height: 1;
+}
+
+.mic-btn.recording .icon-mic {
+  color: #FFFFFF;
+}
+
+@keyframes micPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,87,108,0.4); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 12rpx rgba(245,87,108,0); }
+}
+
 /* ====== Cart bar ====== */
 .cart-bar {
   display: flex;
