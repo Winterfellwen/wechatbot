@@ -16,13 +16,27 @@ function ociMenuUrl(userId, merchantId) {
 function getOciClient() {
   const common = require('oci-common');
   const os = require('oci-objectstorage');
-  let provider;
-  try {
-    provider = new common.ConfigFileAuthenticationDetailsProvider(`${require('os').homedir()}/.oci/config`);
-  } catch (_) {
-    provider = new common.ConfigFileAuthenticationDetailsProvider('./oci-config');
+  const fs = require('fs');
+  const home = require('os').homedir();
+  // Try config file (default or env var override), then project root, then env vars
+  let configPaths = ['./oci-config'];
+  if (process.env.OCI_CONFIG_FILE) configPaths.unshift(process.env.OCI_CONFIG_FILE);
+  configPaths.unshift(home + '/.oci/config');
+  for (const p of configPaths) {
+    try { if (fs.existsSync(p)) return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider(p) }); } catch (_) {}
   }
-  return new os.ObjectStorageClient({ authenticationDetailsProvider: provider });
+  // Fallback: env vars
+  const pk = process.env.OCI_PRIVATE_KEY;
+  if (process.env.OCI_USER_OCID && process.env.OCI_TENANCY_OCID && process.env.OCI_FINGERPRINT && pk) {
+    return new os.ObjectStorageClient({
+      authenticationDetailsProvider: new common.SimpleAuthenticationDetailsProvider(
+        process.env.OCI_TENANCY_OCID, process.env.OCI_USER_OCID,
+        process.env.OCI_FINGERPRINT, pk, null,
+        process.env.OCI_REGION || 'ap-singapore-1'
+      )
+    });
+  }
+  throw new Error('OCI credentials not configured: set OCI_CONFIG_FILE, OCI_USER_OCID+OCI_TENANCY_OCID+OCI_FINGERPRINT+OCI_PRIVATE_KEY, or place ~/.oci/config or ./oci-config');
 }
 
 function ociSaveMenu(userId, merchantId, menuData) {
