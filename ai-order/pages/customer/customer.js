@@ -74,6 +74,7 @@ Page({
     inputText: '',
     loading: false,
     hasInput: false,
+    inputMode: 'voice',
     isRecording: false,
     merchantId: '',
 
@@ -128,7 +129,7 @@ Page({
         recordRecoManager.onStop = function(res) {
           that.setData({ isRecording: false });
           if (res.result) {
-            that.setData({ inputText: res.result, hasInput: true, chatExpanded: true });
+            that.setData({ inputText: res.result, hasInput: true, chatExpanded: true, inputMode: 'text' });
           }
         };
         recordRecoManager.onError = function(res) {
@@ -494,6 +495,14 @@ Page({
     if (!this.data.isRecording) return;
     this.setData({ isRecording: false });
     if (recordRecoManager) recordRecoManager.stop();
+  },
+
+  _switchToText: function() {
+    this.setData({ inputMode: 'text' });
+  },
+
+  _switchToVoice: function() {
+    this.setData({ inputMode: 'voice' });
   },
 
   _onWsMessage: function(res) {

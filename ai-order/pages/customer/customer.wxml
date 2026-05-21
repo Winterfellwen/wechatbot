@@ -126,13 +126,24 @@
 
   <!-- Input bar -->
   <view class="input-section">
-    <view class="input-bar">
-      <input class="msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" bindfocus="expandChat" bindblur="onChatBlur" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
-      <view class="mic-btn {{isRecording ? 'recording' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
-        <text class="icon-mic">🎤</text>
+    <view wx:if="{{inputMode === 'voice'}}" class="voice-input-area">
+      <view class="mic-btn-large {{isRecording ? 'recording' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
+        <text class="icon-mic-large">🎤</text>
+        <text class="mic-label">{{isRecording ? '正在聆听...' : '点击说话'}}</text>
       </view>
-      <view class="send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
-        <text class="icon-send">↑</text>
+      <view class="mode-toggle mode-toggle-corner" catchtap="_switchToText">
+        <text class="mode-toggle-label">键盘输入</text>
+      </view>
+    </view>
+    <view wx:else class="text-input-area">
+      <view class="input-bar">
+        <input class="msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" bindfocus="expandChat" bindblur="onChatBlur" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
+        <view class="send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
+          <text class="icon-send">↑</text>
+        </view>
+      </view>
+      <view class="mode-toggle" catchtap="_switchToVoice">
+        <text class="mode-toggle-label">语音输入</text>
       </view>
     </view>
   </view>

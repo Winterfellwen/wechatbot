@@ -481,31 +481,74 @@
   line-height: 1;
 }
 
-.mic-btn {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
+.voice-input-area {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0 10rpx;
+  position: relative;
+}
+
+.mic-btn-large {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: #F2F2F7;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  margin-right: 8rpx;
-  background: #F2F2F7;
   transition: all 0.2s ease;
 }
 
-.mic-btn.recording {
+.mic-btn-large.recording {
   background: linear-gradient(135deg, #f5576c, #ff6b81);
   animation: micPulse 0.8s ease-in-out infinite;
 }
 
-.icon-mic {
-  font-size: 30rpx;
+.icon-mic-large {
+  font-size: 56rpx;
   line-height: 1;
+  margin-bottom: 6rpx;
 }
 
-.mic-btn.recording .icon-mic {
+.mic-btn-large.recording .icon-mic-large {
   color: #FFFFFF;
+}
+
+.mic-label {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.mic-btn-large.recording .mic-label {
+  color: #FFFFFF;
+}
+
+.text-input-area {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.mode-toggle {
+  align-self: flex-end;
+  padding: 8rpx 12rpx 4rpx;
+}
+
+.mode-toggle-corner {
+  position: absolute;
+  bottom: 4rpx;
+  right: 0;
+}
+
+.mode-toggle-label {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.mode-toggle-label:active {
+  color: #f5576c;
 }
 
 @keyframes micPulse {
