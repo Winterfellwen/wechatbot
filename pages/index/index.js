@@ -60,15 +60,11 @@ Page({
 
   handleEntryTap: function (e) {
     var type = e.currentTarget.dataset.type;
-    if (type === 'japanese') {
-      wx.navigateTo({ url: '/japanese/pages/learn/learn' });
-    } else if (type === 'german') {
-      wx.navigateTo({ url: '/german/pages/learn/learn' });
-    } else if (type === 'word') {
-      wx.navigateTo({ url: '/word/pages/index/index' });
-    } else if (type === 'pdf') {
-      wx.navigateTo({ url: '/pdf/pages/index/index' });
-    } else if (type === 'teacher') {
+    if (type === 'learn-hub') {
+      wx.navigateTo({ url: '/pages/learnhub/learnhub' });
+    } else if (type === 'tool-hub') {
+      wx.navigateTo({ url: '/pages/toolhub/toolhub' });
+    } else if (type === 'assistant') {
       wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
     } else if (type === 'ai-order') {
       wx.navigateTo({ url: '/ai-order/pages/index/index' });

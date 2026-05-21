@@ -1,7 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/user/user"
+    "pages/user/user",
+    "pages/learnhub/learnhub",
+    "pages/toolhub/toolhub"
   ],
   "lazyCodeLoading": "requiredComponents",
   "plugins": {

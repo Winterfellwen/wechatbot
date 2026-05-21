@@ -1,0 +1,26 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-icon">🛠️</text>
+    <text class="hero-title">办公Agent</text>
+    <text class="hero-desc">选择你需要的办公工具</text>
+  </view>
+
+  <view class="grid">
+    <view class="card card-word" bindtap="handleEntryTap" data-type="word" wx:for="{{entries}}" wx:for-item="entry" wx:key="type">
+      <view class="card-icon-wrap {{entry.bgClass}}">
+        <block wx:if="{{entry.type == 'word'}}">
+          <view class="icon-word-body">
+            <text class="icon-word-letter">W</text>
+          </view>
+        </block>
+        <image wx:else class="entry-icon" src="{{entry.icon}}" mode="aspectFit"></image>
+      </view>
+      <text class="card-title">{{entry.title}}</text>
+      <text class="card-desc">{{entry.desc}}</text>
+    </view>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">更多办公工具即将推出</text>
+  </view>
+</view>
