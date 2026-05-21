@@ -1,8 +1,18 @@
 <!--ai-order/pages/customer/customer.wxml-->
 <view class="customer-container">
 
-  <!-- Dish grid area ~60% -->
+  <!-- Dish grid area -->
   <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- Group mode switcher -->
+    <view class="grid-header">
+      <text class="grid-header-title">菜单</text>
+      <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
+        <view class="group-picker">
+          <text class="group-picker-label">{{groupModeLabel}}</text>
+          <text class="group-picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
     <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone">
       <view class="taste-header">
         <view class="taste-indicator" style="background: {{item.bgColor}}"></view>
@@ -30,23 +40,6 @@
     </view>
     <view class="grid-bottom-spacer"></view>
   </scroll-view>
-
-  <!-- Filter chips -->
-  <view class="filter-bar">
-    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="filter-scroll">
-      <view wx:for="{{FILTER_CATEGORIES}}" wx:key="index" class="filter-chip {{filterCategory === item.key ? 'active' : ''}}" catchtap="onFilterCategory" data-key="{{item.key}}">
-        <text>{{item.label}}</text>
-      </view>
-      <view class="filter-divider"></view>
-      <view wx:for="{{FILTER_PRICES}}" wx:key="index" class="filter-chip {{filterPrice === item.key ? 'active' : ''}}" catchtap="onFilterPrice" data-key="{{item.key}}">
-        <text>{{item.label}}</text>
-      </view>
-      <view class="filter-divider"></view>
-      <view wx:for="{{FILTER_TASTES}}" wx:key="index" class="filter-chip {{filterTaste === item.key ? 'active' : ''}}" catchtap="onFilterTaste" data-key="{{item.key}}">
-        <text>{{item.label}}</text>
-      </view>
-    </scroll-view>
-  </view>
 
   <!-- Quick chips -->
   <view class="quick-chips">

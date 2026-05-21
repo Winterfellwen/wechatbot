@@ -13,7 +13,40 @@
   flex: 0 0 auto;
   max-height: 40vh;
   background: #FFFFFF;
-  padding: 16rpx 0 0;
+  padding: 0 0 0;
+}
+
+.grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 24rpx 8rpx;
+}
+
+.grid-header-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.group-picker {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  background: #F2F2F7;
+  border-radius: 24rpx;
+}
+
+.group-picker-label {
+  font-size: 24rpx;
+  color: #f5576c;
+  font-weight: 600;
+}
+
+.group-picker-arrow {
+  font-size: 18rpx;
+  color: #f5576c;
 }
 
 .taste-zone {
@@ -159,49 +192,6 @@
 .grid-loading-text {
   font-size: 26rpx;
   color: #999;
-}
-
-/* ====== Filter bar ====== */
-.filter-bar {
-  flex-shrink: 0;
-  padding: 4rpx 16rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid rgba(0,0,0,0.04);
-}
-
-.filter-scroll {
-  display: flex;
-  flex-direction: row;
-  white-space: nowrap;
-}
-
-.filter-chip {
-  display: inline-flex;
-  padding: 8rpx 20rpx;
-  border-radius: 24rpx;
-  margin-right: 8rpx;
-  font-size: 22rpx;
-  color: #666;
-  background: #F2F2F7;
-  flex-shrink: 0;
-}
-
-.filter-chip.active {
-  background: linear-gradient(135deg, #f5576c, #ff6b81);
-  color: #FFFFFF;
-  font-weight: 600;
-}
-
-.filter-chip:active {
-  opacity: 0.8;
-}
-
-.filter-divider {
-  width: 1rpx;
-  height: 28rpx;
-  background: #E0E0E0;
-  margin: auto 8rpx;
-  flex-shrink: 0;
 }
 
 /* ====== Quick chips ====== */

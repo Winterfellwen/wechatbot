@@ -16,9 +16,19 @@ var TASTE_CONFIG = {
 };
 var TASTE_DEFAULT = { bg: 'linear-gradient(135deg, #A8A8A8, #D0D0D0)', light: '#F5F5F5' };
 
-var FILTER_CATEGORIES = [{ key: '', label: '全部' }, { key: '主食', label: '主食' }, { key: '菜', label: '菜' }, { key: '汤', label: '汤' }];
-var FILTER_PRICES = [{ key: '', label: '全部' }, { key: 'low', label: '~¥20' }, { key: 'mid', label: '¥20~¥50' }, { key: 'high', label: '¥50+' }];
-var FILTER_TASTES = [{ key: '', label: '全部' }, { key: '麻辣', label: '麻辣' }, { key: '酸甜', label: '酸甜' }, { key: '咸甜', label: '咸甜' }, { key: '清淡', label: '清淡' }];
+var GROUP_CONFIGS = {
+  category: {
+    '主食': { bg: 'linear-gradient(135deg, #FFD700, #FFA500)', light: '#FFF8E1' },
+    '菜': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
+    '汤': { bg: 'linear-gradient(135deg, #4A90D9, #7EC8E3)', light: '#E8F4FD' }
+  },
+  price: {
+    '~¥20': { bg: 'linear-gradient(135deg, #66CDAA, #90EE90)', light: '#E8F5E9' },
+    '¥20~¥50': { bg: 'linear-gradient(135deg, #FF8C00, #FFB74D)', light: '#FFF3E0' },
+    '¥50+': { bg: 'linear-gradient(135deg, #AB47BC, #CE93D8)', light: '#F3E5F5' }
+  }
+};
+var CATEGORY_DEFAULT = { bg: 'linear-gradient(135deg, #A8A8A8, #D0D0D0)', light: '#F5F5F5' };
 
 function initOpenRouter() {
   if (openRouterConfig && configLoaded) return Promise.resolve();
@@ -71,14 +81,11 @@ Page({
 
     quickReplies: ['看看菜单', '有什么推荐', '今天吃啥', '辣的'],
 
-    // Filters
-    filterCategory: '',
-    filterPrice: '',
-    filterTaste: '',
+    // Group mode
+    groupMode: 'taste',
+    groupModeLabel: '按口味',
+    groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     allDishes: [],
-    FILTER_CATEGORIES: [{ key: '', label: '全部' }, { key: '主食', label: '主食' }, { key: '菜', label: '菜' }, { key: '汤', label: '汤' }],
-    FILTER_PRICES: [{ key: '', label: '全部' }, { key: 'low', label: '~¥20' }, { key: 'mid', label: '¥20~¥50' }, { key: 'high', label: '¥50+' }],
-    FILTER_TASTES: [{ key: '', label: '全部' }, { key: '麻辣', label: '麻辣' }, { key: '酸甜', label: '酸甜' }, { key: '咸甜', label: '咸甜' }, { key: '清淡', label: '清淡' }],
 
     lastOrder: null,
   },
@@ -115,29 +122,16 @@ Page({
           var rawMenu = res.data.data;
           menuData = rawMenu;
           var dishes = rawMenu.dishes || [];
-          var groups = {};
-          var gradientMap = {};
+          var enriched = [];
           for (var i = 0; i < dishes.length; i++) {
             var d = dishes[i];
             if (d.status !== 'online') continue;
-            var taste = d.taste || '其他';
-            if (!groups[taste]) groups[taste] = [];
-            var tc = TASTE_CONFIG[taste] || TASTE_DEFAULT;
-            d.bgStyle = tc.bg;
+            d.bgStyle = (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg;
             d.avatarChar = d.name.slice(0, 1);
-            groups[taste].push(d);
-            gradientMap[d.id] = tc.bg;
+            enriched.push(d);
           }
-          var tasteGroups = [];
-          var tasteOrder = ['麻辣', '酸甜', '咸甜', '清淡', '其他'];
-          for (var t = 0; t < tasteOrder.length; t++) {
-            var key = tasteOrder[t];
-            if (groups[key] && groups[key].length > 0) {
-              var tc = TASTE_CONFIG[key] || TASTE_DEFAULT;
-              tasteGroups.push({ taste: key, dishes: groups[key], bgColor: tc.bg, lightColor: tc.light });
-            }
-          }
-          that.setData({ tasteGroups: tasteGroups, dishGradientMap: gradientMap, allDishes: dishes });
+          var result = that._rebuildGroups(enriched, that.data.groupMode);
+          that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap, allDishes: enriched });
         }
       },
       fail: function(err) {
@@ -147,59 +141,63 @@ Page({
     });
   },
 
-  _rebuildTasteGroups: function(dishes) {
+  _rebuildGroups: function(dishes, mode) {
+    mode = mode || this.data.groupMode;
     var groups = {};
     var gradientMap = {};
+    var config = mode === 'taste' ? TASTE_CONFIG : GROUP_CONFIGS[mode] || {};
+    var defaultCfg = mode === 'taste' ? TASTE_DEFAULT : CATEGORY_DEFAULT;
+
     for (var i = 0; i < dishes.length; i++) {
       var d = dishes[i];
       if (d.status !== 'online') continue;
-      var taste = d.taste || '其他';
-      if (!groups[taste]) groups[taste] = [];
-      groups[taste].push(d);
-      gradientMap[d.id] = d.bgStyle;
+      var key = '';
+      if (mode === 'taste') {
+        key = d.taste || '其他';
+      } else if (mode === 'category') {
+        key = d.category || '其他';
+      } else if (mode === 'price') {
+        var p = d.price;
+        key = p <= 20 ? '~¥20' : (p <= 50 ? '¥20~¥50' : '¥50+');
+      }
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(d);
+      gradientMap[d.id] = (config[key] || defaultCfg).bg;
     }
-    var tasteGroups = [];
-    var tasteOrder = ['麻辣', '酸甜', '咸甜', '清淡', '其他'];
-    for (var t = 0; t < tasteOrder.length; t++) {
-      var key = tasteOrder[t];
+
+    var orderedKeys = [];
+    if (mode === 'taste') orderedKeys = ['麻辣', '酸甜', '咸甜', '清淡', '其他'];
+    else if (mode === 'category') orderedKeys = ['主食', '菜', '汤', '其他'];
+    else if (mode === 'price') orderedKeys = ['~¥20', '¥20~¥50', '¥50+'];
+
+    var result = [];
+    for (var t = 0; t < orderedKeys.length; t++) {
+      var key = orderedKeys[t];
       if (groups[key] && groups[key].length > 0) {
-        var tc = TASTE_CONFIG[key] || TASTE_DEFAULT;
-        tasteGroups.push({ taste: key, dishes: groups[key], bgColor: tc.bg, lightColor: tc.light });
+        var cfg = config[key] || defaultCfg;
+        result.push({ taste: key, dishes: groups[key], bgColor: cfg.bg, lightColor: cfg.light });
       }
     }
-    return { tasteGroups: tasteGroups, dishGradientMap: gradientMap };
+    return { tasteGroups: result, dishGradientMap: gradientMap };
   },
 
-  _applyFilters: function() {
+  _applyGroupMode: function(mode) {
     var dishes = this.data.allDishes;
-    var cat = this.data.filterCategory;
-    var price = this.data.filterPrice;
-    var taste = this.data.filterTaste;
-    var filtered = [];
-    for (var i = 0; i < dishes.length; i++) {
-      var d = dishes[i];
-      if (cat && d.category !== cat) continue;
-      if (taste && d.taste !== taste) continue;
-      if (price === 'low' && d.price >= 20) continue;
-      if (price === 'mid' && (d.price < 20 || d.price > 50)) continue;
-      if (price === 'high' && d.price <= 50) continue;
-      filtered.push(d);
+    var label = '';
+    var modes = this.data.groupModes;
+    for (var i = 0; i < modes.length; i++) {
+      if (modes[i].key === mode) { label = modes[i].label; break; }
     }
-    var result = this._rebuildTasteGroups(filtered);
-    this.setData({ tasteGroups: result.tasteGroups });
+    var result = this._rebuildGroups(dishes, mode);
+    this.setData({ groupMode: mode, groupModeLabel: label, tasteGroups: result.tasteGroups });
   },
 
-  onFilterCategory: function(e) {
-    this.setData({ filterCategory: e.currentTarget.dataset.key });
-    this._applyFilters();
-  },
-  onFilterPrice: function(e) {
-    this.setData({ filterPrice: e.currentTarget.dataset.key });
-    this._applyFilters();
-  },
-  onFilterTaste: function(e) {
-    this.setData({ filterTaste: e.currentTarget.dataset.key });
-    this._applyFilters();
+  onGroupModeChange: function(e) {
+    var idx = e.detail.value;
+    var modes = this.data.groupModes;
+    if (modes && modes[idx]) {
+      this._applyGroupMode(modes[idx].key);
+    }
   },
 
   addWelcomeMessage: function() {
