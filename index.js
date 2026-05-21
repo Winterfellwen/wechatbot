@@ -18,9 +18,9 @@ function getOciClient() {
   const os = require('oci-objectstorage');
   let provider;
   try {
-    provider = common.ConfigFileAuthenticationDetailsProvider(`${require('os').homedir()}/.oci/config`);
+    provider = new common.ConfigFileAuthenticationDetailsProvider(`${require('os').homedir()}/.oci/config`);
   } catch (_) {
-    provider = common.ConfigFileAuthenticationDetailsProvider('./oci-config');
+    provider = new common.ConfigFileAuthenticationDetailsProvider('./oci-config');
   }
   return new os.ObjectStorageClient({ authenticationDetailsProvider: provider });
 }
