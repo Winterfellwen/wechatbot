@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const demoMenus = require('./ai-order/data/demo-menus.json');
+const http = require('http');
+const { WebSocketServer } = require('ws');
 
 const ociConfig = config.oci;
 
@@ -554,10 +556,143 @@ app.post('/api/ai-order/menu/save', async (req, res) => {
   }
 });
 
+async function handleChatStream(ws, msg) {
+  try {
+    const { messages, mode, menuData } = msg;
+    const aiOrderConfig = config.aiOrder;
+
+    if (!aiOrderConfig || !aiOrderConfig.apiKey) {
+      ws.send(JSON.stringify({ type: 'error', message: 'AI Order API key not configured' }));
+      ws.isBusy = false;
+      return;
+    }
+
+    let systemPrompt = '';
+    if (mode === 'merchant') {
+      systemPrompt = '你是餐厅菜单管理助手。帮助商家添加、删除、更新菜品。必需信息：菜品名、价格。可选信息：图片、描述、口味、辣度(0-5)。添加/删除/更新前需要商家确认。用中文回答，语气专业友好。';
+    } else {
+      systemPrompt = '你是智能点菜助手。你只能从下方提供的当前菜单中推荐菜品，绝不能推荐菜单外的菜品。根据用户口味偏好推荐菜品，推荐时要说明推荐理由。用户确认后生成虚拟订单。用中文回答，语气热情友好。';
+    }
+
+    if (menuData && menuData.dishes) {
+      const onlineDishes = menuData.dishes.filter(d => d.status === 'online');
+      systemPrompt += '\n\n当前菜单：' + JSON.stringify(onlineDishes.map(d => ({
+        name: d.name, price: d.price, taste: d.taste, spicyLevel: d.spicyLevel, description: d.description
+      })));
+    }
+
+    const apiMessages = [{ role: 'system', content: systemPrompt }].concat(messages || []);
+    const requestBody = {
+      model: aiOrderConfig.model,
+      messages: apiMessages,
+      max_tokens: aiOrderConfig.maxTokens,
+      stream: true
+    };
+
+    const response = await fetchWithTimeout(aiOrderConfig.apiUrl + '/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${aiOrderConfig.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
+        'X-Title': 'AIOrderBot'
+      },
+      body: JSON.stringify(requestBody)
+    }, 30000);
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => 'unknown');
+      ws.send(JSON.stringify({ type: 'error', message: `OpenRouter error ${response.status}: ${errText}` }));
+      ws.isBusy = false;
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullContent = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const payload = trimmed.slice(6).trim();
+        if (payload === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(payload);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullContent += delta;
+            ws.send(JSON.stringify({ type: 'token', content: delta }));
+          }
+        } catch (_) { /* skip malformed SSE */ }
+      }
+    }
+
+    // Extract dish recommendations by matching dish names in full content
+    const recommendations = [];
+    if (menuData && menuData.dishes) {
+      const matched = {};
+      for (const dish of menuData.dishes) {
+        if (dish.status !== 'online') continue;
+        if (fullContent.includes(dish.name) && !matched[dish.id]) {
+          recommendations.push({ id: dish.id, name: dish.name, price: dish.price, taste: dish.taste, spicyLevel: dish.spicyLevel, category: dish.category });
+          matched[dish.id] = true;
+        }
+      }
+    }
+
+    ws.send(JSON.stringify({ type: 'done', content: fullContent, recommendations }));
+  } catch (err) {
+    console.error('WebSocket chat error:', err);
+    ws.send(JSON.stringify({ type: 'error', message: err.message }));
+  } finally {
+    ws.isBusy = false;
+  }
+}
+
 const PORT = config.server.port;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+wss.on('connection', (ws) => {
+  console.log('WebSocket connected');
+  ws.isBusy = false;
+  let idleTimer = setTimeout(() => { ws.terminate(); }, 30000);
+
+  ws.on('message', (raw) => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { ws.terminate(); }, 30000);
+    try {
+      const msg = JSON.parse(raw.toString());
+      if (msg.type === 'ping') {
+        ws.send(JSON.stringify({ type: 'pong' }));
+        return;
+      }
+      if (msg.type === 'chat') {
+        if (ws.isBusy) {
+          ws.send(JSON.stringify({ type: 'error', message: '上一轮对话尚未完成，请稍候' }));
+          return;
+        }
+        ws.isBusy = true;
+        handleChatStream(ws, msg);
+        return;
+      }
+    } catch (_) { /* ignore invalid messages */ }
+  });
+
+  ws.on('close', () => { clearTimeout(idleTimer); });
+  ws.on('error', () => { clearTimeout(idleTimer); });
 });
+
+server.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
 
 // Keep both services warm: self-ping (Node API) + Python service keepalive
 const SELF_URL = process.env.RENDER_EXTERNAL_URL || config.frontend.apiBaseUrl;

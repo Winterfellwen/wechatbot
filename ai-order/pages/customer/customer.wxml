@@ -90,7 +90,21 @@
       </view>
     </view>
 
-    <view wx:if="{{loading}}" class="msg-wrapper">
+    <view wx:if="{{streamingText}}" class="msg-wrapper">
+      <view class="msg-row ai">
+        <view class="ai-avatar-mini">
+          <text class="ai-avatar-text">AI</text>
+        </view>
+        <view class="msg-content">
+          <view class="bubble ai-bubble">
+            <text class="bubble-text" selectable="true" user-select="true">{{streamingText}}</text>
+            <text class="typing-cursor">▋</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:elif="{{loading}}" class="msg-wrapper">
       <view class="msg-row ai">
         <view class="ai-avatar-mini">
           <text class="ai-avatar-text">AI</text>

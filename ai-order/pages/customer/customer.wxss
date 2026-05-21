@@ -716,3 +716,16 @@
   opacity: 0.85;
   transform: scale(0.96);
 }
+
+.typing-cursor {
+  display: inline;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #666;
+  animation: blink-cursor 0.8s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

@@ -10,6 +10,12 @@ var menuData = null;
 
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
 
+var WS_URL = 'wss://wechatbot-api-sg.onrender.com/ws';
+var wsTask = null;
+var wsReconnectCount = 0;
+var wsReconnectTimer = null;
+var wsHeartbeatTimer = null;
+
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
   '酸甜': { bg: 'linear-gradient(135deg, #FF8C00, #FFD700)', light: '#FFF8E1' },
@@ -89,6 +95,7 @@ Page({
     groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     allDishes: [],
     aiRecommendations: [],
+    streamingText: '',
     scrollToDishId: '',
     scrollToDishZone: '',
 
@@ -109,6 +116,15 @@ Page({
     initOpenRouter().catch(function(err) {
       console.warn('[customer] direct mode unavailable, will use proxy fallback:', err);
     });
+    this._connectWebSocket();
+  },
+
+  onHide: function() {
+    this._disconnectWs();
+  },
+
+  onShow: function() {
+    this._connectWebSocket();
   },
 
   loadMenu: function() {
@@ -386,6 +402,102 @@ Page({
     return apiMessages;
   },
 
+  _connectWebSocket: function() {
+    var that = this;
+    if (wsTask) {
+      try { wsTask.close({}); } catch (_) {}
+      wsTask = null;
+    }
+    wsTask = wx.connectSocket({ url: WS_URL });
+    wsTask.onOpen(function() {
+      wsReconnectCount = 0;
+      that._startWsHeartbeat();
+    });
+    wsTask.onError(function() { that._onWsFail(); });
+    wsTask.onClose(function() { that._onWsFail(); });
+    wsTask.onMessage(function(res) { that._onWsMessage(res); });
+  },
+
+  _onWsFail: function() {
+    var that = this;
+    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+    wsTask = null;
+    if (wsReconnectCount < 3) {
+      wsReconnectCount++;
+      var delay = [1000, 2000, 4000][wsReconnectCount - 1] || 4000;
+      wsReconnectTimer = setTimeout(function() { that._connectWebSocket(); }, delay);
+    }
+  },
+
+  _startWsHeartbeat: function() {
+    var that = this;
+    if (wsHeartbeatTimer) clearInterval(wsHeartbeatTimer);
+    wsHeartbeatTimer = setInterval(function() {
+      if (!wsTask) return;
+      try { wsTask.send({ data: JSON.stringify({ type: 'ping' }) }); } catch (_) {}
+    }, 15000);
+  },
+
+  _sendWsMessage: function(data, callback) {
+    if (!wsTask) { if (callback) callback(false); return; }
+    try {
+      wsTask.send({
+        data: JSON.stringify(data),
+        success: function() { if (callback) callback(true); },
+        fail: function() { if (callback) callback(false); }
+      });
+    } catch (_) {
+      if (callback) callback(false);
+    }
+  },
+
+  _disconnectWs: function() {
+    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+    if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
+    wsReconnectCount = 999;
+    if (wsTask) { try { wsTask.close({}); } catch (_) {} wsTask = null; }
+  },
+
+  _onWsMessage: function(res) {
+    var that = this;
+    try {
+      var msg = JSON.parse(res.data);
+      if (msg.type === 'pong') return;
+      if (msg.type === 'token') {
+        var cur = that.data.streamingText || '';
+        that.setData({ streamingText: cur + msg.content });
+        that._scrollChatBottom();
+        return;
+      }
+      if (msg.type === 'done') {
+        var fullContent = msg.content || '';
+        var recommendations = msg.recommendations || [];
+
+        that._applyAiRecommendations(recommendations);
+
+        var aiMsg = {
+          id: ++msgIdCounter,
+          role: 'ai',
+          content: fullContent,
+          recommendations: recommendations
+        };
+        that.setData({
+          messages: that.data.messages.concat([aiMsg]),
+          loading: false,
+          streamingText: ''
+        });
+        that._scrollChatBottom();
+        return;
+      }
+      if (msg.type === 'error') {
+        var errAiMsg = { id: ++msgIdCounter, role: 'ai', content: '出错了：' + (msg.message || '未知错误') };
+        that.setData({ messages: that.data.messages.concat([errAiMsg]), loading: false, streamingText: '' });
+        that._scrollChatBottom();
+        return;
+      }
+    } catch (_) { /* ignore */ }
+  },
+
   _tryProxy: function(apiMessages, callback) {
     wx.request({
       url: SERVER + '/api/ai-order/chat',
@@ -475,27 +587,31 @@ Page({
   sendMessage: function(text) {
     if (this.data.loading) return;
     var that = this;
-    this.setData({ aiRecommendations: [] });
+    that.setData({ aiRecommendations: [] });
 
-    var userMsg = {
-      id: ++msgIdCounter,
-      role: 'user',
-      content: text
-    };
-
+    var userMsg = { id: ++msgIdCounter, role: 'user', content: text };
     var messages = this.data.messages.concat([userMsg]);
     this.setData({ messages: messages, inputText: '', loading: true, hasInput: false });
     this._scrollChatBottom();
 
     var apiMessages = this._buildApiMessages(messages);
-    var startTime = Date.now();
 
-    initOpenRouter().then(function() {
-      that._attemptRequest(0, startTime, apiMessages);
-    }).catch(function() {
-      openRouterConfig = null;
-      that._attemptRequest(0, startTime, apiMessages);
-    });
+    if (wsTask) {
+      that._sendWsMessage({ type: 'chat', messages: apiMessages, mode: 'customer', menuData: menuData }, function(ok) {
+        if (ok) {
+          setTimeout(function() {
+            if (that.data.loading) {
+              that.setData({ streamingText: '' }); // reset streaming state
+              that._attemptRequest(0, Date.now(), apiMessages);
+            }
+          }, 25000);
+        } else {
+          that._attemptRequest(0, Date.now(), apiMessages);
+        }
+      });
+    } else {
+      that._attemptRequest(0, Date.now(), apiMessages);
+    }
   },
 
   _attemptRequest: function(retryCount, startTime, apiMessages) {
