@@ -247,12 +247,10 @@
   box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
 }
 
-.icon-emoji {
-  font-size: 48rpx;
-}
-
-.icon-ai-order-text {
-  font-size: 48rpx;
+.icon-canvas {
+  width: 72rpx;
+  height: 72rpx;
+  display: block;
 }
 
 .entry-icon {

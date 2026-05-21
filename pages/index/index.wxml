@@ -23,7 +23,7 @@
     <view class="entry-grid">
       <view class="entry-card card-learn" bindtap="handleEntryTap" data-type="learn-hub">
         <view class="card-icon-wrap icon-bg-learn">
-          <text class="icon-emoji">📚</text>
+          <canvas type="2d" id="icon-learn" class="icon-canvas"></canvas>
         </view>
         <text class="entry-title">学习Agent</text>
         <text class="entry-desc">日语 / 德语学习</text>
@@ -31,7 +31,7 @@
 
       <view class="entry-card card-tool" bindtap="handleEntryTap" data-type="tool-hub">
         <view class="card-icon-wrap icon-bg-tool">
-          <text class="icon-emoji">🛠️</text>
+          <canvas type="2d" id="icon-tool" class="icon-canvas"></canvas>
         </view>
         <text class="entry-title">办公Agent</text>
         <text class="entry-desc">Word / PDF工具</text>
@@ -39,7 +39,7 @@
 
       <view class="entry-card card-ai-order" bindtap="handleEntryTap" data-type="ai-order">
         <view class="card-icon-wrap icon-bg-ai-order">
-          <text class="icon-ai-order-text">🍽️</text>
+          <canvas type="2d" id="icon-order" class="icon-canvas"></canvas>
         </view>
         <text class="entry-title">AI点菜</text>
         <text class="entry-desc">智能推荐菜品</text>
