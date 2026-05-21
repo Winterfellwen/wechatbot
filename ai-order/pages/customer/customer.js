@@ -52,6 +52,7 @@ Page({
     merchantId: '',
 
     tasteGroups: [],
+    menuLoading: false,
     highlightedDishId: null,
     dishGradientMap: {},
 
@@ -86,6 +87,7 @@ Page({
 
   loadMenu: function() {
     var that = this;
+    that.setData({ menuLoading: true });
     var url = SERVER + '/api/ai-order/menu/list';
     if (that.data.merchantId) {
       url += '?merchantId=' + that.data.merchantId;
@@ -94,6 +96,7 @@ Page({
       url: url,
       timeout: 5000,
       success: function(res) {
+        that.setData({ menuLoading: false });
         if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
           var rawMenu = res.data.data;
           menuData = rawMenu;
@@ -124,6 +127,7 @@ Page({
         }
       },
       fail: function(err) {
+        that.setData({ menuLoading: false });
         console.warn('[customer] failed to load menu:', err);
       }
     });

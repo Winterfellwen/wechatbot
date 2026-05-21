@@ -21,6 +21,13 @@
         </view>
       </scroll-view>
     </view>
+    <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
+      <text class="grid-empty-text">暂无菜单数据</text>
+      <view class="grid-empty-btn" catchtap="loadMenu">重新加载</view>
+    </view>
+    <view wx:if="{{menuLoading}}" class="grid-loading">
+      <text class="grid-loading-text">加载菜单中...</text>
+    </view>
     <view class="grid-bottom-spacer"></view>
   </scroll-view>
 
@@ -38,7 +45,7 @@
 
   <!-- AI Chat area -->
   <scroll-view class="chat-area {{chatExpanded ? 'expanded' : 'compact'}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{chatScrollToId}}" scroll-with-animation>
-    <view wx:if="{{!chatExpanded && messages.length > 2}}" class="chat-collapse-hint">
+    <view wx:if="{{!chatExpanded && messages.length > 2}}" class="chat-collapse-hint" catchtap="expandChat">
       <text class="hint-line"></text>
       <text class="hint-text">展开全部对话</text>
       <text class="hint-line"></text>
