@@ -848,57 +848,38 @@ Page({
   onChatTouchStart: function(e) {
     this._dragActive = true;
     this._dragStartY = e.touches[0].clientY;
-    this._maxSlide = 0;
-    this._slidePulled = false;
+    this._scrollBase = 0;
 
     if (!this._pageHeight) {
       this._pageHeight = 750;
       var that = this;
       wx.getSystemInfo({ success: function(r) { that._pageHeight = r.windowHeight; } });
     }
-    var threshold = this._pageHeight * 0.75;
-    if (threshold <= 0) threshold = 500;
-    this._slideThreshold = threshold;
 
+    // Instant expand to full 75vh, show latest messages
     this.setData({
+      chatSlideY: '0%',
+      chatSliding: true,
       chatUseScrollTop: true,
-      chatSliding: true
+      chatScrollTop: 99999
     });
   },
 
   onChatTouchMove: function(e) {
     if (!this._dragActive) return;
     var deltaY = this._dragStartY - e.touches[0].clientY;
-    if (deltaY < 5 && !this._slidePulled) return;
-
-    var threshold = this._slideThreshold || 500;
-
-    if (!this._slidePulled && deltaY >= 5) {
-      this._slidePulled = true;
-    }
-
-    // Slide: track maximum (never reduces)
-    if (deltaY > this._maxSlide) {
-      this._maxSlide = Math.min(deltaY, threshold);
-    }
-    var pct = (1 - this._maxSlide / threshold) * 100;
-    var updates = { chatSlideY: Math.max(0, pct) + '%' };
-
-    // Scroll: show latest messages at bottom, scroll up as delta increases
-    var scrollTop = Math.max(0, deltaY - threshold * 0.3);
-    updates.chatScrollTop = 99999 + scrollTop;
-
-    this.setData(updates);
+    // deltaY > 0 = finger up, deltaY < 0 = finger down
+    // From bottom: drag up → see older (need smaller scroll-top)
+    //              drag down → see newer (clamped to max = bottom)
+    this.setData({ chatScrollTop: Math.max(0, 99999 - deltaY) });
   },
 
   onChatTouchEnd: function() {
     if (!this._dragActive) return;
     this._dragActive = false;
-    this._slidePulled = false;
-    this._maxSlide = 0;
     this.setData({
-      chatSliding: false,
       chatSlideY: '100%',
+      chatSliding: false,
       chatUseScrollTop: false,
       chatScrollTop: 0
     });
