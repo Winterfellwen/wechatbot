@@ -13,26 +13,34 @@ function ociMenuUrl(userId, merchantId) {
   return `${ociConfig.baseUrl}/menus/${userId}/${merchantId}.json`;
 }
 
+function getOciClient() {
+  const common = require('oci-common');
+  const os = require('oci-objectstorage');
+  let provider;
+  try {
+    provider = common.ConfigFileAuthenticationDetailsProvider(`${require('os').homedir()}/.oci/config`);
+  } catch (_) {
+    provider = common.ConfigFileAuthenticationDetailsProvider('./oci-config');
+  }
+  return new os.ObjectStorageClient({ authenticationDetailsProvider: provider });
+}
+
 function ociSaveMenu(userId, merchantId, menuData) {
-  return new Promise((resolve, reject) => {
-    const cp = require('child_process');
-    const proc = cp.spawn('python', ['oci_helper.py', 'upload', userId, merchantId], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: __dirname
-    });
-    let stdout = '', stderr = '';
-    proc.stdout.on('data', d => stdout += d);
-    proc.stderr.on('data', d => stderr += d);
-    proc.on('close', code => {
-      if (code === 0) {
-        try { resolve(JSON.parse(stdout)); }
-        catch(e) { reject(new Error('Parse error: ' + stdout)); }
-      } else {
-        reject(new Error('OCI helper exit ' + code + ': ' + stderr));
-      }
-    });
-    proc.on('error', reject);
-    proc.stdin.end(JSON.stringify(menuData));
+  const os = require('oci-objectstorage');
+  const client = getOciClient();
+  return client.getNamespace().then(nsResp => {
+    const ns = nsResp.value;
+    const key = `menus/${userId}/${merchantId}.json`;
+    return client.putObject({
+      namespaceName: ns,
+      bucketName: ociConfig.bucketName,
+      objectName: key,
+      putObjectBody: Buffer.from(JSON.stringify(menuData, null, 2), 'utf-8'),
+      contentLength: Buffer.byteLength(JSON.stringify(menuData), 'utf-8'),
+      contentLanguage: 'zh-CN'
+    }).then(() => ({
+      url: `${ociConfig.baseUrl}/${key}`
+    }));
   });
 }
 
