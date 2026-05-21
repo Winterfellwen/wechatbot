@@ -56,7 +56,7 @@
   <!-- Chat area: compact bar when collapsed, full view when expanded -->
   <view class="chat-area {{chatExpanded ? 'expanded' : 'compact'}}" catchtouchstart="onChatTouchStart" bindtouchend="onChatTouchEnd">
     <!-- Compact mode: preview bar -->
-    <view wx:if="{{!chatExpanded}}" class="chat-compact-inner">
+    <view hidden="{{chatExpanded}}" class="chat-compact-inner">
       <view class="compact-preview" wx:if="{{lastAiContent}}">
         <view class="compact-ai-avatar">
           <text class="compact-ai-text">AI</text>
@@ -66,7 +66,7 @@
     </view>
 
     <!-- Expanded mode: full chat with scroll and collapse bar -->
-    <view wx:if="{{chatExpanded}}" class="chat-expanded-inner">
+    <view hidden="{{!chatExpanded}}" class="chat-expanded-inner">
       <view class="chat-expand-header" catchtouchstart="cancelCollapse" catchtap="collapseChat">
         <view class="collapse-bar">
           <text class="collapse-arrow">▼</text>
