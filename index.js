@@ -17,15 +17,20 @@ function getOciClient() {
   const common = require('oci-common');
   const os = require('oci-objectstorage');
   const fs = require('fs');
+  const path = require('path');
   const home = require('os').homedir();
-  // Try config file (default or env var override), then project root, then env vars
-  let configPaths = ['./oci-config'];
-  if (process.env.OCI_CONFIG_FILE) configPaths.unshift(process.env.OCI_CONFIG_FILE);
-  configPaths.unshift(home + '/.oci/config');
-  for (const p of configPaths) {
-    try { if (fs.existsSync(p)) return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider(p) }); } catch (_) {}
+  // Try env-var-specified config, then default ~/.oci/config, then ./oci-config
+  const paths = [];
+  if (process.env.OCI_CONFIG_FILE) paths.push(process.env.OCI_CONFIG_FILE);
+  paths.push(path.join(home, '.oci', 'config'), './oci-config');
+  for (const p of paths) {
+    try {
+      if (fs.existsSync(p)) return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider(p) });
+    } catch (_) {}
   }
-  // Fallback: env vars
+  // Try default provider (no args = ~/.oci/config + DEFAULT profile)
+  try { return new os.ObjectStorageClient({ authenticationDetailsProvider: new common.ConfigFileAuthenticationDetailsProvider() }); } catch (_) {}
+  // Fallback: env vars (for Render without config file)
   const pk = process.env.OCI_PRIVATE_KEY;
   if (process.env.OCI_USER_OCID && process.env.OCI_TENANCY_OCID && process.env.OCI_FINGERPRINT && pk) {
     return new os.ObjectStorageClient({
@@ -36,21 +41,23 @@ function getOciClient() {
       )
     });
   }
-  throw new Error('OCI credentials not configured: set OCI_CONFIG_FILE, OCI_USER_OCID+OCI_TENANCY_OCID+OCI_FINGERPRINT+OCI_PRIVATE_KEY, or place ~/.oci/config or ./oci-config');
+  throw new Error('OCI credentials not configured');
 }
 
 function ociSaveMenu(userId, merchantId, menuData) {
   const os = require('oci-objectstorage');
+  const { Readable } = require('stream');
   const client = getOciClient();
   return client.getNamespace().then(nsResp => {
     const ns = nsResp.value;
     const key = `menus/${userId}/${merchantId}.json`;
+    const body = JSON.stringify(menuData, null, 2);
     return client.putObject({
       namespaceName: ns,
       bucketName: ociConfig.bucketName,
       objectName: key,
-      putObjectBody: Buffer.from(JSON.stringify(menuData, null, 2), 'utf-8'),
-      contentLength: Buffer.byteLength(JSON.stringify(menuData), 'utf-8'),
+      putObjectBody: Readable.from([body]),
+      contentLength: Buffer.byteLength(body),
       contentLanguage: 'zh-CN'
     }).then(() => ({
       url: `${ociConfig.baseUrl}/${key}`
