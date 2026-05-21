@@ -63,10 +63,6 @@
         </view>
         <text class="compact-preview-text">{{lastAiContent}}</text>
       </view>
-      <view class="compact-hint">
-        <text class="compact-hint-icon">☝️</text>
-        <text class="compact-hint-text">展开对话</text>
-      </view>
     </view>
 
     <!-- Expanded mode: full chat with scroll and collapse bar -->

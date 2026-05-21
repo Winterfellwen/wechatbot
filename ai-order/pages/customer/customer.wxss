@@ -21,9 +21,8 @@
 
 .dish-grid-area.hidden {
   flex: none;
-  height: 0;
+  max-height: 25vh;
   overflow: hidden;
-  padding: 0;
 }
 
 .grid-header {
@@ -322,7 +321,8 @@
 }
 
 .chat-area.expanded {
-  flex: 1;
+  flex: 0 0 75vh;
+  max-height: 75vh;
   display: flex;
   flex-direction: column;
 }
