@@ -129,7 +129,7 @@ Page({
         recordRecoManager.onStop = function(res) {
           that.setData({ isRecording: false });
           if (res.result) {
-            that.setData({ inputText: res.result, hasInput: true, chatExpanded: true, inputMode: 'text' });
+            that.sendMessage(res.result);
           }
         };
         recordRecoManager.onError = function(res) {
