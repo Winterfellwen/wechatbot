@@ -595,22 +595,14 @@ Page({
 
     var apiMessages = this._buildApiMessages(messages);
 
-    if (wsTask) {
-      that._sendWsMessage({ type: 'chat', messages: apiMessages, mode: 'customer', menuData: menuData }, function(ok) {
-        if (ok) {
-          setTimeout(function() {
-            if (that.data.loading) {
-              that.setData({ streamingText: '' }); // reset streaming state
-              that._attemptRequest(0, Date.now(), apiMessages);
-            }
-          }, 25000);
-        } else {
-          that._attemptRequest(0, Date.now(), apiMessages);
-        }
+    initOpenRouter().then(function() {
+      that._tryDirect(apiMessages, function(ok, res) {
+        if (ok) { that._handleResponse(res); return; }
+        that._attemptRequest(0, Date.now(), apiMessages);
       });
-    } else {
+    }).catch(function() {
       that._attemptRequest(0, Date.now(), apiMessages);
-    }
+    });
   },
 
   _attemptRequest: function(retryCount, startTime, apiMessages) {
@@ -634,17 +626,15 @@ Page({
     wx.request({
       url: openRouterConfig.apiUrl + '/chat/completions',
       method: 'POST',
-      timeout: 15000,
+      timeout: 30000,
       header: {
         'Authorization': 'Bearer ' + openRouterConfig.key,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
-        'X-Title': 'AIOrderCustomer'
+        'Content-Type': 'application/json'
       },
       data: {
         model: openRouterConfig.model,
         messages: apiMessages,
-        max_tokens: openRouterConfig.maxTokens || 500
+        max_tokens: openRouterConfig.maxTokens || 800
       },
       success: function(res) {
         callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res);
