@@ -116,7 +116,6 @@ Page({
     initOpenRouter().catch(function(err) {
       console.warn('[customer] direct mode unavailable, will use proxy fallback:', err);
     });
-    this._connectWebSocket();
   },
 
   onHide: function() {
