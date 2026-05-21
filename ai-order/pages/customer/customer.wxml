@@ -1,5 +1,5 @@
 <!--ai-order/pages/customer/customer.wxml-->
-<view class="customer-container" bindtouchstart="onChatTouchStart" bindtouchmove="onChatTouchMove" bindtouchend="onChatTouchEnd">
+<view class="customer-container" bindtouchmove="onChatTouchMove" bindtouchend="onChatTouchEnd">
 
   <!-- Dish grid area -->
   <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
@@ -54,7 +54,7 @@
   </scroll-view>
 
   <!-- Chat compact bar: always in page flow, triggers drag expansion -->
-  <view class="chat-compact-inner" data-chat-trigger="1">
+  <view class="chat-compact-inner" bindtouchstart="onChatTouchStart" data-chat-trigger="1">
     <view class="compact-preview" wx:if="{{lastAiContent}}">
       <view class="compact-ai-avatar">
         <text class="compact-ai-text">AI</text>

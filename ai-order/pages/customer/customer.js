@@ -846,7 +846,6 @@ Page({
   },
 
   onChatTouchStart: function(e) {
-    if (!e.target || !e.target.dataset || !e.target.dataset.chatTrigger) return;
     this._dragActive = true;
     this._dragStartY = e.touches[0].clientY;
     this._maxSlide = 0;
