@@ -1,61 +1,62 @@
 <!--ai-order/pages/customer/customer.wxml-->
 <view class="customer-container">
 
-  <!-- Collapsed: dish grid + compact chat -->
-  <block wx:if="{{!chatExpanded}}">
-    <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
-      <view class="grid-header">
-        <text class="grid-header-title">菜单</text>
-        <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
-          <view class="group-picker">
-            <text class="group-picker-label">{{groupModeLabel}}</text>
-            <text class="group-picker-arrow">▼</text>
-          </view>
-        </picker>
-      </view>
-      <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone" id="zone-{{item.taste}}">
-        <view class="taste-header">
-          <view class="taste-indicator" style="background: {{item.bgColor}}"></view>
-          <text class="taste-label">{{item.taste}}</text>
+  <!-- Dish grid area -->
+  <scroll-view class="dish-grid-area {{chatExpanded ? 'hidden' : ''}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
+    <view class="grid-header">
+      <text class="grid-header-title">菜单</text>
+      <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
+        <view class="group-picker">
+          <text class="group-picker-label">{{groupModeLabel}}</text>
+          <text class="group-picker-arrow">▼</text>
         </view>
-        <scroll-view class="dish-scroll" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishId}}" scroll-with-animation>
-          <view class="dish-row">
-            <view wx:for="{{item.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}">
-              <view wx:if="{{!item.imageUrl}}" class="dish-avatar" style="background: {{item.bgStyle}}">
-                <text class="dish-avatar-char">{{item.avatarChar}}</text>
-              </view>
-              <image wx:else class="dish-image" src="{{item.imageUrl}}" mode="aspectFill" catchtap="previewImage" data-url="{{item.imageUrl}}"></image>
-              <text class="dish-card-name">{{item.name}}</text>
-              <text class="dish-card-price">¥{{item.price}}</text>
-              <view class="spicy-indicator">
-                <block wx:if="{{item.spicyLevel > 0}}">
-                  <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
-                </block>
-              </view>
-              <view wx:if="{{cartQtyMap[item.id] > 0}}" class="dish-qty-controls">
-                <view class="dish-qty-btn" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{-1}}">−</view>
-                <text class="dish-qty-num">{{cartQtyMap[item.id]}}</text>
-                <view class="dish-qty-btn dish-qty-plus" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{1}}">+</view>
-              </view>
-              <view wx:else class="cart-btn" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
-                <text class="cart-btn-text">加入购物车</text>
-              </view>
+      </picker>
+    </view>
+    <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone" id="zone-{{item.taste}}">
+      <view class="taste-header">
+        <view class="taste-indicator" style="background: {{item.bgColor}}"></view>
+        <text class="taste-label">{{item.taste}}</text>
+      </view>
+      <scroll-view class="dish-scroll" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishId}}" scroll-with-animation>
+        <view class="dish-row">
+          <view wx:for="{{item.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}">
+            <view wx:if="{{!item.imageUrl}}" class="dish-avatar" style="background: {{item.bgStyle}}">
+              <text class="dish-avatar-char">{{item.avatarChar}}</text>
+            </view>
+            <image wx:else class="dish-image" src="{{item.imageUrl}}" mode="aspectFill" catchtap="previewImage" data-url="{{item.imageUrl}}"></image>
+            <text class="dish-card-name">{{item.name}}</text>
+            <text class="dish-card-price">¥{{item.price}}</text>
+            <view class="spicy-indicator">
+              <block wx:if="{{item.spicyLevel > 0}}">
+                <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+              </block>
+            </view>
+            <view wx:if="{{cartQtyMap[item.id] > 0}}" class="dish-qty-controls">
+              <view class="dish-qty-btn" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{-1}}">−</view>
+              <text class="dish-qty-num">{{cartQtyMap[item.id]}}</text>
+              <view class="dish-qty-btn dish-qty-plus" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{1}}">+</view>
+            </view>
+            <view wx:else class="cart-btn" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
+              <text class="cart-btn-text">加入购物车</text>
             </view>
           </view>
-        </scroll-view>
-      </view>
-      <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
-        <text class="grid-empty-text">暂无菜单数据</text>
-        <view class="grid-empty-btn" catchtap="loadMenu">重新加载</view>
-      </view>
-      <view wx:if="{{menuLoading}}" class="grid-loading">
-        <text class="grid-loading-text">加载菜单中...</text>
-      </view>
-      <view class="grid-bottom-spacer"></view>
-    </scroll-view>
+        </view>
+      </scroll-view>
+    </view>
+    <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
+      <text class="grid-empty-text">暂无菜单数据</text>
+      <view class="grid-empty-btn" catchtap="loadMenu">重新加载</view>
+    </view>
+    <view wx:if="{{menuLoading}}" class="grid-loading">
+      <text class="grid-loading-text">加载菜单中...</text>
+    </view>
+    <view class="grid-bottom-spacer"></view>
+  </scroll-view>
 
-    <!-- Compact chat preview -->
-    <view class="chat-compact" catchtouchstart="onChatTouchStart">
+  <!-- Chat area: compact bar when collapsed, full view when expanded -->
+  <view class="chat-area {{chatExpanded ? 'expanded' : 'compact'}}" catchtouchstart="onChatTouchStart" bindtouchend="onChatTouchEnd">
+    <!-- Compact mode: preview bar -->
+    <view wx:if="{{!chatExpanded}}" class="chat-compact-inner">
       <view class="compact-preview" wx:if="{{lastAiContent}}">
         <view class="compact-ai-avatar">
           <text class="compact-ai-text">AI</text>
@@ -64,21 +65,19 @@
       </view>
       <view class="compact-hint">
         <text class="compact-hint-icon">☝️</text>
-        <text class="compact-hint-text">按住展开对话</text>
+        <text class="compact-hint-text">展开对话</text>
       </view>
     </view>
-  </block>
 
-  <!-- Expanded: full chat replaces menu + compact preview -->
-  <block wx:if="{{chatExpanded}}">
-    <view class="chat-full" bindtouchend="onChatTouchEnd">
-      <view class="chat-full-header" catchtouchstart="cancelCollapse" catchtap="collapseChat">
+    <!-- Expanded mode: full chat with scroll and collapse bar -->
+    <view wx:if="{{chatExpanded}}" class="chat-expanded-inner">
+      <view class="chat-expand-header" catchtouchstart="cancelCollapse" catchtap="collapseChat">
         <view class="collapse-bar">
           <text class="collapse-arrow">▼</text>
           <text class="collapse-text">收起</text>
         </view>
       </view>
-      <scroll-view class="chat-full-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{chatScrollToId}}" scroll-with-animation>
+      <scroll-view class="chat-scroll-view" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{chatScrollToId}}" scroll-with-animation>
         <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
           <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
             <view class="ai-avatar-mini">
@@ -131,7 +130,7 @@
         <view class="chat-bottom" id="chat-bottom"></view>
       </scroll-view>
     </view>
-  </block>
+  </view>
 
   <!-- Quick chips -->
   <view class="quick-chips">

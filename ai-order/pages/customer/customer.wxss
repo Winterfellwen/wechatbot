@@ -16,6 +16,14 @@
   position: relative;
   z-index: 1;
   box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.dish-grid-area.hidden {
+  flex: none;
+  height: 0;
+  overflow: hidden;
+  padding: 0;
 }
 
 .grid-header {
@@ -302,9 +310,25 @@
   color: #fff;
 }
 
-/* ====== Chat compact preview ====== */
-.chat-compact {
-  flex-shrink: 0;
+/* ====== Chat area (compact bar / expanded full view) ====== */
+.chat-area {
+  background: #F8F9FA;
+  overflow: hidden;
+  transition: flex 0.25s ease;
+}
+
+.chat-area.compact {
+  flex: none;
+}
+
+.chat-area.expanded {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Compact inner bar */
+.chat-compact-inner {
   display: flex;
   align-items: center;
   padding: 8rpx 20rpx;
@@ -315,7 +339,7 @@
   min-height: 72rpx;
 }
 
-.chat-compact:active {
+.chat-compact-inner:active {
   background: #F8F9FA;
 }
 
@@ -370,16 +394,15 @@
   white-space: nowrap;
 }
 
-/* ====== Chat full (expanded, replaces menu) ====== */
-.chat-full {
+/* Expanded inner view */
+.chat-expanded-inner {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #F8F9FA;
   overflow: hidden;
 }
 
-.chat-full-header {
+.chat-expand-header {
   flex-shrink: 0;
   padding: 12rpx 0;
   display: flex;
@@ -412,7 +435,7 @@
   font-weight: 500;
 }
 
-.chat-full-scroll {
+.chat-scroll-view {
   flex: 1;
   padding: 16rpx 0;
   overflow-y: scroll;
