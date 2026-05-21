@@ -319,8 +319,13 @@
   background: #F8F9FA;
   border-radius: 16rpx 16rpx 0 0;
   box-shadow: 0 -4rpx 24rpx rgba(0,0,0,0.08);
+  pointer-events: none;
   /* transform is set via inline style (data: chatSlideY) */
   /* transition is set via inline style to avoid clash with drag */
+}
+
+.chat-area.expanded {
+  pointer-events: auto;
 }
 
 /* Compact inner bar (in normal page flow) */
