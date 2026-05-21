@@ -55,7 +55,7 @@
   </scroll-view>
 
   <!-- AI Chat area (compact: preview only; expanded: full overlay) -->
-  <view wx:if="{{!chatExpanded}}" class="chat-compact" bindtouchstart="onChatTouchStart">
+  <view wx:if="{{!chatExpanded}}" class="chat-compact" catchtouchstart="onChatTouchStart">
     <view class="compact-preview" wx:if="{{lastAiContent}}">
       <view class="compact-ai-avatar">
         <text class="compact-ai-text">AI</text>
@@ -69,8 +69,8 @@
   </view>
 
   <!-- Full chat overlay when expanded -->
-  <view wx:if="{{chatExpanded}}" class="chat-overlay">
-    <view class="chat-overlay-header" catchtap="collapseChat">
+  <view wx:if="{{chatExpanded}}" class="chat-overlay" bindtouchend="onChatTouchEnd">
+    <view class="chat-overlay-header" catchtouchstart="cancelCollapse" catchtap="collapseChat">
       <view class="collapse-bar">
         <text class="collapse-arrow">▼</text>
         <text class="collapse-text">收起</text>

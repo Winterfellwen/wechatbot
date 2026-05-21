@@ -834,12 +834,19 @@ Page({
   },
 
   onChatTouchStart: function() {
-    this.setData({ chatExpanded: true, chatPeeking: true });
+    this.setData({ chatExpanded: true });
   },
 
   onChatTouchEnd: function() {
-    this.setData({ chatPeeking: false });
-    this.collapseChat();
+    var that = this;
+    if (that._collapseTimer) clearTimeout(that._collapseTimer);
+    that._collapseTimer = setTimeout(function() {
+      that.setData({ chatExpanded: false });
+    }, 1500);
+  },
+
+  cancelCollapse: function() {
+    if (this._collapseTimer) clearTimeout(this._collapseTimer);
   },
 
   onChatBlur: function() {
