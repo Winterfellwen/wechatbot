@@ -86,11 +86,14 @@ Page({
     cart: [],
     totalPrice: 0,
     cartItemCount: 0,
+    cartQtyMap: {},
     showCartPanel: false,
     orderNote: '',
 
     chatExpanded: false,
     chatScrollToId: '',
+    chatPeeking: false,
+    lastAiContent: '',
 
     quickReplies: ['有什么推荐', '热量低的食品', '辣的'],
 
@@ -333,7 +336,7 @@ Page({
       role: 'ai',
       content: '欢迎使用智能点菜！告诉我您想吃什么口味，我来为您推荐菜品~'
     };
-    this.setData({ messages: [welcomeMsg] });
+    this.setData({ messages: [welcomeMsg], lastAiContent: welcomeMsg.content });
   },
 
   onInput: function(e) {
@@ -531,7 +534,8 @@ Page({
         that.setData({
           messages: that.data.messages.concat([aiMsg]),
           loading: false,
-          streamingText: ''
+          streamingText: '',
+          lastAiContent: fullContent
         });
         that._scrollChatBottom();
         return;
@@ -621,7 +625,7 @@ Page({
     that._applyAiRecommendations(recommendations);
 
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply, recommendations: recommendations };
-    that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
+    that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false, lastAiContent: reply });
     that._scrollChatBottom();
   },
 
@@ -747,11 +751,13 @@ Page({
   _recalcCart: function(cart) {
     var total = 0;
     var count = 0;
+    var qtyMap = {};
     for (var i = 0; i < cart.length; i++) {
       total += cart[i].price * cart[i].quantity;
       count += cart[i].quantity;
+      qtyMap[cart[i].id] = cart[i].quantity;
     }
-    this.setData({ cart: cart, totalPrice: total, cartItemCount: count });
+    this.setData({ cart: cart, totalPrice: total, cartItemCount: count, cartQtyMap: qtyMap });
   },
 
   onCartTap: function() {
@@ -824,9 +830,16 @@ Page({
   },
 
   collapseChat: function() {
-    if (!this.data.inputText && !this.data.loading) {
-      this.setData({ chatExpanded: false });
-    }
+    this.setData({ chatExpanded: false });
+  },
+
+  onChatTouchStart: function() {
+    this.setData({ chatExpanded: true, chatPeeking: true });
+  },
+
+  onChatTouchEnd: function() {
+    this.setData({ chatPeeking: false });
+    this.collapseChat();
   },
 
   onChatBlur: function() {

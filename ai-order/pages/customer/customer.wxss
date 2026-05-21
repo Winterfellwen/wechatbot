@@ -10,8 +10,7 @@
 
 /* ====== Dish grid area ====== */
 .dish-grid-area {
-  flex: 0 0 auto;
-  max-height: 40vh;
+  flex: 1;
   background: #FFFFFF;
   padding: 0 0 0;
   position: relative;
@@ -160,6 +159,45 @@
   color: #FFFFFF;
 }
 
+.dish-qty-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin-top: 10rpx;
+  width: 100%;
+}
+
+.dish-qty-btn {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: #F2F2F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #666;
+}
+
+.dish-qty-btn:active {
+  background: #E0E0E0;
+}
+
+.dish-qty-plus {
+  background: #FFF0F3;
+  color: #f5576c;
+}
+
+.dish-qty-num {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+  min-width: 32rpx;
+  text-align: center;
+}
+
 .dish-card-name {
   font-size: 24rpx;
   font-weight: 600;
@@ -264,35 +302,126 @@
   color: #fff;
 }
 
-/* ====== Chat area ====== */
-.chat-area {
-  flex: 1;
-  min-height: 200rpx;
-  padding: 8rpx 0;
-  background: #F8F9FA;
-  transition: all 0.3s ease;
+/* ====== Chat compact preview ====== */
+.chat-compact {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  background: #FFFFFF;
+  border-top: 1rpx solid rgba(0,0,0,0.04);
+  border-bottom: 1rpx solid rgba(0,0,0,0.04);
+  gap: 12rpx;
+  min-height: 72rpx;
 }
 
-/* compact/expanded visibility controlled via wx:if in WXML */
+.chat-compact:active {
+  background: #F8F9FA;
+}
 
-.chat-collapse-hint {
+.compact-preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  overflow: hidden;
+}
+
+.compact-ai-avatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5576c, #ff6b81);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8rpx 24rpx;
-  gap: 16rpx;
+  flex-shrink: 0;
 }
 
-.hint-line {
-  flex: 1;
-  height: 1rpx;
+.compact-ai-text {
+  font-size: 16rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.compact-preview-text {
+  font-size: 24rpx;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.compact-hint {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  flex-shrink: 0;
+}
+
+.compact-hint-icon {
+  font-size: 24rpx;
+}
+
+.compact-hint-text {
+  font-size: 20rpx;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* ====== Chat overlay (expanded) ====== */
+.chat-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: #F8F9FA;
+  animation: slideUp 0.25s ease-out;
+}
+
+.chat-overlay-header {
+  flex-shrink: 0;
+  padding: 12rpx 0;
+  display: flex;
+  justify-content: center;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid rgba(0,0,0,0.04);
+}
+
+.collapse-bar {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 32rpx;
+  border-radius: 32rpx;
+  background: #F2F2F7;
+}
+
+.collapse-bar:active {
   background: #E0E0E0;
 }
 
-.hint-text {
+.collapse-arrow {
   font-size: 20rpx;
-  color: #999;
-  flex-shrink: 0;
+  color: #666;
+}
+
+.collapse-text {
+  font-size: 24rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.chat-scroll {
+  flex: 1;
+  padding: 16rpx 0;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 .msg-wrapper {
