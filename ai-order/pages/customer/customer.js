@@ -838,11 +838,8 @@ Page({
   },
 
   onChatTouchEnd: function() {
-    var that = this;
-    if (that._collapseTimer) clearTimeout(that._collapseTimer);
-    that._collapseTimer = setTimeout(function() {
-      that.setData({ chatExpanded: false });
-    }, 500);
+    if (this._collapseTimer) clearTimeout(this._collapseTimer);
+    this.setData({ chatExpanded: false });
   },
 
   cancelCollapse: function() {
