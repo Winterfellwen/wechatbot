@@ -197,6 +197,44 @@
   }
 }
 
+/* ========== 快捷问题 ========== */
+.quick-replies {
+  padding: 16rpx 24rpx 0;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.95);
+}
+
+.quick-reply-title {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+}
+
+.quick-reply-scroll {
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+  padding-bottom: 16rpx;
+}
+
+.quick-reply-tag {
+  display: inline-flex;
+  padding: 14rpx 28rpx;
+  background: #fff0f3;
+  border: 1rpx solid #ffd6dd;
+  border-radius: 40rpx;
+  margin-right: 16rpx;
+  font-size: 26rpx;
+  color: #f5576c;
+  flex-shrink: 0;
+}
+
+.quick-reply-tag:active {
+  background: #f5576c;
+  color: #fff;
+  border-color: #f5576c;
+}
+
 /* ========== 底部输入区 ========== */
 .input-section {
   background: rgba(255, 255, 255, 0.95);

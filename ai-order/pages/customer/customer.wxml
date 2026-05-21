@@ -106,6 +106,16 @@
     </view>
   </view>
 
+  <!-- 快捷问题 -->
+  <view wx:if="{{quickReplies.length > 0 && messages.length <= 1}}" class="quick-replies">
+    <view class="quick-reply-title">快捷提问</view>
+    <scroll-view class="quick-reply-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{quickReplies}}" wx:key="index" class="quick-reply-tag" catchtap="onQuickReply" data-text="{{item}}">
+        <text>{{item}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
   <!-- 底部输入栏 -->
   <view class="input-section">
     <view class="input-bar">

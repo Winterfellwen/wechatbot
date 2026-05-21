@@ -46,7 +46,8 @@ Page({
     hasInput: false,
     cart: [],
     totalPrice: 0,
-    showOrderDialog: false
+    showOrderDialog: false,
+    quickReplies: ['看看菜单', '有什么推荐', '今天有什么辣的菜', '上次点了什么']
   },
 
   onLoad: function(options) {
@@ -109,6 +110,55 @@ Page({
     var text = this.data.inputText.trim();
     if (!text) return;
     this.sendMessage(text);
+  },
+
+  onQuickReply: function(e) {
+    var text = e.currentTarget.dataset.text;
+    if (text === '看看菜单') {
+      this.showMenuDirectly();
+      return;
+    }
+    if (text === '上次点了什么') {
+      this.showLastOrder();
+      return;
+    }
+    this.sendMessage(text);
+  },
+
+  showMenuDirectly: function() {
+    var that = this;
+    var menuText = '📋 当前菜单：\n\n';
+    if (menuData && menuData.dishes) {
+      for (var i = 0; i < menuData.dishes.length; i++) {
+        var d = menuData.dishes[i];
+        if (d.status === 'online') {
+          menuText += (i + 1) + '. ' + d.name + '  ¥' + d.price + '\n';
+          if (d.description) menuText += '   ' + d.description + '\n';
+          menuText += '   口味：' + d.taste + (d.spicyLevel > 0 ? '  辣度：' + d.spicyLevel : '') + '\n\n';
+        }
+      }
+    } else {
+      menuText += '暂无菜单数据';
+    }
+    var userMsg = { id: ++msgIdCounter, role: 'user', content: '看看菜单' };
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: menuText };
+    that.setData({ messages: that.data.messages.concat([userMsg, aiMsg]) });
+    that.scrollToBottom();
+  },
+
+  showLastOrder: function() {
+    var that = this;
+    var lastOrder = wx.getStorageSync('ai-order-last-order');
+    var msg = '';
+    if (lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0) {
+      msg = '🕐 上次点单记录：\n\n' + lastOrder.dishes.join('、') + '\n\n合计：¥' + lastOrder.total + '\n\n是否再来一单？';
+    } else {
+      msg = '暂无点单记录，试试看看菜单吧！';
+    }
+    var userMsg = { id: ++msgIdCounter, role: 'user', content: '上次点了什么' };
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
+    that.setData({ messages: that.data.messages.concat([userMsg, aiMsg]) });
+    that.scrollToBottom();
   },
 
   _buildApiMessages: function(messages) {
@@ -303,6 +353,8 @@ Page({
       dishNames.push(cart[i].name);
     }
     this.setData({ showOrderDialog: false });
+    // 保存上次点单记录
+    wx.setStorageSync('ai-order-last-order', { dishes: dishNames, total: this.data.totalPrice });
     var orderMsg = {
       id: ++msgIdCounter,
       role: 'ai',
