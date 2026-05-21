@@ -370,21 +370,16 @@
   white-space: nowrap;
 }
 
-/* ====== Chat overlay (expanded) ====== */
-.chat-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
+/* ====== Chat full (expanded, replaces menu) ====== */
+.chat-full {
+  flex: 1;
   display: flex;
   flex-direction: column;
   background: #F8F9FA;
-  animation: slideUp 0.25s ease-out;
+  overflow: hidden;
 }
 
-.chat-overlay-header {
+.chat-full-header {
   flex-shrink: 0;
   padding: 12rpx 0;
   display: flex;
@@ -417,7 +412,7 @@
   font-weight: 500;
 }
 
-.chat-scroll {
+.chat-full-scroll {
   flex: 1;
   padding: 16rpx 0;
   overflow-y: scroll;

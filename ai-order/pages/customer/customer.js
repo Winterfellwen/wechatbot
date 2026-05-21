@@ -842,7 +842,7 @@ Page({
     if (that._collapseTimer) clearTimeout(that._collapseTimer);
     that._collapseTimer = setTimeout(function() {
       that.setData({ chatExpanded: false });
-    }, 1500);
+    }, 500);
   },
 
   cancelCollapse: function() {
