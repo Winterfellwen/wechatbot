@@ -1,0 +1,26 @@
+<h2>AI点菜 — AI 模型选择</h2>
+<p class="subtitle">对话推荐和菜单解析使用哪个 AI 模型？</p>
+
+<div class="options">
+  <div class="option" data-choice="openrouter" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>复用现有 OpenRouter（免费额度）</h3>
+      <p>使用已有的 nemotron-nano-12b-v2-vl 模型，支持图文，可以用于菜单解析和推荐对话</p>
+    </div>
+  </div>
+  <div class="option" data-choice="same" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>使用现有的智能老师（相同配置）</h3>
+      <p>直接复用 smart-teacher 的 AI 配置，无需额外设置</p>
+    </div>
+  </div>
+  <div class="option" data-choice="new" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>新配置专用模型</h3>
+      <p>为点菜功能单独配置一个更适合对话的模型（如 GPT-4o mini）</p>
+    </div>
+  </div>
+</div>

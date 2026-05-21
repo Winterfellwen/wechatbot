@@ -1,0 +1,26 @@
+<h2>AI点菜 — 数据存储方案</h2>
+<p class="subtitle">菜单数据（菜品名称、图片、价格、描述等）存放在哪里？</p>
+
+<div class="options">
+  <div class="option" data-choice="mysql" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>MySQL（现有数据库）</h3>
+      <p>复用现有的 MySQL 连接池，菜单数据持久化存储，支持复杂查询</p>
+    </div>
+  </div>
+  <div class="option" data-choice="json" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>JSON 文件存储（本地）</h3>
+      <p>AI解析后的菜单数据存为 JSON 文件，无需数据库，简洁轻量</p>
+    </div>
+  </div>
+  <div class="option" data-choice="sqlite" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>SQLite</h3>
+      <p>介于两者之间，文件数据库，零配置，支持 SQL 查询</p>
+    </div>
+  </div>
+</div>

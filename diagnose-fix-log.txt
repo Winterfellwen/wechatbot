@@ -1,85 +1,44 @@
 ============================================================
-微信小程序诊断 - 修复记录
+微信小程序诊断 - 修复日志
 ============================================================
-生成时间: 2026-05-15
-项目: wechatbot
+生成时间: 2026-05-21
+项目: E:\AI\Wechatbot
 
-共计 2 项已修复（54 项跳过）
-
-============================================================
-跳过说明（54 项）
-============================================================
-
-[跳过] http:// → https://（30 项）
-  原因: 全部为 XML 命名空间 URI（如 http://schemas.openxmlformats.org/...），
-  不是实际网络请求。修改会破坏 DOCX 文件生成，导致 Word 文档无法打开。
-  涉及文件: index.js, utils/tts.js, word/utils/docx.js, word/pages/editor/pako.es5.js
-
-[跳过] index.js console.log（16 项）
-  原因: Node.js 后端服务器日志，生产环境调试必需（PDF 转换状态、清理任务等）。
-  不应删除，建议后续增加日志级别控制（DEBUG/INFO）。
-
-[跳过] pako.es5.js console.log（4 项）
-  原因: 第三方库文件（pako 压缩库），注释中的示例代码，不影响运行。
+扫描范围:
+  - tabBar 页面: pages/index/index, pages/user/user
+  - pdf 子包: 4 个页面
+  - japanese 子包: 7 个页面
+  - german 子包: 7 个页面
+  - word 子包: 2 个页面
+  - smart-teacher 子包: 1 个页面
+  - ai-order 子包: 3 个页面
+  共计 26 个页面
 
 ============================================================
-已修复（2 项）
+Automator 运行时扫描结果
 ============================================================
-
-------------------------------------------------------------
-文件: app.js
-行号: 52
-操作: 修改
-之前: console.log('Auto download failed for job:', record.jobId);
-之后: // 自动下载失败，静默忽略（用户可在记录页手动下载）
-原因: 小程序端不应输出调试日志到 console
-------------------------------------------------------------
-
-文件: word/pages/editor/editor.js
-行号: 228
-操作: 删除
-之前: console.log('[saveDoc] imageInfos count:', imageInfos.length, 'html length:', html.length);
-之后: （已删除）
-原因: 生产构建前建议清理 console.log 等调试语句
-
-------------------------------------------------------------
-
-文件: word/pages/editor/editor.js
-行号: 230-232
-操作: 删除
-之前: for (var dbg = 0; dbg < imageInfos.length; dbg++) {
-        console.log('[saveDoc] image ' + dbg + ':', JSON.stringify(imageInfos[dbg]));
-      }
-之后: （已删除）
-原因: 生产构建前建议清理 console.log 等调试语句
-
-------------------------------------------------------------
-
-文件: word/pages/editor/editor.js
-行号: 235
-操作: 删除
-之前: console.log('[saveDoc] cached images:', cachedKeys.length);
-之后: （已删除）
-原因: 生产构建前建议清理 console.log 等调试语句
-
-------------------------------------------------------------
-
-文件: word/pages/editor/editor.js
-行号: 352
-操作: 删除
-之前: console.log('[import] buf byteLength:', buf.byteLength);
-之后: （已删除）
-原因: 生产构建前建议清理 console.log 等调试语句
-
-------------------------------------------------------------
-
-文件: word/pages/editor/editor.js
-行号: 354
-操作: 删除
-之前: console.log('[import] files keys:', Object.keys(files));
-之后: （已删除）
-原因: 生产构建前建议清理 console.log 等调试语句
+所有页面 console 事件: 无错误/警告
+所有页面异常事件: 无
 
 ============================================================
+源码静态扫描结果
+============================================================
+console.log/info/debug (小程序源码): 0 处
+http:// 非 localhost (需改 https): 0 处
+wx.showNavigationBarLoading: 0 处
+wx.hideNavigationBarLoading: 0 处
+wx.getUserInfo: 0 处
 
-提示: 如需回滚，可参考此记录逆向操作。
+============================================================
+修复操作
+============================================================
+无需修复。小程序源码干净。
+
+注:
+- index.js 中的 console.log 属于后端服务器代码，非小程序代码
+- word/utils/docx.js 中的 http:// 是 Office Open XML 命名空间 URI，属于规范要求，不可改为 https
+- index.js / utils/tts.js 中的 http:// 是 W3C SSML 命名空间 URI，属于规范要求，不可改为 https
+- word/pages/editor/pako.es5.js 是第三方库，其中的 http:// 仅在注释中
+
+============================================================
+DevTools 状态: 保持运行
