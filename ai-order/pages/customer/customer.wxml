@@ -1,145 +1,145 @@
 <!--ai-order/pages/customer/customer.wxml-->
-<view class="chat-container">
-  <!-- 消息列表 -->
-  <scroll-view
-    class="msg-list"
-    scroll-y
-    scroll-top="{{scrollTop}}"
-    scroll-with-animation
-    enhanced
-    bounces
-    show-scrollbar="{{false}}">
+<view class="customer-container">
 
-    <!-- 消息列表 -->
-    <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg-wrapper">
-      <!-- AI 消息 -->
-      <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
-        <view class="ai-avatar-wrapper">
-          <view class="avatar ai-avatar">
-            <image class="avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
+  <!-- Dish grid area ~60% -->
+  <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}">
+    <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone">
+      <view class="taste-header">
+        <view class="taste-indicator" style="background: {{item.bgColor}}"></view>
+        <text class="taste-label">{{item.taste}}</text>
+      </view>
+      <scroll-view class="dish-row" scroll-x enhanced show-scrollbar="{{false}}">
+        <view wx:for="{{item.dishes}}" wx:key="id" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
+          <view class="dish-avatar" style="background: {{item.bgStyle}}">
+            <text class="dish-avatar-char">{{item.avatarChar}}</text>
           </view>
+          <text class="dish-card-name">{{item.name}}</text>
+          <text class="dish-card-price">¥{{item.price}}</text>
+          <view wx:if="{{item.spicyLevel > 0}}" class="spicy-indicator">
+            <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="grid-bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- Quick chips -->
+  <view class="quick-chips">
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="chips-scroll">
+      <view wx:for="{{quickReplies}}" wx:key="index" class="chip" catchtap="onQuickReply" data-text="{{item}}">
+        <text>{{item}}</text>
+      </view>
+      <view wx:if="{{lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0}}" class="chip chip-reorder" catchtap="showLastOrder">
+        <text>🔄 再来一单</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- AI Chat area -->
+  <scroll-view class="chat-area {{chatExpanded ? 'expanded' : 'compact'}}" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{chatScrollToId}}" scroll-with-animation>
+    <view wx:if="{{!chatExpanded && messages.length > 2}}" class="chat-collapse-hint">
+      <text class="hint-line"></text>
+      <text class="hint-text">展开全部对话</text>
+      <text class="hint-line"></text>
+    </view>
+
+    <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
+      <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
+        <view class="ai-avatar-mini">
+          <text class="ai-avatar-text">AI</text>
         </view>
         <view class="msg-content">
           <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
             <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
           </view>
-          <!-- 推荐菜品卡片 -->
-          <view wx:if="{{item.recommendations && item.recommendations.length > 0}}" class="dish-cards">
-            <view wx:for="{{item.recommendations}}" wx:key="id" class="dish-card">
-              <view class="dish-img-wrap">
-                <text class="dish-img-text">{{item.name.slice(0, 1)}}</text>
-              </view>
-              <view class="dish-info">
-                <text class="dish-name">{{item.name}}</text>
-                <text class="dish-price">¥{{item.price}}</text>
-                <view class="dish-tags">
-                  <text class="dish-tag taste-tag">{{item.taste}}</text>
-                  <text wx:if="{{item.spicyLevel > 0}}" class="dish-tag spicy-tag">辣度: {{item.spicyLevel}}</text>
-                </view>
-              </view>
-              <view class="dish-order-btn" catchtap="onOrderDish" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">点这个</view>
+          <view wx:if="{{item.recommendations && item.recommendations.length > 0}}" class="rec-actions">
+            <view wx:for="{{item.recommendations}}" wx:key="id" class="rec-btn" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
+              <text>+ {{item.name}} ¥{{item.price}}</text>
             </view>
           </view>
         </view>
       </view>
-
-      <!-- 用户消息 -->
       <view wx:if="{{item.role === 'user'}}" class="msg-row user">
-        <view class="msg-content user-msg-content">
-          <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
-            <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
-          </view>
-        </view>
-        <view class="user-avatar-wrapper">
-          <view class="avatar user-avatar">
-            <text class="avatar-text">我</text>
-          </view>
+        <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
+          <text class="bubble-text user-bubble-text" selectable="true" user-select="true">{{item.content}}</text>
         </view>
       </view>
     </view>
 
-    <!-- AI 正在输入 -->
     <view wx:if="{{loading}}" class="msg-wrapper">
       <view class="msg-row ai">
-        <view class="ai-avatar-wrapper">
-          <view class="avatar ai-avatar">
-            <image class="avatar-img" src="/images/avatar-default.png" mode="aspectFill"></image>
-          </view>
+        <view class="ai-avatar-mini">
+          <text class="ai-avatar-text">AI</text>
         </view>
-        <view class="msg-content">
-          <view class="bubble ai-bubble typing-bubble">
-            <view class="typing-indicator">
-              <view class="typing-dot"></view>
-              <view class="typing-dot"></view>
-              <view class="typing-dot"></view>
-            </view>
+        <view class="bubble ai-bubble typing-bubble">
+          <view class="typing-indicator">
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
           </view>
         </view>
       </view>
     </view>
 
-    <view class="list-bottom" id="msg-bottom"></view>
+    <view class="chat-bottom" id="chat-bottom"></view>
   </scroll-view>
 
-  <!-- 购物车摘要 -->
-  <view wx:if="{{cart.length > 0}}" class="cart-bar">
-    <view class="cart-info">
-      <text class="cart-text">已选 {{cart.length}} 道菜</text>
-      <text class="cart-total">合计: ¥{{totalPrice}}</text>
-    </view>
-    <view class="cart-order-btn" catchtap="onConfirmOrder">确认下单</view>
-  </view>
-
-  <!-- 订单确认弹窗 -->
-  <view wx:if="{{showOrderDialog}}" class="order-overlay" catchtap="onCloseOrder">
-    <view class="order-dialog" catchtap="">
-      <text class="order-dialog-title">确认订单</text>
-      <view wx:for="{{cart}}" wx:key="id" class="order-dish-item">
-        <text>{{item.name}}</text>
-        <text>¥{{item.price}}</text>
-      </view>
-      <view class="order-total-row">
-        <text>合计</text>
-        <text>¥{{totalPrice}}</text>
-      </view>
-      <view class="order-actions">
-        <view class="order-cancel-btn" catchtap="onCloseOrder">取消</view>
-        <view class="order-confirm-btn" catchtap="onSubmitOrder">确认下单</view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 快捷问题 -->
-  <view wx:if="{{quickReplies.length > 0 && messages.length <= 1}}" class="quick-replies">
-    <view class="quick-reply-title">快捷提问</view>
-    <scroll-view class="quick-reply-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-      <view wx:for="{{quickReplies}}" wx:key="index" class="quick-reply-tag" catchtap="onQuickReply" data-text="{{item}}">
-        <text>{{item}}</text>
-      </view>
-    </scroll-view>
-  </view>
-
-  <!-- 底部输入栏 -->
+  <!-- Input bar -->
   <view class="input-section">
     <view class="input-bar">
-      <view class="input-center">
-        <input
-          class="msg-input"
-          placeholder="输入您想吃的口味..."
-          placeholder-class="input-placeholder"
-          value="{{inputText}}"
-          bindinput="onInput"
-          confirm-type="send"
-          bindconfirm="onSend"
-          cursor-spacing="20"
-        />
-      </view>
-      <view
-        class="send-btn {{hasInput ? 'active' : ''}}"
-        bindtap="onSend"
-        hover-class="{{hasInput ? 'send-btn-hover' : ''}}">
+      <input class="msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" bindfocus="expandChat" bindblur="onChatBlur" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
+      <view class="send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
         <text class="icon-send">↑</text>
       </view>
     </view>
   </view>
+
+  <!-- Cart bar -->
+  <view wx:if="{{cartItemCount > 0}}" class="cart-bar">
+    <view class="cart-bar-left">
+      <view class="cart-icon-wrap">
+        <text class="cart-icon">🛒</text>
+        <text class="cart-badge">{{cartItemCount}}</text>
+      </view>
+      <view class="cart-summary">
+        <text class="cart-label">购物车</text>
+        <text class="cart-total">¥{{totalPrice}}</text>
+      </view>
+    </view>
+    <view class="cart-checkout-btn" catchtap="onCartTap">
+      <text>去下单</text>
+    </view>
+  </view>
+
+  <!-- Cart order panel (slide-up) -->
+  <view wx:if="{{showCartPanel}}" class="cart-panel-overlay" catchtap="onCloseCartPanel">
+    <view class="cart-panel" catchtap="">
+      <view class="panel-header">
+        <text class="panel-title">确认订单</text>
+        <view class="panel-close" catchtap="onCloseCartPanel">
+          <text>✕</text>
+        </view>
+      </view>
+      <scroll-view class="panel-dish-list" scroll-y>
+        <view wx:for="{{cart}}" wx:key="id" class="panel-dish-item">
+          <view class="panel-dish-info">
+            <text class="panel-dish-name">{{item.name}}</text>
+            <text class="panel-dish-price">¥{{item.price}}</text>
+          </view>
+          <view class="panel-qty-controls">
+            <view class="qty-btn" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{-1}}">−</view>
+            <text class="qty-num">{{item.quantity}}</text>
+            <view class="qty-btn qty-plus" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{1}}">+</view>
+          </view>
+        </view>
+      </scroll-view>
+      <input class="panel-note" placeholder="备注（选填）" value="{{orderNote}}" bindinput="onOrderNoteInput" />
+      <view class="panel-footer">
+        <text class="panel-total">合计：¥{{totalPrice}}</text>
+        <view class="panel-confirm-btn" catchtap="onSubmitOrder">确认下单</view>
+      </view>
+    </view>
+  </view>
+
 </view>
