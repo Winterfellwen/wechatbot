@@ -849,6 +849,7 @@ Page({
     this._dragActive = true;
     this._dragStartY = e.touches[0].clientY;
     this._maxSlide = 0;
+    this._slidePulled = false;
 
     if (!this._pageHeight) {
       this._pageHeight = 750;
@@ -861,34 +862,40 @@ Page({
 
     this.setData({
       chatUseScrollTop: true,
-      chatSliding: true,
-      chatScrollTop: 99999
+      chatSliding: true
     });
   },
 
   onChatTouchMove: function(e) {
     if (!this._dragActive) return;
     var deltaY = this._dragStartY - e.touches[0].clientY;
+    if (deltaY < 5 && !this._slidePulled) return;
+
     var threshold = this._slideThreshold || 500;
 
-    // Slide: track maximum slide (never reduces once reached)
+    if (!this._slidePulled && deltaY >= 5) {
+      this._slidePulled = true;
+    }
+
+    // Slide: track maximum (never reduces)
     if (deltaY > this._maxSlide) {
       this._maxSlide = Math.min(deltaY, threshold);
     }
     var pct = (1 - this._maxSlide / threshold) * 100;
     var updates = { chatSlideY: Math.max(0, pct) + '%' };
 
-    // Scroll: both up and down once fully expanded
-    var scrollTop = deltaY - threshold;
-    if (scrollTop > 0 || this._maxSlide >= threshold) {
-      updates.chatScrollTop = Math.max(0, scrollTop);
-    }
+    // Scroll: show latest messages at bottom, scroll up as delta increases
+    var scrollTop = Math.max(0, deltaY - threshold * 0.3);
+    updates.chatScrollTop = 99999 + scrollTop;
+
     this.setData(updates);
   },
 
   onChatTouchEnd: function() {
     if (!this._dragActive) return;
     this._dragActive = false;
+    this._slidePulled = false;
+    this._maxSlide = 0;
     this.setData({
       chatSliding: false,
       chatSlideY: '100%',

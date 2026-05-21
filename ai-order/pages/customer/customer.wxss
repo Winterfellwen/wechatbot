@@ -328,7 +328,7 @@
   pointer-events: auto;
 }
 
-/* Compact inner bar (in normal page flow) */
+/* Compact inner bar (in page flow) */
 .chat-compact-inner {
   display: flex;
   align-items: center;

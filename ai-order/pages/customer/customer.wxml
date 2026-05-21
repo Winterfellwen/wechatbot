@@ -2,7 +2,7 @@
 <view class="customer-container" bindtouchmove="onChatTouchMove" bindtouchend="onChatTouchEnd">
 
   <!-- Dish grid area -->
-  <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
+  <scroll-view class="dish-grid-area" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
     <view class="grid-header">
       <text class="grid-header-title">菜单</text>
       <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
@@ -77,7 +77,7 @@
           <text class="collapse-text">收起</text>
         </view>
       </view>
-      <scroll-view class="chat-scroll-view" scroll-y show-scrollbar="{{false}}" scroll-top="{{chatUseScrollTop ? chatScrollTop : ''}}" scroll-into-view="{{!chatUseScrollTop ? chatScrollToId : ''}}">
+      <scroll-view class="chat-scroll-view" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{chatUseScrollTop ? chatScrollTop : ''}}" scroll-into-view="{{!chatUseScrollTop ? chatScrollToId : ''}}">
         <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
           <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
             <view class="ai-avatar-mini">
