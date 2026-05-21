@@ -182,6 +182,7 @@
   flex-direction: row;
   font-size: 16rpx;
   margin-top: 4rpx;
+  min-height: 32rpx;
 }
 
 .grid-bottom-spacer {

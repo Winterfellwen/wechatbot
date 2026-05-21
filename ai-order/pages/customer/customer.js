@@ -87,7 +87,7 @@ Page({
     chatExpanded: false,
     chatScrollToId: '',
 
-    quickReplies: ['看看菜单', '有什么推荐', '今天吃啥', '辣的'],
+    quickReplies: ['有什么推荐', '热量低的食品', '辣的'],
 
     // Group mode
     groupMode: 'taste',
@@ -388,7 +388,7 @@ Page({
     }
     var apiMessages = [{
       role: 'system',
-      content: '你是一位专业的AI点菜助手，帮助顾客推荐菜品。根据顾客的口味偏好、人数、预算等因素推荐合适的菜品。' + menuText + '\n回答时注意：1.用中文回答 2.推荐要具体实用 3.说明推荐理由 4.语气热情友善 5.推荐时务必使用菜品全名，不要缩写或改词'
+      content: '你是一位专业的AI点菜助手，帮助顾客推荐菜品。根据顾客的口味偏好、人数、预算等因素推荐合适的菜品。' + menuText + '\n回答时注意：1.用中文回答 2.推荐要实用且简短，给顾客精简但重要的信息，如营养，口味，食品热量 3.推荐时务必使用菜品全名，不要缩写或改词'
     }];
     for (var i = 0; i < messages.length; i++) {
       var m = messages[i];
