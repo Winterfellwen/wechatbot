@@ -23,6 +23,10 @@ Thumbs.db
 project.config.json
 project.private.config.json
 
+# Temp scripts
+*.py
+diagnose-fix-log.txt
+
 # Dependencies
 node_modules/
 miniprogram_npm/

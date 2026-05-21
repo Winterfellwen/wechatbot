@@ -230,7 +230,7 @@ Page({
       header: {
         'Authorization': 'Bearer ' + openRouterConfig.key,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-vfje.onrender.com',
+        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
         'X-Title': 'SmartTeacherBot'
       },
       data: { model: openRouterConfig.model, messages: apiMessages, max_tokens: maxTokens },

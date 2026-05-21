@@ -419,7 +419,7 @@ app.post('/api/ai-order/chat', async (req, res) => {
       headers: {
         'Authorization': `Bearer ${aiOrderConfig.apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-vfje.onrender.com',
+        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
         'X-Title': 'AIOrderBot'
       },
       body: JSON.stringify(requestBody)
@@ -547,7 +547,7 @@ app.post('/api/chat', async (req, res) => {
       headers: {
         'Authorization': `Bearer ${openrouterKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-vfje.onrender.com',
+        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
         'X-Title': 'SmartTeacherBot'
       },
       body: JSON.stringify(requestBody)

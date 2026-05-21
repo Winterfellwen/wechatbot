@@ -67,8 +67,8 @@ const config = {
 
   // 微信小程序配置的 API 基础 URL（前端使用）
   frontend: {
-    apiBaseUrl: process.env.API_BASE_URL || 'https://wechatbot-api-vfje.onrender.com',
-    ttsKeyUrl: process.env.TTS_KEY_URL || 'https://wechatbot-api-vfje.onrender.com/api/tts/key',
+    apiBaseUrl: process.env.API_BASE_URL || 'https://wechatbot-api-sg.onrender.com',
+    ttsKeyUrl: process.env.TTS_KEY_URL || 'https://wechatbot-api-sg.onrender.com/api/tts/key',
   }
 };
 

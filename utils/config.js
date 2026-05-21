@@ -2,7 +2,7 @@
 // Front-end unified configuration — single source of truth
 
 var CONFIG = {
-  SERVER: 'https://wechatbot-api-vfje.onrender.com',
+  SERVER: 'https://wechatbot-api-sg.onrender.com',
   STORAGE_KEYS: {
     TOKEN: 'auth_token',
     USER: 'auth_user',
