@@ -2,7 +2,7 @@
 <view class="customer-container">
 
   <!-- Dish grid area -->
-  <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="dish-grid-area" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation>
     <!-- Group mode switcher -->
     <view class="grid-header">
       <text class="grid-header-title">菜单</text>
@@ -13,13 +13,13 @@
         </view>
       </picker>
     </view>
-    <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone">
+    <view wx:for="{{tasteGroups}}" wx:key="taste" class="taste-zone" id="zone-{{item.taste}}">
       <view class="taste-header">
         <view class="taste-indicator" style="background: {{item.bgColor}}"></view>
         <text class="taste-label">{{item.taste}}</text>
       </view>
-      <scroll-view class="dish-row" scroll-x enhanced show-scrollbar="{{false}}">
-        <view wx:for="{{item.dishes}}" wx:key="id" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
+      <scroll-view class="dish-row" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishId}}" scroll-with-animation>
+        <view wx:for="{{item.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
           <view class="dish-avatar" style="background: {{item.bgStyle}}">
             <text class="dish-avatar-char">{{item.avatarChar}}</text>
           </view>

@@ -86,6 +86,8 @@ Page({
     groupModeLabel: '按口味',
     groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     allDishes: [],
+    scrollToDishId: '',
+    scrollToDishZone: '',
 
     lastOrder: null,
   },
@@ -196,6 +198,7 @@ Page({
     var idx = e.detail.value;
     var modes = this.data.groupModes;
     if (modes && modes[idx]) {
+      this.clearHighlight();
       this._applyGroupMode(modes[idx].key);
     }
   },
@@ -236,6 +239,7 @@ Page({
 
   showMenuDirectly: function() {
     var that = this;
+    that.clearHighlight();
     var menuText = '📋 当前菜单：\n\n';
     if (menuData && menuData.dishes) {
       for (var i = 0; i < menuData.dishes.length; i++) {
@@ -256,6 +260,7 @@ Page({
 
   showLastOrder: function() {
     var that = this;
+    that.clearHighlight();
     var lastOrder = this.data.lastOrder;
     var msg = '';
     if (lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0) {
@@ -271,9 +276,21 @@ Page({
   },
 
   _buildApiMessages: function(messages) {
+    // Build menu text for system prompt
+    var menuText = '';
+    if (menuData && menuData.dishes) {
+      menuText = '\n\n当前餐厅菜单（只能从以下菜品中推荐，绝不要推荐菜单外的菜品）：\n';
+      for (var mi = 0; mi < menuData.dishes.length; mi++) {
+        var dd = menuData.dishes[mi];
+        if (dd.status === 'online') {
+          menuText += '- ' + dd.name + ' ¥' + dd.price + ' ' + (dd.taste || '') + (dd.spicyLevel > 0 ? ' 辣度' + dd.spicyLevel : '') + ' ' + (dd.category || '') + '\n';
+        }
+      }
+      menuText += '\n如果顾客问某个具体菜品，请详细介绍并提供推荐理由。如果顾客说要某个菜品（如"来一份宫保鸡丁"），回复中加入下单确认信息。';
+    }
     var apiMessages = [{
       role: 'system',
-      content: '你是一位专业的AI点菜助手，帮助顾客推荐菜品。根据顾客的口味偏好、人数、预算等因素推荐合适的菜品。回答时注意：1.用中文回答 2.推荐要具体实用 3.说明推荐理由 4.语气热情友善'
+      content: '你是一位专业的AI点菜助手，帮助顾客推荐菜品。根据顾客的口味偏好、人数、预算等因素推荐合适的菜品。' + menuText + '\n回答时注意：1.用中文回答 2.推荐要具体实用 3.说明推荐理由 4.语气热情友善 5.推荐时务必使用菜品全名，不要缩写或改词'
     }];
     for (var i = 0; i < messages.length; i++) {
       var m = messages[i];
@@ -377,6 +394,7 @@ Page({
   sendMessage: function(text) {
     if (this.data.loading) return;
     var that = this;
+    this.clearHighlight();
 
     var userMsg = {
       id: ++msgIdCounter,
@@ -539,12 +557,27 @@ Page({
     that._scrollChatBottom();
   },
 
+  clearHighlight: function() {
+    this.setData({ highlightedDishId: null, scrollToDishId: '', scrollToDishZone: '' });
+  },
+
   highlightDish: function(dishId) {
     var that = this;
-    that.setData({ highlightedDishId: dishId });
-    setTimeout(function() {
-      that.setData({ highlightedDishId: null });
-    }, 2000);
+    // Find which taste zone this dish is in for vertical scroll
+    var zones = this.data.tasteGroups;
+    var zoneLabel = '';
+    for (var z = 0; z < zones.length; z++) {
+      var dishes = zones[z].dishes || [];
+      for (var d = 0; d < dishes.length; d++) {
+        if (dishes[d].id === dishId) {
+          zoneLabel = zones[z].taste;
+          break;
+        }
+      }
+      if (zoneLabel) break;
+    }
+    var zoneId = zoneLabel ? 'zone-' + zoneLabel : '';
+    that.setData({ highlightedDishId: dishId, scrollToDishId: 'dish-' + dishId, scrollToDishZone: zoneId });
   },
 
   expandChat: function() {

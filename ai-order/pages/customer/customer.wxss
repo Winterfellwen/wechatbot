@@ -106,14 +106,14 @@
 }
 
 .dish-card.pulse {
-  animation: dishPulse 0.6s ease-in-out 3;
   border-color: #f5576c;
-  box-shadow: 0 0 20rpx rgba(245,87,108,0.3);
+  animation: dishGlow 1.2s ease-in-out infinite;
+  box-shadow: 0 0 20rpx rgba(245,87,108,0.25);
 }
 
-@keyframes dishPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(245,87,108,0); }
-  50% { transform: scale(1.08); box-shadow: 0 0 30rpx rgba(245,87,108,0.4); }
+@keyframes dishGlow {
+  0%, 100% { box-shadow: 0 0 12rpx rgba(245,87,108,0.2); }
+  50% { box-shadow: 0 0 32rpx rgba(245,87,108,0.5), 0 0 60rpx rgba(245,87,108,0.15); }
 }
 
 .dish-avatar {
