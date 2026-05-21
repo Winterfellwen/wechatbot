@@ -55,9 +55,9 @@ Page({
   _getIconSrc: function () {
     function s(str) { return 'data:image/svg+xml,' + encodeURIComponent(str); }
     return {
-      learn: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" fill="#fff"/><rect x="11" y="3" width="2" height="18" fill="rgba(255,255,255,0.3)"/></svg>'),
-      tool: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5" fill="#fff"/><path d="M16 2 L16 7 L19 7" fill="rgba(255,255,255,0.3)"/><rect x="8" y="10" width="8" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/><rect x="8" y="13" width="6" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/><rect x="8" y="16" width="7" height="1.5" rx="0.75" fill="rgba(255,255,255,0.35)"/></svg>'),
-      order: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="#fff"/></svg>')
+      learn: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" fill="#7C3AED"/><rect x="6" y="5" width="5" height="14" rx="1.5" fill="#fff"/><rect x="13" y="5" width="5" height="14" rx="1.5" fill="#fff"/><rect x="10.5" y="3" width="3" height="18" fill="#7C3AED"/></svg>'),
+      tool: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5" fill="#EC4899"/><path d="M16 3 L16 8 L19 8" fill="#FBCFE8"/><rect x="8" y="10" width="8" height="1.5" rx="0.75" fill="#FCE7F3"/><rect x="8" y="13" width="6" height="1.5" rx="0.75" fill="#FCE7F3"/><rect x="8" y="16" width="7" height="1.5" rx="0.75" fill="#FCE7F3"/></svg>'),
+      order: s('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2 L14 11 L23 13 L14 15 L12 24 L10 15 L1 13 L10 11 Z" fill="#F43F5E"/><circle cx="18" cy="6" r="2.5" fill="#FDA4AF"/><circle cx="21" cy="19" r="2" fill="#FDA4AF"/></svg>')
     };
   },
 
