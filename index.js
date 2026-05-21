@@ -11,6 +11,7 @@ const app = express();
 app.set('trust proxy', 'loopback');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(function(err, req, res, next) {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ error: { message: '请求体过大（超过10MB限制），图片请压缩后再试', code: 413 } });

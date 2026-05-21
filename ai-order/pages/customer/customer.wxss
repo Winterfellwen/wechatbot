@@ -134,6 +134,14 @@
   text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
 }
 
+.dish-image {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  margin-bottom: 12rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.1);
+}
+
 .dish-card-name {
   font-size: 24rpx;
   font-weight: 600;

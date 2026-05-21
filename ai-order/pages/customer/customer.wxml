@@ -20,9 +20,10 @@
       </view>
       <scroll-view class="dish-row" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishId}}" scroll-with-animation>
         <view wx:for="{{item.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}}" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
-          <view class="dish-avatar" style="background: {{item.bgStyle}}">
+          <view wx:if="{{!item.imageUrl}}" class="dish-avatar" style="background: {{item.bgStyle}}">
             <text class="dish-avatar-char">{{item.avatarChar}}</text>
           </view>
+          <image wx:else class="dish-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
           <text class="dish-card-name">{{item.name}}</text>
           <text class="dish-card-price">¥{{item.price}}</text>
           <view wx:if="{{item.spicyLevel > 0}}" class="spicy-indicator">
