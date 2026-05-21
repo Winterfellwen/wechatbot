@@ -28,7 +28,9 @@
             <text class="dish-card-name">{{item.name}}</text>
             <text class="dish-card-price">¥{{item.price}}</text>
             <view class="spicy-indicator">
-              <text wx:if="{{item.spicyLevel > 0}}" wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+              <block wx:if="{{item.spicyLevel > 0}}">
+                <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+              </block>
             </view>
             <view class="cart-btn" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
               <text class="cart-btn-text">加入购物车</text>
