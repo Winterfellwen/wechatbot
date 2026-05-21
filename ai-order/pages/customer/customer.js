@@ -468,6 +468,13 @@ Page({
     }, delay);
   },
 
+  previewImage: function(e) {
+    var url = e.currentTarget.dataset.url;
+    if (url) {
+      wx.previewImage({ current: url, urls: [url] });
+    }
+  },
+
   addToCart: function(e) {
     var dishId = e.currentTarget.dataset.dishid;
     var dishName = e.currentTarget.dataset.name;
