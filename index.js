@@ -630,6 +630,8 @@ async function handleChatStream(ws, msg) {
           const delta = parsed.choices?.[0]?.delta?.content;
           if (delta) {
             fullContent += delta;
+            clearTimeout(ws._idleTimer);
+            ws._idleTimer = setTimeout(() => { ws.terminate(); }, 120000);
             ws.send(JSON.stringify({ type: 'token', content: delta }));
           }
         } catch (_) { /* skip malformed SSE */ }
@@ -665,11 +667,11 @@ const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => {
   console.log('WebSocket connected');
   ws.isBusy = false;
-  let idleTimer = setTimeout(() => { ws.terminate(); }, 30000);
+  ws._idleTimer = setTimeout(() => { ws.terminate(); }, 120000);
 
   ws.on('message', (raw) => {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { ws.terminate(); }, 30000);
+    clearTimeout(ws._idleTimer);
+    ws._idleTimer = setTimeout(() => { ws.terminate(); }, 120000);
     try {
       const msg = JSON.parse(raw.toString());
       if (msg.type === 'ping') {
@@ -688,8 +690,8 @@ wss.on('connection', (ws) => {
     } catch (_) { /* ignore invalid messages */ }
   });
 
-  ws.on('close', () => { clearTimeout(idleTimer); });
-  ws.on('error', () => { clearTimeout(idleTimer); });
+  ws.on('close', () => { clearTimeout(ws._idleTimer); });
+  ws.on('error', () => { clearTimeout(ws._idleTimer); });
 });
 
 server.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
