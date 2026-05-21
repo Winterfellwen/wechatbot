@@ -25,7 +25,10 @@
           </view>
           <!-- 推荐菜品卡片 -->
           <view wx:if="{{item.recommendations && item.recommendations.length > 0}}" class="dish-cards">
-            <view wx:for="{{item.recommendations}}" wx:key="id" class="dish-card" data-dish="{{item}}">
+            <view wx:for="{{item.recommendations}}" wx:key="id" class="dish-card">
+              <view class="dish-img-wrap">
+                <text class="dish-img-text">{{item.name.slice(0, 1)}}</text>
+              </view>
               <view class="dish-info">
                 <text class="dish-name">{{item.name}}</text>
                 <text class="dish-price">¥{{item.price}}</text>
