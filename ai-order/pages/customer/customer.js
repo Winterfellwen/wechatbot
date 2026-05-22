@@ -94,7 +94,7 @@ Page({
     chatExpanded: false,
     chatSlideY: '100%',
     chatSliding: false,
-    msgScrollY: 0,
+    scrollToView: '',
     lastAiContent: '',
 
     quickReplies: ['有什么推荐', '热量低的食品', '辣的'],
@@ -890,22 +890,7 @@ Page({
     this.setData({
       chatExpanded: false,
       chatSlideY: '100%',
-      chatSliding: false,
-      msgScrollY: 0
-    });
-  },
-
-  _queryScrollDimensions: function(callback) {
-    var that = this;
-    var query = wx.createSelectorQuery().in(this);
-    query.select('.chat-scroll-view').boundingClientRect(function(rect) {
-      if (rect) that._containerHeight = rect.height;
-    });
-    query.select('.chat-msg-list').boundingClientRect(function(rect) {
-      if (rect) that._contentHeight = rect.height;
-    });
-    query.exec(function() {
-      if (callback) callback(that._contentHeight, that._containerHeight);
+      chatSliding: false
     });
   },
 
@@ -913,25 +898,13 @@ Page({
     this.setData({
       chatSlideY: '0%',
       chatSliding: true,
-      chatExpanded: true,
-      msgScrollY: 0
+      chatExpanded: true
     });
     var that = this;
-    that._queryScrollDimensions(function(contentHeight, containerHeight) {
-      that.setData({ msgScrollY: Math.min(0, -(contentHeight - containerHeight / 2)) });
-    });
+    setTimeout(function() { that._scrollChatBottom(); }, 200);
   },
 
   onChatTouchMove: function() {
-  },
-
-  onChatTouchEnd: function() {
-    this.setData({
-      chatSlideY: '100%',
-      chatSliding: false,
-      chatExpanded: false,
-      msgScrollY: 0
-    });
   },
 
   onChatBlur: function() {
@@ -943,13 +916,10 @@ Page({
   _scrollChatBottom: function() {
     var that = this;
     if (!that.data.chatExpanded) return;
+    that.setData({ scrollToView: 'chat-bottom' });
     setTimeout(function() {
-      if (!that.data.chatExpanded) return;
-      that._queryScrollDimensions(function(contentHeight, containerHeight) {
-        if (!that.data.chatExpanded) return;
-        that.setData({ msgScrollY: Math.min(0, -(contentHeight - containerHeight / 2)) });
-      });
-    }, 100);
+      if (that.data.chatExpanded) that.setData({ scrollToView: '' });
+    }, 300);
   },
 
   copyText: function(e) {

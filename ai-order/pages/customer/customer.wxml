@@ -77,8 +77,8 @@
           <text class="collapse-text">收起</text>
         </view>
       </view>
-      <scroll-view class="chat-scroll-view" scroll-y enhanced show-scrollbar="{{false}}">
-        <view class="chat-msg-list" style="transform: translateY({{msgScrollY}}px)">
+      <scroll-view class="chat-scroll-view" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToView}}">
+        <view class="chat-msg-list">
           <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
             <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
               <view class="msg-avatar ai-avatar">
