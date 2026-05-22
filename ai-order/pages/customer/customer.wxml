@@ -2,7 +2,7 @@
 <view class="customer-container {{inputMode === 'voice' ? 'voice-mode' : ''}} {{cartItemCount > 0 ? 'cart-visible' : ''}}" bindtouchmove="onChatTouchMove">
 
   <!-- Dish grid area -->
-      <scroll-view class="dish-grid-area" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation bindscroll="onDishGridScroll">
+      <scroll-view class="dish-grid-area" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation bindscroll="onDishGridScroll" catchtap="collapseChat">
         <view class="grid-header">
           <text class="grid-header-title">菜单</text>
           <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
@@ -77,10 +77,13 @@
           <text class="collapse-text">收起</text>
         </view>
       </view>
-      <scroll-view class="chat-scroll-view" enhanced show-scrollbar="{{false}}">
+      <scroll-view class="chat-scroll-view" scroll-y enhanced show-scrollbar="{{false}}">
         <view class="chat-msg-list" style="transform: translateY({{msgScrollY}}px)">
           <view wx:for="{{messages}}" wx:key="id" class="msg-wrapper" id="msg-{{item.id}}">
             <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
+              <view class="msg-avatar ai-avatar">
+                <text class="msg-avatar-text">AI</text>
+              </view>
               <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
                 <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
               </view>
@@ -89,10 +92,16 @@
               <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
                 <text class="bubble-text user-bubble-text" selectable="true" user-select="true">{{item.content}}</text>
               </view>
+              <view class="msg-avatar user-avatar">
+                <text class="msg-avatar-text">我</text>
+              </view>
             </view>
           </view>
           <view wx:if="{{streamingText}}" class="msg-wrapper">
             <view class="msg-row ai">
+              <view class="msg-avatar ai-avatar">
+                <text class="msg-avatar-text">AI</text>
+              </view>
               <view class="bubble ai-bubble">
                 <text class="bubble-text" selectable="true" user-select="true">{{streamingText}}</text>
                 <text class="typing-cursor">▋</text>
@@ -101,6 +110,9 @@
           </view>
           <view wx:elif="{{loading}}" class="msg-wrapper">
             <view class="msg-row ai">
+              <view class="msg-avatar ai-avatar">
+                <text class="msg-avatar-text">AI</text>
+              </view>
               <view class="bubble ai-bubble typing-bubble">
                 <view class="typing-indicator">
                   <view class="typing-dot"></view>
