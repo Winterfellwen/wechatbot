@@ -83,21 +83,12 @@
   color: #1A1A1A;
 }
 
-.dish-scroll-x {
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 8rpx;
-}
-.dish-scroll-x::-webkit-scrollbar {
-  display: none;
-}
-
 .dish-row {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   padding: 0 16rpx;
+  padding-bottom: 8rpx;
 }
 
 .dish-card {

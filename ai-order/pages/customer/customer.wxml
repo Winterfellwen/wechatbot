@@ -17,9 +17,8 @@
             <view class="taste-indicator" style="background: {{zone.bgColor}}"></view>
             <text class="taste-label">{{zone.taste}}</text>
           </view>
-          <view class="dish-scroll-x">
-            <view class="dish-row">
-              <view wx:for="{{zone.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}} {{showRecGlow && zone.taste === 'AI推荐' && recDishIds[item.id] ? 'rec-glow' : ''}}" catchtap="onDishTap" data-dishid="{{item.id}}">
+          <view class="dish-row">
+            <view wx:for="{{zone.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}} {{showRecGlow && zone.taste === 'AI推荐' && recDishIds[item.id] ? 'rec-glow' : ''}}" catchtap="onDishTap" data-dishid="{{item.id}}">
                 <view wx:if="{{!item.imageUrl}}" class="dish-avatar" style="background: {{item.bgStyle}}">
                   <text class="dish-avatar-char">{{item.avatarChar}}</text>
                 </view>
@@ -40,8 +39,6 @@
                   <text class="cart-btn-text">加入购物车</text>
                 </view>
               </view>
-            </view>
-          </view>
         </view>
         <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
           <text class="grid-empty-text">暂无菜单数据</text>
