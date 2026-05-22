@@ -12,12 +12,13 @@
 /* ====== Dish grid area ====== */
 .dish-grid-area {
   flex: 1;
+  height: 0;
+  min-height: 0;
   background: #FFFFFF;
   padding: 0 0 0;
   position: relative;
   z-index: 1;
   box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.08);
-  overflow: hidden;
 }
 
 
@@ -80,16 +81,21 @@
   color: #1A1A1A;
 }
 
-.dish-scroll {
-  overflow: hidden;
+.dish-scroll-x {
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8rpx;
+}
+.dish-scroll-x::-webkit-scrollbar {
+  display: none;
 }
 
 .dish-row {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap;
   padding: 0 16rpx;
-  padding-bottom: 8rpx;
 }
 
 .dish-card {

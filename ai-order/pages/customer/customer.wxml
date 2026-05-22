@@ -17,7 +17,7 @@
             <view class="taste-indicator" style="background: {{zone.bgColor}}"></view>
             <text class="taste-label">{{zone.taste}}</text>
           </view>
-          <scroll-view class="dish-scroll" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishId}}" scroll-with-animation>
+          <view class="dish-scroll-x">
             <view class="dish-row">
               <view wx:for="{{zone.dishes}}" wx:key="id" id="dish-{{item.id}}" class="dish-card {{highlightedDishId === item.id ? 'pulse' : ''}} {{showRecGlow && zone.taste === 'AI推荐' && recDishIds[item.id] ? 'rec-glow' : ''}}" catchtap="onDishTap" data-dishid="{{item.id}}">
                 <view wx:if="{{!item.imageUrl}}" class="dish-avatar" style="background: {{item.bgStyle}}">
@@ -41,7 +41,7 @@
                 </view>
               </view>
             </view>
-          </scroll-view>
+          </view>
         </view>
         <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
           <text class="grid-empty-text">暂无菜单数据</text>
