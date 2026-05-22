@@ -49,6 +49,11 @@ Page({
       url: SERVER + '/api/ai-order/merchants',
       header: { 'Authorization': 'Bearer ' + wx.getStorageSync('auth_token') },
       success: function(res) {
+        if (res.statusCode === 401) {
+          wx.removeStorageSync('auth_token');
+          that._loadLocalDemo();
+          return;
+        }
         var list = (res.data && res.data.success && res.data.data) || [];
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
