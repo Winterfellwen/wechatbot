@@ -1,6 +1,7 @@
 var loginLib = require('../../../utils/login');
 var CONFIG = require('../../../utils/config');
 var SERVER = CONFIG.SERVER;
+var demoData = require('../../data/demo-menus');
 
 Page({
   data: {
@@ -26,15 +27,19 @@ Page({
   loadMerchants: function() {
     var that = this;
     if (!loginLib.isLoggedIn()) {
-      loginLib.login().then(function() {
-        that._fetchMerchants();
-      }).catch(function() {
-        that.setData({ loading: false, merchants: [] });
-        wx.showToast({ title: '请先登录', icon: 'none' });
-      });
+      that._loadLocalDemo();
       return;
     }
     that._fetchMerchants();
+  },
+
+  _loadLocalDemo: function() {
+    var list = (demoData && demoData.merchants || []).map(function(m) {
+      return { id: m.id, name: m.name, description: m.name + '（演示商家）', type: 'demo', dishCount: (m.dishes || []).length };
+    });
+    var selectedId = list.length > 0 ? list[0].id : '';
+    this.setData({ merchants: list, selectedMerchantId: selectedId, loading: false });
+    if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
   },
 
   _fetchMerchants: function() {
@@ -45,6 +50,7 @@ Page({
       header: { 'Authorization': 'Bearer ' + wx.getStorageSync('auth_token') },
       success: function(res) {
         var list = (res.data && res.data.success && res.data.data) || [];
+        if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
         var selectedId = '';
         if (list.length > 0) {
@@ -58,8 +64,8 @@ Page({
         if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
       },
       fail: function() {
-        that.setData({ loading: false });
-        wx.showToast({ title: '加载商家列表失败', icon: 'none' });
+        that._loadLocalDemo();
+        wx.showToast({ title: '使用本地演示数据', icon: 'none' });
       }
     });
   },
