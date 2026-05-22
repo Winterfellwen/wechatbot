@@ -12,13 +12,15 @@
 /* ====== Dish grid area ====== */
 .dish-grid-area {
   flex: 1;
-  height: 0;
-  min-height: 0;
   background: #FFFFFF;
   padding: 0 0 0;
   position: relative;
   z-index: 1;
   box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.08);
+}
+
+.dish-grid-area.chat-expanded {
+  max-height: 25vh;
 }
 
 

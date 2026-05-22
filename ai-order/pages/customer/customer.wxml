@@ -2,7 +2,7 @@
 <view class="customer-container {{inputMode === 'voice' ? 'voice-mode' : ''}} {{cartItemCount > 0 ? 'cart-visible' : ''}}" bindtouchmove="onChatTouchMove">
 
   <!-- Dish grid area -->
-      <scroll-view class="dish-grid-area" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation bindscroll="onDishGridScroll" catchtap="collapseChat">
+      <scroll-view class="dish-grid-area {{chatExpanded ? 'chat-expanded' : ''}}" scroll-y show-scrollbar="{{false}}" scroll-into-view="{{scrollToDishZone}}" scroll-with-animation bindscroll="onDishGridScroll" catchtap="collapseChat">
         <view class="grid-header">
           <text class="grid-header-title">菜单</text>
           <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
