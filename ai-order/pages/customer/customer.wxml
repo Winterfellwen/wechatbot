@@ -39,6 +39,7 @@
                   <text class="cart-btn-text">加入购物车</text>
                 </view>
               </view>
+            </view>
         </view>
         <view wx:if="{{tasteGroups.length === 0 && !menuLoading}}" class="grid-empty">
           <text class="grid-empty-text">暂无菜单数据</text>
