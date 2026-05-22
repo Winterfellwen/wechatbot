@@ -53,8 +53,8 @@
         <view class="grid-bottom-spacer"></view>
       </scroll-view>
 
-  <!-- Chat compact bar: always in page flow, triggers drag expansion -->
-  <view class="chat-compact-inner" bindtouchstart="onChatTouchStart" data-chat-trigger="1">
+  <!-- Chat compact bar: triggers drag expansion -->
+  <view wx:if="{{!chatExpanded}}" class="chat-compact-inner" bindtouchstart="onChatTouchStart" data-chat-trigger="1">
     <view class="compact-preview" wx:if="{{lastAiContent}}">
       <view class="compact-ai-avatar">
         <text class="compact-ai-text">AI</text>
@@ -125,11 +125,46 @@
           <view class="chat-bottom" id="chat-bottom"></view>
         </view>
       </scroll-view>
+      <!-- Chips + input inside chat when expanded -->
+      <view wx:if="{{chatExpanded}}" class="chat-bottom-bar">
+        <view class="chat-quick-chips">
+          <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="chips-scroll">
+            <view wx:for="{{quickReplies}}" wx:key="index" class="chip" catchtap="onQuickReply" data-text="{{item}}">
+              <text>{{item}}</text>
+            </view>
+            <view wx:if="{{lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0}}" class="chip chip-reorder" catchtap="showLastOrder">
+              <text>🔄 再来一单</text>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="chat-input-section {{inputMode === 'voice' ? 'voice-mode' : ''}}">
+          <view wx:if="{{inputMode === 'voice'}}" class="chat-voice-input-area">
+            <view class="chat-mic-btn {{isRecording ? 'recording' : ''}} {{loading ? 'rainbow' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
+              <text class="chat-icon-mic">🎤</text>
+              <text class="chat-mic-label">{{isRecording ? '正在聆听...' : '按住说话'}}</text>
+            </view>
+            <view class="chat-mode-toggle" catchtap="_switchToText">
+              <text class="chat-mode-toggle-label">键盘输入</text>
+            </view>
+          </view>
+          <view wx:else class="chat-text-input-area">
+            <view class="chat-input-bar">
+              <input class="chat-msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
+              <view class="chat-send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
+                <text class="chat-icon-send">↑</text>
+              </view>
+            </view>
+            <view class="chat-mode-toggle" catchtap="_switchToVoice">
+              <text class="chat-mode-toggle-label">语音输入</text>
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 
-  <!-- Quick chips -->
-  <view class="quick-chips">
+  <!-- Quick chips (page flow, hidden when chat expanded) -->
+  <view wx:if="{{!chatExpanded}}" class="quick-chips">
     <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="chips-scroll">
       <view wx:for="{{quickReplies}}" wx:key="index" class="chip" catchtap="onQuickReply" data-text="{{item}}">
         <text>{{item}}</text>
@@ -140,8 +175,8 @@
     </scroll-view>
   </view>
 
-  <!-- Input bar -->
-  <view class="input-section {{inputMode === 'voice' ? 'voice-mode' : ''}}">
+  <!-- Input bar (page flow, hidden when chat expanded) -->
+  <view wx:if="{{!chatExpanded}}" class="input-section {{inputMode === 'voice' ? 'voice-mode' : ''}}">
     <view wx:if="{{inputMode === 'voice'}}" class="voice-input-area">
       <view class="mic-btn-large {{isRecording ? 'recording' : ''}} {{loading ? 'rainbow' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
         <text class="icon-mic-large">🎤</text>
