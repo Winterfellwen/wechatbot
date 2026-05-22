@@ -9,6 +9,7 @@ var configLoading = null;
 var menuData = null;
 
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
+var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 
 var WS_URL = 'wss://wechatbot-api-sg.onrender.com/ws';
 var wsTask = null;
@@ -91,12 +92,9 @@ Page({
     orderNote: '',
 
     chatExpanded: false,
-    chatScrollToId: '',
-    chatPeeking: false,
     chatSlideY: '100%',
     chatSliding: false,
-    chatScrollTop: 0,
-    chatUseScrollTop: false,
+    msgScrollY: 0,
     lastAiContent: '',
 
     quickReplies: ['有什么推荐', '热量低的食品', '辣的'],
@@ -107,6 +105,8 @@ Page({
     groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     allDishes: [],
     aiRecommendations: [],
+    recDishIds: {},
+    showRecGlow: false,
     streamingText: '',
     scrollToDishId: '',
     scrollToDishZone: '',
@@ -119,6 +119,8 @@ Page({
     var merchantId = options.merchantId || '';
     msgIdCounter = 0;
     that.setData({ merchantId: merchantId });
+    var merchantName = wx.getStorageSync('ai-order-merchant-name') || '';
+    wx.setNavigationBarTitle({ title: merchantName ? merchantName + ' - 智能点菜' : '智能点菜' });
     that.addWelcomeMessage();
     that.loadMenu();
     var savedOrder = wx.getStorageSync('ai-order-last-order');
@@ -171,7 +173,13 @@ Page({
       return;
     }
 
-    // 2. Try OCI direct fetch (faster, no cold start)
+    // 2. Demo merchant: load from local data
+    if (DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
+      that._loadMenuFromDemoData(merchantId);
+      return;
+    }
+
+    // 3. Try OCI direct fetch (faster, no cold start)
     var ociUrl = OCI_BASE + '/menus/default/' + merchantId + '.json';
     wx.request({
       url: ociUrl,
@@ -209,6 +217,27 @@ Page({
         console.warn('[customer] failed to load menu from server');
       }
     });
+  },
+
+  _loadMenuFromDemoData: function(merchantId) {
+    var that = this;
+    var data = require('../../data/demo-menus');
+    var merchants = (data && data.merchants) || [];
+    var found = null;
+    for (var i = 0; i < merchants.length; i++) {
+      if (merchants[i].id === merchantId) {
+        found = merchants[i];
+        break;
+      }
+    }
+    that.setData({ menuLoading: false });
+    if (found) {
+      var menu = { dishes: found.dishes || [] };
+      wx.setStorageSync('menu-cache-' + merchantId, menu);
+      that._applyMenuData(menu);
+    } else {
+      that._loadMenuFromServer();
+    }
   },
 
   _applyMenuData: function(rawMenu) {
@@ -301,8 +330,10 @@ Page({
     var that = this;
     var allDishes = that.data.allDishes;
     var enriched = [];
+    var recIds = {};
     for (var i = 0; i < recommendations.length; i++) {
       var rec = recommendations[i];
+      recIds[rec.id] = true;
       for (var j = 0; j < allDishes.length; j++) {
         if (allDishes[j].id === rec.id) {
           enriched.push(allDishes[j]);
@@ -310,7 +341,7 @@ Page({
         }
       }
     }
-    that.setData({ aiRecommendations: enriched });
+    that.setData({ aiRecommendations: enriched, recDishIds: recIds, showRecGlow: enriched.length > 0 });
     var result = that._rebuildGroups(allDishes, that.data.groupMode);
     if (enriched.length > 0) {
       result.tasteGroups.unshift({
@@ -326,10 +357,24 @@ Page({
     }
   },
 
+  _clearRecGlow: function() {
+    if (!this.data.showRecGlow) return;
+    this.setData({ recDishIds: {}, showRecGlow: false });
+  },
+
+  onDishTap: function(e) {
+    this._clearRecGlow();
+  },
+
+  onDishGridScroll: function() {
+    this._clearRecGlow();
+  },
+
   onGroupModeChange: function(e) {
     var idx = e.detail.value;
     var modes = this.data.groupModes;
     if (modes && modes[idx]) {
+      this._clearRecGlow();
       this._applyGroupMode(modes[idx].key);
     }
   },
@@ -642,6 +687,7 @@ Page({
   sendMessage: function(text) {
     if (this.data.loading) return;
     var that = this;
+    that._clearRecGlow();
     that.setData({ aiRecommendations: [] });
 
     var userMsg = { id: ++msgIdCounter, role: 'user', content: text };
@@ -710,6 +756,7 @@ Page({
   },
 
   previewImage: function(e) {
+    this._clearRecGlow();
     var url = e.currentTarget.dataset.url;
     if (url) {
       wx.previewImage({ current: url, urls: [url] });
@@ -717,6 +764,7 @@ Page({
   },
 
   addToCart: function(e) {
+    this._clearRecGlow();
     var dishId = e.currentTarget.dataset.dishid;
     var dishName = e.currentTarget.dataset.name;
     var price = parseFloat(e.currentTarget.dataset.price) || 0;
@@ -737,6 +785,7 @@ Page({
   },
 
   updateItemQty: function(e) {
+    this._clearRecGlow();
     var dishId = e.currentTarget.dataset.dishid;
     var delta = parseInt(e.currentTarget.dataset.delta) || 0;
     var cart = this.data.cart;
@@ -841,49 +890,48 @@ Page({
     this.setData({
       chatExpanded: false,
       chatSlideY: '100%',
-      chatSliding: false
+      chatSliding: false,
+      msgScrollY: 0
+    });
+  },
+
+  _queryScrollDimensions: function(callback) {
+    var that = this;
+    var query = wx.createSelectorQuery().in(this);
+    query.select('.chat-scroll-view').boundingClientRect(function(rect) {
+      if (rect) that._containerHeight = rect.height;
+    });
+    query.select('.chat-msg-list').boundingClientRect(function(rect) {
+      if (rect) that._contentHeight = rect.height;
+    });
+    query.exec(function() {
+      if (callback) callback(that._contentHeight, that._containerHeight);
     });
   },
 
   onChatTouchStart: function(e) {
-    this._dragActive = true;
-    this._dragStartY = e.touches[0].clientY;
-    this._scrollBase = 0;
-
-    if (!this._pageHeight) {
-      this._pageHeight = 750;
-      var that = this;
-      wx.getSystemInfo({ success: function(r) { that._pageHeight = r.windowHeight; } });
-    }
-
-    // Instant expand to full 75vh, show latest messages
     this.setData({
       chatSlideY: '0%',
       chatSliding: true,
-      chatUseScrollTop: true,
-      chatScrollTop: 99999
+      chatExpanded: true,
+      msgScrollY: 0
+    });
+    var that = this;
+    that._queryScrollDimensions(function(contentHeight, containerHeight) {
+      that.setData({ msgScrollY: Math.min(0, -(contentHeight - containerHeight / 2)) });
     });
   },
 
-  onChatTouchMove: function(e) {
-    if (!this._dragActive) return;
-    var deltaY = this._dragStartY - e.touches[0].clientY;
-    // deltaY > 0 = finger up, deltaY < 0 = finger down
-    // From bottom: drag up → see older (need smaller scroll-top)
-    //              drag down → see newer (clamped to max = bottom)
-    this.setData({ chatScrollTop: Math.max(0, 99999 - deltaY) });
+  onChatTouchMove: function() {
   },
 
   onChatTouchEnd: function() {
-    if (!this._dragActive) return;
-    this._dragActive = false;
     this.setData({
       chatSlideY: '100%',
       chatSliding: false,
-      chatUseScrollTop: false,
-      chatScrollTop: 0
+      chatExpanded: false,
+      msgScrollY: 0
     });
-    this._scrollChatBottom();
   },
 
   onChatBlur: function() {
@@ -894,9 +942,13 @@ Page({
 
   _scrollChatBottom: function() {
     var that = this;
+    if (!that.data.chatExpanded) return;
     setTimeout(function() {
-      if (that._dragActive) return;
-      that.setData({ chatScrollToId: 'chat-bottom', chatUseScrollTop: false });
+      if (!that.data.chatExpanded) return;
+      that._queryScrollDimensions(function(contentHeight, containerHeight) {
+        if (!that.data.chatExpanded) return;
+        that.setData({ msgScrollY: Math.min(0, -(contentHeight - containerHeight / 2)) });
+      });
     }, 100);
   },
 

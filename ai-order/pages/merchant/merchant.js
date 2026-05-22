@@ -3,6 +3,7 @@
 
 var CONFIG = require('../../../utils/config');
 var SERVER = CONFIG.SERVER;
+var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 var msgIdCounter = 0;
 
 var openRouterConfig = null;
@@ -51,6 +52,8 @@ Page({
     var merchantId = options.merchantId || '';
     msgIdCounter = 0;
     that.setData({ merchantId: merchantId });
+    var merchantName = wx.getStorageSync('ai-order-merchant-name') || '';
+    wx.setNavigationBarTitle({ title: merchantName ? merchantName + ' - AI菜单助手' : 'AI菜单助手' });
     that.addWelcomeMessage();
     that.loadMenu();
     initOpenRouter().catch(function(err) {
@@ -65,6 +68,11 @@ Page({
     var cached = wx.getStorageSync(cacheKey);
     if (cached && cached.dishes) {
       menuData = cached;
+      return;
+    }
+    if (merchantId && DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
+      that._loadMenuFromDemoData(merchantId);
+      return;
     }
     var url = SERVER + '/api/ai-order/menu/list';
     if (merchantId) url += '?merchantId=' + merchantId;
@@ -81,6 +89,24 @@ Page({
         console.warn('[merchant] failed to load menu:', err);
       }
     });
+  },
+
+  _loadMenuFromDemoData: function(merchantId) {
+    var that = this;
+    var data = require('../../data/demo-menus');
+    var merchants = (data && data.merchants) || [];
+    var found = null;
+    for (var i = 0; i < merchants.length; i++) {
+      if (merchants[i].id === merchantId) {
+        found = merchants[i];
+        break;
+      }
+    }
+    if (found) {
+      var menu = { dishes: found.dishes || [] };
+      menuData = menu;
+      wx.setStorageSync('menu-cache-' + merchantId, menu);
+    }
   },
 
   saveMenu: function(menu) {

@@ -5,7 +5,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
-const demoMenus = require('./ai-order/data/demo-menus.json');
+const demoMenus = require('./ai-order/data/demo-menus');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 
@@ -13,6 +13,19 @@ const ociConfig = config.oci;
 
 function ociMenuUrl(userId, merchantId) {
   return `${ociConfig.baseUrl}/menus/${userId}/${merchantId}.json`;
+}
+
+async function seedDemoMerchants(openid) {
+  if (!pool) return;
+  const [existing] = await pool.query('SELECT COUNT(*) as cnt FROM ai_order_merchants WHERE openid = ?', [openid]);
+  if (existing[0].cnt > 0) return;
+  const demoList = demoMenus.merchants || [];
+  for (const m of demoList) {
+    await pool.query(
+      'INSERT INTO ai_order_merchants (id, openid, name, description, type) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=name',
+      ['demo-' + m.id, openid, m.name, m.name + '（演示商家）', 'demo']
+    );
+  }
 }
 
 function getOciClient() {
@@ -407,6 +420,18 @@ async function initDB() {
         FOREIGN KEY (openid) REFERENCES users(openid)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
+    // AI Order merchants table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ai_order_merchants (
+        id VARCHAR(64) PRIMARY KEY,
+        openid VARCHAR(255) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        description VARCHAR(500) DEFAULT '',
+        type ENUM('demo','custom') DEFAULT 'custom',
+        createdAt DATETIME DEFAULT NOW(),
+        INDEX idx_openid (openid)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
     console.log('DB initialized');
   } catch (err) {
     console.error('DB init error:', err.message);
@@ -512,12 +537,13 @@ app.get('/api/ai-order/menu/list', async (req, res) => {
   if (!merchantId) {
     return res.status(400).json({ success: false, error: 'merchantId required' });
   }
-  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
   if (demoMerchant) {
-    return res.json({ success: true, data: demoMerchant, source: 'demo' });
+    return res.json({ success: true, data: { id: merchantId, name: demoMerchant.name, dishes: demoMerchant.dishes }, source: 'demo' });
   }
+  const userId = req.query.userId || 'default';
   try {
-    const ociUrl = ociMenuUrl('default', merchantId);
+    const ociUrl = ociMenuUrl(userId, merchantId);
     const resp = await fetch(ociUrl);
     if (resp.ok) {
       const data = await resp.json();
@@ -539,20 +565,97 @@ app.get('/api/ai-order/menu/oci-url', (req, res) => {
 });
 
 // 保存菜单到 OCI
-app.post('/api/ai-order/menu/save', async (req, res) => {
+app.post('/api/ai-order/menu/save', requireAuth, async (req, res) => {
   const { merchantId, menu } = req.body;
   if (!merchantId || !menu) {
     return res.status(400).json({ success: false, error: 'merchantId and menu required' });
   }
-  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, message: '演示模式：未保存到 OCI', source: 'demo' });
   }
+  const userId = req.user.openid;
   try {
-    const result = await ociSaveMenu('default', merchantId, menu);
+    const result = await ociSaveMenu(userId, merchantId, menu);
     res.json({ success: true, message: '菜单已保存到 OCI', url: result.url });
   } catch (err) {
     res.status(500).json({ success: false, error: 'OCI 保存失败：' + err.message });
+  }
+});
+
+// --- AI 点菜 - 多租户商家管理 ---
+
+// 获取当前用户的商家列表（首次自动播种 demo 商家）
+app.get('/api/ai-order/merchants', requireAuth, async (req, res) => {
+  try {
+    const openid = req.user.openid;
+    if (!pool) {
+      const demos = (demoMenus.merchants || []).map(m => ({
+        id: 'demo-' + m.id, name: m.name,
+        description: m.name + '（演示商家）', type: 'demo',
+        dishCount: (m.dishes || []).length
+      }));
+      return res.json({ success: true, data: demos });
+    }
+    await seedDemoMerchants(openid);
+    const [rows] = await pool.query(
+      'SELECT id, name, description, type, createdAt FROM ai_order_merchants WHERE openid = ? ORDER BY createdAt ASC', [openid]
+    );
+    const data = rows.map(r => {
+      let dishCount = 0;
+      if (r.type === 'demo') {
+        const demo = demoMenus.merchants.find(m => 'demo-' + m.id === r.id);
+        if (demo) dishCount = (demo.dishes || []).length;
+      }
+      return { ...r, dishCount };
+    });
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('GET /api/ai-order/merchants error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 创建新商家
+app.post('/api/ai-order/merchants', requireAuth, async (req, res) => {
+  try {
+    const openid = req.user.openid;
+    const { name, description } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: '商家名称不能为空' });
+    }
+    const id = 'usr_' + openid + '_' + Date.now();
+    if (pool) {
+      await pool.query(
+        'INSERT INTO ai_order_merchants (id, openid, name, description, type) VALUES (?, ?, ?, ?, ?)',
+        [id, openid, name.trim(), (description || '').trim(), 'custom']
+      );
+    }
+    res.json({ success: true, data: { id, name: name.trim(), description: (description || '').trim(), type: 'custom', dishCount: 0 } });
+  } catch (err) {
+    console.error('POST /api/ai-order/merchants error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 删除商家
+app.delete('/api/ai-order/merchants/:id', requireAuth, async (req, res) => {
+  try {
+    const openid = req.user.openid;
+    const { id } = req.params;
+    if (!pool) {
+      return res.status(400).json({ success: false, error: '非演示模式不支持删除' });
+    }
+    const [result] = await pool.query(
+      'DELETE FROM ai_order_merchants WHERE id = ? AND openid = ?', [id, openid]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: '商家不存在或无权操作' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /api/ai-order/merchants error:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

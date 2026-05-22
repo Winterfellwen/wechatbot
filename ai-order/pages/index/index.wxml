@@ -1,18 +1,62 @@
-<!-- ai-order/pages/index/index.wxml -->
 <view class="container">
-  <view class="merchant-selector">
-    <text class="merchant-name">{{currentMerchant}}</text>
-    <view class="change-btn" bindtap="onChangeMerchant">切换</view>
+  <view class="header">
+    <text class="header-title">AI 点菜</text>
   </view>
 
-  <view class="entry-buttons">
-    <view class="entry-btn merchant-btn" bindtap="onEnterMerchant">
-      <text class="btn-title">商家入口</text>
-      <text class="btn-desc">管理菜单、添加菜品</text>
+  <view class="section-label">我的商家</view>
+
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <scroll-view wx:else class="merchant-scroll" scroll-y>
+    <view
+      wx:for="{{merchants}}" wx:key="id"
+      class="merchant-card {{item.id === selectedMerchantId ? 'selected' : ''}}"
+      catchtap="onSelectMerchant" data-id="{{item.id}}"
+      bindlongpress="onDeleteMerchant" data-id="{{item.id}}"
+    >
+      <view class="card-top">
+        <text class="card-name">{{item.name}}</text>
+        <text class="card-badge" wx:if="{{item.type === 'demo'}}">演示</text>
+      </view>
+      <text class="card-desc" wx:if="{{item.description}}">{{item.description}}</text>
+      <text class="card-dishes">{{item.dishCount || 0}} 个菜品</text>
+      <view class="card-check" wx:if="{{item.id === selectedMerchantId}}">
+        <text class="check-icon">✓</text>
+      </view>
     </view>
-    <view class="entry-btn customer-btn" bindtap="onEnterCustomer">
-      <text class="btn-title">客户入口</text>
-      <text class="btn-desc">智能推荐、虚拟下单</text>
+
+    <view class="create-card" catchtap="onShowCreate">
+      <text class="create-icon">+</text>
+      <text class="create-text">新建商家</text>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-buttons" wx:if="{{!loading && merchants.length > 0}}">
+    <view class="btn btn-merchant" catchtap="onEnterMerchant">
+      <text class="btn-icon">🏪</text>
+      <text class="btn-label">进入商家管理</text>
+    </view>
+    <view class="btn btn-customer" catchtap="onEnterCustomer">
+      <text class="btn-icon">🍽️</text>
+      <text class="btn-label">进入点菜</text>
+    </view>
+  </view>
+
+  <!-- Create modal -->
+  <view class="modal-overlay" wx:if="{{showCreateModal}}" catchtap="onHideCreate">
+    <view class="modal-content" catchtap="">
+      <text class="modal-title">新建商家</text>
+      <input class="modal-input" placeholder="商家名称" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
+      <input class="modal-input modal-input-desc" placeholder="商家描述（选填）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="200" />
+      <view class="modal-buttons">
+        <view class="modal-btn modal-btn-cancel" catchtap="onHideCreate">取消</view>
+        <view class="modal-btn modal-btn-confirm {{creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">
+          <text wx:if="{{creating}}">创建中...</text>
+          <text wx:else>创建</text>
+        </view>
+      </view>
     </view>
   </view>
 </view>
