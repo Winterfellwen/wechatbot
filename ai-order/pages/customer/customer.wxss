@@ -7,6 +7,7 @@
   height: 100vh;
   background: #F8F9FA;
   overflow: hidden;
+  position: relative;
 }
 
 /* ====== Dish grid area ====== */
@@ -474,6 +475,7 @@
 
 .chat-bottom-bar {
   flex-shrink: 0;
+  min-height: 260rpx;
   background: #FFFFFF;
   border-top: 1rpx solid rgba(0,0,0,0.06);
 }
