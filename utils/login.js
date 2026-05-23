@@ -44,7 +44,9 @@ module.exports = {
           if (!res.code) return reject({ error: 'wx.login() returned no code' });
           request('POST', '/api/auth/login', { code: res.code }, false)
             .then(function (data) {
+              console.log('[DEBUG] login: server response=', JSON.stringify(data));
               if (!data.token || !data.user) return reject({ error: 'Server returned incomplete data', data: data });
+              console.log('[DEBUG] login: user.nickName=', data.user.nickName, ', user.avatarUrl=', data.user.avatarUrl);
               if (data.user.avatarUrl && (data.user.avatarUrl.indexOf('__tmp__') >= 0 || data.user.avatarUrl.indexOf('127.0.0.1') >= 0)) {
                 data.user.avatarUrl = '/images/avatar-default.png';
               }

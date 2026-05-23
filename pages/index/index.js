@@ -23,7 +23,9 @@ Page({
   onShow: function () {
     var loggedIn = loginLib.isLoggedIn();
     var user = loggedIn ? loginLib.getUserInfo() : null;
+    console.log('[DEBUG] index.onShow: loggedIn=', loggedIn, ', getUserInfo=', JSON.stringify(user));
     var displayUserInfo = validation.getDisplayUserInfo(user, '游客');
+    console.log('[DEBUG] index.onShow: displayUserInfo=', JSON.stringify(displayUserInfo));
     this.setData({
       isLoggedIn: loggedIn,
       userInfo: user,
@@ -37,7 +39,11 @@ Page({
   },
 
   onAvatarError: function () {
-    this.setData({ userInfo: { avatarUrl: '/images/avatar-default.png' } });
+    var display = this.data.displayUserInfo;
+    if (display && display.avatarUrl !== '/images/avatar-default.png') {
+      display.avatarUrl = '/images/avatar-default.png';
+      this.setData({ displayUserInfo: display });
+    }
   },
 
   onReady: function () {

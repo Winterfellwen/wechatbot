@@ -17,113 +17,80 @@ Page({
     nickName: ''
   },
 
+  // ====== Lifecycle ======
+
   onShow: function () {
-    var that = this;
-    var loggedIn = loginLib.isLoggedIn();
-    if (loggedIn) {
-      var user = loginLib.getUserInfo();
-      var firstLoginPending = wx.getStorageSync('firstLoginPending');
-      that.setData({
-        isLoggedIn: true,
-        userInfo: user,
-        displayUserInfo: validation.getDisplayUserInfo(user, '微信用户'),
-        isNewUser: !!firstLoginPending,
-        showFirstSetup: !!firstLoginPending
-      });
-      // 仅在数据可能陈旧时才从服务端刷新（昵称/头像为空 或 首次登录中）
-      var needRefresh = !user || !validation.isValidNickname(user.nickName) || !validation.isValidAvatarUrl(user.avatarUrl) || firstLoginPending;
-      if (needRefresh) {
-        wx.request({
-          url: CONFIG.SERVER + '/api/users/me',
-          method: 'GET',
-          header: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
-          },
-          success: function (res) {
-            if (res.statusCode === 200 && res.data) {
-              wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, res.data);
-              that.setData({
-                userInfo: res.data,
-                displayUserInfo: validation.getDisplayUserInfo(res.data, '微信用户')
-              });
-            }
-          }
-        });
-      }
-    } else {
-      that.setData({
-        isLoggedIn: false,
-        userInfo: null,
-        displayUserInfo: null,
-        isNewUser: false,
-        showFirstSetup: false
-      });
+    var user = loginLib.getUserInfo();
+    console.log('[DEBUG] user.onShow: getUserInfo=', JSON.stringify(user));
+    if (!user) {
+      this.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null, showFirstSetup: false });
+      console.log('[DEBUG] user.onShow: no user, showing login');
+      return;
     }
+    var firstLoginPending = wx.getStorageSync('firstLoginPending');
+    console.log('[DEBUG] user.onShow: firstLoginPending=', firstLoginPending);
+    var display = validation.getDisplayUserInfo(user, '微信用户');
+    console.log('[DEBUG] user.onShow: displayUserInfo=', JSON.stringify(display));
+    this.setData({
+      isLoggedIn: true,
+      userInfo: user,
+      displayUserInfo: display,
+      isNewUser: !!firstLoginPending,
+      showFirstSetup: !!firstLoginPending
+    });
   },
 
-  onShareAppMessage: function () {
-    return { title: '多功能小机器人 - 我的', path: '/pages/user/user' };
-  },
-
-  // ========== 登录 ==========
+  // ====== 登录 ======
 
   handleLogin: function () {
     var that = this;
-    wx.showLoading({ title: '登录中...' });
+    wx.showLoading({ title: '登录中...', mask: true });
     loginLib.login().then(function (result) {
       wx.hideLoading();
-      var user = result.user;
-      var isNew = result.isNew;
-
-      if (isNew) {
-        // 首次登录：展示完善资料面板
+      if (result.isNew) {
         wx.setStorageSync('firstLoginPending', true);
         that.setData({
           isLoggedIn: true,
           isNewUser: true,
           showFirstSetup: true,
-          setupAvatarUrl: user.avatarUrl || '/images/avatar-default.png',
-          setupNickName: user.nickName || '',
-          userInfo: user,
-          displayUserInfo: validation.getDisplayUserInfo(user, user.nickName || '新朋友')
+          setupAvatarUrl: result.user.avatarUrl || '/images/avatar-default.png',
+          setupNickName: result.user.nickName || '',
+          userInfo: result.user,
+          displayUserInfo: validation.getDisplayUserInfo(result.user, result.user.nickName || '新朋友')
         });
       } else {
-        // 老用户：直接进入
         that.setData({
           isLoggedIn: true,
           isNewUser: false,
           showFirstSetup: false,
-          userInfo: user,
-          displayUserInfo: validation.getDisplayUserInfo(user, '微信用户')
+          userInfo: result.user,
+          displayUserInfo: validation.getDisplayUserInfo(result.user, '微信用户')
         });
         wx.showToast({ title: '欢迎回来', icon: 'success' });
       }
-    }).catch(function (err) {
+    }).catch(function () {
       wx.hideLoading();
-      console.error('Login failed:', err);
       wx.showToast({ title: '登录失败，请重试', icon: 'none' });
     });
   },
 
-  // ========== 首次登录 → 完善资料 ==========
+  // ====== 首次登录完善资料 ======
 
   onFirstSetupChooseAvatar: function (e) {
     var avatarUrl = e.detail.avatarUrl;
-    if (avatarUrl) {
-      this.setData({ setupAvatarUrl: avatarUrl });
-    }
+    if (avatarUrl) this.setData({ setupAvatarUrl: avatarUrl });
   },
 
-  onFirstSetupNickInput: function (e) {
-    this.setData({ setupNickName: e.detail.value });
+  saveFirstSetupForm: function (e) {
+    var formNick = e.detail.value.nickname;
+    if (formNick) this.setData({ setupNickName: formNick });
+    this.saveFirstSetup(formNick);
   },
 
-  /** 保存资料 → 上传到后端 */
-  saveFirstSetup: function () {
+  saveFirstSetup: function (formNick) {
     var that = this;
     var avatarUrl = that.data.setupAvatarUrl;
-    var nickName = that.data.setupNickName.trim();
+    var nickName = (formNick || that.data.setupNickName || '').trim();
     var avatarChanged = avatarUrl && avatarUrl !== '/images/avatar-default.png';
     var nickChanged = !!nickName;
 
@@ -133,131 +100,104 @@ Page({
     }
 
     var token = wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN);
+    var serverAvatarUrl = null;
 
-    function done(user) {
+    function applyResult(user, toastTitle, toastIcon) {
+      console.log('[DEBUG] applyResult user:', JSON.stringify(user));
       wx.setStorageSync('hasSetNickname', true);
       wx.removeStorageSync('firstLoginPending');
       wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, user);
+      console.log('[DEBUG] storage after set:', JSON.stringify(wx.getStorageSync(CONFIG.STORAGE_KEYS.USER)));
       that.setData({
         showFirstSetup: false,
         isNewUser: false,
         userInfo: user,
         displayUserInfo: validation.getDisplayUserInfo(user, user.nickName)
       });
+      console.log('[DEBUG] after setData, displayUserInfo:', that.data.displayUserInfo);
+      if (toastTitle) wx.showToast({ title: toastTitle, icon: toastIcon || 'success' });
     }
 
-    function uploadAvatar(cb) {
-      wx.uploadFile({
-        url: CONFIG.SERVER + '/api/upload/avatar',
-        filePath: avatarUrl,
-        name: 'avatar',
-        header: { 'Authorization': 'Bearer ' + token },
-        success: function (res) {
-          if (res.statusCode === 200) {
-            var data = JSON.parse(res.data);
-            cb(null, data.avatarUrl);
-          } else {
-            cb({ msg: 'upload_failed' });
-          }
-        },
-        fail: function () { cb({ msg: 'network_error' }); }
-      });
-    }
+    wx.showLoading({ title: '保存中...', mask: true });
+
+    // Promise 瀑布流：上传头像 → 更新昵称 → 应用结果
+    var chain = Promise.resolve();
 
     if (avatarChanged) {
-      wx.showLoading({ title: '上传头像...' });
-      uploadAvatar(function (err, serverAvatarUrl) {
-        if (err) {
-          wx.hideLoading();
-          if (nickChanged) {
-            // 头像上传失败，仍尝试保存昵称
-            wx.showLoading({ title: '保存昵称...' });
-            loginLib.updateProfile({ nickName: nickName }).then(function (u) {
-              wx.hideLoading();
-              done(u);
-              wx.showToast({ title: '昵称已保存，头像上传失败', icon: 'none' });
-            }).catch(function () {
-              wx.hideLoading();
-              wx.showToast({ title: '保存失败', icon: 'none' });
-            });
-          } else {
-            wx.showToast({ title: '头像上传失败', icon: 'none' });
-          }
-          return;
-        }
-        // 头像上传成功，DB 中 avatarUrl 已更新
-        if (nickChanged) {
-          wx.showLoading({ title: '保存昵称...' });
-          loginLib.updateProfile({ nickName: nickName }).then(function (u) {
-            wx.hideLoading();
-            done(u);
-            wx.showToast({ title: '资料已保存', icon: 'success' });
-          }).catch(function () {
-            wx.hideLoading();
-            // 昵称保存失败，头像已保存，构造当前状态
-            var user = that.data.userInfo || {};
-            var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl, nickName: nickName });
-            done(patched);
-            wx.showToast({ title: '头像已更新，昵称同步失败', icon: 'none' });
+      chain = chain.then(function () {
+        return new Promise(function (resolve, reject) {
+          wx.uploadFile({
+            url: CONFIG.SERVER + '/api/upload/avatar',
+            filePath: avatarUrl,
+            name: 'avatar',
+            header: { 'Authorization': 'Bearer ' + token },
+            success: function (res) {
+              if (res.statusCode === 200) {
+                var data = JSON.parse(res.data);
+                serverAvatarUrl = data.avatarUrl;
+                resolve(data.avatarUrl);
+              } else { reject(new Error('upload_failed')); }
+            },
+            fail: function () { reject(new Error('network_error')); }
           });
-        } else {
-          wx.hideLoading();
-          var user = that.data.userInfo || {};
-          var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl });
-          done(patched);
-          wx.showToast({ title: '资料已保存', icon: 'success' });
-        }
-      });
-    } else {
-      // 仅昵称变更
-      wx.showLoading({ title: '保存中...' });
-      loginLib.updateProfile({ nickName: nickName }).then(function (u) {
-        wx.hideLoading();
-        done(u);
-        wx.showToast({ title: '资料已保存', icon: 'success' });
-      }).catch(function () {
-        wx.hideLoading();
-        wx.showToast({ title: '保存失败', icon: 'none' });
+        });
       });
     }
+
+    if (nickChanged) {
+      chain = chain.then(function () {
+        var profileData = { nickName: nickName };
+        if (avatarChanged && serverAvatarUrl) profileData.avatarUrl = serverAvatarUrl;
+        console.log('[DEBUG] updateProfile with:', JSON.stringify(profileData));
+        return loginLib.updateProfile(profileData).then(function (u) {
+          console.log('[DEBUG] updateProfile response:', JSON.stringify(u));
+          return u;
+        });
+      });
+    } else if (avatarChanged) {
+      chain = chain.then(function () {
+        var user = that.data.userInfo || {};
+        var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl });
+        console.log('[DEBUG] avatarOnly patched:', JSON.stringify(patched));
+        return patched;
+      });
+    }
+
+    chain.then(function (user) {
+      wx.hideLoading();
+      applyResult(user, '资料已保存', 'success');
+    }).catch(function (err) {
+      console.error('[DEBUG] saveFirstSetup catch:', err);
+      wx.hideLoading();
+      if (serverAvatarUrl) {
+        var user = that.data.userInfo || {};
+        var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl });
+        if (nickChanged) patched.nickName = nickName;
+        applyResult(patched, '头像已更新，昵称同步失败', 'none');
+      } else {
+        wx.showToast({ title: '保存失败', icon: 'none' });
+      }
+    });
   },
 
-  /** 跳过 → 保持默认头像和系统昵称 */
   skipFirstSetup: function () {
     wx.removeStorageSync('firstLoginPending');
-    var user = this.data.userInfo;
-    this.setData({
-      showFirstSetup: false,
-      isNewUser: false
-    });
+    this.setData({ showFirstSetup: false, isNewUser: false });
     wx.showToast({ title: '已登录', icon: 'success' });
   },
 
-  // ========== 头像（已登录后更换） ==========
-
-  onAvatarError: function () {
-    var display = this.data.displayUserInfo;
-    if (display && display.avatarUrl !== '/images/avatar-default.png') {
-      display.avatarUrl = '/images/avatar-default.png';
-      this.setData({ displayUserInfo: display });
-    }
-  },
+  // ====== 头像（已登录后更换）======
 
   onChooseAvatar: function (e) {
     var avatarUrl = e.detail.avatarUrl;
-    if (!avatarUrl) {
-      wx.showToast({ title: '选择头像失败', icon: 'none' });
-      return;
-    }
+    if (!avatarUrl) return;
     var that = this;
-    wx.showLoading({ title: '上传中...' });
+    wx.showLoading({ title: '上传中...', mask: true });
     wx.uploadFile({
       url: CONFIG.SERVER + '/api/upload/avatar',
       filePath: avatarUrl,
       name: 'avatar',
-      header: {
-        'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
-      },
+      header: { 'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN) },
       success: function (res) {
         wx.hideLoading();
         if (res.statusCode === 200) {
@@ -281,21 +221,31 @@ Page({
     });
   },
 
-  // ========== 昵称（已登录后编辑） ==========
+  onAvatarError: function () {
+    var display = this.data.displayUserInfo;
+    if (display && display.avatarUrl !== '/images/avatar-default.png') {
+      display.avatarUrl = '/images/avatar-default.png';
+      this.setData({ displayUserInfo: display });
+    }
+  },
+
+  // ====== 昵称（已登录后编辑）======
 
   showNickInput: function () {
     this.setData({ showNickInput: true, nickName: (this.data.userInfo && this.data.userInfo.nickName) || '' });
   },
 
-  onNickInput: function (e) {
-    this.setData({ nickName: e.detail.value });
+  confirmNicknameForm: function (e) {
+    var nickName = e.detail.value.nickname;
+    if (nickName) this.setData({ nickName: nickName });
+    this.confirmNickname();
   },
 
   confirmNickname: function () {
     var that = this;
-    var nickName = this.data.nickName.trim();
+    var nickName = (this.data.nickName || '').trim();
     if (!nickName) return;
-    wx.showLoading({ title: '保存中...' });
+    wx.showLoading({ title: '保存中...', mask: true });
     loginLib.updateProfile({ nickName: nickName }).then(function (updated) {
       wx.hideLoading();
       wx.setStorageSync('hasSetNickname', true);
@@ -315,7 +265,7 @@ Page({
     this.setData({ showNickInput: false });
   },
 
-  // ========== 退出登录 ==========
+  // ====== 退出 / 注销 ======
 
   handleLogout: function () {
     var that = this;
@@ -326,35 +276,25 @@ Page({
         if (res.confirm) {
           wx.removeStorageSync('firstLoginPending');
           loginLib.logout();
-          that.setData({
-            isLoggedIn: false,
-            userInfo: null,
-            displayUserInfo: null,
-            isNewUser: false,
-            showFirstSetup: false,
-            showNickInput: false
-          });
+          that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null, isNewUser: false, showFirstSetup: false, showNickInput: false });
           wx.showToast({ title: '已退出', icon: 'none' });
         }
       }
     });
   },
 
-  // ========== 注销账号 ==========
-
-  _showConfirm: function(title, content) {
-    return new Promise(function(resolve) {
-      wx.showModal({ title: title, content: content, success: function(res) { resolve(res.confirm); } });
+  _showConfirm: function (title, content) {
+    return new Promise(function (resolve) {
+      wx.showModal({ title: title, content: content, success: function (res) { resolve(res.confirm); } });
     });
   },
 
   handleDeleteAccount: function () {
     var that = this;
     this._showConfirm('注销账号', '此操作不可恢复。将永久删除你的账号及所有关联数据（商家、菜单、学习记录等）。确定继续？')
-      .then(function(confirmed) { if (!confirmed) return Promise.reject('cancelled'); return that._showConfirm('再次确认', '注销后所有数据将被永久删除'); })
-      .then(function(confirmed2) { if (!confirmed2) return Promise.reject('cancelled'); return loginLib.deleteAccount(); })
+      .then(function (confirmed) { if (!confirmed) return Promise.reject('cancelled'); return that._showConfirm('再次确认', '注销后所有数据将被永久删除'); })
+      .then(function (confirmed2) { if (!confirmed2) return Promise.reject('cancelled'); return loginLib.deleteAccount(); })
       .then(function () {
-        // loginLib.deleteAccount 成功后已调用 logout 清理本地
         that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null });
         wx.showToast({ title: '账号已注销', icon: 'success' });
       })

@@ -254,12 +254,12 @@ var wxRes = await fetch(
         'INSERT INTO users (openid, nickName, avatarUrl, token, createdAt, updatedAt) VALUES (?, ?, ?, ?, NOW(), NOW())',
         [openid, nickName, '', token]
       );
-      user = { openid, nickname: nickName, avatarurl: '' };
+      user = { openid, nickName: nickName, avatarUrl: '' };
     }
 
     res.json({
       token: token,
-      user: { openid: user.openid, nickName: user.nickname, avatarUrl: user.avatarurl || '' },
+      user: { openid: user.openid, nickName: user.nickName || '微信用户', avatarUrl: user.avatarUrl || '' },
       isNew: isNew
     });
   } catch (err) {
@@ -278,7 +278,7 @@ app.post('/api/auth/logout', requireAuth, async (req, res) => {
 });
 
 app.get('/api/users/me', requireAuth, async (req, res) => {
-  res.json({ openid: req.user.openid, nickName: req.user.nickname, avatarUrl: req.user.avatarurl || '' });
+  res.json({ openid: req.user.openid, nickName: req.user.nickName, avatarUrl: req.user.avatarUrl || '' });
 });
 
 app.put('/api/users/me', requireAuth, async (req, res) => {
@@ -289,7 +289,7 @@ app.put('/api/users/me', requireAuth, async (req, res) => {
     );
     var [uRows] = await pool.query('SELECT * FROM users WHERE openid = ?', [req.user.openid]);
     var u = uRows[0];
-    res.json({ openid: u.openid, nickName: u.nickname, avatarUrl: u.avatarurl || '' });
+    res.json({ openid: u.openid, nickName: u.nickName, avatarUrl: u.avatarUrl || '' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
