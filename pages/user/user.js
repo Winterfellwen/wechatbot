@@ -30,24 +30,27 @@ Page({
         isNewUser: !!firstLoginPending,
         showFirstSetup: !!firstLoginPending
       });
-      // 异步从服务端刷新最新数据，修复旧存储中 nickName 为 undefined 的问题
-      wx.request({
-        url: CONFIG.SERVER + '/api/users/me',
-        method: 'GET',
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
-        },
-        success: function (res) {
-          if (res.statusCode === 200 && res.data) {
-            wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, res.data);
-            that.setData({
-              userInfo: res.data,
-              displayUserInfo: validation.getDisplayUserInfo(res.data, '微信用户')
-            });
+      // 仅在数据可能陈旧时才从服务端刷新（昵称/头像为空 或 首次登录中）
+      var needRefresh = !user || !validation.isValidNickname(user.nickName) || !validation.isValidAvatarUrl(user.avatarUrl) || firstLoginPending;
+      if (needRefresh) {
+        wx.request({
+          url: CONFIG.SERVER + '/api/users/me',
+          method: 'GET',
+          header: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
+          },
+          success: function (res) {
+            if (res.statusCode === 200 && res.data) {
+              wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, res.data);
+              that.setData({
+                userInfo: res.data,
+                displayUserInfo: validation.getDisplayUserInfo(res.data, '微信用户')
+              });
+            }
           }
-        }
-      });
+        });
+      }
     } else {
       that.setData({
         isLoggedIn: false,
@@ -233,10 +236,10 @@ Page({
   // ========== 头像（已登录后更换） ==========
 
   onAvatarError: function () {
-    var user = this.data.userInfo;
-    if (user) {
-      var updated = Object.assign({}, user, { avatarUrl: '/images/avatar-default.png' });
-      this.setData({ userInfo: updated, displayUserInfo: validation.getDisplayUserInfo(updated, '微信用户') });
+    var display = this.data.displayUserInfo;
+    if (display && display.avatarUrl !== '/images/avatar-default.png') {
+      display.avatarUrl = '/images/avatar-default.png';
+      this.setData({ displayUserInfo: display });
     }
   },
 
