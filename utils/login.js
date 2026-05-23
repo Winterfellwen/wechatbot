@@ -26,10 +26,12 @@ function request(method, path, data, needAuth) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else {
-          reject(res.data);
+          reject(Object.assign({ _statusCode: res.statusCode }, res.data || {}));
         }
       },
-      fail: reject
+      fail: function(err) {
+        reject({ _statusCode: 0, error: 'network_error', _raw: err });
+      }
     });
   });
 }
@@ -50,7 +52,7 @@ module.exports = {
               wx.setStorageSync(STORAGE_USER, data.user);
               var app = getApp();
               if (app) app.globalData.userInfo = data.user;
-              resolve(data);
+              resolve({ token: data.token, user: data.user, isNew: data.isNew || false });
             })
             .catch(function (err) {
               console.error('[login] request failed:', err);
@@ -94,7 +96,12 @@ module.exports = {
   },
 
   deleteAccount: function () {
-    return request('DELETE', '/api/users/me', {}, true);
+    var that = this;
+    return request('DELETE', '/api/users/me', {}, true)
+      .then(function (data) {
+        that.logout();
+        return data;
+      });
   },
 
   saveJpLessonScore: function(lessonId, score, total) {

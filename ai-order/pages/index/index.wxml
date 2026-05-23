@@ -50,6 +50,26 @@
       <text class="modal-title">新建商家</text>
       <input class="modal-input" placeholder="商家名称" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
       <input class="modal-input modal-input-desc" placeholder="商家描述（选填）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="200" />
+
+      <!-- 从演示商家复制 -->
+      <view class="copy-demo-row" catchtap="onToggleCopyDemo">
+        <view class="copy-demo-check {{copyFromDemo ? 'checked' : ''}}">
+          <text wx:if="{{copyFromDemo}}">✓</text>
+        </view>
+        <text class="copy-demo-label">从演示商家复制菜单（含图片）</text>
+      </view>
+
+      <view wx:if="{{copyFromDemo}}" class="demo-picker">
+        <view
+          wx:for="{{demoMerchants}}" wx:key="id"
+          class="demo-picker-item {{item.id === selectedDemoMerchantId ? 'selected' : ''}}"
+          catchtap="onSelectDemoMerchant" data-id="{{item.id}}"
+        >
+          <text class="demo-picker-name">{{item.name}}</text>
+          <text class="demo-picker-count">{{item.dishCount}} 个菜品</text>
+        </view>
+      </view>
+
       <view class="modal-buttons">
         <view class="modal-btn modal-btn-cancel" catchtap="onHideCreate">取消</view>
         <view class="modal-btn modal-btn-confirm {{creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">

@@ -1,6 +1,7 @@
 // ai-order/pages/merchant/merchant.js
 // Merchant AI chat page — direct OpenRouter with proxy fallback
 
+var loginLib = require('../../../utils/login');
 var CONFIG = require('../../../utils/config');
 var SERVER = CONFIG.SERVER;
 var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
@@ -74,34 +75,24 @@ Page({
       that._loadMenuFromDemoData(merchantId);
       return;
     }
-    var url = SERVER + '/api/ai-order/menu/list';
-    if (merchantId) url += '?merchantId=' + merchantId;
-    wx.request({
-      url: url,
-      timeout: 5000,
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
-          menuData = res.data.data;
-          wx.setStorageSync(cacheKey, res.data.data);
+    var path = '/api/ai-order/menu/list';
+    if (merchantId) path += '?merchantId=' + merchantId;
+    loginLib.request('GET', path, null, false)
+      .then(function(data) {
+        if (data && data.success && data.data) {
+          menuData = data.data;
+          wx.setStorageSync(cacheKey, data.data);
         }
-      },
-      fail: function(err) {
+      })
+      .catch(function(err) {
         console.warn('[merchant] failed to load menu:', err);
-      }
-    });
+      });
   },
 
   _loadMenuFromDemoData: function(merchantId) {
     var that = this;
-    var data = require('../../data/demo-menus');
-    var merchants = (data && data.merchants) || [];
-    var found = null;
-    for (var i = 0; i < merchants.length; i++) {
-      if (merchants[i].id === merchantId) {
-        found = merchants[i];
-        break;
-      }
-    }
+    var demoMenus = require('../../data/demo-menus');
+    var found = demoMenus.getMerchant(merchantId);
     if (found) {
       var menu = { dishes: found.dishes || [] };
       menuData = menu;
@@ -113,22 +104,19 @@ Page({
     var that = this;
     var merchantId = that.data.merchantId;
     if (!merchantId || !menu) return;
-    wx.request({
-      url: SERVER + '/api/ai-order/menu/save',
-      method: 'POST',
-      timeout: 10000,
-      header: { 'Content-Type': 'application/json' },
-      data: { merchantId: merchantId, menu: menu },
-      success: function(res) {
-        if (res.data && res.data.success) {
+    loginLib.request('POST', '/api/ai-order/menu/save', {
+      merchantId: merchantId,
+      menu: menu
+    }, true)
+      .then(function(data) {
+        if (data && data.success) {
           wx.setStorageSync('menu-cache-' + merchantId, menu);
-          console.log('[merchant] menu saved to OCI');
+          console.log('[merchant] menu saved to server');
         }
-      },
-      fail: function(err) {
+      })
+      .catch(function(err) {
         console.warn('[merchant] failed to save menu:', err);
-      }
-    });
+      });
   },
 
   addWelcomeMessage: function() {

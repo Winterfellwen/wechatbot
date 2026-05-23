@@ -1,7 +1,5 @@
 var loginLib = require('../../../utils/login');
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
-var demoData = require('../../data/demo-menus');
+var demoMenus = require('../../data/demo-menus');
 
 Page({
   data: {
@@ -11,7 +9,10 @@ Page({
     showCreateModal: false,
     newMerchantName: '',
     newMerchantDesc: '',
-    creating: false
+    creating: false,
+    copyFromDemo: false,
+    demoMerchants: [],
+    selectedDemoMerchantId: ''
   },
 
   onLoad: function() {
@@ -34,9 +35,7 @@ Page({
   },
 
   _loadLocalDemo: function() {
-    var list = (demoData && demoData.merchants || []).map(function(m) {
-      return { id: m.id, name: m.name, description: m.name + '（演示商家）', type: 'demo', dishCount: (m.dishes || []).length };
-    });
+    var list = demoMenus.getMerchantList();
     var selectedId = list.length > 0 ? list[0].id : '';
     this.setData({ merchants: list, selectedMerchantId: selectedId, loading: false });
     if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
@@ -45,34 +44,31 @@ Page({
   _fetchMerchants: function() {
     var that = this;
     that.setData({ loading: true });
-    wx.request({
-      url: SERVER + '/api/ai-order/merchants',
-      header: { 'Authorization': 'Bearer ' + wx.getStorageSync('auth_token') },
-      success: function(res) {
-        if (res.statusCode === 401) {
-          wx.removeStorageSync('auth_token');
-          that._loadLocalDemo();
-          return;
-        }
-        var list = (res.data && res.data.success && res.data.data) || [];
+    loginLib.request('GET', '/api/ai-order/merchants', null, true)
+      .then(function(data) {
+        var list = (data && data.success && data.data) || [];
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
         var selectedId = '';
-        if (list.length > 0) {
-          var found = false;
-          for (var i = 0; i < list.length; i++) {
-            if (list[i].id === savedId) { found = true; selectedId = savedId; break; }
-          }
-          if (!found) selectedId = list[0].id;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === savedId) { selectedId = savedId; break; }
         }
+        if (!selectedId) selectedId = list[0].id;
         that.setData({ merchants: list, selectedMerchantId: selectedId, loading: false });
         if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
-      },
-      fail: function() {
+      })
+      .catch(function(err) {
+        if (err && err._statusCode === 401) {
+          loginLib.login().then(function() {
+            that._fetchMerchants();
+          }).catch(function() {
+            that._loadLocalDemo();
+          });
+          return;
+        }
         that._loadLocalDemo();
         wx.showToast({ title: '使用本地演示数据', icon: 'none' });
-      }
-    });
+      });
   },
 
   onSelectMerchant: function(e) {
@@ -117,7 +113,15 @@ Page({
   },
 
   onShowCreate: function() {
-    this.setData({ showCreateModal: true, newMerchantName: '', newMerchantDesc: '' });
+    var demoList = demoMenus.getMerchantList();
+    this.setData({
+      showCreateModal: true,
+      newMerchantName: '',
+      newMerchantDesc: '',
+      copyFromDemo: false,
+      demoMerchants: demoList,
+      selectedDemoMerchantId: demoList.length > 0 ? demoList[0].id : ''
+    });
   },
 
   onHideCreate: function() {
@@ -132,34 +136,71 @@ Page({
     this.setData({ newMerchantDesc: e.detail.value });
   },
 
+  onToggleCopyDemo: function() {
+    this.setData({ copyFromDemo: !this.data.copyFromDemo });
+  },
+
+  onSelectDemoMerchant: function(e) {
+    this.setData({ selectedDemoMerchantId: e.currentTarget.dataset.id });
+  },
+
   onCreateMerchant: function() {
     var that = this;
     var name = that.data.newMerchantName.trim();
     if (!name) { wx.showToast({ title: '请输入商家名称', icon: 'none' }); return; }
+    var copyFromDemo = that.data.copyFromDemo;
+    var selectedDemoId = that.data.selectedDemoMerchantId;
     that.setData({ creating: true });
-    wx.request({
-      url: SERVER + '/api/ai-order/merchants',
-      method: 'POST',
-      header: {
-        'Authorization': 'Bearer ' + wx.getStorageSync('auth_token'),
-        'Content-Type': 'application/json'
-      },
-      data: { name: name, description: that.data.newMerchantDesc.trim() },
-      success: function(res) {
-        if (res.data && res.data.success) {
+    loginLib.request('POST', '/api/ai-order/merchants', {
+      name: name,
+      description: that.data.newMerchantDesc.trim()
+    }, true)
+      .then(function(data) {
+        if (data && data.success) {
+          var newMerchant = data.data;
+          if (copyFromDemo && selectedDemoId && newMerchant && newMerchant.id) {
+            // 从演示商家复制菜单
+            var demo = demoMenus.getMerchant(selectedDemoId);
+            if (demo && demo.dishes) {
+              var dishes = demo.dishes.map(function(d) {
+                return {
+                  name: d.name,
+                  price: d.price,
+                  image: d.image || '',
+                  description: d.description || '',
+                  taste: d.taste || '',
+                  spicyLevel: d.spicyLevel || 0,
+                  status: 'online',
+                  category: d.category || ''
+                };
+              });
+              loginLib.request('POST', '/api/ai-order/menu/save', {
+                merchantId: newMerchant.id,
+                menu: { dishes: dishes }
+              }, true).then(function() {
+                wx.showToast({ title: '创建成功，已复制演示菜单', icon: 'success' });
+                that.setData({ showCreateModal: false, creating: false });
+                that._fetchMerchants();
+              }).catch(function() {
+                wx.showToast({ title: '创建成功，菜单复制失败', icon: 'none' });
+                that.setData({ showCreateModal: false, creating: false });
+                that._fetchMerchants();
+              });
+              return;
+            }
+          }
           wx.showToast({ title: '创建成功', icon: 'success' });
           that.setData({ showCreateModal: false, creating: false });
           that._fetchMerchants();
         } else {
-          wx.showToast({ title: res.data && res.data.error || '创建失败', icon: 'none' });
+          wx.showToast({ title: (data && data.error) || '创建失败', icon: 'none' });
           that.setData({ creating: false });
         }
-      },
-      fail: function() {
+      })
+      .catch(function() {
         wx.showToast({ title: '网络错误', icon: 'none' });
         that.setData({ creating: false });
-      }
-    });
+      });
   },
 
   onDeleteMerchant: function(e) {
@@ -175,22 +216,18 @@ Page({
       content: '确定删除「' + name + '」吗？',
       success: function(confirm) {
         if (!confirm.confirm) return;
-        wx.request({
-          url: SERVER + '/api/ai-order/merchants/' + id,
-          method: 'DELETE',
-          header: { 'Authorization': 'Bearer ' + wx.getStorageSync('auth_token') },
-          success: function(res) {
-            if (res.data && res.data.success) {
+        loginLib.request('DELETE', '/api/ai-order/merchants/' + id, null, true)
+          .then(function(data) {
+            if (data && data.success) {
               wx.showToast({ title: '已删除', icon: 'success' });
               that._fetchMerchants();
             } else {
-              wx.showToast({ title: res.data && res.data.error || '删除失败', icon: 'none' });
+              wx.showToast({ title: (data && data.error) || '删除失败', icon: 'none' });
             }
-          },
-          fail: function() {
+          })
+          .catch(function() {
             wx.showToast({ title: '网络错误', icon: 'none' });
-          }
-        });
+          });
       }
     });
   }

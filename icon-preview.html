@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WechatBot 图标重绘预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #1E293B; padding: 40px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #64748B; margin-bottom: 40px; font-size: 15px; }
+  .style-section { margin-bottom: 60px; }
+  .style-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #E2E8F0; }
+  .style-header h2 { font-size: 20px; }
+  .style-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .style-desc { color: #64748B; font-size: 13px; margin-left: auto; }
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 20px; }
+  .icon-card { background: white; border-radius: 16px; padding: 16px 12px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #E2E8F0; transition: transform 0.2s; }
+  .icon-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .icon-card .icon-wrap { height: 64px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
+  .icon-card .icon-wrap svg { width: 48px; height: 48px; }
+  .icon-card .label { font-size: 11px; color: #64748B; }
+  .icon-card .label .zh { color: #1E293B; font-weight: 500; }
+
+  .pair-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .pair-item { text-align: center; }
+  .pair-item .state { font-size: 10px; color: #94A3B8; margin-top: 2px; }
+
+  .style-legend { display: flex; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+  .style-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
+  .style-legend-item .swatch { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: 600; }
+
+  /* Version A: Glassmorphism Enhanced */
+  .style-a .icon-card .icon-wrap svg { width: 52px; height: 52px; }
+
+  /* Version B: Modern Line */
+  .style-b .icon-card { background: transparent; border: none; box-shadow: none; }
+
+  /* Version D: Minimal Glyph */
+  .style-d .icon-card { background: transparent; border: none; box-shadow: none; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .icon-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .icon-card { padding: 10px 6px 8px; }
+    .icon-card .icon-wrap { height: 48px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎯 WechatBot 图标重绘预览</h1>
+<p class="subtitle">共 4 套风格 · 13 个图标分类 · 每套含 active / inactive 双态</p>
+
+<!-- ================================================================== -->
+<!-- Version A: Glassmorphism Enhanced（当前风格精修版） -->
+<!-- ================================================================== -->
+<div class="style-section style-a">
+<div class="style-header">
+  <h2>✨ A. Glassmorphism 精修版</h2>
+  <span class="style-badge" style="background:#EEF2FF;color:#4F46E5;">当前风格升级</span>
+  <span class="style-desc">81×81 圆角方块 · 渐变背景 + 白色图形 · 毛玻璃质感提升</span>
+</div>
+<div class="icon-grid">
+
+<!-- Home -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a1)" opacity="0.12"/>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a1)" opacity="0.08"/>
+      <path d="M40.5 24 L24 38 L24 58 L34 58 L34 46 L47 46 L47 58 L57 58 L57 38 Z" fill="url(#a1)" stroke="white" stroke-width="0.5"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">首页</span> home</div>
+</div>
+
+<!-- User -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a2)" opacity="0.12"/>
+      <circle cx="40.5" cy="33" r="9" fill="url(#a2)"/>
+      <rect x="29" y="43" width="23" height="12" rx="6" fill="url(#a2)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">我的</span> user</div>
+</div>
+
+<!-- Book -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4CAF50"/><stop offset="100%" stop-color="#009688"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a3)" opacity="0.12"/>
+      <path d="M40.5 26 C40.5 26 28 32 28 38 L28 56 C28 56 34 52 40.5 52 C47 52 53 56 53 56 L53 38 C53 32 40.5 26 40.5 26Z" fill="url(#a3)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">课本</span> book</div>
+</div>
+
+<!-- Grammar -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9C27B0"/><stop offset="100%" stop-color="#667EEA"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a4)" opacity="0.12"/>
+      <rect x="28" y="26" width="25" height="28" rx="5" fill="url(#a4)"/>
+      <rect x="34" y="34" width="13" height="12" rx="3" fill="white"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">语法</span> grammar</div>
+</div>
+
+<!-- Dev / Writing -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#2563EB"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a5)" opacity="0.12"/>
+      <rect x="22" y="38" width="36" height="7" rx="3.5" fill="url(#a5)"/>
+      <circle cx="43" cy="34" r="5" fill="url(#a5)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">练习</span> practice</div>
+</div>
+
+<!-- Rank -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a6" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFC107"/><stop offset="100%" stop-color="#FF9800"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a6)" opacity="0.12"/>
+      <rect x="32" y="28" width="8" height="24" rx="3" fill="url(#a6)"/>
+      <rect x="42" y="32" width="8" height="20" rx="3" fill="url(#a6)" opacity="0.6"/>
+      <rect x="24" y="36" width="8" height="16" rx="3" fill="url(#a6)" opacity="0.6"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">排行</span> rank</div>
+</div>
+
+<!-- Learn -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#667EEA"/><stop offset="100%" stop-color="#764BA2"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a7)" opacity="0.12"/>
+      <path d="M40.5 26 C40.5 26 26 36 26 44 C26 52 32.5 56 40.5 56 C48.5 56 55 52 55 44 C55 36 40.5 26 40.5 26Z" fill="url(#a7)"/>
+      <rect x="36" y="46" width="9" height="6" rx="3" fill="white"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">学习</span> learn</div>
+</div>
+
+<!-- Tool -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a8" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#009688"/><stop offset="100%" stop-color="#00BCD4"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a8)" opacity="0.12"/>
+      <rect x="36.5" y="24" width="8" height="32" rx="4" fill="url(#a8)"/>
+      <rect x="24" y="36.5" width="32" height="8" rx="4" fill="url(#a8)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">工具</span> tool</div>
+</div>
+
+<!-- Order -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a9" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF9800"/><stop offset="100%" stop-color="#FFC107"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a9)" opacity="0.12"/>
+      <rect x="25" y="27" width="13" height="13" rx="4" fill="url(#a9)"/>
+      <rect x="43" y="27" width="13" height="13" rx="4" fill="url(#a9)"/>
+      <rect x="25" y="45" width="13" height="13" rx="4" fill="url(#a9)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">点餐</span> order</div>
+</div>
+
+<!-- PDF -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a10" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F44336"/><stop offset="100%" stop-color="#E91E63"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a10)" opacity="0.12"/>
+      <rect x="28" y="22" width="25" height="36" rx="5" fill="url(#a10)"/>
+      <rect x="34" y="38" width="13" height="10" rx="3" fill="white"/>
+      <text x="40.5" y="34" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Arial">PDF</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">PDF工具</span> pdf</div>
+</div>
+
+<!-- Teacher -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a11" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3F51B5"/><stop offset="100%" stop-color="#667EEA"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a11)" opacity="0.12"/>
+      <circle cx="40.5" cy="33" r="11" fill="url(#a11)"/>
+      <rect x="27" y="45" width="27" height="10" rx="5" fill="url(#a11)"/>
+      <rect x="40" y="30" width="5" height="6" rx="2" fill="white"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">AI老师</span> teacher</div>
+</div>
+
+<!-- DE -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a12" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF9800"/><stop offset="100%" stop-color="#FF5722"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a12)" opacity="0.12"/>
+      <path d="M40.5 26 L26 38 L26 54 L36 54 L36 44 L45 44 L45 54 L55 54 L55 38 Z" fill="url(#a12)"/>
+      <text x="40.5" y="46" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Arial">DE</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">德语</span> german</div>
+</div>
+
+<!-- JP -->
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="a13" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E91E63"/><stop offset="100%" stop-color="#FF5722"/></linearGradient></defs>
+      <rect x="14" y="14" width="53" height="53" rx="14" fill="url(#a13)" opacity="0.12"/>
+      <path d="M40.5 26 L26 38 L26 54 L36 54 L36 44 L45 44 L45 54 L55 54 L55 38 Z" fill="url(#a13)"/>
+      <text x="40.5" y="46" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Arial">日</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">日语</span> japanese</div>
+</div>
+
+</div><!-- /icon-grid -->
+</div><!-- /style-section -->
+
+<!-- ================================================================== -->
+<!-- Version B: Modern Line（现代线条风） -->
+<!-- ================================================================== -->
+<div class="style-section style-b">
+<div class="style-header">
+  <h2>✏️ B. Modern Line 现代线条风</h2>
+  <span class="style-badge" style="background:#F0FDF4;color:#16A34A;">新推荐</span>
+  <span class="style-desc">2px 描边 · 圆角线帽/连接 · 渐变色彩 · 带星光点缀</span>
+</div>
+<div class="icon-grid">
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b1" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#667eea"/><stop offset="100" stop-color="#764ba2"/></linearGradient></defs>
+      <path d="M50 22 L24 38 L24 60 L34 60 L34 48 L66 48 L66 60 L76 60 L76 38 Z" fill="none" stroke="url(#b1)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M50 38 L50 22" stroke="url(#b1)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M62 44 L64 48 L68 50 L64 52 L62 56 L60 52 L56 50 L60 48 Z" fill="url(#b1)" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">首页</span> home</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b2" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#667eea"/><stop offset="100" stop-color="#764ba2"/></linearGradient></defs>
+      <circle cx="50" cy="36" r="11" fill="none" stroke="url(#b2)" stroke-width="2.5"/>
+      <path d="M30 64 Q30 50 50 50 Q70 50 70 64" fill="none" stroke="url(#b2)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">我的</span> user</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b3" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#4CAF50"/><stop offset="100" stop-color="#009688"/></linearGradient></defs>
+      <path d="M50 28 L50 72" stroke="url(#b3)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M28 38 Q28 28 50 28 Q72 28 72 38" fill="none" stroke="url(#b3)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M28 38 L28 56 Q28 66 50 66 Q72 66 72 56 L72 38" fill="none" stroke="url(#b3)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M40 44 Q44 50 50 50 Q56 50 60 44" fill="none" stroke="url(#b3)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">课本</span> book</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b4" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#9C27B0"/><stop offset="100" stop-color="#667EEA"/></linearGradient></defs>
+      <rect x="32" y="28" width="36" height="44" rx="6" fill="none" stroke="url(#b4)" stroke-width="2.5"/>
+      <line x1="40" y1="42" x2="60" y2="42" stroke="url(#b4)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="40" y1="50" x2="55" y2="50" stroke="url(#b4)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="40" y1="58" x2="48" y2="58" stroke="url(#b4)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="50" cy="36" r="4" fill="url(#b4)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">语法</span> grammar</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b5" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#3B82F6"/><stop offset="100" stop-color="#2563EB"/></linearGradient></defs>
+      <rect x="30" y="24" width="40" height="52" rx="6" fill="none" stroke="url(#b5)" stroke-width="2.5"/>
+      <path d="M44 44 L50 50 L60 38" fill="none" stroke="url(#b5)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M72 28 L74 32 L78 34 L74 36 L72 40 L70 36 L66 34 L70 32 Z" fill="url(#b5)" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">练习</span> practice</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b6" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#FFC107"/><stop offset="100" stop-color="#FF9800"/></linearGradient></defs>
+      <rect x="38" y="28" width="10" height="44" rx="4" fill="url(#b6)" opacity="0.8"/>
+      <rect x="52" y="36" width="10" height="36" rx="4" fill="url(#b6)" opacity="0.5"/>
+      <rect x="26" y="42" width="10" height="30" rx="4" fill="url(#b6)" opacity="0.5"/>
+      <path d="M68 34 L70 38 L74 40 L70 42 L68 46 L66 42 L62 40 L66 38 Z" fill="url(#b6)" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">排行</span> rank</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b7" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#667EEA"/><stop offset="100" stop-color="#764BA2"/></linearGradient></defs>
+      <path d="M50 24 L26 36 L26 54 L50 66 L74 54 L74 36 Z" fill="none" stroke="url(#b7)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M50 24 L50 66" stroke="url(#b7)" stroke-width="2.5"/>
+      <path d="M26 36 L50 48 L74 36" stroke="url(#b7)" stroke-width="2.5"/>
+      <path d="M38 30 L48 36" stroke="url(#b7)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">学习</span> learn</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b8" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#009688"/><stop offset="100" stop-color="#00BCD4"/></linearGradient></defs>
+      <circle cx="50" cy="50" r="22" fill="none" stroke="url(#b8)" stroke-width="2.5"/>
+      <line x1="50" y1="32" x2="50" y2="68" stroke="url(#b8)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="32" y1="50" x2="68" y2="50" stroke="url(#b8)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">工具</span> tool</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b9" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#F43F5E"/><stop offset="100" stop-color="#FB7185"/></linearGradient></defs>
+      <rect x="28" y="22" width="44" height="56" rx="8" fill="none" stroke="url(#b9)" stroke-width="2.5"/>
+      <line x1="36" y1="34" x2="64" y2="34" stroke="url(#b9)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="36" y1="44" x2="58" y2="44" stroke="url(#b9)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="36" y1="54" x2="52" y2="54" stroke="url(#b9)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="36" y1="64" x2="44" y2="64" stroke="url(#b9)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M72 26 L74 30 L78 32 L74 34 L72 38 L70 34 L66 32 L70 30 Z" fill="url(#b9)" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">点餐</span> order</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b10" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#F44336"/><stop offset="100" stop-color="#E91E63"/></linearGradient></defs>
+      <rect x="28" y="22" width="44" height="56" rx="6" fill="none" stroke="url(#b10)" stroke-width="2.5"/>
+      <rect x="36" y="32" width="28" height="28" rx="4" fill="none" stroke="url(#b10)" stroke-width="2"/>
+      <text x="50" y="52" text-anchor="middle" fill="url(#b10)" font-size="16" font-weight="bold" font-family="Arial">PDF</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">PDF工具</span> pdf</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b11" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#3F51B5"/><stop offset="100" stop-color="#667EEA"/></linearGradient></defs>
+      <circle cx="50" cy="36" r="12" fill="none" stroke="url(#b11)" stroke-width="2.5"/>
+      <path d="M30 64 Q30 48 50 48 Q70 48 70 64" fill="none" stroke="url(#b11)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M74 24 L76 28 L80 30 L76 32 L74 36 L72 32 L68 30 L72 28 Z" fill="url(#b11)" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">AI老师</span> teacher</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b12" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#51CF66"/><stop offset="100" stop-color="#37B24D"/></linearGradient></defs>
+      <path d="M24 34 L50 24 L76 34 L76 74 L50 64 L24 74 Z" fill="none" stroke="url(#b12)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M50 24 L50 64" stroke="url(#b12)" stroke-width="3"/>
+      <path d="M56 40 Q66 40 66 47 Q66 54 56 54 L56 40 Z" fill="none" stroke="url(#b12)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M76 28 L78 32 L82 34 L78 36 L76 40 L74 36 L70 34 L74 32 Z" fill="url(#b12)" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">德语</span> german</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="b13" x1="0" y1="0" x2="100" y2="100"><stop offset="0" stop-color="#FF6B6B"/><stop offset="100" stop-color="#EE5A24"/></linearGradient></defs>
+      <path d="M24 34 L50 24 L76 34 L76 74 L50 64 L24 74 Z" fill="none" stroke="url(#b13)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M50 24 L50 64" stroke="url(#b13)" stroke-width="3"/>
+      <rect x="56" y="38" width="14" height="14" rx="2" fill="none" stroke="url(#b13)" stroke-width="2.5"/>
+      <line x1="63" y1="38" x2="63" y2="52" stroke="url(#b13)" stroke-width="2"/>
+      <line x1="56" y1="45" x2="70" y2="45" stroke="url(#b13)" stroke-width="2"/>
+      <path d="M76 28 L78 32 L82 34 L78 36 L76 40 L74 36 L70 34 L74 32 Z" fill="url(#b13)" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">日语</span> japanese</div>
+</div>
+
+</div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Version C: Claymorphism（软3D立体风） -->
+<!-- ================================================================== -->
+<div class="style-section style-c">
+<style>
+  .style-c .icon-card { border: 3px solid #E2E8F0; border-radius: 20px; }
+  .style-c .icon-card .icon-wrap svg { width: 52px; height: 52px; }
+</style>
+<div class="style-header">
+  <h2>🧸 C. Claymorphism 软3D立体风</h2>
+  <span class="style-badge" style="background:#FFF7ED;color:#EA580C;">新推荐</span>
+  <span class="style-desc">双阴影 · 厚边框 3px · 大圆角 · 卡通活泼感</span>
+</div>
+<div class="icon-grid">
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#4F46E5"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c1)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <path d="M40.5 22 L24 38 L24 59 L34 59 L34 46 L47 46 L47 59 L57 59 L57 38 Z" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">首页</span> home</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#4F46E5"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c2)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <circle cx="40.5" cy="32" r="10" fill="white" opacity="0.9"/>
+      <rect x="28" y="43" width="25" height="12" rx="6" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">我的</span> user</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c3)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <path d="M40.5 24 C40.5 24 28 30 28 38 L28 56 C28 56 34 52 40.5 52 C47 52 53 56 53 56 L53 38 C53 30 40.5 24 40.5 24Z" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">课本</span> book</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#7C3AED"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c4)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="28" y="26" width="25" height="28" rx="6" fill="white" opacity="0.9"/>
+      <rect x="34" y="35" width="13" height="10" rx="3" fill="url(#c4)"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">语法</span> grammar</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#2563EB"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c5)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="24" y="36" width="32" height="8" rx="4" fill="white" opacity="0.9"/>
+      <circle cx="44" cy="33" r="6" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">练习</span> practice</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c6" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c6)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="30" y="28" width="9" height="26" rx="4" fill="white" opacity="0.9"/>
+      <rect x="42" y="34" width="9" height="20" rx="4" fill="white" opacity="0.7"/>
+      <rect x="22" y="38" width="8" height="16" rx="4" fill="white" opacity="0.7"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">排行</span> rank</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#7C3AED"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c7)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <path d="M40.5 24 C40.5 24 26 36 26 44 C26 52 32.5 58 40.5 58 C48.5 58 55 52 55 44 C55 36 40.5 24 40.5 24Z" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">学习</span> learn</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c8" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2DD4BF"/><stop offset="100%" stop-color="#0D9488"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c8)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="36" y="24" width="8" height="32" rx="4" fill="white" opacity="0.9"/>
+      <rect x="24" y="36.5" width="32" height="8" rx="4" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">工具</span> tool</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c9" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c9)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="25" y="27" width="14" height="14" rx="4" fill="white" opacity="0.9"/>
+      <rect x="43" y="27" width="14" height="14" rx="4" fill="white" opacity="0.9"/>
+      <rect x="25" y="45" width="14" height="14" rx="4" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">点餐</span> order</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c10" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F87171"/><stop offset="100%" stop-color="#DC2626"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c10)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <rect x="28" y="22" width="26" height="36" rx="6" fill="white" opacity="0.9"/>
+      <text x="41" y="44" text-anchor="middle" fill="url(#c10)" font-size="11" font-weight="bold" font-family="Arial">PDF</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">PDF工具</span> pdf</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c11" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#4F46E5"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c11)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <circle cx="40.5" cy="33" r="10" fill="white" opacity="0.9"/>
+      <rect x="28" y="44" width="25" height="10" rx="5" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">AI老师</span> teacher</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c12" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ADE80"/><stop offset="100%" stop-color="#16A34A"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c12)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <text x="40.5" y="49" text-anchor="middle" fill="white" opacity="0.95" font-size="22" font-weight="bold" font-family="Arial">DE</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">德语</span> german</div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 81 81">
+      <defs><linearGradient id="c13" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FB7185"/><stop offset="100%" stop-color="#E11D48"/></linearGradient></defs>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="url(#c13)"/>
+      <rect x="10" y="10" width="61" height="61" rx="18" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+      <text x="40.5" y="49" text-anchor="middle" fill="white" opacity="0.95" font-size="22" font-weight="bold" font-family="Arial">日</text>
+    </svg>
+  </div>
+  <div class="label"><span class="zh">日语</span> japanese</div>
+</div>
+
+</div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Version D: Minimal Glyph（极简字符风） -->
+<!-- ================================================================== -->
+<div class="style-section style-d">
+<div class="style-header">
+  <h2>◻️ D. Minimal Glyph 极简字符风</h2>
+  <span class="style-badge" style="background:#F1F5F9;color:#475569;">轻量之选</span>
+  <span class="style-desc">单色填充 · 无背景方块 · 干净利落 · 小尺寸高辨识度</span>
+</div>
+<div class="icon-grid">
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><path d="M24 4 L4 18 L4 42 L18 42 L18 28 L30 28 L30 42 L44 42 L44 18 Z" fill="#4F46E5"/></svg>
+  </div>
+  <div class="label"><span class="zh">首页</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="16" r="8" fill="#4F46E5"/><path d="M10 38 Q10 24 24 24 Q38 24 38 38" fill="none" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="label"><span class="zh">我的</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><path d="M24 8 C24 8 12 14 12 20 L12 38 C12 38 18 34 24 34 C30 34 36 38 36 38 L36 20 C36 14 24 8 24 8Z" fill="#059669"/></svg>
+  </div>
+  <div class="label"><span class="zh">课本</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><rect x="12" y="8" width="24" height="32" rx="4" fill="#7C3AED"/><rect x="16" y="16" width="16" height="16" rx="2" fill="white"/></svg>
+  </div>
+  <div class="label"><span class="zh">语法</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="5" fill="#2563EB"/><path d="M20 22 L24 28 L32 16" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="label"><span class="zh">练习</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><rect x="18" y="8" width="6" height="32" rx="2" fill="#F59E0B"/><rect x="28" y="16" width="6" height="24" rx="2" fill="#F59E0B" opacity="0.6"/><rect x="10" y="22" width="6" height="18" rx="2" fill="#F59E0B" opacity="0.6"/></svg>
+  </div>
+  <div class="label"><span class="zh">排行</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><path d="M24 6 L8 18 L8 34 L24 42 L40 34 L40 18 Z" fill="#667EEA"/><path d="M24 6 L24 42" stroke="white" stroke-width="2"/><path d="M8 18 L24 26 L40 18" stroke="white" stroke-width="2"/></svg>
+  </div>
+  <div class="label"><span class="zh">学习</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="16" fill="#0D9488"/><line x1="24" y1="12" x2="24" y2="36" stroke="white" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="24" x2="36" y2="24" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="label"><span class="zh">工具</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="5" fill="#E11D48"/><line x1="16" y1="16" x2="32" y2="16" stroke="white" stroke-width="3" stroke-linecap="round"/><line x1="16" y1="24" x2="28" y2="24" stroke="white" stroke-width="3" stroke-linecap="round"/><line x1="16" y1="32" x2="22" y2="32" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="label"><span class="zh">点餐</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="4" fill="#DC2626"/><rect x="16" y="14" width="16" height="16" rx="2" fill="white"/><text x="24" y="26" text-anchor="middle" fill="#DC2626" font-size="8" font-weight="bold" font-family="Arial">PDF</text></svg>
+  </div>
+  <div class="label"><span class="zh">PDF</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="16" r="9" fill="#4F46E5"/><path d="M10 38 Q10 22 24 22 Q38 22 38 38" fill="none" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="label"><span class="zh">老师</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="none" stroke="#16A34A" stroke-width="2"/><text x="24" y="30" text-anchor="middle" fill="#16A34A" font-size="16" font-weight="bold" font-family="Arial">DE</text></svg>
+  </div>
+  <div class="label"><span class="zh">德语</span></div>
+</div>
+
+<div class="icon-card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="none" stroke="#E11D48" stroke-width="2"/><text x="24" y="30" text-anchor="middle" fill="#E11D48" font-size="16" font-weight="bold" font-family="Arial">日</text></svg>
+  </div>
+  <div class="label"><span class="zh">日语</span></div>
+</div>
+
+</div>
+</div>
+
+<!-- Footer -->
+<div style="margin-top: 60px; padding: 24px; background: #F1F5F9; border-radius: 16px; text-align: center; color: #64748B; font-size: 14px;">
+  <p><strong>💡 选择提示：</strong></p>
+  <p style="margin-top: 8px;">
+    <strong>A 精修版</strong> — 保持现有方块风格，优化渐变和细节，改动最小<br>
+    <strong>B 线条风</strong> — 现代感强，带星光点缀，适合年轻化产品（当前 inline SVG 风格延续）<br>
+    <strong>C 立体风</strong> — Claymorphism 软3D，厚边框+双阴影，活泼可爱<br>
+    <strong>D 极简风</strong> — 无背景框，单色填充，小尺寸下辨识度最高
+  </p>
+  <p style="margin-top: 12px; color: #94A3B8; font-size: 12px;">选择你喜欢的风格方向后，我会将所有图标完整重绘并替换到项目中</p>
+</div>
+
+</body>
+</html>

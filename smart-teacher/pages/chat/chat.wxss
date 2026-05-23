@@ -122,7 +122,7 @@
 
 .welcome-desc {
   font-size: 28rpx;
-  color: #666666;
+  color: #475569;
   line-height: 1.6;
 }
 
@@ -354,10 +354,10 @@
 
 .preview-remove {
   position: absolute;
-  top: -12rpx;
-  right: -12rpx;
-  width: 44rpx;
-  height: 44rpx;
+  top: -16rpx;
+  right: -16rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
@@ -431,7 +431,7 @@
 }
 
 .input-placeholder {
-  color: #999999;
+  color: #94A3B8;
   font-size: 30rpx;
 }
 

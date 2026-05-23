@@ -32,12 +32,16 @@
 }
 
 .mode-btn {
-  padding: 10rpx 20rpx;
+  padding: 14rpx 24rpx;
   background: #f0f0f0;
   color: #333;
   border-radius: 8rpx;
   font-size: 24rpx;
   margin-right: 12rpx;
+}
+
+.mode-btn:active {
+  background: #d0d0d0;
 }
 .title-text {
   flex: 1;
@@ -61,8 +65,8 @@
 
 .close-btn {
   font-size: 36rpx;
-  color: #999;
-  padding: 8rpx 16rpx;
+  color: #64748B;
+  padding: 16rpx 20rpx;
   margin-left: 8rpx;
 }
 
@@ -158,7 +162,7 @@
 
 .expand-label {
   font-size: 22rpx;
-  color: #999;
+  color: #64748B;
 }
 
 .expanded-row {
@@ -310,7 +314,7 @@
 
 .save-status {
   font-size: 22rpx;
-  color: #999;
+  color: #64748B;
 }
 
 /* 预览模式 */

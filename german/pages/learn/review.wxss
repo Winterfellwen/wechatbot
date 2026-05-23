@@ -71,7 +71,7 @@
 
 .phonetic {
   font-size: 34rpx;
-  color: #999;
+  color: #64748B;
   margin-bottom: 32rpx;
 }
 
@@ -161,7 +161,7 @@
 
 .empty-desc {
   font-size: 28rpx;
-  color: #666;
+  color: #475569;
 }
 
 .back-btn {
@@ -233,14 +233,14 @@
 
 .stat-label {
   font-size: 26rpx;
-  color: #999;
+  color: #64748B;
   margin-top: 12rpx;
   display: block;
 }
 
 .finish-message {
   font-size: 30rpx;
-  color: #666;
+  color: #475569;
   margin-top: 24rpx;
 }
 

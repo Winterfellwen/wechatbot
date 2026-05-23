@@ -1,4 +1,4 @@
-<!--pages/user/user.wxml - UI/UX Pro Max 优化版-->
+<!--pages/user/user.wxml-->
 <view class="page">
   <!-- 未登录 -->
   <view class="login-section" wx:if="{{!isLoggedIn}}">
@@ -12,8 +12,33 @@
     </view>
   </view>
 
+  <!-- 首次登录 → 完善资料 -->
+  <view class="first-setup-card" wx:if="{{isLoggedIn && showFirstSetup}}">
+    <text class="first-setup-title">完善你的个人资料</text>
+    <text class="first-setup-desc">设置头像和昵称，让你的体验更个性化</text>
+
+    <!-- 头像 -->
+    <button class="setup-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onFirstSetupChooseAvatar">
+      <image class="setup-avatar-img" src="{{setupAvatarUrl}}" mode="aspectFill"></image>
+      <view class="setup-avatar-overlay">
+        <text class="setup-avatar-hint">点击更换头像</text>
+      </view>
+    </button>
+
+    <!-- 昵称 -->
+    <view class="setup-nick-row">
+      <input class="setup-nick-input" type="nickname" placeholder="给自己取个好听的名字" value="{{setupNickName}}" bindinput="onFirstSetupNickInput" maxlength="20" />
+    </view>
+
+    <!-- 按钮 -->
+    <view class="setup-buttons">
+      <button class="setup-btn setup-btn-skip" bindtap="skipFirstSetup">跳过</button>
+      <button class="setup-btn setup-btn-save" bindtap="saveFirstSetup">保存</button>
+    </view>
+  </view>
+
   <!-- 已登录 -->
-  <view class="profile-section" wx:if="{{isLoggedIn}}">
+  <view class="profile-section" wx:if="{{isLoggedIn && !showFirstSetup}}">
     <!-- 头部信息 -->
     <view class="profile-header">
       <view class="profile-bg"></view>

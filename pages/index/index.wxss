@@ -191,7 +191,7 @@
 
 .card-learn::before { background: linear-gradient(90deg, #667eea, #764ba2); }
 .card-tool::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
-.card-ai-order::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.card-ai-order::before { background: linear-gradient(90deg, #fb7185, #f43f5e); }
 
 /* 卡片右上角装饰圆 */
 .entry-card::after {
@@ -208,7 +208,7 @@
 
 .card-learn::after { background: #764ba2; }
 .card-tool::after { background: #f5576c; }
-.card-ai-order::after { background: #f5576c; }
+.card-ai-order::after { background: #f43f5e; }
 
 .entry-card:active::after {
   opacity: 0.1;
@@ -243,8 +243,8 @@
 }
 
 .icon-bg-ai-order {
-  background: linear-gradient(135deg, #fff0f3, #ffe0e6);
-  box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
+  background: linear-gradient(135deg, #fff1f2, #fecdd3);
+  box-shadow: 0 6rpx 20rpx rgba(244, 63, 94, 0.2);
 }
 
 .icon-svg {

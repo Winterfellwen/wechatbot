@@ -1,6 +1,6 @@
 <view class="container">
   <view class="hero">
-    <text class="hero-icon">📚</text>
+    <image class="hero-icon" src="{{heroIcon}}" mode="aspectFit"></image>
     <text class="hero-title">学习Agent</text>
     <text class="hero-desc">选择你想学习的外语</text>
   </view>

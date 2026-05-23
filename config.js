@@ -9,14 +9,15 @@ const config = {
     port: process.env.PORT || 3000,
   },
 
-  // 数据库配置 (MySQL via OCI VM proxy)
+  // 数据库配置 (Aiven MySQL free tier)
   database: {
     host: process.env.MYSQL_HOST || null,
-    port: parseInt(process.env.MYSQL_PORT || '3307'),
-    user: process.env.MYSQL_USER || 'admin',
+    port: parseInt(process.env.MYSQL_PORT || '16817'),
+    user: process.env.MYSQL_USER || 'avnadmin',
     password: process.env.MYSQL_PASSWORD || null,
-    database: process.env.MYSQL_DATABASE || 'wechatbot',
-    ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    database: process.env.MYSQL_DATABASE || 'defaultdb',
+    // Aiven 强制 SSL，默认开启；设置 MYSQL_SSL=false 可关闭
+    ssl: process.env.MYSQL_SSL === 'false' ? undefined : { rejectUnauthorized: false },
   },
 
   // 微信配置

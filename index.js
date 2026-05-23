@@ -133,6 +133,14 @@ function generateToken() {
   return token;
 }
 
+function generateRandomNick() {
+  var adjs = ['快乐', '阳光', '清风', '星辰', '暖阳', '小梦', '悠然', '灵动', '勇敢', '追风', '漫步', '流光', '浅唱', '微光'];
+  var nouns = ['旅行者', '小精灵', '探索家', '梦想家', '小星星', '学习者', '小飞侠', '漫步者', '观察者', '小能手', '追光者', '记录员'];
+  var adj = adjs[Math.floor(Math.random() * adjs.length)];
+  var noun = nouns[Math.floor(Math.random() * nouns.length)];
+  return adj + noun;
+}
+
 async function requireAuth(req, res, next) {
   var authHeader = req.headers.authorization || '';
   var token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
@@ -165,6 +173,18 @@ const pool = (db.host && db.password) ? mysql.createPool({
   connectionLimit: 5,
   queueLimit: 0
 }) : null;
+
+// 防休眠心跳：Aiven 免费计划长期无活动会关闭，每 30 分钟 SELECT 1 保持活跃
+if (pool) {
+  setInterval(async () => {
+    try {
+      await pool.query('SELECT 1');
+      console.log('[heartbeat] DB alive');
+    } catch (e) {
+      console.error('[heartbeat] keep-alive failed:', e.message);
+    }
+  }, 30 * 60 * 1000);
+}
 
 const WECHAT_APP_ID = config.wechat.appId;
 const WECHAT_APP_SECRET = config.wechat.appSecret;
@@ -220,26 +240,27 @@ var wxRes = await fetch(
     var [userRows] = await pool.query('SELECT * FROM users WHERE openid = ?', [openid]);
 
     var user, token;
+    var isNew = false;
     if (userRows.length > 0) {
       var existing = userRows[0];
       token = generateToken();
       await pool.query('UPDATE users SET token = ? WHERE openid = ?', [token, openid]);
       user = existing;
     } else {
-      var [countResult] = await pool.query('SELECT COUNT(*) AS cnt FROM users');
-      var count = parseInt(countResult[0].cnt) + 1;
-      var nickName = '微信用户' + String(count).padStart(3, '0');
+      isNew = true;
       token = generateToken();
+      var nickName = generateRandomNick();
       await pool.query(
-        'INSERT INTO users (openid, nickName, token, createdAt, updatedAt) VALUES (?, ?, ?, NOW(), NOW())',
-        [openid, nickName, token]
+        'INSERT INTO users (openid, nickName, avatarUrl, token, createdAt, updatedAt) VALUES (?, ?, ?, ?, NOW(), NOW())',
+        [openid, nickName, '', token]
       );
-      user = { openid, nickname: nickName, token, avatarurl: '' };
+      user = { openid, nickname: nickName, avatarurl: '' };
     }
 
     res.json({
       token: token,
-      user: { openid: user.openid, nickName: user.nickname, avatarUrl: user.avatarurl || '' }
+      user: { openid: user.openid, nickName: user.nickname, avatarUrl: user.avatarurl || '' },
+      isNew: isNew
     });
   } catch (err) {
     console.error('POST /api/auth/login error:', err);
@@ -279,6 +300,7 @@ app.delete('/api/users/me', requireAuth, async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
+    await conn.query('DELETE FROM ai_order_merchants WHERE openid = ?', [req.user.openid]);
     await conn.query('DELETE FROM jp_lesson_scores WHERE openid = ?', [req.user.openid]);
     await conn.query('DELETE FROM users WHERE openid = ?', [req.user.openid]);
     await conn.commit();

@@ -333,3 +333,106 @@
   background: #F1F5F9;
   margin-left: 116rpx;
 }
+
+/* ========== 首次登录完善资料 ========== */
+.first-setup-card {
+  margin: 40rpx 30rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 50rpx 40rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.08);
+}
+
+.first-setup-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1E293B;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.first-setup-desc {
+  font-size: 26rpx;
+  color: #94A3B8;
+  display: block;
+  margin-bottom: 40rpx;
+}
+
+.setup-avatar-btn {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0 auto 30rpx;
+  position: relative;
+  overflow: visible;
+  border: none;
+  background: transparent;
+}
+.setup-avatar-btn::after { border: none; }
+
+.setup-avatar-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  border: 4rpx solid #E2E8F0;
+}
+
+.setup-avatar-overlay {
+  position: absolute;
+  bottom: -8rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2563EB;
+  border-radius: 20rpx;
+  padding: 6rpx 24rpx;
+  white-space: nowrap;
+}
+
+.setup-avatar-hint {
+  font-size: 20rpx;
+  color: #fff;
+}
+
+.setup-nick-row {
+  margin-bottom: 36rpx;
+}
+
+.setup-nick-input {
+  width: 100%;
+  height: 88rpx;
+  border: 2rpx solid #E2E8F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  text-align: center;
+  box-sizing: border-box;
+  background: #F8FAFC;
+}
+
+.setup-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.setup-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  padding: 0;
+}
+
+.setup-btn-skip {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.setup-btn-save {
+  background: #2563EB;
+  color: #fff;
+}

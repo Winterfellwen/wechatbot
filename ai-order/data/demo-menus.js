@@ -1,4 +1,12 @@
-module.exports = {
+// ai-order/data/demo-menus.js
+// Local fallback data + OCI remote sync
+
+var OCI_DEMO_URL = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/menus/demo-menus.json';
+var CACHE_KEY = 'demo-menus-cache';
+var DOWNLOAD_FLAG = 'demo-menus-downloaded';
+var _downloading = false;
+
+var localData = {
   "merchants": [
     {
       "id": "demo-restaurant-1",
@@ -106,4 +114,71 @@ module.exports = {
       ]
     }
   ]
+};
+
+/** 尝试从 OCI 下载最新 demo 数据并缓存（后台静默执行） */
+function tryFetchInBackground() {
+  if (_downloading) return;
+  _downloading = true;
+  wx.request({
+    url: OCI_DEMO_URL,
+    timeout: 10000,
+    success: function (res) {
+      if (res.statusCode === 200 && res.data && res.data.merchants) {
+        wx.setStorageSync(CACHE_KEY, res.data);
+        wx.setStorageSync(DOWNLOAD_FLAG, true);
+      }
+    },
+    fail: function () {},
+    complete: function () {
+      _downloading = false;
+    }
+  });
 }
+
+/** 获取 demo 数据：缓存优先 → 触发后台下载 → 本地兜底 */
+function getData() {
+  var cached = wx.getStorageSync(CACHE_KEY);
+  if (cached && cached.merchants) {
+    // 已有缓存，后台静默更新
+    tryFetchInBackground();
+    return cached;
+  }
+  // 无缓存：立即返回本地数据，同时后台下载
+  tryFetchInBackground();
+  return localData;
+}
+
+/** 获取某个演示商家的完整菜单（含菜品） */
+function getMerchant(merchantId) {
+  var data = getData();
+  var merchants = data.merchants || [];
+  for (var i = 0; i < merchants.length; i++) {
+    if (merchants[i].id === merchantId) {
+      return merchants[i];
+    }
+  }
+  return null;
+}
+
+/** 获取所有演示商家列表（不含菜品详情，轻量） */
+function getMerchantList() {
+  var data = getData();
+  var merchants = data.merchants || [];
+  return merchants.map(function (m) {
+    return {
+      id: m.id,
+      name: m.name,
+      description: m.description || '',
+      type: 'demo',
+      dishCount: (m.dishes && m.dishes.length) || 0
+    };
+  });
+}
+
+module.exports = {
+  getData: getData,
+  getMerchant: getMerchant,
+  getMerchantList: getMerchantList,
+  tryFetchInBackground: tryFetchInBackground
+};

@@ -1,4 +1,5 @@
 // ai-order/pages/customer/customer.js
+var loginLib = require('../../../utils/login');
 var CONFIG = require('../../../utils/config');
 var SERVER = CONFIG.SERVER;
 var msgIdCounter = 0;
@@ -110,6 +111,7 @@ Page({
     streamingText: '',
     scrollToDishId: '',
     scrollToDishZone: '',
+    dishScrollTop: null,
 
     lastOrder: null,
   },
@@ -152,11 +154,14 @@ Page({
   },
 
   onHide: function() {
-    this._disconnectWs();
+    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
   },
 
   onShow: function() {
-    this._connectWebSocket();
+    this._startWsHeartbeat();
+    if (!wsTask) {
+      this._connectWebSocket();
+    }
   },
 
   loadMenu: function() {
@@ -201,35 +206,25 @@ Page({
 
   _loadMenuFromServer: function() {
     var that = this;
-    var url = SERVER + '/api/ai-order/menu/list';
-    if (that.data.merchantId) url += '?merchantId=' + that.data.merchantId;
-    wx.request({
-      url: url,
-      timeout: 5000,
-      success: function(res) {
+    var path = '/api/ai-order/menu/list';
+    if (that.data.merchantId) path += '?merchantId=' + that.data.merchantId;
+    loginLib.request('GET', path, null, false)
+      .then(function(data) {
         that.setData({ menuLoading: false });
-        if (res.statusCode === 200 && res.data && res.data.success && res.data.data) {
-          that._applyMenuData(res.data.data);
+        if (data && data.success && data.data) {
+          that._applyMenuData(data.data);
         }
-      },
-      fail: function() {
+      })
+      .catch(function() {
         that.setData({ menuLoading: false });
         console.warn('[customer] failed to load menu from server');
-      }
-    });
+      });
   },
 
   _loadMenuFromDemoData: function(merchantId) {
     var that = this;
-    var data = require('../../data/demo-menus');
-    var merchants = (data && data.merchants) || [];
-    var found = null;
-    for (var i = 0; i < merchants.length; i++) {
-      if (merchants[i].id === merchantId) {
-        found = merchants[i];
-        break;
-      }
-    }
+    var demoMenus = require('../../data/demo-menus');
+    var found = demoMenus.getMerchant(merchantId);
     that.setData({ menuLoading: false });
     if (found) {
       var menu = { dishes: found.dishes || [] };
@@ -341,7 +336,6 @@ Page({
         }
       }
     }
-    that.setData({ aiRecommendations: enriched, recDishIds: recIds, showRecGlow: enriched.length > 0 });
     var result = that._rebuildGroups(allDishes, that.data.groupMode);
     if (enriched.length > 0) {
       result.tasteGroups.unshift({
@@ -351,9 +345,14 @@ Page({
         lightColor: '#F0E6FF'
       });
     }
-    that.setData({ tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap });
+    that.setData({ aiRecommendations: enriched, recDishIds: recIds, showRecGlow: false, tasteGroups: result.tasteGroups, dishGradientMap: result.dishGradientMap });
     if (enriched.length > 0) {
-      that.setData({ scrollToDishZone: 'zone-AI推荐' });
+      that._suppressGlowClear = true;
+      that.setData({ dishScrollTop: 0 });
+      setTimeout(function() {
+        that._suppressGlowClear = false;
+        that.setData({ recDishIds: recIds, showRecGlow: true });
+      }, 400);
     }
   },
 
@@ -367,7 +366,13 @@ Page({
   },
 
   onDishGridScroll: function() {
-    this._clearRecGlow();
+    if (!this._suppressGlowClear) {
+      this._clearRecGlow();
+    }
+    var that = this;
+    if (that.data.dishScrollTop === 0) {
+      that.setData({ dishScrollTop: null });
+    }
   },
 
   onGroupModeChange: function(e) {
@@ -480,8 +485,7 @@ Page({
   _connectWebSocket: function() {
     var that = this;
     if (wsTask) {
-      try { wsTask.close({}); } catch (_) {}
-      wsTask = null;
+      return;
     }
     wsTask = wx.connectSocket({ url: WS_URL });
     wsTask.onOpen(function() {
@@ -496,6 +500,7 @@ Page({
   _onWsFail: function() {
     var that = this;
     if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+    if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
     wsTask = null;
     if (wsReconnectCount < 3) {
       wsReconnectCount++;
