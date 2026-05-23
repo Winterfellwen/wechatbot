@@ -1,3 +1,4 @@
+var CONFIG = require('../../utils/config');
 var loginLib = require('../../utils/login');
 var validation = require('../../utils/validation');
 
@@ -21,14 +22,31 @@ Page({
     var loggedIn = loginLib.isLoggedIn();
     if (loggedIn) {
       var user = loginLib.getUserInfo();
-      var displayUserInfo = validation.getDisplayUserInfo(user, '微信用户');
       var firstLoginPending = wx.getStorageSync('firstLoginPending');
       that.setData({
         isLoggedIn: true,
         userInfo: user,
-        displayUserInfo: displayUserInfo,
+        displayUserInfo: validation.getDisplayUserInfo(user, '微信用户'),
         isNewUser: !!firstLoginPending,
         showFirstSetup: !!firstLoginPending
+      });
+      // 异步从服务端刷新最新数据，修复旧存储中 nickName 为 undefined 的问题
+      wx.request({
+        url: CONFIG.SERVER + '/api/users/me',
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
+        },
+        success: function (res) {
+          if (res.statusCode === 200 && res.data) {
+            wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, res.data);
+            that.setData({
+              userInfo: res.data,
+              displayUserInfo: validation.getDisplayUserInfo(res.data, '微信用户')
+            });
+          }
+        }
       });
     } else {
       that.setData({
@@ -103,39 +121,102 @@ Page({
     var that = this;
     var avatarUrl = that.data.setupAvatarUrl;
     var nickName = that.data.setupNickName.trim();
+    var avatarChanged = avatarUrl && avatarUrl !== '/images/avatar-default.png';
+    var nickChanged = !!nickName;
 
-    if (!nickName && avatarUrl === '/images/avatar-default.png') {
-      // 都没改动，等同跳过
+    if (!nickChanged && !avatarChanged) {
       that.skipFirstSetup();
       return;
     }
 
-    var updates = {};
-    if (nickName) updates.nickName = nickName;
-    if (avatarUrl && avatarUrl !== '/images/avatar-default.png') updates.avatarUrl = avatarUrl;
+    var token = wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN);
 
-    if (Object.keys(updates).length === 0) {
-      that.skipFirstSetup();
-      return;
-    }
-
-    wx.showLoading({ title: '保存中...' });
-    loginLib.updateProfile(updates).then(function (updated) {
-      wx.hideLoading();
+    function done(user) {
       wx.setStorageSync('hasSetNickname', true);
       wx.removeStorageSync('firstLoginPending');
-      var display = validation.getDisplayUserInfo(updated, updated.nickName);
+      wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, user);
       that.setData({
         showFirstSetup: false,
         isNewUser: false,
-        userInfo: updated,
-        displayUserInfo: display
+        userInfo: user,
+        displayUserInfo: validation.getDisplayUserInfo(user, user.nickName)
       });
-      wx.showToast({ title: '资料已保存', icon: 'success' });
-    }).catch(function () {
-      wx.hideLoading();
-      wx.showToast({ title: '保存失败，请稍后重试', icon: 'none' });
-    });
+    }
+
+    function uploadAvatar(cb) {
+      wx.uploadFile({
+        url: CONFIG.SERVER + '/api/upload/avatar',
+        filePath: avatarUrl,
+        name: 'avatar',
+        header: { 'Authorization': 'Bearer ' + token },
+        success: function (res) {
+          if (res.statusCode === 200) {
+            var data = JSON.parse(res.data);
+            cb(null, data.avatarUrl);
+          } else {
+            cb({ msg: 'upload_failed' });
+          }
+        },
+        fail: function () { cb({ msg: 'network_error' }); }
+      });
+    }
+
+    if (avatarChanged) {
+      wx.showLoading({ title: '上传头像...' });
+      uploadAvatar(function (err, serverAvatarUrl) {
+        if (err) {
+          wx.hideLoading();
+          if (nickChanged) {
+            // 头像上传失败，仍尝试保存昵称
+            wx.showLoading({ title: '保存昵称...' });
+            loginLib.updateProfile({ nickName: nickName }).then(function (u) {
+              wx.hideLoading();
+              done(u);
+              wx.showToast({ title: '昵称已保存，头像上传失败', icon: 'none' });
+            }).catch(function () {
+              wx.hideLoading();
+              wx.showToast({ title: '保存失败', icon: 'none' });
+            });
+          } else {
+            wx.showToast({ title: '头像上传失败', icon: 'none' });
+          }
+          return;
+        }
+        // 头像上传成功，DB 中 avatarUrl 已更新
+        if (nickChanged) {
+          wx.showLoading({ title: '保存昵称...' });
+          loginLib.updateProfile({ nickName: nickName }).then(function (u) {
+            wx.hideLoading();
+            done(u);
+            wx.showToast({ title: '资料已保存', icon: 'success' });
+          }).catch(function () {
+            wx.hideLoading();
+            // 昵称保存失败，头像已保存，构造当前状态
+            var user = that.data.userInfo || {};
+            var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl, nickName: nickName });
+            done(patched);
+            wx.showToast({ title: '头像已更新，昵称同步失败', icon: 'none' });
+          });
+        } else {
+          wx.hideLoading();
+          var user = that.data.userInfo || {};
+          var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl });
+          done(patched);
+          wx.showToast({ title: '资料已保存', icon: 'success' });
+        }
+      });
+    } else {
+      // 仅昵称变更
+      wx.showLoading({ title: '保存中...' });
+      loginLib.updateProfile({ nickName: nickName }).then(function (u) {
+        wx.hideLoading();
+        done(u);
+        wx.showToast({ title: '资料已保存', icon: 'success' });
+      }).catch(function () {
+        wx.hideLoading();
+        wx.showToast({ title: '保存失败', icon: 'none' });
+      });
+    }
   },
 
   /** 跳过 → 保持默认头像和系统昵称 */
@@ -166,21 +247,34 @@ Page({
       return;
     }
     var that = this;
-    wx.showLoading({ title: '更新中...' });
-    loginLib.updateProfile({ avatarUrl: avatarUrl }).then(function (updated) {
-      wx.hideLoading();
-      that.setData({
-        userInfo: updated,
-        displayUserInfo: validation.getDisplayUserInfo(updated, updated.nickName)
-      });
-      wx.showToast({ title: '头像已更新', icon: 'success' });
-    }).catch(function () {
-      wx.hideLoading();
-      // 即使上传失败，本地也先更新显示
-      var user = that.data.userInfo || {};
-      var updated = Object.assign({}, user, { avatarUrl: avatarUrl });
-      that.setData({ userInfo: updated, displayUserInfo: validation.getDisplayUserInfo(updated, updated.nickName) });
-      wx.showToast({ title: '本地已更新，同步失败', icon: 'none' });
+    wx.showLoading({ title: '上传中...' });
+    wx.uploadFile({
+      url: CONFIG.SERVER + '/api/upload/avatar',
+      filePath: avatarUrl,
+      name: 'avatar',
+      header: {
+        'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN)
+      },
+      success: function (res) {
+        wx.hideLoading();
+        if (res.statusCode === 200) {
+          var data = JSON.parse(res.data);
+          var user = that.data.userInfo || {};
+          var updated = Object.assign({}, user, { avatarUrl: data.avatarUrl });
+          wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, updated);
+          that.setData({
+            userInfo: updated,
+            displayUserInfo: validation.getDisplayUserInfo(updated, updated.nickName)
+          });
+          wx.showToast({ title: '头像已更新', icon: 'success' });
+        } else {
+          wx.showToast({ title: '上传失败', icon: 'none' });
+        }
+      },
+      fail: function () {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      }
     });
   },
 
