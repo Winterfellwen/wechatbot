@@ -37,6 +37,8 @@ function request(method, path, data, needAuth) {
 }
 
 module.exports = {
+  request: request,
+
   login: function () {
     return new Promise(function (resolve, reject) {
       wx.login({
