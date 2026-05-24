@@ -435,7 +435,7 @@ Page({
   },
 
   _switchToText: function() {
-    this.setData({ inputMode: 'text', chatExpanded: true });
+    this.setData({ inputMode: 'text' });
   },
 
   _switchToVoice: function() {
