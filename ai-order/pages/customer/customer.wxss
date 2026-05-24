@@ -256,7 +256,7 @@
 }
 
 .voice-mode.cart-visible .grid-bottom-spacer {
-  height: 900rpx;
+  height: 760rpx;
 }
 
 .grid-empty {
@@ -303,7 +303,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 220rpx;
+  bottom: calc(202rpx + env(safe-area-inset-bottom, 0px));
   z-index: 47;
   padding: 8rpx 16rpx;
   background: #FFFFFF;
@@ -371,7 +371,7 @@
 /* Compact inner bar (in page flow) */
 .chat-compact-inner {
   position: absolute;
-  bottom: 340rpx;
+  bottom: calc(270rpx + env(safe-area-inset-bottom, 0px));
   left: 16rpx;
   right: 16rpx;
   z-index: 46;
@@ -854,6 +854,21 @@
 
 .voice-mode .collapsed-input-area {
   bottom: 40rpx;
+}
+
+.voice-mode .chat-compact-inner {
+  bottom: 320rpx;
+  z-index: 50;
+  background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+  border: 2rpx solid rgba(124,58,237,0.3);
+  box-shadow: 0 8rpx 40rpx rgba(124,58,237,0.25);
+}
+
+.voice-mode .quick-chips {
+  bottom: 250rpx;
+  z-index: 49;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10rpx);
 }
 
 .voice-compact-row {
