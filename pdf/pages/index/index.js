@@ -1,6 +1,5 @@
 var retry = require('../../../utils/retry');
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
+var loginLib = require('../../../utils/login');
 
 Page({
   data: {
@@ -84,53 +83,43 @@ Page({
     var that = this;
     that.setData({ uploading: true });
 
-    var r = retry.createRetrier(that, { totalTimeout: 60000, maxRetries: 3 });
-
-    r.operate(function(retry, stop) {
-      var task = wx.uploadFile({
-        url: SERVER + '/api/pdf/convert',
-        filePath: that.data.filePath,
-        name: 'file',
-        formData: { from: that.data.fromFormat, to: that.data.toFormat },
-        timeout: 60000,
-        success: function(res) {
-          if (res.statusCode !== 200) {
-            if (res.statusCode >= 500) return retry('服务器错误');
-            var errData = {};
-            try { errData = JSON.parse(res.data || '{}'); } catch(e) {}
+    var cloudPath = 'pdf/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + that.data.fromFormat;
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
+      filePath: that.data.filePath,
+      success: function (uploadRes) {
+        loginLib.callCloud('file', {
+          action: 'convert',
+          fileID: uploadRes.fileID,
+          from: that.data.fromFormat,
+          to: that.data.toFormat
+        })
+          .then(function (data) {
+            that._saveTaskRecord({
+              jobId: data.job_id || ('convert_' + Date.now()),
+              type: 'convert',
+              fileName: that.data.fileName,
+              from: that.data.fromFormat,
+              to: that.data.toFormat,
+              status: 'queued',
+              createdAt: Date.now(),
+              resultUrl: data.url || (data.fileID || '')
+            });
+            that.setData({
+              fileName: '', filePath: '', fromFormat: '', toFormat: '',
+              targetOptions: [], uploading: false
+            });
+            wx.showToast({ title: '文件已提交，处理完成后将自动通知您，也可在记录中查看下载', icon: 'none', duration: 3000 });
+          })
+          .catch(function (err) {
             that.setData({ uploading: false });
-            return stop(errData.error || '提交失败(' + res.statusCode + ')');
-          }
-          var data = {};
-          try { data = JSON.parse(res.data); } catch(e) {}
-          if (!data.job_id && !data.url) {
-            that.setData({ uploading: false });
-            return stop(data.error || '提交失败');
-          }
-          that._saveTaskRecord({
-            jobId: data.job_id,
-            type: 'convert',
-            fileName: that.data.fileName,
-            from: that.data.fromFormat,
-            to: that.data.toFormat,
-            status: 'queued',
-            createdAt: Date.now(),
-            resultUrl: '/api/pdf/status/' + data.job_id
+            wx.showToast({ title: err.error || '提交失败', icon: 'none' });
           });
-          that.setData({
-            fileName: '', filePath: '', fromFormat: '', toFormat: '',
-            targetOptions: [], uploading: false
-          });
-          wx.showToast({ title: '文件已提交，处理完成后将自动通知您，也可在记录中查看下载', icon: 'none', duration: 3000 });
-        },
-        fail: function() {
-          that.setData({ uploading: false });
-          retry('网络错误');
-        }
-      });
-      task.onProgressUpdate(function(prog) {
-        r.updateProgress('上传中 ' + prog.progress + '%');
-      });
+      },
+      fail: function () {
+        that.setData({ uploading: false });
+        wx.showToast({ title: '上传失败', icon: 'none' });
+      }
     });
   },
 
@@ -153,49 +142,60 @@ Page({
     var that = this;
     that.setData({ editUploading: true });
 
-    var r = retry.createRetrier(that, { totalTimeout: 60000, maxRetries: 3 });
-
-    r.operate(function(retry, stop) {
-      wx.uploadFile({
-        url: SERVER + '/api/pdf/edit',
-        filePath: that.data.filePath,
-        name: 'file',
-        formData: {
-          op: that.data.editOp,
+    var cloudPath = 'pdf/' + Date.now() + '-edit.pdf';
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
+      filePath: that.data.filePath,
+      success: function (uploadRes) {
+        loginLib.callCloud('file', {
+          action: 'convert',
+          fileID: uploadRes.fileID,
+          operation: that.data.editOp,
           text: that.data.textContent || '',
           angle: String(that.data.rotateAngle)
-        },
-        timeout: 60000,
-        success: function(res) {
-          that.setData({ editUploading: false });
-          var data = {};
-          try { data = JSON.parse(res.data); } catch(e) {}
-          if (data.url) {
-            that.setData({ editResultUrl: data.url });
-            // 保存任务记录
-            that._saveTaskRecord({
-              jobId: 'edit_' + Date.now(),
-              type: 'edit',
-              fileName: that.data.fileName,
-              operation: that.data.editOp,
-              status: 'done',
-              createdAt: Date.now(),
-              completedAt: Date.now(),
-              duration: 0,
-              resultUrl: data.url.replace(SERVER, ''),
-              downloaded: false,
-              localPath: ''
-            });
-            wx.showToast({ title: '处理完成', icon: 'success' });
-          } else {
-            stop(data.error || '处理失败');
-          }
-        },
-        fail: function() {
-          that.setData({ editUploading: false });
-          retry('网络错误');
-        }
-      });
+        })
+          .then(function (data) {
+            that.setData({ editUploading: false });
+            if (data && data.url) {
+              that.setData({ editResultUrl: data.url });
+              that._saveTaskRecord({
+                jobId: 'edit_' + Date.now(),
+                type: 'edit',
+                fileName: that.data.fileName,
+                operation: that.data.editOp,
+                status: 'done',
+                createdAt: Date.now(),
+                completedAt: Date.now(),
+                duration: 0,
+                resultUrl: data.url,
+                downloaded: false,
+                localPath: ''
+              });
+              wx.showToast({ title: '处理完成', icon: 'success' });
+            } else if (data && data.fileID) {
+              wx.cloud.downloadFile({
+                fileID: data.fileID,
+                success: function (dlRes) {
+                  that.setData({ editResultUrl: dlRes.tempFilePath });
+                  wx.showToast({ title: '处理完成', icon: 'success' });
+                },
+                fail: function () {
+                  wx.showToast({ title: '下载失败', icon: 'none' });
+                }
+              });
+            } else {
+              wx.showToast({ title: (data && data.error) || '处理失败', icon: 'none' });
+            }
+          })
+          .catch(function (err) {
+            that.setData({ editUploading: false });
+            wx.showToast({ title: err.error || '处理失败', icon: 'none' });
+          });
+      },
+      fail: function () {
+        that.setData({ editUploading: false });
+        wx.showToast({ title: '上传失败', icon: 'none' });
+      }
     });
   },
 

@@ -1,5 +1,4 @@
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
+var loginLib = require('../../../utils/login');
 
 Page({
   data: {
@@ -84,45 +83,9 @@ Page({
       return;
     }
 
-    // 只轮询最新的 1 个任务
-    var job = pendingJobs[0];
-    wx.request({
-      url: SERVER + job.resultUrl,
-      timeout: 30000,
-      success: function(res) {
-        if (!that._polling) return;
-        if (res.statusCode !== 200 || !res.data) {
-          setTimeout(function() { that._poll(); }, 5000);
-          return;
-        }
-        var d = res.data;
-        var allRecords = wx.getStorageSync('pdf_task_records') || [];
-        for (var i = 0; i < allRecords.length; i++) {
-          if (allRecords[i].jobId === job.jobId) {
-            if (d.status === 'done' && d.url) {
-              allRecords[i].status = 'done';
-              allRecords[i].completedAt = Date.now();
-              allRecords[i].duration = Math.round((allRecords[i].completedAt - allRecords[i].createdAt) / 1000);
-              allRecords[i].resultUrl = d.url.replace(SERVER, '');
-              wx.showToast({ title: '文件已转换完成，可在记录中下载', icon: 'success', duration: 2000 });
-            } else if (d.status === 'error') {
-              allRecords[i].status = 'error';
-              allRecords[i].completedAt = Date.now();
-              allRecords[i].duration = Math.round((allRecords[i].completedAt - allRecords[i].createdAt) / 1000);
-              allRecords[i].errorMsg = d.error || '转换失败';
-            } else {
-              allRecords[i].status = d.status || 'processing';
-            }
-            break;
-          }
-        }
-        that._saveRecords(allRecords);
-        setTimeout(function() { that._poll(); }, 3000);
-      },
-      fail: function() {
-        setTimeout(function() { that._poll(); }, 5000);
-      }
-    });
+    // Cloud-based: jobs complete immediately, just refresh records
+    that._loadRecords();
+    setTimeout(function() { that._poll(); }, 5000);
   },
 
   switchTab: function(e) {
@@ -160,36 +123,54 @@ Page({
   _downloadAndOpen: function(record) {
     var that = this;
     wx.showLoading({ title: '下载中...' });
-    wx.downloadFile({
-      url: SERVER + record.resultUrl,
-      success: function(res) {
-        wx.hideLoading();
-        if (res.statusCode === 200) {
-          var fs = wx.getFileSystemManager();
-          var baseName = record.fileName.replace(/\.[^.]+$/, '');
-          var ext = record.to || 'pdf';
-          var savedName = baseName + '.' + ext;
-          var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
-          try { fs.saveFileSync(res.tempFilePath, savedPath); } catch(e) { savedPath = res.tempFilePath; }
-          var records = wx.getStorageSync('pdf_task_records') || [];
-          for (var i = 0; i < records.length; i++) {
-            if (records[i].jobId === record.jobId) {
-              records[i].localPath = savedPath;
-              records[i].downloaded = true;
-              break;
-            }
+    if (record.resultUrl && record.resultUrl.indexOf('cloud://') === 0) {
+      wx.cloud.downloadFile({
+        fileID: record.resultUrl,
+        success: function (res) {
+          wx.hideLoading();
+          that._saveLocalAndOpen(record, res.tempFilePath);
+        },
+        fail: function () {
+          wx.hideLoading();
+          wx.showToast({ title: '下载失败', icon: 'none' });
+        }
+      });
+    } else {
+      wx.downloadFile({
+        url: record.resultUrl,
+        success: function (res) {
+          wx.hideLoading();
+          if (res.statusCode === 200) {
+            that._saveLocalAndOpen(record, res.tempFilePath);
+          } else {
+            wx.showToast({ title: '下载失败，请检查网络后重试', icon: 'none' });
           }
-          that._saveRecords(records);
-          wx.openDocument({ filePath: savedPath, showMenu: true });
-        } else {
+        },
+        fail: function () {
+          wx.hideLoading();
           wx.showToast({ title: '下载失败，请检查网络后重试', icon: 'none' });
         }
-      },
-      fail: function() {
-        wx.hideLoading();
-        wx.showToast({ title: '下载失败，请检查网络后重试', icon: 'none' });
+      });
+    }
+  },
+
+  _saveLocalAndOpen: function (record, tempFilePath) {
+    var fs = wx.getFileSystemManager();
+    var baseName = record.fileName.replace(/\.[^.]+$/, '');
+    var ext = record.to || 'pdf';
+    var savedName = baseName + '.' + ext;
+    var savedPath = wx.env.USER_DATA_PATH + '/' + savedName;
+    try { fs.saveFileSync(tempFilePath, savedPath); } catch (e) { savedPath = tempFilePath; }
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].jobId === record.jobId) {
+        records[i].localPath = savedPath;
+        records[i].downloaded = true;
+        break;
       }
-    });
+    }
+    this._saveRecords(records);
+    wx.openDocument({ filePath: savedPath, showMenu: true });
   },
 
   retryTask: function(e) {

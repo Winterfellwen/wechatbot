@@ -32,3 +32,11 @@ node_modules/
 miniprogram_npm/
 word/miniprogram_npm/
 word/pages/editor/miniprogram_npm/
+
+# Internal debug scripts (may contain secrets)
+_apitest.js
+_menu_debug.js
+
+# Claude internal files
+.claude/
+.superpowers/

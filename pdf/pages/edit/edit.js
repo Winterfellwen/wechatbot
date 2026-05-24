@@ -1,5 +1,4 @@
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
+var loginLib = require('../../../utils/login');
 
 Page({
   data: {
@@ -83,66 +82,61 @@ Page({
     var that = this;
     that.setData({ processing: true, progressText: '上传中...' });
 
-    // Step 1: Upload second file first (to get merge_id)
-    wx.uploadFile({
-      url: SERVER + '/api/pdf/edit/merge2',
-      filePath: that.data.file2Path,
-      name: 'file2',
-      timeout: 60000,
-      success: function(res2) {
-        var data2 = {};
-        try { data2 = JSON.parse(res2.data); } catch(e) {}
-        if (!data2.merge_id) {
-          that.setData({ processing: false, progressText: '' });
-          wx.showToast({ title: data2.error || '第二个文件上传失败，请重试', icon: 'none' });
-          return;
-        }
-        var mergeId = data2.merge_id;
-        that.setData({ progressText: '合并中...' });
+    var cp1 = 'pdf/' + Date.now() + '-1.pdf';
+    var cp2 = 'pdf/' + Date.now() + '-2.pdf';
 
-        // Step 2: Upload first file and trigger merge
-        wx.uploadFile({
-          url: SERVER + '/api/pdf/edit/merge',
-          filePath: that.data.file1Path,
-          name: 'file',
-          formData: { merge_id: mergeId },
-          timeout: 120000,
-          success: function(res) {
-            that.setData({ processing: false, progressText: '' });
-            var data = {};
-            try { data = JSON.parse(res.data); } catch(e) {}
-            if (data.url) {
-              that.setData({ resultUrl: data.url });
-              // 保存任务记录
-              that._saveTaskRecord({
-                jobId: 'merge_' + Date.now(),
-                type: 'edit',
-                fileName: that.data.file1Name + ' + ' + that.data.file2Name,
-                operation: 'merge',
-                status: 'done',
-                createdAt: Date.now(),
-                completedAt: Date.now(),
-                duration: 0,
-                resultUrl: data.url.replace(SERVER, ''),
-                downloaded: false,
-                localPath: ''
-              });
-              wx.showToast({ title: '合并完成', icon: 'success' });
-            } else {
-              wx.showToast({ title: data.error || '合并失败，请检查文件格式后重试', icon: 'none' });
-            }
-          },
-          fail: function() {
-            that.setData({ processing: false, progressText: '' });
-            wx.showToast({ title: '网络连接异常，请检查网络后重试', icon: 'none' });
-          }
-        });
-      },
-      fail: function() {
-        that.setData({ processing: false, progressText: '' });
-        wx.showToast({ title: '第二个文件上传失败，请重试', icon: 'none' });
-      }
+    var p1 = new Promise(function (resolve, reject) {
+      wx.cloud.uploadFile({ cloudPath: cp1, filePath: that.data.file1Path, success: function (r) { resolve(r.fileID); }, fail: reject });
     });
+    var p2 = new Promise(function (resolve, reject) {
+      wx.cloud.uploadFile({ cloudPath: cp2, filePath: that.data.file2Path, success: function (r) { resolve(r.fileID); }, fail: reject });
+    });
+
+    Promise.all([p1, p2])
+      .then(function (fileIDs) {
+        that.setData({ progressText: '合并中...' });
+        return loginLib.callCloud('file', {
+          action: 'convert',
+          operation: 'merge',
+          fileID1: fileIDs[0],
+          fileID2: fileIDs[1]
+        });
+      })
+      .then(function (data) {
+        that.setData({ processing: false, progressText: '' });
+        if (data && data.url) {
+          that.setData({ resultUrl: data.url });
+          that._saveTaskRecord({
+            jobId: 'merge_' + Date.now(),
+            type: 'edit',
+            fileName: that.data.file1Name + ' + ' + that.data.file2Name,
+            operation: 'merge',
+            status: 'done',
+            createdAt: Date.now(),
+            completedAt: Date.now(),
+            duration: 0,
+            resultUrl: data.url,
+            downloaded: false,
+            localPath: ''
+          });
+          wx.showToast({ title: '合并完成', icon: 'success' });
+        } else if (data && data.fileID) {
+          wx.cloud.downloadFile({
+            fileID: data.fileID,
+            success: function (dlRes) {
+              that.setData({ resultUrl: dlRes.tempFilePath });
+              wx.showToast({ title: '合并完成', icon: 'success' });
+            },
+            fail: function () { wx.showToast({ title: '下载失败', icon: 'none' }); }
+          });
+        } else {
+          wx.showToast({ title: data ? data.error : '合并失败', icon: 'none' });
+        }
+      })
+      .catch(function (err) {
+        that.setData({ processing: false, progressText: '' });
+        wx.showToast({ title: err && err.error ? err.error : '合并失败，请重试', icon: 'none' });
+      });
   },
 
   downloadResult: function() {

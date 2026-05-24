@@ -1,40 +1,8 @@
 // smart-teacher/pages/chat/chat.js
-// AI 聊天 — 直连 OpenRouter，Render 仅提供 API Key；直连失败则回退代理
+// AI Chat — uses cloud function for OpenRouter
 
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
+var loginLib = require('../../../utils/login');
 var msgIdCounter = 0;
-
-var openRouterConfig = null;
-var configLoaded = false;
-var configLoading = null;
-
-function initOpenRouter() {
-  if (openRouterConfig && configLoaded) return Promise.resolve();
-  if (configLoading) return configLoading;
-  configLoading = new Promise(function(resolve, reject) {
-    wx.request({
-      url: SERVER + '/api/chat/key',
-      timeout: 5000,
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.key) {
-          openRouterConfig = res.data;
-          configLoaded = true;
-          configLoading = null;
-          resolve();
-        } else {
-          configLoading = null;
-          reject(new Error('Failed to get OpenRouter config'));
-        }
-      },
-      fail: function(err) {
-        configLoading = null;
-        reject(err);
-      }
-    });
-  });
-  return configLoading;
-}
 
 Page({
   data: {
@@ -48,10 +16,7 @@ Page({
   },
 
   onLoad: function () {
-    var that = this;
-    initOpenRouter().catch(function (err) {
-      console.warn('[chat] direct mode unavailable, will use proxy fallback:', err);
-    });
+    // No initialization needed
   },
 
   scrollToBottom: function () {
@@ -183,71 +148,46 @@ Page({
     var apiMessages = this._buildApiMessages(messages);
     var startTime = Date.now();
 
-    initOpenRouter().then(function () {
-      that._attemptRequest(0, startTime, apiMessages, hasImage);
-    }).catch(function () {
-      openRouterConfig = null;
-      that._attemptRequest(0, startTime, apiMessages, hasImage);
-    });
+    that._attemptRequest(0, startTime, apiMessages);
   },
 
-  // 递归重试 — 超过 30s 才提示"当前使用人数过多"
-  _attemptRequest: function (retryCount, startTime, apiMessages, hasImage) {
+  _attemptRequest: function (retryCount, startTime, apiMessages) {
     if (Date.now() - startTime >= 30000) {
       this._showError('当前使用人数过多，请稍后再试');
       return;
     }
     var that = this;
-    if (openRouterConfig) {
-      that._tryDirect(apiMessages, hasImage, function (ok, res) {
-        if (ok) { that._handleResponse(res); return; }
-        that._tryProxy(apiMessages, function (ok2, res2) {
-          if (ok2) { that._handleResponse(res2); return; }
-          that._scheduleRetry(retryCount, startTime, apiMessages, hasImage);
-        });
-      });
-    } else {
-      that._tryProxy(apiMessages, function (ok, res) {
-        if (ok) { that._handleResponse(res); return; }
-        that._scheduleRetry(retryCount, startTime, apiMessages, hasImage);
-      });
-    }
+    that._tryProxy(apiMessages, function (ok, res) {
+      if (ok) { that._handleResponse(res); return; }
+      if (res && res.data && res.data.error) {
+        that._handleResponse(res);
+        return;
+      }
+      that._scheduleRetry(retryCount, startTime, apiMessages);
+    });
   },
 
-  _scheduleRetry: function (retryCount, startTime, apiMessages, hasImage) {
+  _scheduleRetry: function (retryCount, startTime, apiMessages) {
     var that = this;
     var delay = Math.min(2000 * Math.pow(1.5, retryCount), 8000);
     setTimeout(function () {
-      that._attemptRequest(retryCount + 1, startTime, apiMessages, hasImage);
+      that._attemptRequest(retryCount + 1, startTime, apiMessages);
     }, delay);
   },
 
-  _tryDirect: function (apiMessages, hasImage, callback) {
-    var maxTokens = hasImage ? 1024 : (openRouterConfig.maxTokens || 500);
-    wx.request({
-      url: openRouterConfig.apiUrl + '/chat/completions',
-      method: 'POST', timeout: 15000,
-      header: {
-        'Authorization': 'Bearer ' + openRouterConfig.key,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
-        'X-Title': 'SmartTeacherBot'
-      },
-      data: { model: openRouterConfig.model, messages: apiMessages, max_tokens: maxTokens },
-      success: function (res) { callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res); },
-      fail: function () { callback(false, null); }
-    });
-  },
-
   _tryProxy: function (apiMessages, callback) {
-    wx.request({
-      url: SERVER + '/api/chat',
-      method: 'POST', timeout: 15000,
-      header: { 'Content-Type': 'application/json' },
-      data: { messages: apiMessages },
-      success: function (res) { callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res); },
-      fail: function () { callback(false, null); }
-    });
+    loginLib.callCloud('chat', {
+      action: 'chat',
+      messages: apiMessages
+    })
+      .then(function (data) {
+        callback(true, { statusCode: 200, data: data });
+      })
+      .catch(function (err) {
+        var errData = { error: err.error || 'cloud error' };
+        if (err.statusCode) errData._statusCode = err.statusCode;
+        callback(false, { statusCode: err.statusCode || 500, data: errData });
+      });
   },
 
   copyText: function (e) {

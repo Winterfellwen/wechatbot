@@ -1,4 +1,3 @@
-var CONFIG = require('../../utils/config');
 var loginLib = require('../../utils/login');
 var validation = require('../../utils/validation');
 
@@ -99,15 +98,14 @@ Page({
       return;
     }
 
-    var token = wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN);
     var serverAvatarUrl = null;
 
     function applyResult(user, toastTitle, toastIcon) {
       console.log('[DEBUG] applyResult user:', JSON.stringify(user));
       wx.setStorageSync('hasSetNickname', true);
       wx.removeStorageSync('firstLoginPending');
-      wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, user);
-      console.log('[DEBUG] storage after set:', JSON.stringify(wx.getStorageSync(CONFIG.STORAGE_KEYS.USER)));
+      wx.setStorageSync('user', user);
+      console.log('[DEBUG] storage after set:', JSON.stringify(wx.getStorageSync('user')));
       that.setData({
         showFirstSetup: false,
         isNewUser: false,
@@ -126,17 +124,13 @@ Page({
     if (avatarChanged) {
       chain = chain.then(function () {
         return new Promise(function (resolve, reject) {
-          wx.uploadFile({
-            url: CONFIG.SERVER + '/api/upload/avatar',
+          var cloudPath = 'avatars/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+          wx.cloud.uploadFile({
+            cloudPath: cloudPath,
             filePath: avatarUrl,
-            name: 'avatar',
-            header: { 'Authorization': 'Bearer ' + token },
             success: function (res) {
-              if (res.statusCode === 200) {
-                var data = JSON.parse(res.data);
-                serverAvatarUrl = data.avatarUrl;
-                resolve(data.avatarUrl);
-              } else { reject(new Error('upload_failed')); }
+              serverAvatarUrl = res.fileID;
+              resolve(res.fileID);
             },
             fail: function () { reject(new Error('network_error')); }
           });
@@ -193,26 +187,21 @@ Page({
     if (!avatarUrl) return;
     var that = this;
     wx.showLoading({ title: '上传中...', mask: true });
-    wx.uploadFile({
-      url: CONFIG.SERVER + '/api/upload/avatar',
+    var cloudPath = 'avatars/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
       filePath: avatarUrl,
-      name: 'avatar',
-      header: { 'Authorization': 'Bearer ' + wx.getStorageSync(CONFIG.STORAGE_KEYS.TOKEN) },
       success: function (res) {
         wx.hideLoading();
-        if (res.statusCode === 200) {
-          var data = JSON.parse(res.data);
-          var user = that.data.userInfo || {};
-          var updated = Object.assign({}, user, { avatarUrl: data.avatarUrl });
-          wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, updated);
-          that.setData({
-            userInfo: updated,
-            displayUserInfo: validation.getDisplayUserInfo(updated, updated.nickName)
-          });
-          wx.showToast({ title: '头像已更新', icon: 'success' });
-        } else {
-          wx.showToast({ title: '上传失败', icon: 'none' });
-        }
+        var data = { avatarUrl: res.fileID };
+        var user = that.data.userInfo || {};
+        var updated = Object.assign({}, user, { avatarUrl: data.avatarUrl });
+        wx.setStorageSync('user', updated);
+        that.setData({
+          userInfo: updated,
+          displayUserInfo: validation.getDisplayUserInfo(updated, updated.nickName)
+        });
+        wx.showToast({ title: '头像已更新', icon: 'success' });
       },
       fail: function () {
         wx.hideLoading();

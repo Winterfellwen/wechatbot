@@ -1,120 +1,80 @@
 // utils/login.js
-// Shared login module — single source of truth for auth state
+// Cloud-based login module — uses WeChat Cloud Development for auth
 
-var CONFIG = require('./config');
+var STORAGE_USER = 'user';
 
-var SERVER = CONFIG.SERVER;
-var STORAGE_TOKEN = CONFIG.STORAGE_KEYS.TOKEN;
-var STORAGE_USER = CONFIG.STORAGE_KEYS.USER;
-
-function request(method, path, data, needAuth) {
-  return new Promise(function (resolve, reject) {
-    if (needAuth) {
-      var token = wx.getStorageSync(STORAGE_TOKEN);
-      if (!token) return reject({ statusCode: 401, error: 'no token' });
-    }
-    var header = { 'Content-Type': 'application/json' };
-    if (needAuth) {
-      header['Authorization'] = 'Bearer ' + wx.getStorageSync(STORAGE_TOKEN);
-    }
-    wx.request({
-      url: SERVER + path,
-      method: method,
-      header: header,
-      data: data,
-      success: function (res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data);
+function callCloud(name, data) {
+  return new Promise(function(resolve, reject) {
+    wx.cloud.callFunction({ name: name, data: data })
+      .then(function(res) {
+        if (res.result && res.result.success) {
+          resolve(res.result);
         } else {
-          reject(Object.assign({ _statusCode: res.statusCode }, res.data || {}));
+          reject(res.result || { error: 'cloud_call_failed' });
         }
-      },
-      fail: function(err) {
-        reject({ _statusCode: 0, error: 'network_error', _raw: err });
-      }
-    });
+      })
+      .catch(function(err) {
+        reject({ error: 'cloud_call_error', _raw: err });
+      });
   });
 }
 
 module.exports = {
-  request: request,
+  callCloud: callCloud,
 
-  login: function () {
-    return new Promise(function (resolve, reject) {
-      wx.login({
-        success: function (res) {
-          if (!res.code) return reject({ error: 'wx.login() returned no code' });
-          request('POST', '/api/auth/login', { code: res.code }, false)
-            .then(function (data) {
-              console.log('[DEBUG] login: server response=', JSON.stringify(data));
-              if (!data.token || !data.user) return reject({ error: 'Server returned incomplete data', data: data });
-              console.log('[DEBUG] login: user.nickName=', data.user.nickName, ', user.avatarUrl=', data.user.avatarUrl);
-              if (data.user.avatarUrl && (data.user.avatarUrl.indexOf('__tmp__') >= 0 || data.user.avatarUrl.indexOf('127.0.0.1') >= 0)) {
-                data.user.avatarUrl = '/images/avatar-default.png';
-              }
-              wx.setStorageSync(STORAGE_TOKEN, data.token);
-              wx.setStorageSync(STORAGE_USER, data.user);
-              var app = getApp();
-              if (app) app.globalData.userInfo = data.user;
-              resolve({ token: data.token, user: data.user, isNew: data.isNew || false });
-            })
-            .catch(function (err) {
-              console.error('[login] request failed:', err);
-              reject(err);
-            });
-        },
-        fail: function (err) {
-          console.error('[login] wx.login failed:', err);
-          reject({ error: 'wx.login failed: ' + JSON.stringify(err) });
+  login: function() {
+    return callCloud('auth', { action: 'login' })
+      .then(function(data) {
+        var user = data.user;
+        if (!user) return Promise.reject({ error: 'no user returned' });
+        if (user.avatarUrl && (user.avatarUrl.indexOf('__tmp__') >= 0 || user.avatarUrl.indexOf('127.0.0.1') >= 0)) {
+          user.avatarUrl = '/images/avatar-default.png';
         }
+        wx.setStorageSync(STORAGE_USER, user);
+        var app = getApp();
+        if (app) app.globalData.userInfo = user;
+        return { user: user, isNew: data.isNew || false };
       });
-    });
   },
 
-  logout: function () {
-    request('POST', '/api/auth/logout', {}, true)
-      .catch(function (err) { console.warn('[logout] server logout failed:', err); });
-    wx.removeStorageSync(STORAGE_TOKEN);
+  logout: function() {
     wx.removeStorageSync(STORAGE_USER);
     var app = getApp();
     if (app) app.globalData.userInfo = null;
   },
 
-  isLoggedIn: function () {
-    return !!wx.getStorageSync(STORAGE_TOKEN);
+  isLoggedIn: function() {
+    return !!wx.getStorageSync(STORAGE_USER);
   },
 
-  getUserInfo: function () {
+  getUserInfo: function() {
     return wx.getStorageSync(STORAGE_USER) || null;
   },
 
-  updateProfile: function (data) {
-    var that = this;
-    return request('PUT', '/api/users/me', data, true)
-      .then(function (updated) {
-        wx.setStorageSync(STORAGE_USER, updated);
+  updateProfile: function(data) {
+    return callCloud('auth', { action: 'updateProfile', nickName: data.nickName, avatarUrl: data.avatarUrl })
+      .then(function(result) {
+        wx.setStorageSync(STORAGE_USER, result.user);
         var app = getApp();
-        if (app) app.globalData.userInfo = updated;
-        return updated;
+        if (app) app.globalData.userInfo = result.user;
+        return result.user;
       });
   },
 
-  deleteAccount: function () {
+  deleteAccount: function() {
     var that = this;
-    return request('DELETE', '/api/users/me', {}, true)
-      .then(function (data) {
+    return callCloud('auth', { action: 'deleteAccount' })
+      .then(function() {
         that.logout();
-        return data;
       });
   },
 
   saveJpLessonScore: function(lessonId, score, total) {
     if (score <= 0) return Promise.resolve();
-    return request('POST', '/api/jp/lesson-scores', { lessonId: lessonId, score: score, total: total }, true)
-      .then(function(data) { return data; });
+    return callCloud('jp', { action: 'save', lessonId: lessonId, score: score, total: total });
   },
 
   getJpLessonScores: function() {
-    return request('GET', '/api/jp/lesson-scores', null, true);
+    return callCloud('jp', { action: 'list' });
   }
 };

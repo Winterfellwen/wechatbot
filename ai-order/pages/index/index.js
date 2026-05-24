@@ -53,10 +53,10 @@ Page({
       }
     }, 8000);
 
-    loginLib.request('GET', '/api/ai-order/merchants', null, true)
+    loginLib.callCloud('ai-order-merchant', { action: 'list' })
       .then(function(data) {
         clearTimeout(safetyTimer);
-        var list = (data && data.success && data.data) || [];
+        var list = (data && data.data) || [];
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
         var selectedId = '';
@@ -67,16 +67,8 @@ Page({
         that.setData({ merchants: list, selectedMerchantId: selectedId, loading: false });
         if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
       })
-      .catch(function(err) {
+      .catch(function() {
         clearTimeout(safetyTimer);
-        if (err && err._statusCode === 401) {
-          loginLib.login().then(function() {
-            that._fetchMerchants();
-          }).catch(function() {
-            that._loadLocalDemo();
-          });
-          return;
-        }
         that._loadLocalDemo();
         wx.showToast({ title: '使用本地演示数据', icon: 'none' });
       });
@@ -166,12 +158,13 @@ Page({
     var copyFromDemo = that.data.copyFromDemo;
     var selectedDemoId = that.data.selectedDemoMerchantId;
     that.setData({ creating: true });
-    loginLib.request('POST', '/api/ai-order/merchants', {
+    loginLib.callCloud('ai-order-merchant', {
+      action: 'create',
       name: name,
       description: that.data.newMerchantDesc.trim()
-    }, true)
+    })
       .then(function(data) {
-        if (data && data.success) {
+        if (data) {
           var newMerchant = data.data;
           if (copyFromDemo && selectedDemoId && newMerchant && newMerchant.id) {
             // 从演示商家复制菜单
@@ -189,10 +182,11 @@ Page({
                   category: d.category || ''
                 };
               });
-              loginLib.request('POST', '/api/ai-order/menu/save', {
+              loginLib.callCloud('ai-order-menu', {
+                action: 'save',
                 merchantId: newMerchant.id,
                 menu: { dishes: dishes }
-              }, true).then(function() {
+              }).then(function() {
                 wx.showToast({ title: '创建成功，已复制演示菜单', icon: 'success' });
                 // 直接更新本地列表，带上正确的菜品数量，避免服务器不返回 dishCount 导致显示 0
                 var newEntry = {
@@ -244,9 +238,9 @@ Page({
       content: '确定删除「' + name + '」吗？',
       success: function(confirm) {
         if (!confirm.confirm) return;
-        loginLib.request('DELETE', '/api/ai-order/merchants/' + id, null, true)
+        loginLib.callCloud('ai-order-merchant', { action: 'delete', id: id })
           .then(function(data) {
-            if (data && data.success) {
+            if (data) {
               wx.showToast({ title: '已删除', icon: 'success' });
               that._fetchMerchants();
             } else {

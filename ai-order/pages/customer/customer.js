@@ -1,12 +1,7 @@
 // ai-order/pages/customer/customer.js
 var loginLib = require('../../../utils/login');
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
 var msgIdCounter = 0;
 
-var openRouterConfig = null;
-var configLoaded = false;
-var configLoading = null;
 var menuData = null;
 
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
@@ -36,33 +31,6 @@ var GROUP_CONFIGS = {
   }
 };
 var CATEGORY_DEFAULT = { bg: 'linear-gradient(135deg, #A8A8A8, #D0D0D0)', light: '#F5F5F5' };
-
-function initOpenRouter() {
-  if (openRouterConfig && configLoaded) return Promise.resolve();
-  if (configLoading) return configLoading;
-  configLoading = new Promise(function(resolve, reject) {
-    wx.request({
-      url: SERVER + '/api/ai-order/config',
-      timeout: 5000,
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.key) {
-          openRouterConfig = res.data;
-          configLoaded = true;
-          configLoading = null;
-          resolve();
-        } else {
-          configLoading = null;
-          reject(new Error('Failed to get OpenRouter config'));
-        }
-      },
-      fail: function(err) {
-        configLoading = null;
-        reject(err);
-      }
-    });
-  });
-  return configLoading;
-}
 
 Page({
   data: {
@@ -123,9 +91,6 @@ Page({
     if (savedOrder && savedOrder.dishes) {
       that.setData({ lastOrder: savedOrder });
     }
-    initOpenRouter().catch(function(err) {
-      console.warn('[customer] direct mode unavailable, will use proxy fallback:', err);
-    });
 
     if (!plugin) {
       try {
@@ -197,9 +162,7 @@ Page({
 
   _loadMenuFromServer: function() {
     var that = this;
-    var path = '/api/ai-order/menu/list';
-    if (that.data.merchantId) path += '?merchantId=' + that.data.merchantId;
-    loginLib.request('GET', path, null, false)
+    loginLib.callCloud('ai-order-menu', { action: 'list', merchantId: that.data.merchantId })
       .then(function(data) {
         that.setData({ menuLoading: false });
         if (data && data.success && data.data) {
@@ -236,7 +199,7 @@ Page({
       if (d.status !== 'online') continue;
       d.bgStyle = (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg;
       d.avatarChar = d.name.slice(0, 1);
-      d.imageUrl = d.image ? (d.image.indexOf('http') === 0 ? d.image : SERVER + d.image) : '';
+      d.imageUrl = d.image ? (d.image.indexOf('http') === 0 ? d.image : d.image) : '';
       enriched.push(d);
     }
     var result = that._rebuildGroups(enriched, that.data.groupMode);
@@ -498,23 +461,20 @@ Page({
   },
 
   _tryProxy: function(apiMessages, callback) {
-    wx.request({
-      url: SERVER + '/api/ai-order/chat',
-      method: 'POST',
-      timeout: 60000,
-      header: { 'Content-Type': 'application/json' },
-      data: {
-        messages: apiMessages,
-        mode: 'customer',
-        menuData: menuData
-      },
-      success: function(res) {
-        callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res);
-      },
-      fail: function() {
-        callback(false, null);
-      }
-    });
+    loginLib.callCloud('ai-order-chat', {
+      action: 'chat',
+      messages: apiMessages,
+      mode: 'customer',
+      menuData: menuData
+    })
+      .then(function(data) {
+        callback(true, { statusCode: 200, data: data });
+      })
+      .catch(function(err) {
+        var errData = { error: err.error || 'cloud error' };
+        if (err.statusCode) errData._statusCode = err.statusCode;
+        callback(false, { statusCode: err.statusCode || 500, data: errData });
+      });
   },
 
   _handleResponse: function(res) {
@@ -596,14 +556,7 @@ Page({
 
     var apiMessages = this._buildApiMessages(messages);
 
-    initOpenRouter().then(function() {
-      that._tryDirect(apiMessages, function(ok, res) {
-        if (ok) { that._handleResponse(res); return; }
-        that._attemptRequest(0, Date.now(), apiMessages);
-      });
-    }).catch(function() {
-      that._attemptRequest(0, Date.now(), apiMessages);
-    });
+    that._attemptRequest(0, Date.now(), apiMessages);
   },
 
   _attemptRequest: function(retryCount, startTime, apiMessages) {
@@ -619,30 +572,6 @@ Page({
         return;
       }
       that._scheduleRetry(retryCount, startTime, apiMessages);
-    });
-  },
-
-  _tryDirect: function(apiMessages, callback) {
-    var that = this;
-    wx.request({
-      url: openRouterConfig.apiUrl + '/chat/completions',
-      method: 'POST',
-      timeout: 30000,
-      header: {
-        'Authorization': 'Bearer ' + openRouterConfig.key,
-        'Content-Type': 'application/json'
-      },
-      data: {
-        model: openRouterConfig.model,
-        messages: apiMessages,
-        max_tokens: openRouterConfig.maxTokens || 800
-      },
-      success: function(res) {
-        callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res);
-      },
-      fail: function() {
-        callback(false, null);
-      }
     });
   },
 

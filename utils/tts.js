@@ -1,9 +1,7 @@
 // utils/tts.js
 // Unified TTS engine — shared by German & Japanese subpackages
+// Uses cloud function to fetch TTS API key
 
-var CONFIG = require('./config');
-
-var TTS_KEY_URL = CONFIG.SERVER + '/api/tts/key';
 var TTS_API_BASE = 'https://eastasia.tts.speech.microsoft.com/cognitiveservices/v1';
 
 var ttsCache = new Map();
@@ -27,12 +25,12 @@ function initApiKey() {
   if (apiKey && keyLoaded) return Promise.resolve();
   if (keyLoading) return keyLoading;
   keyLoading = new Promise(function(resolve, reject) {
-    wx.request({
-      url: TTS_KEY_URL,
-      timeout: 5000,
+    wx.cloud.callFunction({
+      name: 'tts',
+      data: { action: 'getKey' },
       success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.key) {
-          apiKey = res.data.key;
+        if (res.result && res.result.key) {
+          apiKey = res.result.key;
           keyLoaded = true;
           keyLoading = null;
           resolve();

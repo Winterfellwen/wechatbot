@@ -1,5 +1,4 @@
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
+var loginLib = require('../../../utils/login');
 
 Page({
   data: {
@@ -68,25 +67,48 @@ Page({
     var that = this;
     that.setData({ converting: true });
 
-    wx.uploadFile({
-      url: SERVER + '/api/pdf/convert',
+    var cloudPath = 'pdf/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + that.data.fromFormat;
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
       filePath: that.data.filePath,
-      name: 'file',
-      formData: {
-        from: that.data.fromFormat,
-        to: that.data.toFormat
+      success: function (uploadRes) {
+        loginLib.callCloud('file', {
+          action: 'convert',
+          fileID: uploadRes.fileID,
+          from: that.data.fromFormat,
+          to: that.data.toFormat
+        })
+          .then(function (data) {
+            if (data && data.url) {
+              that.downloadAndOpen(data.url);
+            } else if (data && data.fileID) {
+              wx.cloud.downloadFile({
+                fileID: data.fileID,
+                success: function (dlRes) {
+                  that.setData({ converting: false });
+                  wx.openDocument({
+                    filePath: dlRes.tempFilePath,
+                    fileType: that.data.toFormat,
+                    showMenu: true,
+                    success: function () { wx.showToast({ title: '转换成功', icon: 'success' }); }
+                  });
+                },
+                fail: function () {
+                  that.setData({ converting: false });
+                  wx.showToast({ title: '下载失败', icon: 'none' });
+                }
+              });
+            } else {
+              that.setData({ converting: false });
+              wx.showToast({ title: data.error || '转换失败', icon: 'none' });
+            }
+          })
+          .catch(function (err) {
+            that.setData({ converting: false });
+            wx.showToast({ title: err.error || '转换失败', icon: 'none' });
+          });
       },
-      success: function(res) {
-        var data = {};
-        try { data = JSON.parse(res.data); } catch(e) {}
-        if (data.url) {
-          that.downloadAndOpen(data.url);
-        } else {
-          that.setData({ converting: false });
-          wx.showToast({ title: data.error || data.detail || '转换失败', icon: 'none' });
-        }
-      },
-      fail: function() {
+      fail: function () {
         that.setData({ converting: false });
         wx.showToast({ title: '上传失败', icon: 'none' });
       }

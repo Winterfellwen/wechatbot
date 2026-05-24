@@ -1,14 +1,18 @@
 // app.js
 var validation = require('./utils/validation');
-var CONFIG = require('./utils/config');
 
-App({  
+App({
   globalData: {
     userInfo: null,
     isLoggedIn: false
   },
 
   onLaunch: function() {
+    if (!wx.cloud) {
+      console.error('请使用 2.2.3 或以上的基础库以使用云能力');
+    } else {
+      wx.cloud.init({ env: 'cloud1-7gzoz5cr22dd4354', traceUser: true });
+    }
     this.checkAutoDownload();
   },
 
@@ -29,29 +33,41 @@ App({
 
   _autoDownload: function(record) {
     var that = this;
-    wx.downloadFile({
-      url: CONFIG.SERVER + record.resultUrl,
-      success: function(res) {
-        if (res.statusCode === 200) {
-          var fs = wx.getFileSystemManager();
-          var savedPath = wx.env.USER_DATA_PATH + '/' + record.fileName;
-          try { fs.saveFileSync(res.tempFilePath, savedPath); } catch(e) { savedPath = res.tempFilePath; }
-          var records = wx.getStorageSync('pdf_task_records') || [];
-          for (var i = 0; i < records.length; i++) {
-            if (records[i].jobId === record.jobId) {
-              records[i].localPath = savedPath;
-              records[i].downloaded = true;
-              break;
-            }
+    if (record.resultUrl && record.resultUrl.indexOf('cloud://') === 0) {
+      wx.cloud.downloadFile({
+        fileID: record.resultUrl,
+        success: function(res) {
+          that._saveDownloaded(record, res.tempFilePath);
+        },
+        fail: function() {}
+      });
+    } else {
+      wx.downloadFile({
+        url: record.resultUrl,
+        success: function(res) {
+          if (res.statusCode === 200) {
+            that._saveDownloaded(record, res.tempFilePath);
           }
-          wx.setStorageSync('pdf_task_records', records);
-          wx.showToast({ title: '已完成的任务文件已自动下载', icon: 'success' });
-        }
-      },
-      fail: function() {
-        // 自动下载失败，静默忽略（用户可在记录页手动下载）
+        },
+        fail: function() {}
+      });
+    }
+  },
+
+  _saveDownloaded: function(record, tempFilePath) {
+    var fs = wx.getFileSystemManager();
+    var savedPath = wx.env.USER_DATA_PATH + '/' + record.fileName;
+    try { fs.saveFileSync(tempFilePath, savedPath); } catch(e) { savedPath = tempFilePath; }
+    var records = wx.getStorageSync('pdf_task_records') || [];
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].jobId === record.jobId) {
+        records[i].localPath = savedPath;
+        records[i].downloaded = true;
+        break;
       }
-    });
+    }
+    wx.setStorageSync('pdf_task_records', records);
+    wx.showToast({ title: '已完成的任务文件已自动下载', icon: 'success' });
   },
 
   onShareAppMessage: function () {
@@ -59,7 +75,7 @@ App({
   },
 
   checkLoginStatus() {
-    var STORAGE_USER = CONFIG.STORAGE_KEYS.USER;
+    var STORAGE_USER = 'user';
     var userInfo = wx.getStorageSync(STORAGE_USER);
     if (userInfo) {
       if (!validation.isValidAvatarUrl(userInfo.avatarUrl)) {
@@ -77,12 +93,12 @@ App({
     }
     this.globalData.userInfo = userInfo;
     this.globalData.isLoggedIn = true;
-    wx.setStorageSync(CONFIG.STORAGE_KEYS.USER, userInfo);
+    wx.setStorageSync('user', userInfo);
   },
 
   clearUserInfo() {
     this.globalData.userInfo = null;
     this.globalData.isLoggedIn = false;
-    wx.removeStorageSync(CONFIG.STORAGE_KEYS.USER);
+    wx.removeStorageSync('user');
   }
 });

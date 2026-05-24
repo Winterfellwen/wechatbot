@@ -1,43 +1,10 @@
 // ai-order/pages/merchant/merchant.js
-// Merchant AI chat page — direct OpenRouter with proxy fallback
+// Merchant AI chat page — uses cloud functions
 
 var loginLib = require('../../../utils/login');
-var CONFIG = require('../../../utils/config');
-var SERVER = CONFIG.SERVER;
 var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 var msgIdCounter = 0;
-
-var openRouterConfig = null;
-var configLoaded = false;
-var configLoading = null;
 var menuData = null;
-
-function initOpenRouter() {
-  if (openRouterConfig && configLoaded) return Promise.resolve();
-  if (configLoading) return configLoading;
-  configLoading = new Promise(function(resolve, reject) {
-    wx.request({
-      url: SERVER + '/api/ai-order/config',
-      timeout: 5000,
-      success: function(res) {
-        if (res.statusCode === 200 && res.data && res.data.key) {
-          openRouterConfig = res.data;
-          configLoaded = true;
-          configLoading = null;
-          resolve();
-        } else {
-          configLoading = null;
-          reject(new Error('Failed to get OpenRouter config'));
-        }
-      },
-      fail: function(err) {
-        configLoading = null;
-        reject(err);
-      }
-    });
-  });
-  return configLoading;
-}
 
 Page({
   data: {
@@ -57,9 +24,6 @@ Page({
     wx.setNavigationBarTitle({ title: merchantName ? merchantName + ' - AI菜单助手' : 'AI菜单助手' });
     that.addWelcomeMessage();
     that.loadMenu();
-    initOpenRouter().catch(function(err) {
-      console.warn('[merchant] direct mode unavailable, will use proxy fallback:', err);
-    });
   },
 
   loadMenu: function() {
@@ -74,7 +38,7 @@ Page({
     }
     var path = '/api/ai-order/menu/list';
     if (merchantId) path += '?merchantId=' + merchantId;
-    loginLib.request('GET', path, null, false)
+    loginLib.callCloud('ai-order-menu', { action: 'list', merchantId: merchantId })
       .then(function(data) {
         if (data && data.success && data.data) {
           menuData = data.data;
@@ -118,7 +82,6 @@ Page({
     var merchantId = that.data.merchantId;
     if (!merchantId || !menu) return;
     
-    // 获取当前ETag
     var cacheKey = 'menu-cache-' + merchantId;
     var cached = wx.getStorageSync(cacheKey);
     var expectedEtag = cached && cached.etag ? cached.etag : null;
@@ -131,9 +94,13 @@ Page({
       requestData.expectedEtag = expectedEtag;
     }
     
-    loginLib.request('POST', '/api/ai-order/menu/save', requestData, true)
+    loginLib.callCloud('ai-order-menu', {
+      action: 'save',
+      merchantId: merchantId,
+      menu: menu,
+      expectedEtag: expectedEtag
+    })
       .then(function(data) {
-        if (data && data.success) {
           // 更新缓存信息，使用服务器返回的真实ETag
           var newCacheInfo = {
             menu: menu,
@@ -217,23 +184,21 @@ Page({
   },
 
   _tryProxy: function(apiMessages, callback) {
-    wx.request({
-      url: SERVER + '/api/ai-order/chat',
-      method: 'POST',
-      timeout: 60000,
-      header: { 'Content-Type': 'application/json' },
-      data: {
-        messages: apiMessages,
-        mode: 'merchant',
-        menuData: menuData
-      },
-      success: function(res) {
-        callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res);
-      },
-      fail: function() {
-        callback(false, null);
-      }
-    });
+    loginLib.callCloud('ai-order-chat', {
+      action: 'chat',
+      messages: apiMessages,
+      mode: 'merchant',
+      menuData: menuData
+    })
+      .then(function(data) {
+        // Convert cloud function response to expected format
+        callback(true, { statusCode: 200, data: data });
+      })
+      .catch(function(err) {
+        var errData = { error: err.error || 'cloud error' };
+        if (err.statusCode) errData._statusCode = err.statusCode;
+        callback(false, { statusCode: err.statusCode || 500, data: errData });
+      });
   },
 
   _handleResponse: function(res) {
@@ -346,12 +311,7 @@ Page({
     var apiMessages = this._buildApiMessages(messages);
     var startTime = Date.now();
 
-    initOpenRouter().then(function() {
-      that._attemptRequest(0, startTime, apiMessages);
-    }).catch(function() {
-      openRouterConfig = null;
-      that._attemptRequest(0, startTime, apiMessages);
-    });
+    that._attemptRequest(0, startTime, apiMessages);
   },
 
   _attemptRequest: function(retryCount, startTime, apiMessages) {
@@ -367,32 +327,6 @@ Page({
         return;
       }
       that._scheduleRetry(retryCount, startTime, apiMessages);
-    });
-  },
-
-  _tryDirect: function(apiMessages, callback) {
-    var that = this;
-    wx.request({
-      url: openRouterConfig.apiUrl + '/chat/completions',
-      method: 'POST',
-      timeout: 15000,
-      header: {
-        'Authorization': 'Bearer ' + openRouterConfig.key,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://wechatbot-api-sg.onrender.com',
-        'X-Title': 'AIOrderMerchant'
-      },
-      data: {
-        model: openRouterConfig.model,
-        messages: apiMessages,
-        max_tokens: openRouterConfig.maxTokens || 500
-      },
-      success: function(res) {
-        callback(res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0], res);
-      },
-      fail: function() {
-        callback(false, null);
-      }
     });
   },
 
