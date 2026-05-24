@@ -443,6 +443,27 @@
   white-space: nowrap;
 }
 
+.compact-expand-hint {
+  position: absolute;
+  bottom: calc(380rpx + env(safe-area-inset-bottom, 0px));
+  right: 32rpx;
+  z-index: 48;
+  padding: 8rpx 16rpx;
+  background: rgba(79, 70, 229, 0.9);
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.4);
+  backdrop-filter: blur(10rpx);
+}
+
+.voice-mode .compact-expand-hint {
+  bottom: 420rpx;
+  background: rgba(79, 70, 229, 0.95);
+  box-shadow: 0 6rpx 24rpx rgba(79, 70, 229, 0.5);
+}
+
 /* Expanded inner view */
 .chat-expanded-inner {
   flex: 1;

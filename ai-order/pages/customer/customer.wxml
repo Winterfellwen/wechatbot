@@ -66,6 +66,10 @@
       <text class="compact-hint-text">点我咨询菜品</text>
     </view>
   </view>
+  <!-- Floating hint: tap to view full AI conversation -->
+  <view wx:if="{{!chatExpanded && lastAiContent}}" class="compact-expand-hint" catchtap="expandChat">
+    <text class="expand-hint-text">查看完整AI对话</text>
+  </view>
 
   <!-- Chat expanded overlay: fixed, slides from below -->
   <view class="chat-area {{chatExpanded ? 'expanded' : ''}}" 

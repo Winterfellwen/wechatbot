@@ -369,7 +369,7 @@ Page({
     var userMsg = { id: ++msgIdCounter, role: 'user', content: '看看菜单' };
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: menuText };
     var newMsgs = that.data.messages.concat([userMsg, aiMsg]);
-    that.setData({ messages: newMsgs, chatExpanded: true });
+    that.setData({ messages: newMsgs });
     that._scrollChatBottom();
   },
 
@@ -385,7 +385,7 @@ Page({
     var userMsg = { id: ++msgIdCounter, role: 'user', content: '上次点了什么' };
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
     var newMsgs = that.data.messages.concat([userMsg, aiMsg]);
-    that.setData({ messages: newMsgs, chatExpanded: true });
+    that.setData({ messages: newMsgs });
     that._scrollChatBottom();
   },
 
@@ -532,7 +532,10 @@ Page({
 
     var userMsg = { id: ++msgIdCounter, role: 'user', content: text };
     var messages = this.data.messages.concat([userMsg]);
-    this.setData({ messages: messages, inputText: '', loading: true, hasInput: false, chatExpanded: true, chatSlideY: '0%' });
+    this.setData({ messages: messages, inputText: '', loading: true, hasInput: false });
+    if (this.data.chatExpanded) {
+      this.setData({ chatSlideY: '0%' });
+    }
     this._scrollChatBottom();
 
     var apiMessages = this._buildApiMessages(messages);
