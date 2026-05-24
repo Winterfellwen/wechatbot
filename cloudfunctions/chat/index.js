@@ -9,9 +9,9 @@ const app = cloudbase.init({ env: cloudbase.SYMBOL_CURRENT_ENV, timeout: 60000 }
 const ai = app.ai();
 
 async function callAI(messages) {
-  const model = ai.createModel('hunyuan-exp');
+  const model = ai.createModel('hunyuan-v3');
   const res = await model.generateText({
-    model: 'hunyuan-2.0-instruct-20251111',
+    model: 'hy3-preview',
     messages: messages
   });
   return res;

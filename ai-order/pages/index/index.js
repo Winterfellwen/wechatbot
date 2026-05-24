@@ -148,6 +148,7 @@ Page({
       newMerchantName: '',
       newMerchantDesc: '',
       creating: false,
+      canCreate: false,
       copyFromDemo: false,
       demoMerchants: demoList,
       selectedDemoMerchantId: demoList.length > 0 ? demoList[0].id : ''
@@ -161,7 +162,8 @@ Page({
   noop: function() {},
 
   onNewNameInput: function(e) {
-    this.setData({ newMerchantName: e.detail.value });
+    var name = e.detail.value;
+    this.setData({ newMerchantName: name, canCreate: !!(name && name.trim()) });
   },
 
   onNewDescInput: function(e) {

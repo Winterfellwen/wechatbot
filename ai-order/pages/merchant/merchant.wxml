@@ -1,6 +1,4 @@
-<!--ai-order/pages/merchant/merchant.wxml-->
 <view class="chat-container">
-  <!-- 消息列表 -->
   <scroll-view
     class="msg-list"
     scroll-y
@@ -10,9 +8,8 @@
     bounces
     show-scrollbar="{{false}}">
 
-    <!-- 消息列表 -->
     <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg-wrapper">
-      <!-- AI 消息 -->
+      <!-- AI message -->
       <view wx:if="{{item.role === 'ai'}}" class="msg-row ai">
         <view class="ai-avatar-wrapper">
           <view class="avatar ai-avatar">
@@ -23,10 +20,24 @@
           <view class="bubble ai-bubble" bindlongpress="copyText" data-text="{{item.content}}">
             <text class="bubble-text" selectable="true" user-select="true">{{item.content}}</text>
           </view>
+          <!-- Action buttons -->
+          <view wx:if="{{item.actions}}" class="action-group">
+            <view
+              wx:for="{{item.actions}}" wx:key="id"
+              class="action-btn action-{{item.type || 'default'}}"
+              catchtap="onActionTap"
+              data-action="{{item.id}}"
+              data-data="{{item.data}}"
+            >{{item.label}}</view>
+          </view>
+          <!-- Show menu button -->
+          <view wx:if="{{item.showMenuButton}}" class="menu-preview-btn" catchtap="onShowMenu">
+            <text>📋 查看完整菜单</text>
+          </view>
         </view>
       </view>
 
-      <!-- 用户消息 -->
+      <!-- User message -->
       <view wx:if="{{item.role === 'user'}}" class="msg-row user">
         <view class="msg-content user-msg-content">
           <view class="bubble user-bubble" bindlongpress="copyText" data-text="{{item.content}}">
@@ -41,7 +52,7 @@
       </view>
     </view>
 
-    <!-- AI 正在输入 -->
+    <!-- Typing indicator -->
     <view wx:if="{{loading}}" class="msg-wrapper">
       <view class="msg-row ai">
         <view class="ai-avatar-wrapper">
@@ -64,7 +75,7 @@
     <view class="list-bottom" id="msg-bottom"></view>
   </scroll-view>
 
-  <!-- 底部输入栏 -->
+  <!-- Bottom input bar -->
   <view class="input-section">
     <view class="input-bar">
       <view class="input-center">
@@ -86,5 +97,78 @@
         <text class="icon-send">↑</text>
       </view>
     </view>
+  </view>
+
+  <!-- AI Image picker overlay -->
+  <view class="image-picker-overlay" wx:if="{{pendingImages}}">
+    <view class="image-picker-card">
+      <text class="image-picker-title">选择一张菜品图片</text>
+      <view class="image-grid">
+        <view
+          wx:for="{{pendingImages}}" wx:key="url"
+          class="image-option"
+          catchtap="onPickAiImage"
+          data-url="{{item.url}}"
+        >
+          <image class="image-option-img" src="{{item.url}}" mode="aspectFill"></image>
+          <text class="image-option-credit">📷 {{item.photographer}}</text>
+        </view>
+      </view>
+      <view class="image-picker-actions">
+        <view class="picker-btn picker-btn-upload" catchtap="onUploadFromPicker" data-dishid="{{pendingDishId}}">
+          📷 上传图片
+        </view>
+        <view class="picker-btn picker-btn-skip" catchtap="onCloseImagePicker">
+          ⏭ 暂不需要
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="picker-overlay-bg" wx:if="{{pendingImages}}" catchtap="onCloseImagePicker"></view>
+
+  <!-- Menu preview overlay (grouped grid, same style as customer page) -->
+  <view class="menu-overlay" wx:if="{{showMenuOverlay}}">
+    <view class="menu-overlay-header">
+      <view class="menu-overlay-header-left">
+        <text class="menu-overlay-title">完整菜单</text>
+        <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
+          <view class="group-picker">
+            <text class="group-picker-label">{{groupModeLabel}}</text>
+            <text class="group-picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="menu-overlay-close" catchtap="onHideMenu">
+        <text class="close-icon">✕</text>
+      </view>
+    </view>
+    <scroll-view class="menu-overlay-scroll" scroll-y show-scrollbar="{{false}}">
+      <view wx:if="{{menuOverlayDishes.length === 0}}" class="menu-empty">
+        <text class="menu-empty-text">暂无菜品</text>
+      </view>
+      <view wx:for="{{tasteGroups}}" wx:for-item="zone" wx:key="taste" class="menu-taste-zone">
+        <view class="menu-taste-header">
+          <view class="menu-taste-indicator" style="background: {{zone.bgColor}}"></view>
+          <text class="menu-taste-label">{{zone.taste}}</text>
+        </view>
+        <view class="menu-dish-row">
+          <view wx:for="{{zone.dishes}}" wx:key="id" class="menu-dish-card">
+            <view wx:if="{{!item.imageUrl}}" class="menu-dish-avatar" style="background: {{item.bgStyle}}">
+              <text class="menu-dish-avatar-char">{{item.avatarChar}}</text>
+            </view>
+            <image wx:else class="menu-dish-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
+            <text class="menu-dish-card-name">{{item.name}}</text>
+            <text class="menu-dish-card-price">¥{{item.price}}</text>
+            <view class="menu-spicy-indicator">
+              <block wx:if="{{item.spicyLevel > 0}}">
+                <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+              </block>
+            </view>
+            <text class="menu-dish-card-desc" wx:if="{{item.description}}">{{item.description}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
   </view>
 </view>

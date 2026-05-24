@@ -1,14 +1,27 @@
-<view class="container">
+<view class="page">
+  <!-- Decorative background orbs -->
+  <view class="bg-orb bg-orb-1"></view>
+  <view class="bg-orb bg-orb-2"></view>
+  <view class="bg-orb bg-orb-3"></view>
+
+  <!-- Header -->
   <view class="header">
     <text class="header-title">AI 点菜</text>
+    <text class="header-subtitle">智能点餐 · 从此开始</text>
   </view>
 
-  <view class="section-label">我的商家</view>
+  <view class="section">
+    <text class="section-label">我的商家</text>
+  </view>
 
+  <!-- Loading -->
   <view wx:if="{{loading}}" class="loading-wrap">
-    <text class="loading-text">加载中...</text>
+    <view class="loading-glass">
+      <text class="loading-text">加载中...</text>
+    </view>
   </view>
 
+  <!-- Merchant list -->
   <scroll-view wx:else class="merchant-scroll" scroll-y>
     <view
       wx:for="{{merchants}}" wx:key="id"
@@ -16,43 +29,53 @@
       catchtap="onSelectMerchant" data-id="{{item.id}}"
       bindlongpress="onDeleteMerchant" data-id="{{item.id}}"
     >
-      <view class="card-top">
-        <text class="card-name">{{item.name}}</text>
-        <text class="card-badge" wx:if="{{item.type === 'demo'}}">演示</text>
+      <view class="card-content">
+        <view class="card-top">
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-badge" wx:if="{{item.type === 'demo'}}">演示</text>
+        </view>
+        <text class="card-desc" wx:if="{{item.description}}">{{item.description}}</text>
+        <view class="card-meta">
+          <text class="card-dishes">{{item.dishCount || 0}} 个菜品</text>
+        </view>
+        <text class="card-note" wx:if="{{item.note}}">{{item.note}}</text>
       </view>
-      <text class="card-desc" wx:if="{{item.description}}">{{item.description}}</text>
-      <text class="card-dishes">{{item.dishCount || 0}} 个菜品</text>
-      <text class="card-note" wx:if="{{item.note}}">{{item.note}}</text>
-      <view class="card-check" wx:if="{{item.id === selectedMerchantId}}">
+      <view class="card-check {{item.id === selectedMerchantId ? 'visible' : ''}}">
         <text class="check-icon">✓</text>
       </view>
     </view>
 
+    <!-- Create card -->
     <view class="create-card" catchtap="onShowCreate">
       <text class="create-icon">+</text>
       <text class="create-text">新建商家</text>
     </view>
   </scroll-view>
 
-  <view class="bottom-buttons" wx:if="{{!loading && merchants.length > 0}}">
-    <view class="btn btn-merchant" catchtap="onEnterMerchant">
-      <text class="btn-icon">🏪</text>
-      <text class="btn-label">进入商家管理</text>
+  <!-- Bottom glass bar -->
+  <view class="bottom-bar" wx:if="{{!loading && merchants.length > 0}}">
+    <view class="bottom-btn btn-merchant" catchtap="onEnterMerchant">
+      <view class="btn-icon-wrap">
+        <text class="btn-icon-symbol">◈</text>
+      </view>
+      <text class="btn-label">商家管理</text>
     </view>
-    <view class="btn btn-customer" catchtap="onEnterCustomer">
-      <text class="btn-icon">🍽️</text>
+    <view class="bottom-btn btn-customer" catchtap="onEnterCustomer">
+      <view class="btn-icon-wrap">
+        <text class="btn-icon-symbol">◎</text>
+      </view>
       <text class="btn-label">进入点菜</text>
     </view>
   </view>
 
-  <!-- Create modal - 精简弹窗方案 -->
+  <!-- Create modal -->
   <view class="modal-overlay" wx:if="{{showCreateModal}}" catchtap="onHideCreate">
     <view class="modal-content" catchtap="noop">
       <text class="modal-title">新建商家</text>
-      <input class="modal-input" placeholder="商家名称（必填）" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
-      <input class="modal-input modal-input-desc" placeholder="商家描述（选填，最多50字）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="50" />
 
-      <!-- 从演示商家复制 - 精简可折叠 -->
+      <input class="modal-input" placeholder="商家名称（必填）" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
+      <input class="modal-input modal-input-desc" placeholder="商家描述（选填）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="50" />
+
       <view class="copy-demo-row" catchtap="onToggleCopyDemo">
         <view class="copy-demo-check {{copyFromDemo ? 'checked' : ''}}">
           <text wx:if="{{copyFromDemo}}">✓</text>
@@ -61,7 +84,6 @@
         <text class="copy-demo-hint" wx:if="{{!copyFromDemo}}">（选填）</text>
       </view>
 
-      <!-- 演示商家选择器 - 横向标签式 -->
       <view wx:if="{{copyFromDemo}}" class="demo-tags">
         <scroll-view class="demo-tags-scroll" scroll-x>
           <view class="demo-tags-container">
@@ -79,7 +101,7 @@
 
       <view class="modal-buttons">
         <view class="modal-btn modal-btn-cancel" catchtap="onHideCreate">取消</view>
-        <view class="modal-btn modal-btn-confirm {{!newMerchantName.trim() || creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">
+        <view class="modal-btn modal-btn-confirm {{!canCreate || creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">
           <text wx:if="{{creating}}">创建中...</text>
           <text wx:else>创建</text>
         </view>
