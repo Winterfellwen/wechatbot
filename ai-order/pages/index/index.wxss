@@ -165,6 +165,18 @@
   letter-spacing: 0.5rpx;
 }
 
+.card-note {
+  display: block;
+  margin-top: 10rpx;
+  padding: 12rpx 16rpx;
+  font-size: 22rpx;
+  color: #8c7a65;
+  background: rgba(190, 106, 70, 0.06);
+  border-left: 4rpx solid #be6a46;
+  border-radius: 6rpx;
+  line-height: 1.5;
+}
+
 .card-check {
   position: absolute;
   right: 32rpx;

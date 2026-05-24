@@ -22,6 +22,7 @@
       </view>
       <text class="card-desc" wx:if="{{item.description}}">{{item.description}}</text>
       <text class="card-dishes">{{item.dishCount || 0}} 个菜品</text>
+      <text class="card-note" wx:if="{{item.note}}">{{item.note}}</text>
       <view class="card-check" wx:if="{{item.id === selectedMerchantId}}">
         <text class="check-icon">✓</text>
       </view>

@@ -70,14 +70,18 @@ Page({
       .then(function(data) {
         clearTimeout(safetyTimer);
         var list = (data && data.data) || [];
-        // 始终在列表末尾追加 demo 商家，方便浏览
+        // 始终在列表最前面插入 demo 商家，并添加演示提示
         var demoList = demoMenus.getMerchantList();
-        for (var di = 0; di < demoList.length; di++) {
+        var demoNote = '演示不支持AI商家管理增添菜单，请尝试新建商家体验完整AI功能。';
+        for (var di = demoList.length - 1; di >= 0; di--) {
           var isDup = false;
           for (var ri = 0; ri < list.length; ri++) {
             if (list[ri].id === demoList[di].id) { isDup = true; break; }
           }
-          if (!isDup) list.push(demoList[di]);
+          if (!isDup) {
+            demoList[di].note = demoNote;
+            list.unshift(demoList[di]);
+          }
         }
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
