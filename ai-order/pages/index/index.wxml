@@ -44,35 +44,41 @@
     </view>
   </view>
 
-  <!-- Create modal -->
+  <!-- Create modal - 精简弹窗方案 -->
   <view class="modal-overlay" wx:if="{{showCreateModal}}" catchtap="onHideCreate">
-    <view class="modal-content" catchtap="">
+    <view class="modal-content" catchtap="noop">
       <text class="modal-title">新建商家</text>
-      <input class="modal-input" placeholder="商家名称" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
-      <input class="modal-input modal-input-desc" placeholder="商家描述（选填）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="200" />
+      <input class="modal-input" placeholder="商家名称（必填）" value="{{newMerchantName}}" bindinput="onNewNameInput" maxlength="50" />
+      <input class="modal-input modal-input-desc" placeholder="商家描述（选填，最多50字）" value="{{newMerchantDesc}}" bindinput="onNewDescInput" maxlength="50" />
 
-      <!-- 从演示商家复制 -->
+      <!-- 从演示商家复制 - 精简可折叠 -->
       <view class="copy-demo-row" catchtap="onToggleCopyDemo">
         <view class="copy-demo-check {{copyFromDemo ? 'checked' : ''}}">
           <text wx:if="{{copyFromDemo}}">✓</text>
         </view>
-        <text class="copy-demo-label">从演示商家复制菜单（含图片）</text>
+        <text class="copy-demo-label">从演示商家复制菜单</text>
+        <text class="copy-demo-hint" wx:if="{{!copyFromDemo}}">（选填）</text>
       </view>
 
-      <view wx:if="{{copyFromDemo}}" class="demo-picker">
-        <view
-          wx:for="{{demoMerchants}}" wx:key="id"
-          class="demo-picker-item {{item.id === selectedDemoMerchantId ? 'selected' : ''}}"
-          catchtap="onSelectDemoMerchant" data-id="{{item.id}}"
-        >
-          <text class="demo-picker-name">{{item.name}}</text>
-          <text class="demo-picker-count">{{item.dishCount}} 个菜品</text>
-        </view>
+      <!-- 演示商家选择器 - 横向标签式 -->
+      <view wx:if="{{copyFromDemo}}" class="demo-tags">
+        <scroll-view class="demo-tags-scroll" scroll-x>
+          <view class="demo-tags-container">
+            <view
+              wx:for="{{demoMerchants}}" wx:key="id"
+              class="demo-tag {{item.id === selectedDemoMerchantId ? 'selected' : ''}}"
+              catchtap="onSelectDemoMerchant" data-id="{{item.id}}"
+            >
+              <text class="demo-tag-name">{{item.name}}</text>
+              <text class="demo-tag-count">{{item.dishCount}} 个菜品</text>
+            </view>
+          </view>
+        </scroll-view>
       </view>
 
       <view class="modal-buttons">
         <view class="modal-btn modal-btn-cancel" catchtap="onHideCreate">取消</view>
-        <view class="modal-btn modal-btn-confirm {{creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">
+        <view class="modal-btn modal-btn-confirm {{!newMerchantName.trim() || creating ? 'disabled' : ''}}" catchtap="onCreateMerchant">
           <text wx:if="{{creating}}">创建中...</text>
           <text wx:else>创建</text>
         </view>

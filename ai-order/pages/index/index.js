@@ -118,6 +118,7 @@ Page({
       showCreateModal: true,
       newMerchantName: '',
       newMerchantDesc: '',
+      creating: false,
       copyFromDemo: false,
       demoMerchants: demoList,
       selectedDemoMerchantId: demoList.length > 0 ? demoList[0].id : ''
@@ -125,8 +126,10 @@ Page({
   },
 
   onHideCreate: function() {
-    this.setData({ showCreateModal: false });
+    this.setData({ showCreateModal: false, creating: false });
   },
+
+  noop: function() {},
 
   onNewNameInput: function(e) {
     this.setData({ newMerchantName: e.detail.value });
@@ -146,6 +149,7 @@ Page({
 
   onCreateMerchant: function() {
     var that = this;
+    if (that.data.creating) return;
     var name = that.data.newMerchantName.trim();
     if (!name) { wx.showToast({ title: '请输入商家名称', icon: 'none' }); return; }
     var copyFromDemo = that.data.copyFromDemo;
@@ -179,8 +183,21 @@ Page({
                 menu: { dishes: dishes }
               }, true).then(function() {
                 wx.showToast({ title: '创建成功，已复制演示菜单', icon: 'success' });
-                that.setData({ showCreateModal: false, creating: false });
-                that._fetchMerchants();
+                // 直接更新本地列表，带上正确的菜品数量，避免服务器不返回 dishCount 导致显示 0
+                var newEntry = {
+                  id: newMerchant.id,
+                  name: newMerchant.name,
+                  description: newMerchant.description || '',
+                  dishCount: dishes.length
+                };
+                var updatedList = [newEntry].concat(that.data.merchants);
+                that.setData({
+                  showCreateModal: false,
+                  creating: false,
+                  merchants: updatedList,
+                  selectedMerchantId: newMerchant.id
+                });
+                wx.setStorageSync('ai-order-merchant-id', newMerchant.id);
               }).catch(function() {
                 wx.showToast({ title: '创建成功，菜单复制失败', icon: 'none' });
                 that.setData({ showCreateModal: false, creating: false });

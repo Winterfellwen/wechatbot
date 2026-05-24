@@ -177,6 +177,7 @@ function getMerchantList() {
 }
 
 module.exports = {
+  merchants: localData.merchants,
   getData: getData,
   getMerchant: getMerchant,
   getMerchantList: getMerchantList,

@@ -15,15 +15,40 @@ function ociMenuUrl(userId, merchantId) {
   return `${ociConfig.baseUrl}/menus/${userId}/${merchantId}.json`;
 }
 
+async function ociHeadObject(userId, merchantId) {
+  const os = require('oci-objectstorage');
+  const client = getOciClient();
+  const tenancyId = client._authProvider.getTenantId();
+  const nsResp = await client.getNamespace({ compartmentId: tenancyId });
+  const ns = nsResp.value;
+  const key = `menus/${userId}/${merchantId}.json`;
+  try {
+    const resp = await client.headObject({
+      namespaceName: ns,
+      bucketName: ociConfig.bucketName,
+      objectName: key
+    });
+    return {
+      exists: true,
+      lastModified: resp.lastModified,
+      etag: resp.etag
+    };
+  } catch (err) {
+    if (err.statusCode === 404) return { exists: false, lastModified: null, etag: null };
+    throw err;
+  }
+}
+
 async function seedDemoMerchants(openid) {
   if (!pool) return;
   const [existing] = await pool.query('SELECT COUNT(*) as cnt FROM ai_order_merchants WHERE openid = ?', [openid]);
   if (existing[0].cnt > 0) return;
   const demoList = demoMenus.merchants || [];
   for (const m of demoList) {
+    const dishCount = (m.dishes || []).length;
     await pool.query(
-      'INSERT INTO ai_order_merchants (id, openid, name, description, type) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=name',
-      ['demo-' + m.id, openid, m.name, m.name + '（演示商家）', 'demo']
+      'INSERT INTO ai_order_merchants (id, openid, name, description, type, dishCount) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=name',
+      ['demo-' + m.id, openid, m.name, m.name + '（演示商家）', 'demo', dishCount]
     );
   }
 }
@@ -62,25 +87,31 @@ function getOciClient() {
   throw new Error('OCI credentials not configured');
 }
 
-function ociSaveMenu(userId, merchantId, menuData) {
+function ociSaveMenu(userId, merchantId, menuData, options) {
+  options = options || {};
   const os = require('oci-objectstorage');
   const { Readable } = require('stream');
   const client = getOciClient();
   const tenancyId = client._authProvider.getTenantId();
-  return client.getNamespace({ compartmentId: tenancyId }).then(nsResp => {
+  return client.getNamespace({ compartmentId: tenancyId }).then(function(nsResp) {
     const ns = nsResp.value;
     const key = `menus/${userId}/${merchantId}.json`;
     const body = JSON.stringify(menuData, null, 2);
-    return client.putObject({
+    const putParams = {
       namespaceName: ns,
       bucketName: ociConfig.bucketName,
       objectName: key,
       putObjectBody: Readable.from([body]),
       contentLength: Buffer.byteLength(body),
       contentLanguage: 'zh-CN'
-    }).then(() => ({
-      url: `${ociConfig.baseUrl}/${key}`
-    }));
+    };
+    if (options.ifMatch) {
+      putParams.ifMatch = options.ifMatch;
+    }
+    return client.putObject(putParams).then(function(resp) {
+      var rawEtag = (resp || {}).eTag || null;
+      return { url: ociConfig.baseUrl + '/' + key, etag: rawEtag ? rawEtag.replace(/^"|"$/g, '') : null };
+    });
   });
 }
 
@@ -171,19 +202,45 @@ const pool = (db.host && db.password) ? mysql.createPool({
   ssl: db.ssl,
   waitForConnections: true,
   connectionLimit: 5,
-  queueLimit: 0
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000
 }) : null;
 
-// 防休眠心跳：Aiven 免费计划长期无活动会关闭，每 30 分钟 SELECT 1 保持活跃
+// 三层保活：防止 Aiven 休眠 + 连接池超时断开
 if (pool) {
+  // 1. 应用层心跳：每 5 分钟 SELECT 1，防 Aiven 免费计划休眠
   setInterval(async () => {
     try {
-      await pool.query('SELECT 1');
-      console.log('[heartbeat] DB alive');
+      const conn = await pool.getConnection();
+      await conn.ping();
+      conn.release();
     } catch (e) {
-      console.error('[heartbeat] keep-alive failed:', e.message);
+      console.error('[heartbeat] keep-alive failed, retrying once:', e.message);
+      // 失败后立刻重试一次
+      try {
+        const conn = await pool.getConnection();
+        await conn.ping();
+        conn.release();
+        console.log('[heartbeat] DB alive after retry');
+      } catch (e2) {
+        console.error('[heartbeat] double-fail, pool may be dead:', e2.message);
+      }
     }
-  }, 30 * 60 * 1000);
+  }, 5 * 60 * 1000);
+
+  // 2. 连接级别保活：每次从池中取连接时验证
+  pool.on('acquire', function(connection) {
+    // 快速 ping 确认连接未断开（被 wait_timeout 杀掉的闲置连接）
+    connection.ping().catch(function() {});
+  });
+
+  // 3. 错误恢复：连接丢失时自动重建
+  pool.on('error', function(err) {
+    console.error('[pool] unexpected error on idle connection:', err.message);
+  });
+
+  console.log('[pool] MySQL keep-alive initialized (5min heartbeat + connection validation)');
 }
 
 const WECHAT_APP_ID = config.wechat.appId;
@@ -450,10 +507,17 @@ async function initDB() {
         name VARCHAR(100) NOT NULL,
         description VARCHAR(500) DEFAULT '',
         type ENUM('demo','custom') DEFAULT 'custom',
+        dishCount INT DEFAULT 0,
         createdAt DATETIME DEFAULT NOW(),
         INDEX idx_openid (openid)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
+    // 为已有表添加 dishCount 列（若不存在）
+    try {
+      await pool.query('ALTER TABLE ai_order_merchants ADD COLUMN IF NOT EXISTS dishCount INT DEFAULT 0');
+    } catch (err) {
+      console.log('dishCount column already exists or alter failed:', err.message);
+    }
     console.log('DB initialized');
   } catch (err) {
     console.error('DB init error:', err.message);
@@ -559,17 +623,20 @@ app.get('/api/ai-order/menu/list', async (req, res) => {
   if (!merchantId) {
     return res.status(400).json({ success: false, error: 'merchantId required' });
   }
-  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
+  const demoMerchant = (demoMenus.merchants || []).find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
   if (demoMerchant) {
-    return res.json({ success: true, data: { id: merchantId, name: demoMerchant.name, dishes: demoMerchant.dishes }, source: 'demo' });
+    return res.json({ success: true, data: { id: merchantId, name: demoMerchant.name, dishes: demoMerchant.dishes }, source: 'demo', updatedAt: new Date().toISOString() });
   }
   const userId = req.query.userId || 'default';
   try {
     const ociUrl = ociMenuUrl(userId, merchantId);
-    const resp = await fetch(ociUrl);
+    const resp = await fetch(ociUrl, { signal: AbortSignal.timeout(5000) });
     if (resp.ok) {
       const data = await resp.json();
-      return res.json({ success: true, data, source: 'oci' });
+      const lastModified = resp.headers.get('last-modified');
+      const updatedAt = lastModified ? new Date(lastModified).toISOString() : null;
+      const etag = (resp.headers.get('etag') || '').replace(/^"|"$/g, '') || null;
+      return res.json({ success: true, data, source: 'oci', updatedAt, etag });
     }
   } catch (_) {}
   res.json({ success: true, data: { id: merchantId, name: '未知商家', dishes: [] }, source: 'empty' });
@@ -579,7 +646,7 @@ app.get('/api/ai-order/menu/list', async (req, res) => {
 app.get('/api/ai-order/menu/oci-url', (req, res) => {
   const merchantId = req.query.merchantId;
   if (!merchantId) return res.status(400).json({ success: false, error: 'merchantId required' });
-  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId);
+  const demoMerchant = (demoMenus.merchants || []).find(m => m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, url: null, source: 'demo' });
   }
@@ -588,20 +655,122 @@ app.get('/api/ai-order/menu/oci-url', (req, res) => {
 
 // 保存菜单到 OCI
 app.post('/api/ai-order/menu/save', requireAuth, async (req, res) => {
-  const { merchantId, menu } = req.body;
+  const { merchantId, menu, expectedEtag } = req.body;
   if (!merchantId || !menu) {
     return res.status(400).json({ success: false, error: 'merchantId and menu required' });
   }
-  const demoMerchant = demoMenus.merchants.find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
+  const demoMerchant = (demoMenus.merchants || []).find(m => m.id === merchantId || 'demo-' + m.id === merchantId);
   if (demoMerchant) {
     return res.json({ success: true, message: '演示模式：未保存到 OCI', source: 'demo' });
   }
   const userId = req.user.openid;
   try {
-    const result = await ociSaveMenu(userId, merchantId, menu);
-    res.json({ success: true, message: '菜单已保存到 OCI', url: result.url });
+    // 检查 ETag 冲突
+    if (expectedEtag) {
+      const head = await ociHeadObject(userId, merchantId);
+      if (head.exists) {
+        var clientEtag = String(expectedEtag).replace(/^"|"$/g, '');
+        var serverEtag = String(head.etag).replace(/^"|"$/g, '');
+        if (clientEtag !== serverEtag) {
+          return res.status(409).json({ 
+            success: false, 
+            error: 'CONFLICT', 
+            message: '菜单已被其他人修改，请刷新后重试',
+            currentEtag: head.etag
+          });
+        }
+      }
+    }
+    const options = expectedEtag ? { ifMatch: String(expectedEtag).replace(/^"|"$/g, '') } : {};
+    const result = await ociSaveMenu(userId, merchantId, menu, options);
+    // 同步更新 MySQL 中的 dishCount
+    if (pool) {
+      const dishCount = (menu.dishes || []).length;
+      await pool.query(
+        'UPDATE ai_order_merchants SET dishCount = ? WHERE id = ? AND openid = ?',
+        [dishCount, merchantId, userId]
+      );
+    }
+    res.json({ success: true, message: '菜单已保存到 OCI', url: result.url, etag: result.etag });
   } catch (err) {
+    if (err.statusCode === 412) {
+      return res.status(409).json({ 
+        success: false, 
+        error: 'CONFLICT', 
+        message: '菜单已被其他人修改，请刷新后重试'
+      });
+    }
     res.status(500).json({ success: false, error: 'OCI 保存失败：' + err.message });
+  }
+});
+
+// 部分更新单个菜品（含 ETag 冲突检测）
+app.put('/api/ai-order/menu/dish/:id', requireAuth, async (req, res) => {
+  const dishId = req.params.id;
+  const { merchantId, dish, expectedEtag } = req.body;
+  if (!merchantId || !dish) {
+    return res.status(400).json({ success: false, error: 'merchantId and dish required' });
+  }
+  const userId = req.user.openid;
+  try {
+    // 读取当前完整菜单
+    const ociUrl = ociMenuUrl(userId, merchantId);
+    let menu;
+    try {
+      const resp = await fetch(ociUrl, { signal: AbortSignal.timeout(5000) });
+      if (!resp.ok) {
+        return res.status(404).json({ success: false, error: '菜单不存在，请先通过AI对话添加菜品' });
+      }
+      menu = await resp.json();
+    } catch (_) {
+      return res.status(404).json({ success: false, error: '菜单不存在，请先通过AI对话添加菜品' });
+    }
+
+    // ETag 冲突检测
+    if (expectedEtag) {
+      const head = await ociHeadObject(userId, merchantId);
+      if (head.exists) {
+        var _clientEtag = String(expectedEtag).replace(/^"|"$/g, '');
+        var _serverEtag = String(head.etag).replace(/^"|"$/g, '');
+        if (_clientEtag !== _serverEtag) {
+          return res.status(409).json({
+            success: false,
+            error: 'CONFLICT',
+            message: '菜单已被其他人修改，请刷新后重试',
+            currentEtag: head.etag
+          });
+        }
+      }
+    }
+
+    // 查找并更新菜品
+    const dishes = menu.dishes || [];
+    const idx = dishes.findIndex(d => d.id === dishId);
+    if (idx === -1) {
+      return res.status(404).json({ success: false, error: '菜品不存在' });
+    }
+    dishes[idx] = { ...dishes[idx], ...dish, id: dishId };
+
+    const options = expectedEtag ? { ifMatch: String(expectedEtag).replace(/^"|"$/g, '') } : {};
+    const result = await ociSaveMenu(userId, merchantId, menu, options);
+
+    if (pool) {
+      await pool.query(
+        'UPDATE ai_order_merchants SET dishCount = ? WHERE id = ? AND openid = ?',
+        [dishes.length, merchantId, userId]
+      );
+    }
+
+    res.json({ success: true, message: '菜品已更新', url: result.url, dish: dishes[idx], etag: result.etag });
+  } catch (err) {
+    if (err.statusCode === 412) {
+      return res.status(409).json({
+        success: false,
+        error: 'CONFLICT',
+        message: '菜单已被其他人修改，请刷新后重试'
+      });
+    }
+    res.status(500).json({ success: false, error: '更新失败：' + err.message });
   }
 });
 
@@ -621,15 +790,14 @@ app.get('/api/ai-order/merchants', requireAuth, async (req, res) => {
     }
     await seedDemoMerchants(openid);
     const [rows] = await pool.query(
-      'SELECT id, name, description, type, createdAt FROM ai_order_merchants WHERE openid = ? ORDER BY createdAt ASC', [openid]
+      'SELECT id, name, description, type, dishCount, createdAt FROM ai_order_merchants WHERE openid = ? ORDER BY createdAt ASC', [openid]
     );
     const data = rows.map(r => {
-      let dishCount = 0;
       if (r.type === 'demo') {
-        const demo = demoMenus.merchants.find(m => 'demo-' + m.id === r.id);
-        if (demo) dishCount = (demo.dishes || []).length;
+        const demo = (demoMenus.merchants || []).find(m => 'demo-' + m.id === r.id);
+        if (demo) r.dishCount = (demo.dishes || []).length;
       }
-      return { ...r, dishCount };
+      return r;
     });
     res.json({ success: true, data });
   } catch (err) {
@@ -649,8 +817,8 @@ app.post('/api/ai-order/merchants', requireAuth, async (req, res) => {
     const id = 'usr_' + openid + '_' + Date.now();
     if (pool) {
       await pool.query(
-        'INSERT INTO ai_order_merchants (id, openid, name, description, type) VALUES (?, ?, ?, ?, ?)',
-        [id, openid, name.trim(), (description || '').trim(), 'custom']
+        'INSERT INTO ai_order_merchants (id, openid, name, description, type, dishCount) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, openid, name.trim(), (description || '').trim(), 'custom', 0]
       );
     }
     res.json({ success: true, data: { id, name: name.trim(), description: (description || '').trim(), type: 'custom', dishCount: 0 } });
@@ -665,14 +833,13 @@ app.delete('/api/ai-order/merchants/:id', requireAuth, async (req, res) => {
   try {
     const openid = req.user.openid;
     const { id } = req.params;
-    if (!pool) {
-      return res.status(400).json({ success: false, error: '非演示模式不支持删除' });
-    }
-    const [result] = await pool.query(
-      'DELETE FROM ai_order_merchants WHERE id = ? AND openid = ?', [id, openid]
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, error: '商家不存在或无权操作' });
+    if (pool) {
+      const [result] = await pool.query(
+        'DELETE FROM ai_order_merchants WHERE id = ? AND openid = ?', [id, openid]
+      );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ success: false, error: '商家不存在或无权操作' });
+      }
     }
     res.json({ success: true });
   } catch (err) {

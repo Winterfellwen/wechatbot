@@ -12,12 +12,6 @@ var menuData = null;
 var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
 var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 
-var WS_URL = 'wss://wechatbot-api-sg.onrender.com/ws';
-var wsTask = null;
-var wsReconnectCount = 0;
-var wsReconnectTimer = null;
-var wsHeartbeatTimer = null;
-
 var plugin = null;
 var recordRecoManager = null;
 
@@ -154,14 +148,11 @@ Page({
   },
 
   onHide: function() {
-    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+    // No WebSocket to clean up
   },
 
   onShow: function() {
-    this._startWsHeartbeat();
-    if (!wsTask) {
-      this._connectWebSocket();
-    }
+    // No WebSocket to connect
   },
 
   loadMenu: function() {
@@ -482,62 +473,6 @@ Page({
     return apiMessages;
   },
 
-  _connectWebSocket: function() {
-    var that = this;
-    if (wsTask) {
-      return;
-    }
-    wsTask = wx.connectSocket({ url: WS_URL });
-    wsTask.onOpen(function() {
-      wsReconnectCount = 0;
-      that._startWsHeartbeat();
-    });
-    wsTask.onError(function() { that._onWsFail(); });
-    wsTask.onClose(function() { that._onWsFail(); });
-    wsTask.onMessage(function(res) { that._onWsMessage(res); });
-  },
-
-  _onWsFail: function() {
-    var that = this;
-    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
-    if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
-    wsTask = null;
-    if (wsReconnectCount < 3) {
-      wsReconnectCount++;
-      var delay = [1000, 2000, 4000][wsReconnectCount - 1] || 4000;
-      wsReconnectTimer = setTimeout(function() { that._connectWebSocket(); }, delay);
-    }
-  },
-
-  _startWsHeartbeat: function() {
-    var that = this;
-    if (wsHeartbeatTimer) clearInterval(wsHeartbeatTimer);
-    wsHeartbeatTimer = setInterval(function() {
-      if (!wsTask) return;
-      try { wsTask.send({ data: JSON.stringify({ type: 'ping' }) }); } catch (_) {}
-    }, 15000);
-  },
-
-  _sendWsMessage: function(data, callback) {
-    if (!wsTask) { if (callback) callback(false); return; }
-    try {
-      wsTask.send({
-        data: JSON.stringify(data),
-        success: function() { if (callback) callback(true); },
-        fail: function() { if (callback) callback(false); }
-      });
-    } catch (_) {
-      if (callback) callback(false);
-    }
-  },
-
-  _disconnectWs: function() {
-    if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
-    if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
-    wsReconnectCount = 999;
-    if (wsTask) { try { wsTask.close({}); } catch (_) {} wsTask = null; }
-  },
-
   _startVoiceInput: function() {
     if (this.data.loading) return;
     if (!recordRecoManager) {
@@ -560,47 +495,6 @@ Page({
 
   _switchToVoice: function() {
     this.setData({ inputMode: 'voice' });
-  },
-
-  _onWsMessage: function(res) {
-    var that = this;
-    try {
-      var msg = JSON.parse(res.data);
-      if (msg.type === 'pong') return;
-      if (msg.type === 'token') {
-        var cur = that.data.streamingText || '';
-        that.setData({ streamingText: cur + msg.content });
-        that._scrollChatBottom();
-        return;
-      }
-      if (msg.type === 'done') {
-        var fullContent = msg.content || '';
-        var recommendations = msg.recommendations || [];
-
-        that._applyAiRecommendations(recommendations);
-
-        var aiMsg = {
-          id: ++msgIdCounter,
-          role: 'ai',
-          content: fullContent,
-          recommendations: recommendations
-        };
-        that.setData({
-          messages: that.data.messages.concat([aiMsg]),
-          loading: false,
-          streamingText: '',
-          lastAiContent: fullContent
-        });
-        that._scrollChatBottom();
-        return;
-      }
-      if (msg.type === 'error') {
-        var errAiMsg = { id: ++msgIdCounter, role: 'ai', content: '出错了：' + (msg.message || '未知错误') };
-        that.setData({ messages: that.data.messages.concat([errAiMsg]), loading: false, streamingText: '' });
-        that._scrollChatBottom();
-        return;
-      }
-    } catch (_) { /* ignore */ }
   },
 
   _tryProxy: function(apiMessages, callback) {

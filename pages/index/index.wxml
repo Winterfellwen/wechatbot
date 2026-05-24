@@ -41,7 +41,7 @@
         <view class="card-icon-wrap icon-bg-ai-order">
           <image class="icon-svg" src="{{iconSrc.order}}" mode="aspectFit"></image>
         </view>
-        <text class="entry-title">AI点菜</text>
+        <text class="entry-title">AI点菜Agent</text>
         <text class="entry-desc">智能推荐菜品</text>
       </view>
     </view>

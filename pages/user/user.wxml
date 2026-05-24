@@ -26,15 +26,17 @@
     </button>
 
     <!-- 昵称 -->
-    <view class="setup-nick-row">
-      <input class="setup-nick-input" type="nickname" placeholder="给自己取个好听的名字" value="{{setupNickName}}" bindinput="onFirstSetupNickInput" maxlength="20" />
-    </view>
+    <form bindsubmit="saveFirstSetupForm">
+      <view class="setup-nick-row">
+        <input class="setup-nick-input" type="nickname" name="nickname" placeholder="给自己取个好听的名字" maxlength="20" />
+      </view>
 
-    <!-- 按钮 -->
-    <view class="setup-buttons">
-      <button class="setup-btn setup-btn-skip" bindtap="skipFirstSetup">跳过</button>
-      <button class="setup-btn setup-btn-save" bindtap="saveFirstSetup">保存</button>
-    </view>
+      <!-- 按钮 -->
+      <view class="setup-buttons">
+        <button class="setup-btn setup-btn-skip" bindtap="skipFirstSetup">跳过</button>
+        <button class="setup-btn setup-btn-save" form-type="submit">保存</button>
+      </view>
+    </form>
   </view>
 
   <!-- 已登录 -->
@@ -54,9 +56,11 @@
             </view>
           </view>
           <view class="nick-input-row" wx:if="{{showNickInput}}">
-            <input class="nick-input" type="nickname" placeholder="输入昵称" value="{{nickName}}" bindinput="onNickInput" focus="{{true}}" />
-            <text class="btn-cancel" bindtap="cancelNickname">取消</text>
-            <text class="btn-confirm" bindtap="confirmNickname">保存</text>
+            <form bindsubmit="confirmNicknameForm">
+              <input class="nick-input" type="nickname" name="nickname" placeholder="输入昵称" focus="{{true}}" />
+              <text class="btn-cancel" bindtap="cancelNickname">取消</text>
+              <button class="btn-confirm" form-type="submit">保存</button>
+            </form>
           </view>
         </view>
       </view>

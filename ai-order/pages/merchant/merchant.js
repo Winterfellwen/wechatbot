@@ -66,11 +66,8 @@ Page({
     var that = this;
     var merchantId = that.data.merchantId;
     var cacheKey = 'menu-cache-' + merchantId;
-    var cached = wx.getStorageSync(cacheKey);
-    if (cached && cached.dishes) {
-      menuData = cached;
-      return;
-    }
+    
+    // 从服务器加载（强制刷新，获取最新ETag）
     if (merchantId && DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
       that._loadMenuFromDemoData(merchantId);
       return;
@@ -81,11 +78,22 @@ Page({
       .then(function(data) {
         if (data && data.success && data.data) {
           menuData = data.data;
-          wx.setStorageSync(cacheKey, data.data);
+          // 存储菜单和ETag信息
+          var cacheInfo = {
+            menu: data.data,
+            updatedAt: data.updatedAt || new Date().toISOString(),
+            etag: data.etag || null
+          };
+          wx.setStorageSync(cacheKey, cacheInfo);
         }
       })
       .catch(function(err) {
         console.warn('[merchant] failed to load menu:', err);
+        // 降级：尝试读取缓存
+        var cached = wx.getStorageSync(cacheKey);
+        if (cached && cached.menu) {
+          menuData = cached.menu;
+        }
       });
   },
 
@@ -96,7 +104,12 @@ Page({
     if (found) {
       var menu = { dishes: found.dishes || [] };
       menuData = menu;
-      wx.setStorageSync('menu-cache-' + merchantId, menu);
+      var cacheInfo = {
+        menu: menu,
+        updatedAt: new Date().toISOString(),
+        etag: null
+      };
+      wx.setStorageSync('menu-cache-' + merchantId, cacheInfo);
     }
   },
 
@@ -104,18 +117,46 @@ Page({
     var that = this;
     var merchantId = that.data.merchantId;
     if (!merchantId || !menu) return;
-    loginLib.request('POST', '/api/ai-order/menu/save', {
+    
+    // 获取当前ETag
+    var cacheKey = 'menu-cache-' + merchantId;
+    var cached = wx.getStorageSync(cacheKey);
+    var expectedEtag = cached && cached.etag ? cached.etag : null;
+    
+    var requestData = {
       merchantId: merchantId,
       menu: menu
-    }, true)
+    };
+    if (expectedEtag) {
+      requestData.expectedEtag = expectedEtag;
+    }
+    
+    loginLib.request('POST', '/api/ai-order/menu/save', requestData, true)
       .then(function(data) {
         if (data && data.success) {
-          wx.setStorageSync('menu-cache-' + merchantId, menu);
+          // 更新缓存信息，使用服务器返回的真实ETag
+          var newCacheInfo = {
+            menu: menu,
+            updatedAt: new Date().toISOString(),
+            etag: data.etag || new Date().getTime().toString()
+          };
+          wx.setStorageSync(cacheKey, newCacheInfo);
           console.log('[merchant] menu saved to server');
         }
       })
       .catch(function(err) {
-        console.warn('[merchant] failed to save menu:', err);
+        if (err && err.error === 'CONFLICT') {
+          // 冲突处理：刷新菜单
+          console.warn('[merchant] save conflict, refreshing menu...');
+          that.loadMenu();
+          wx.showToast({
+            title: '菜单已被修改，请重试',
+            icon: 'none',
+            duration: 2000
+          });
+        } else {
+          console.warn('[merchant] failed to save menu:', err);
+        }
       });
   },
 
@@ -123,7 +164,7 @@ Page({
     var welcomeMsg = {
       id: ++msgIdCounter,
       role: 'ai',
-      content: '你好，我是AI菜单助手！我可以帮你优化菜单描述、推荐菜品搭配、分析销售数据等。有什么需要帮忙的？'
+      content: '你好，我是AI菜单助手！我可以帮你：\n\u2460 添加菜品（如"加一道红烧排骨 35元 咸甜口味"）\n\u2461 修改菜品信息\n\u2462 优化菜单描述\n\u2463 推荐菜品搭配\n有什么需要帮忙的？'
     };
     this.setData({ messages: [welcomeMsg] });
   },
@@ -150,9 +191,19 @@ Page({
   },
 
   _buildApiMessages: function(messages) {
+    // 构建当前菜单文本
+    var menuText = '';
+    if (menuData && menuData.dishes) {
+      menuText = '\n\n当前菜单（' + menuData.dishes.length + ' 道菜品）：\n';
+      for (var mi = 0; mi < menuData.dishes.length; mi++) {
+        var dd = menuData.dishes[mi];
+        var status = dd.status === 'online' ? '' : '【已下架】';
+        menuText += '- ' + dd.name + ' ¥' + dd.price + ' ' + (dd.taste || '') + ' ' + (dd.category || '') + ' ' + status + '\n';
+      }
+    }
     var apiMessages = [{
       role: 'system',
-      content: '你是一位专业的AI菜单助手，帮助商家优化菜单、推荐菜品搭配、分析销售数据。回答时注意：1.用中文回答 2.建议要实用可操作 3.适当举例帮助理解 4.语气专业友善'
+      content: '你是一位专业的AI菜单助手，帮助商家管理菜品。' + menuText + '\n\n核心规则：当商家要求添加菜品时，你必须在回复末尾输出一个名为 dish-add 的 JSON 代码块。格式如下：\n```dish-add\n{"name":"菜品名","price":价格数字,"taste":"口味","category":"分类","description":"简短描述","spicyLevel":辣度0-3}\n```\n例如：\n```dish-add\n{"name":"红烧排骨","price":35,"taste":"咸甜","category":"菜","description":"经典红烧，肉质鲜嫩","spicyLevel":0}\n```\n\n注意：\n1. 每次只能添加一道菜品，多道菜品分多次添加\n2. 只在商家明确要求添加菜品时才输出 dish-add 代码块\n3. dish-add 代码块必须放在回复末尾\n4. 回复正文先友好地告知商家你已准备添加该菜品\n5. name 必填，price 必填，taste 选填（如 麻辣/酸甜/咸甜/清淡），category 选填（如 菜/主食/汤），description 选填，spicyLevel 选填（0-3）'
     }];
     for (var i = 0; i < messages.length; i++) {
       var m = messages[i];
@@ -207,7 +258,67 @@ Page({
       reply = '抱歉，我暂时无法回答（HTTP ' + res.statusCode + '），请稍后再试。';
     }
 
-    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply };
+    // 解析 AI 回复中的 dish-add 代码块，实际创建菜品
+    var displayReply = reply;
+    var newDishes = [];
+    var dishAddRegex = /```dish-add\s*\n([\s\S]*?)\n```/g;
+    var match;
+    while ((match = dishAddRegex.exec(reply)) !== null) {
+      try {
+        var dishData = JSON.parse(match[1]);
+        if (dishData.name && typeof dishData.price === 'number') {
+          var newDish = {
+            id: 'dish-' + Date.now() + '-' + newDishes.length,
+            name: dishData.name,
+            price: dishData.price,
+            image: dishData.image || '',
+            description: dishData.description || '',
+            taste: dishData.taste || '',
+            spicyLevel: dishData.spicyLevel || 0,
+            status: 'online',
+            category: dishData.category || ''
+          };
+          newDishes.push(newDish);
+        }
+      } catch (e) {
+        console.warn('[merchant] failed to parse dish-add JSON:', match[1], e);
+      }
+    }
+    // 从显示文本中移除 dish-add 代码块
+    displayReply = reply.replace(/```dish-add\s*\n[\s\S]*?\n```/g, '').trim();
+
+    // 如果有成功解析的新菜品，添加到菜单并保存
+    if (newDishes.length > 0) {
+      // 先读取当前最新菜单（避免基于过时数据操作）
+      var merchantId = that.data.merchantId;
+      if (merchantId) {
+        var cacheKey = 'menu-cache-' + merchantId;
+        var cached = wx.getStorageSync(cacheKey);
+        var currentMenu = cached && cached.menu ? cached.menu : { dishes: [] };
+        if (!currentMenu.dishes) currentMenu.dishes = [];
+        
+        // 添加新菜品
+        for (var nd = 0; nd < newDishes.length; nd++) {
+          currentMenu.dishes.push(newDishes[nd]);
+        }
+        that.saveMenu(currentMenu);
+        // 更新全局 menuData
+        menuData = currentMenu;
+      } else {
+        // 降级：使用内存中的 menuData
+        if (!menuData) menuData = { dishes: [] };
+        if (!menuData.dishes) menuData.dishes = [];
+        for (var nd = 0; nd < newDishes.length; nd++) {
+          menuData.dishes.push(newDishes[nd]);
+        }
+        that.saveMenu(menuData);
+      }
+      // 追加操作结果到回复
+      var addedNames = newDishes.map(function(d) { return d.name; }).join('、');
+      displayReply = displayReply + '\n\n✅ 已成功添加：' + addedNames;
+    }
+
+    var aiMsg = { id: ++msgIdCounter, role: 'ai', content: displayReply };
     that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false });
     that.scrollToBottom();
   },

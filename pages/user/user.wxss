@@ -242,6 +242,10 @@
   min-height: 44rpx;
   display: flex;
   align-items: center;
+  background: none;
+  border: none;
+  line-height: 1;
+  margin: 0;
 }
 
 .btn-confirm:active {
