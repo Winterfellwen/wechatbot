@@ -43,8 +43,12 @@ exports.main = async (event, context) => {
     case 'delete': {
       const id = event.id;
       const result = await merchants.doc(id).get().catch(() => null);
-      const doc = (result && result.data && result.data[0]) || null;
-      if (!doc) return { success: false, error: 'not found' };
+      if (!result || !result.data || !result.data.length) {
+        // 无法读取文档（可能是旧数据缺少 _openid），尝试盲删
+        await merchants.doc(id).remove().catch(() => {});
+        await menus.where({ merchantId: id }).remove().catch(() => {});
+        return { success: true };
+      }
       await Promise.all([
         merchants.doc(id).remove(),
         menus.where({ merchantId: id, _openid: openid }).remove()

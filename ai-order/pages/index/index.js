@@ -256,8 +256,9 @@ Page({
               wx.showToast({ title: (data && data.error) || '删除失败', icon: 'none' });
             }
           })
-          .catch(function() {
-            wx.showToast({ title: '网络错误', icon: 'none' });
+          .catch(function(err) {
+            var msg = (err && err.error) || '网络错误';
+            wx.showToast({ title: msg, icon: 'none', duration: 2500 });
           });
       }
     });
