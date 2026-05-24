@@ -293,6 +293,7 @@ Page({
     var hasDishAdd = false, dishAddData = null;
     var hasDishRemove = false, dishRemoveData = null;
     var hasDishModify = false, dishModifyData = null;
+    console.log('[merchant] AI reply:', reply.substring(0, 200));
     var hasImageOptions = false, imageOptionsData = null;
     var hasMenuPreview = false;
 
@@ -378,9 +379,15 @@ Page({
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: displayReply };
 
     // Attach actions based on what was found (priority: dish-add > dish-modify > dish-remove > image-options > actions)
+    console.log('[merchant] _handleResponse hasDishAdd=' + hasDishAdd + ' hasDishModify=' + hasDishModify + ' hasDishRemove=' + hasDishRemove + ' hasImageOptions=' + hasImageOptions + ' hasActions=' + hasActions + ' hasMenuPreview=' + hasMenuPreview);
     if (hasDishAdd) {
       aiMsg.actions = [
         { id: 'confirm-add', label: '✓ 确认添加', type: 'primary', data: dishAddData },
+        { id: 'cancel', label: '✗ 取消', type: 'default' }
+      ];
+    } else if (hasDishRemove) {
+      aiMsg.actions = [
+        { id: 'confirm-remove', label: '✓ 确认删除', type: 'danger', data: dishRemoveData },
         { id: 'cancel', label: '✗ 取消', type: 'default' }
       ];
     } else if (hasDishModify) {
@@ -406,6 +413,7 @@ Page({
     }
 
     if (hasMenuPreview) {
+      console.log('[merchant] _handleResponse: hasMenuPreview -> showMenuButton=true');
       aiMsg.showMenuButton = true;
     }
 
@@ -468,17 +476,20 @@ Page({
   onActionTap: function(e) {
     var action = e.currentTarget.dataset.action;
     var data = e.currentTarget.dataset.data;
+    console.log('[merchant] onActionTap action=' + action + ' data=', JSON.stringify(data));
     if (!action) return;
 
     // Generic send action (ids are __send__0, __send__1, ...)
     if (action && action.indexOf('__send__') === 0) {
       var reply = data && data.reply ? data.reply : '';
+      console.log('[merchant] onActionTap __send__ handler, reply=' + reply);
       if (reply) this.sendMessage(reply);
       return;
     }
 
     // View menu directly
     if (action === '__view_menu__') {
+      console.log('[merchant] onActionTap __view_menu__ -> onShowMenu()');
       this.onShowMenu();
       return;
     }
@@ -547,6 +558,7 @@ Page({
 
   onShowMenu: function() {
     var dishes = (menuData && menuData.dishes) || [];
+    console.log('[merchant] onShowMenu: total dishes=' + dishes.length + ' online dishes=', dishes.filter(function(d) { return d.status === 'online'; }).map(function(d) { return d.name + ' image=' + (d.image ? d.image.substring(0, 40) : 'EMPTY'); }));
     var enriched = [];
     for (var i = 0; i < dishes.length; i++) {
       var d = dishes[i];
@@ -612,6 +624,8 @@ Page({
     var that = this;
     var imgUrl = e.currentTarget.dataset.url;
     var dishId = this.data.pendingDishId;
+    var dishName = this.data.pendingDishName;
+    console.log('[merchant] onPickAiImage dishId=' + dishId + ' dishName=' + dishName + ' imgUrl=' + (imgUrl ? imgUrl.substring(0, 80) : 'EMPTY'));
     if (!imgUrl) return;
 
     wx.showLoading({ title: '下载图片中...', mask: true });
@@ -755,6 +769,7 @@ Page({
 
   _searchAiImages: function(data) {
     var that = this;
+    console.log('[merchant] _searchAiImages called with dishId=' + data.dishId + ' dishName=' + data.dishName);
     wx.showLoading({ title: '搜索图片中...', mask: true });
 
     loginLib.callCloud('ai-order-chat', {
@@ -763,6 +778,7 @@ Page({
     })
       .then(function(result) {
         wx.hideLoading();
+        console.log('[merchant] _searchAiImages got ' + (result.images ? result.images.length : 0) + ' images');
         if (result.success && result.images && result.images.length > 0) {
           that.setData({
             pendingImages: result.images,
@@ -780,18 +796,25 @@ Page({
   },
 
   _updateDishImage: function(dishId, dishName, fileID) {
+    console.log('[merchant] _updateDishImage dishId=' + dishId + ' dishName=' + dishName + ' fileID=' + (fileID ? fileID.substring(0, 60) : 'EMPTY'));
     if (!menuData || !menuData.dishes) {
+      console.warn('[merchant] _updateDishImage: menuData is null or empty');
       wx.showToast({ title: '菜单数据异常', icon: 'none' });
       return;
     }
 
+    console.log('[merchant] _updateDishImage: dishes count=' + menuData.dishes.length + ' names=' + menuData.dishes.map(function(d) { return d.name + '(' + d.image + ')'; }).join(', '));
+
     var found = false;
+    var matchType = '';
     // First, try matching by dish ID
     if (dishId) {
       for (var i = 0; i < menuData.dishes.length; i++) {
         if (menuData.dishes[i].id === dishId) {
+          console.log('[merchant] _updateDishImage: matched by ID ' + dishId);
           menuData.dishes[i].image = fileID;
           found = true;
+          matchType = 'id';
           break;
         }
       }
@@ -801,29 +824,37 @@ Page({
     if (!found && dishName) {
       for (var i = 0; i < menuData.dishes.length; i++) {
         if (menuData.dishes[i].name === dishName) {
+          console.log('[merchant] _updateDishImage: matched by name "' + dishName + '"');
           menuData.dishes[i].image = fileID;
           found = true;
+          matchType = 'name';
           break;
         }
       }
+      if (!found) console.warn('[merchant] _updateDishImage: name "' + dishName + '" not found among dishes');
     }
 
     // Last resort: most recent dish without an image
     if (!found) {
+      console.log('[merchant] _updateDishImage: trying fallback (most recent without image)');
       for (var j = menuData.dishes.length - 1; j >= 0; j--) {
         if (!menuData.dishes[j].image) {
+          console.log('[merchant] _updateDishImage: fallback matched dish "' + menuData.dishes[j].name + '"');
           menuData.dishes[j].image = fileID;
           found = true;
+          matchType = 'fallback';
           break;
         }
       }
     }
 
     if (found) {
+      console.log('[merchant] _updateDishImage: SUCCESS via ' + matchType + ', image now=' + menuData.dishes.map(function(d) { return d.name + ':' + (d.image ? d.image.substring(0, 30) : 'EMPTY'); }).join(' '));
       this.saveMenu(menuData);
       wx.showToast({ title: '图片已更新', icon: 'success' });
       this.sendMessage('菜品图片已更新');
     } else {
+      console.warn('[merchant] _updateDishImage: FAILED - no matching dish found');
       wx.showToast({ title: '未找到对应菜品', icon: 'none' });
     }
   },
