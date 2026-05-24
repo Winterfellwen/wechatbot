@@ -29,11 +29,8 @@ exports.main = async (event, context) => {
 
   switch (action) {
     case 'upload': {
-      // Note: file uploads go through cloud.uploadFile on client side directly.
-      // This action is for recording file metadata after upload.
       const { fileID, fileName, fileType } = event;
       if (!fileID) return { success: false, error: 'fileID required' };
-      // Store file record
       const db = cloud.database();
       await db.collection('files').add({
         data: { fileID, fileName: fileName || 'unknown', fileType: fileType || 'unknown', createdAt: new Date() }
@@ -42,22 +39,14 @@ exports.main = async (event, context) => {
     }
 
     case 'convert': {
-      // Download file from cloud storage, send to PDF service, return jobId
       const { fileID, from, to } = event;
       if (!fileID || !from || !to) return { success: false, error: 'fileID, from, to required' };
 
       const downloadResult = await cloud.downloadFile({ fileID });
-      const fileBuffer = downloadResult.fileContent;
+      const base64 = downloadResult.fileContent.toString('base64');
 
-      // Convert to base64 for transfer
-      const base64 = fileBuffer.toString('base64');
-
-      // Call PDF service with file content
       const result = await httpRequest(PDF_SERVICE + '/api/pdf/convert', 'POST', {
-        file: base64,
-        fileName: event.fileName || 'document',
-        from,
-        to
+        file: base64, fileName: event.fileName || 'document', from, to
       });
 
       if (result.statusCode === 200 && result.data && result.data.jobId) {
@@ -78,7 +67,6 @@ exports.main = async (event, context) => {
       if (!jobId) return { success: false, error: 'jobId required' };
       const result = await httpRequest(PDF_SERVICE + '/api/pdf/download?jobId=' + jobId, 'GET');
       if (result.statusCode === 200 && result.data && result.data.file) {
-        // Upload result to cloud storage
         const uploadResult = await cloud.uploadFile({
           cloudPath: 'pdf-results/' + jobId + '/' + (result.data.fileName || 'result'),
           fileContent: Buffer.from(result.data.file, 'base64')
@@ -86,6 +74,39 @@ exports.main = async (event, context) => {
         return { success: true, fileID: uploadResult.fileID, fileName: result.data.fileName || 'result' };
       }
       return { success: false, error: 'download failed' };
+    }
+
+    // === Image upload (with optional compression, sends base64) ===
+    case 'uploadImage': {
+      const { base64data, cloudPrefix, compress } = event;
+      if (!base64data || !cloudPrefix) return { success: false, error: 'base64data and cloudPrefix required' };
+
+      const results = [];
+      for (const [filename, b64] of Object.entries(base64data)) {
+        const cloudPath = `${cloudPrefix}/${filename}`;
+        try {
+          const buffer = Buffer.from(b64, 'base64');
+          // Simple compression: if over 200KB, reject (client should compress first)
+          if (buffer.length > 200 * 1024) {
+            results.push({ filename, cloudPath, error: `size ${(buffer.length/1024).toFixed(1)}KB exceeds 200KB limit`, status: 'fail' });
+            continue;
+          }
+          const res = await cloud.uploadFile({ cloudPath, fileContent: buffer });
+          results.push({ filename, cloudPath, fileID: res.fileID, status: 'ok' });
+        } catch (e) {
+          results.push({ filename, cloudPath, error: e.message, status: 'fail' });
+        }
+      }
+      return { success: true, results };
+    }
+
+    case 'deleteImages': {
+      const { fileList } = event;
+      if (!fileList || !fileList.length) return { success: false, error: 'fileList required' };
+      // Get fileIDs from cloud paths or use provided IDs
+      const ids = fileList.map(item => typeof item === 'string' ? item : item.fileID);
+      const res = await cloud.deleteFile({ fileList: ids });
+      return { success: true, deleted: res.fileList };
     }
 
     default:

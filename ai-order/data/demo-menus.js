@@ -1,7 +1,7 @@
 // ai-order/data/demo-menus.js
 // Local fallback data + OCI remote sync
 
-var OCI_DEMO_URL = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/menus/demo-menus.json';
+var CLOUD_DEMO_URL = 'cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/menus/demo-menus.json';
 var CACHE_KEY = 'demo-menus-cache';
 var DOWNLOAD_FLAG = 'demo-menus-downloaded';
 var _downloading = false;
@@ -16,7 +16,7 @@ var localData = {
           "id": "dish-1",
           "name": "宫保鸡丁",
           "price": 28,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-1.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-1.jpg",
           "description": "经典川菜，鸡肉配花生米，麻辣鲜香",
           "taste": "麻辣",
           "spicyLevel": 2,
@@ -27,7 +27,7 @@ var localData = {
           "id": "dish-2",
           "name": "红烧肉",
           "price": 32,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-2.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-2.jpg",
           "description": "五花肉红烧，肥而不腻，入口即化",
           "taste": "咸甜",
           "spicyLevel": 0,
@@ -38,7 +38,7 @@ var localData = {
           "id": "dish-3",
           "name": "麻婆豆腐",
           "price": 18,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-3.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-3.jpg",
           "description": "嫩豆腐配肉末，麻辣鲜香烫",
           "taste": "麻辣",
           "spicyLevel": 3,
@@ -49,7 +49,7 @@ var localData = {
           "id": "dish-4",
           "name": "糖醋排骨",
           "price": 38,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-4.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-4.jpg",
           "description": "排骨糖醋汁，酸甜可口",
           "taste": "酸甜",
           "spicyLevel": 0,
@@ -60,7 +60,7 @@ var localData = {
           "id": "dish-5",
           "name": "水煮鱼",
           "price": 48,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-5.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-5.jpg",
           "description": "鲜嫩鱼片配豆芽，麻辣过瘾",
           "taste": "麻辣",
           "spicyLevel": 3,
@@ -71,7 +71,7 @@ var localData = {
           "id": "dish-6",
           "name": "番茄炒蛋",
           "price": 15,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-6.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-6.jpg",
           "description": "家常经典，酸甜适口",
           "taste": "酸甜",
           "spicyLevel": 0,
@@ -82,7 +82,7 @@ var localData = {
           "id": "dish-7",
           "name": "蛋炒饭",
           "price": 12,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-7.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-7.jpg",
           "description": "粒粒分明的蛋炒饭，简单美味",
           "taste": "清淡",
           "spicyLevel": 0,
@@ -93,7 +93,7 @@ var localData = {
           "id": "dish-8",
           "name": "酸辣汤",
           "price": 16,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-8.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-8.jpg",
           "description": "酸辣开胃，暖心暖胃",
           "taste": "麻辣",
           "spicyLevel": 2,
@@ -104,7 +104,7 @@ var localData = {
           "id": "dish-9",
           "name": "紫菜蛋花汤",
           "price": 10,
-          "image": "https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o/dishes/dish-9.jpg",
+          "image": "cloud://cloud1-7gzoz5cr22dd4354.636c-cloud1-7gzoz5cr22dd4354-1415947895/ai-order/demo/dishes/dish-9.jpg",
           "description": "清淡鲜美的家常汤品",
           "taste": "清淡",
           "spicyLevel": 0,
@@ -116,17 +116,23 @@ var localData = {
   ]
 };
 
-/** 尝试从 OCI 下载最新 demo 数据并缓存（后台静默执行） */
+/** 尝试从云存储下载最新 demo 数据并缓存（后台静默执行） */
 function tryFetchInBackground() {
   if (_downloading) return;
   _downloading = true;
-  wx.request({
-    url: OCI_DEMO_URL,
-    timeout: 10000,
+  wx.cloud.downloadFile({
+    fileID: CLOUD_DEMO_URL,
     success: function (res) {
-      if (res.statusCode === 200 && res.data && res.data.merchants) {
-        wx.setStorageSync(CACHE_KEY, res.data);
-        wx.setStorageSync(DOWNLOAD_FLAG, true);
+      if (res.statusCode === 200) {
+        try {
+          var raw = res.tempFilePath;
+          var fs = wx.getFileSystemManager();
+          var data = JSON.parse(fs.readFileSync(raw, 'utf-8'));
+          if (data && data.merchants) {
+            wx.setStorageSync(CACHE_KEY, data);
+            wx.setStorageSync(DOWNLOAD_FLAG, true);
+          }
+        } catch (e) {}
       }
     },
     fail: function () {},
