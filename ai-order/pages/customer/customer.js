@@ -334,8 +334,7 @@ Page({
     var value = e.detail.value;
     this.setData({
       inputText: value,
-      hasInput: value.trim().length > 0,
-      chatExpanded: true
+      hasInput: value.trim().length > 0
     });
   },
 
@@ -436,7 +435,7 @@ Page({
   },
 
   _switchToText: function() {
-    this.setData({ inputMode: 'text' });
+    this.setData({ inputMode: 'text', chatExpanded: true });
   },
 
   _switchToVoice: function() {
