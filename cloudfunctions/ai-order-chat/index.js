@@ -3,8 +3,12 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const chats = db.collection('chats');
 
+// 云函数中调用 AI 需使用 @cloudbase/node-sdk（3.16.0+）
+const cloudbase = require('@cloudbase/node-sdk');
+const app = cloudbase.init({ env: cloudbase.SYMBOL_CURRENT_ENV, timeout: 60000 });
+const ai = app.ai();
+
 async function callAI(messages) {
-  const ai = cloud.extend.AI;
   const model = ai.createModel('hunyuan-exp');
   const res = await model.generateText({
     model: 'hunyuan-2.0-instruct-20251111',
@@ -37,7 +41,8 @@ exports.main = async (event, context) => {
 
       try {
         const result = await callAI(apiMessages);
-        const content = result.choices[0].message.content;
+        // @cloudbase/node-sdk 返回 result.text，需要转为 OpenAI 兼容格式
+        const content = result.text || '';
 
         // Save to chat history
         await chats.add({
@@ -50,7 +55,7 @@ exports.main = async (event, context) => {
           }
         });
 
-        return { success: true, choices: result.choices };
+        return { success: true, choices: [{ message: { content } }] };
       } catch (e) {
         return { success: false, error: e.message || 'AI call failed' };
       }
