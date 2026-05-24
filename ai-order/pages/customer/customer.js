@@ -342,7 +342,6 @@ Page({
     var text = this.data.inputText.trim();
     if (!text) return;
     this.sendMessage(text);
-    this.setData({ chatExpanded: true });
   },
 
   onQuickReply: function(e) {
@@ -533,7 +532,7 @@ Page({
 
     var userMsg = { id: ++msgIdCounter, role: 'user', content: text };
     var messages = this.data.messages.concat([userMsg]);
-    this.setData({ messages: messages, inputText: '', loading: true, hasInput: false });
+    this.setData({ messages: messages, inputText: '', loading: true, hasInput: false, chatExpanded: true, chatSlideY: '0%' });
     this._scrollChatBottom();
 
     var apiMessages = this._buildApiMessages(messages);
