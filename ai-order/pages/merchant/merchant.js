@@ -607,7 +607,7 @@ Page({
       sourceType: ['album', 'camera'],
       success: function(chooseRes) {
         wx.showLoading({ title: '上传中...', mask: true });
-        var cloudPath = 'dishes/' + that.data.merchantId + '/' + Date.now() + '.jpg';
+        var cloudPath = 'ai-order/' + that.data.merchantId + '/dishes/' + Date.now() + '.jpg';
         wx.cloud.uploadFile({
           cloudPath: cloudPath,
           filePath: chooseRes.tempFilePaths[0],
@@ -644,7 +644,7 @@ Page({
           return;
         }
         // Upload to cloud storage
-        var cloudPath = 'dishes/' + that.data.merchantId + '/' + Date.now() + '.jpg';
+        var cloudPath = 'ai-order/' + that.data.merchantId + '/dishes/' + Date.now() + '.jpg';
         wx.cloud.uploadFile({
           cloudPath: cloudPath,
           filePath: dlRes.tempFilePath,
@@ -755,7 +755,7 @@ Page({
       sourceType: ['album', 'camera'],
       success: function(chooseRes) {
         wx.showLoading({ title: '上传中...', mask: true });
-        var cloudPath = 'dishes/' + that.data.merchantId + '/' + Date.now() + '.jpg';
+        var cloudPath = 'ai-order/' + that.data.merchantId + '/dishes/' + Date.now() + '.jpg';
         wx.cloud.uploadFile({
           cloudPath: cloudPath,
           filePath: chooseRes.tempFilePaths[0],
