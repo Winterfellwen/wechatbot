@@ -14,7 +14,8 @@ function callCloud(name, data) {
         }
       })
       .catch(function(err) {
-        reject({ error: 'cloud_call_error', _raw: err });
+        console.error('[callCloud]', name, err);
+        reject({ error: 'cloud_call_error', detail: (err && err.message) || String(err), _raw: err });
       });
   });
 }

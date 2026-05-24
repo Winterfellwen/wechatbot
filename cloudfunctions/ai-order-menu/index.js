@@ -23,45 +23,49 @@ exports.main = async (event, context) => {
     }
 
     case 'save': {
-      const { merchantId, menu, expectedEtag } = event;
-      if (!merchantId || !menu) return { success: false, error: 'merchantId and menu required' };
+      try {
+        const { merchantId, menu, expectedEtag } = event;
+        if (!merchantId || !menu) return { success: false, error: 'merchantId and menu required' };
 
-      // Check for conflict if expectedEtag provided
-      const { data: existing } = await menus.where({ merchantId, _openid: openid }).limit(1).get();
+        const { data: existing } = await menus.where({ merchantId, _openid: openid }).limit(1).get();
 
-      if (existing.length > 0) {
-        const doc = existing[0];
-        if (expectedEtag) {
-          const currentEtag = String(doc._updateTime || doc.updatedAt || '');
-          if (currentEtag && currentEtag !== expectedEtag) {
-            return { success: false, error: 'CONFLICT', existingEtag: currentEtag };
+        if (existing.length > 0) {
+          const doc = existing[0];
+          if (expectedEtag) {
+            const currentEtag = String(doc._updateTime || doc.updatedAt || '');
+            if (currentEtag && currentEtag !== expectedEtag) {
+              return { success: false, error: 'CONFLICT', existingEtag: currentEtag };
+            }
           }
+          await menus.doc(doc._id).update({
+            data: {
+              dishes: menu.dishes || [],
+              updatedAt: new Date()
+            }
+          });
+          const { data: [updated] } = await menus.doc(doc._id).get();
+          return {
+            success: true,
+            etag: String(updated._updateTime || updated.updatedAt || '')
+          };
+        } else {
+          const { _id } = await menus.add({
+            data: {
+              _openid: openid,
+              merchantId,
+              dishes: menu.dishes || [],
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+          const { data: [created] } = await menus.doc(_id).get();
+          return {
+            success: true,
+            etag: String(created._updateTime || created.updatedAt || '')
+          };
         }
-        await menus.doc(doc._id).update({
-          data: {
-            dishes: menu.dishes || [],
-            updatedAt: new Date()
-          }
-        });
-        const { data: [updated] } = await menus.doc(doc._id).get();
-        return {
-          success: true,
-          etag: String(updated._updateTime || updated.updatedAt || '')
-        };
-      } else {
-        const { _id } = await menus.add({
-          data: {
-            merchantId,
-            dishes: menu.dishes || [],
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        });
-        const { data: [created] } = await menus.doc(_id).get();
-        return {
-          success: true,
-          etag: String(created._updateTime || created.updatedAt || '')
-        };
+      } catch (err) {
+        return { success: false, error: 'save_failed', detail: err.message };
       }
     }
 

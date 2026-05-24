@@ -30,6 +30,7 @@ exports.main = async (event, context) => {
 
     case 'create': {
       const doc = {
+        _openid: openid,
         name: event.name,
         description: event.description || '',
         createdAt: new Date(),
