@@ -10,6 +10,8 @@ function isValidAvatarUrl(url) {
   if (url.indexOf('wxfile://') >= 0) return false;
   // 服务器返回的永久 URL
   if (url.indexOf('http') === 0) return true;
+  // 云存储 fileID
+  if (url.indexOf('cloud://') === 0) return true;
   return false;
 }
 

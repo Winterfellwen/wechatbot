@@ -419,10 +419,13 @@
   font-size: 24rpx;
   font-weight: 600;
   color: #4F46E5;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
   line-height: 1.4;
+  max-height: calc(24rpx * 1.4 * 4);
 }
 
 .compact-hint {
@@ -445,8 +448,9 @@
 
 .compact-expand-hint {
   position: absolute;
-  bottom: calc(380rpx + env(safe-area-inset-bottom, 0px));
-  right: 32rpx;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8rpx;
   z-index: 48;
   padding: 8rpx 16rpx;
   background: rgba(79, 70, 229, 0.9);
@@ -459,7 +463,6 @@
 }
 
 .voice-mode .compact-expand-hint {
-  bottom: 420rpx;
   background: rgba(79, 70, 229, 0.95);
   box-shadow: 0 6rpx 24rpx rgba(79, 70, 229, 0.5);
 }
@@ -857,6 +860,8 @@
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   background: #1A1A1A;
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .input-section {
@@ -873,8 +878,36 @@
   height: auto;
 }
 
-.voice-mode .collapsed-input-area {
+.voice-mic-btn-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 40rpx;
+  width: 180rpx;
+  height: 180rpx;
+  z-index: 12;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.voice-keyboard-wrap {
+  position: absolute;
+  right: 200rpx;
+  bottom: 152rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: #F2F2F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  z-index: 12;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+
+.voice-keyboard-wrap:active {
+  background: #E0E0E0;
 }
 
 .voice-mode .chat-compact-inner {
@@ -919,25 +952,6 @@
 .voice-mic-compact.recording {
   background: linear-gradient(135deg, #f5576c, #ff6b81);
   animation: micPulse 0.8s ease-in-out infinite;
-}
-
-.voice-mode .keyboard-toggle-icon {
-  position: absolute;
-  right: 200rpx;
-  top: 68rpx;
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  background: #F2F2F7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-}
-
-.keyboard-toggle-icon:active {
-  background: #E0E0E0;
 }
 
 .text-pill-row {

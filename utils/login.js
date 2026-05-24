@@ -24,10 +24,17 @@ module.exports = {
   callCloud: callCloud,
 
   login: function() {
-    return callCloud('auth', { action: 'login' })
+    var savedUser = wx.getStorageSync(STORAGE_USER);
+    var userId = (savedUser && (savedUser._id || savedUser.id)) || '';
+    return callCloud('auth', { action: 'login', userId: userId })
       .then(function(data) {
         var user = data.user;
         if (!user) return Promise.reject({ error: 'no user returned' });
+        // 保留本地缓存中 DB 还没有的数据（updateProfile 可能未成功写入）
+        if (savedUser) {
+          if (!user.avatarUrl && savedUser.avatarUrl) user.avatarUrl = savedUser.avatarUrl;
+          if ((!user.nickName || user.nickName === '微信用户') && savedUser.nickName && savedUser.nickName !== '微信用户') user.nickName = savedUser.nickName;
+        }
         if (user.avatarUrl && (user.avatarUrl.indexOf('__tmp__') >= 0 || user.avatarUrl.indexOf('127.0.0.1') >= 0)) {
           user.avatarUrl = '/images/avatar-default.png';
         }
@@ -53,7 +60,9 @@ module.exports = {
   },
 
   updateProfile: function(data) {
-    return callCloud('auth', { action: 'updateProfile', nickName: data.nickName, avatarUrl: data.avatarUrl })
+    var savedUser = wx.getStorageSync(STORAGE_USER);
+    var userId = (savedUser && (savedUser._id || savedUser.id)) || '';
+    return callCloud('auth', { action: 'updateProfile', userId: userId, nickName: data.nickName, avatarUrl: data.avatarUrl })
       .then(function(result) {
         wx.setStorageSync(STORAGE_USER, result.user);
         var app = getApp();

@@ -55,6 +55,9 @@
 
   <!-- Chat compact bar: triggers drag expansion -->
   <view wx:if="{{!chatExpanded}}" class="chat-compact-inner" bindtouchstart="onChatTouchStart" data-chat-trigger="1">
+    <view wx:if="{{lastAiContent}}" class="compact-expand-hint" catchtap="expandChat">
+      <text class="expand-hint-text">查看完整AI对话</text>
+    </view>
     <view class="compact-preview" wx:if="{{lastAiContent}}">
       <view class="compact-ai-avatar">
         <text class="compact-ai-text">AI</text>
@@ -65,10 +68,6 @@
       <text class="compact-hint-icon">💬</text>
       <text class="compact-hint-text">点我咨询菜品</text>
     </view>
-  </view>
-  <!-- Floating hint: tap to view full AI conversation -->
-  <view wx:if="{{!chatExpanded && lastAiContent}}" class="compact-expand-hint" catchtap="expandChat">
-    <text class="expand-hint-text">查看完整AI对话</text>
   </view>
 
   <!-- Chat expanded overlay: fixed, slides from below -->
@@ -178,16 +177,21 @@
   </view>
 
   <!-- Collapsed voice/text input -->
-  <view wx:if="{{!chatExpanded}}" class="collapsed-input-area">
-    <view wx:if="{{inputMode === 'voice'}}" class="voice-compact-row">
-      <view class="voice-mic-compact {{isRecording ? 'recording' : ''}} {{loading ? 'rainbow' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
-        <text>🎤</text>
-      </view>
+  <!-- Voice mic button: narrow, only wraps the circle, no full-width overlay -->
+  <view wx:if="{{!chatExpanded && inputMode === 'voice'}}" class="voice-mic-btn-wrap">
+    <view class="voice-mic-compact {{isRecording ? 'recording' : ''}} {{loading ? 'rainbow' : ''}}" bindtouchstart="_startVoiceInput" bindtouchend="_stopVoiceInput">
+      <text>🎤</text>
     </view>
-    <view wx:if="{{inputMode === 'voice'}}" class="keyboard-toggle-icon" catchtap="_switchToText">
-      <text>⌨️</text>
-    </view>
-    <view wx:else class="text-pill-row">
+  </view>
+
+  <!-- Keyboard toggle: positioned independently above voice-mic-btn-wrap -->
+  <view wx:if="{{!chatExpanded && inputMode === 'voice'}}" class="voice-keyboard-wrap" catchtap="_switchToText">
+    <text>⌨️</text>
+  </view>
+
+  <!-- Collapsed text input area (text mode only) -->
+  <view wx:if="{{!chatExpanded && inputMode !== 'voice'}}" class="collapsed-input-area">
+    <view class="text-pill-row">
       <view class="text-input-pill">
         <input class="pill-input" placeholder="输入口味..." value="{{inputText}}" bindinput="onInput" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
         <view class="pill-send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
@@ -201,8 +205,8 @@
   </view>
 
   <!-- Cart bar (always visible) -->
-  <view class="cart-bar" catchtap="onCartTap">
-    <view class="cart-bar-left">
+  <view class="cart-bar">
+    <view class="cart-bar-left" catchtap="onCartTap">
       <view class="cart-icon-wrap">
         <text class="cart-icon">🛒</text>
         <text class="cart-badge">{{cartItemCount}}</text>
@@ -212,8 +216,8 @@
         <text class="cart-total">¥{{totalPrice}}</text>
       </view>
     </view>
-    <view class="cart-checkout-btn">
-      <text>去下单</text>
+    <view class="cart-checkout-btn" catchtap="onGoToOrder">
+      <text>下单</text>
     </view>
   </view>
 

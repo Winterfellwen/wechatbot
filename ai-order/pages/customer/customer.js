@@ -84,7 +84,33 @@ Page({
     that.setData({ merchantId: merchantId });
     var merchantName = wx.getStorageSync('ai-order-merchant-name') || '';
     wx.setNavigationBarTitle({ title: merchantName ? merchantName + ' - 智能点菜' : '智能点菜' });
-    that.addWelcomeMessage();
+
+    // Restore saved conversation + cart from local cache
+    var savedMessages = wx.getStorageSync('ai-order-chat-' + merchantId);
+    var savedCart = wx.getStorageSync('ai-order-cart-' + merchantId);
+
+    if (savedMessages && savedMessages.length > 0) {
+      for (var i = 0; i < savedMessages.length; i++) {
+        if (savedMessages[i].id > msgIdCounter) msgIdCounter = savedMessages[i].id;
+      }
+      var restoreData = { messages: savedMessages };
+      for (var i = savedMessages.length - 1; i >= 0; i--) {
+        if (savedMessages[i].role === 'ai') {
+          restoreData.lastAiContent = savedMessages[i].content;
+          break;
+        }
+      }
+      if (savedCart) {
+        restoreData.cart = savedCart.cart || [];
+        restoreData.totalPrice = savedCart.totalPrice || 0;
+        restoreData.cartItemCount = savedCart.cartItemCount || 0;
+        restoreData.cartQtyMap = savedCart.cartQtyMap || {};
+      }
+      that.setData(restoreData);
+    } else {
+      that.addWelcomeMessage();
+    }
+
     that.loadMenu();
     var savedOrder = wx.getStorageSync('ai-order-last-order');
     if (savedOrder && savedOrder.dishes) {
@@ -112,11 +138,22 @@ Page({
   },
 
   onHide: function() {
-    // No WebSocket to clean up
+    this._saveMessages();
+    this._saveCart();
   },
 
   onShow: function() {
-    // No WebSocket to connect
+    var orderCompleted = wx.getStorageSync('ai-order-completed');
+    if (orderCompleted) {
+      wx.removeStorageSync('ai-order-completed');
+      this.setData({
+        cart: [],
+        totalPrice: 0,
+        cartItemCount: 0,
+        cartQtyMap: {}
+      });
+      this._saveCart();
+    }
   },
 
   loadMenu: function() {
@@ -370,6 +407,7 @@ Page({
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: menuText };
     var newMsgs = that.data.messages.concat([userMsg, aiMsg]);
     that.setData({ messages: newMsgs });
+    that._saveMessages();
     that._scrollChatBottom();
   },
 
@@ -386,6 +424,7 @@ Page({
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
     var newMsgs = that.data.messages.concat([userMsg, aiMsg]);
     that.setData({ messages: newMsgs });
+    that._saveMessages();
     that._scrollChatBottom();
   },
 
@@ -515,13 +554,36 @@ Page({
 
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: reply, recommendations: recommendations };
     that.setData({ messages: that.data.messages.concat([aiMsg]), loading: false, lastAiContent: reply });
+    that._saveMessages();
     that._scrollChatBottom();
   },
 
   _showError: function(msg) {
     var aiMsg = { id: ++msgIdCounter, role: 'ai', content: msg };
     this.setData({ messages: this.data.messages.concat([aiMsg]), loading: false });
+    this._saveMessages();
     this._scrollChatBottom();
+  },
+
+  _getChatCacheKey: function() {
+    return 'ai-order-chat-' + this.data.merchantId;
+  },
+
+  _getCartCacheKey: function() {
+    return 'ai-order-cart-' + this.data.merchantId;
+  },
+
+  _saveMessages: function() {
+    wx.setStorageSync(this._getChatCacheKey(), this.data.messages);
+  },
+
+  _saveCart: function() {
+    wx.setStorageSync(this._getCartCacheKey(), {
+      cart: this.data.cart,
+      totalPrice: this.data.totalPrice,
+      cartItemCount: this.data.cartItemCount,
+      cartQtyMap: this.data.cartQtyMap
+    });
   },
 
   sendMessage: function(text) {
@@ -623,6 +685,7 @@ Page({
       qtyMap[cart[i].id] = cart[i].quantity;
     }
     this.setData({ cart: cart, totalPrice: total, cartItemCount: count, cartQtyMap: qtyMap });
+    this._saveCart();
   },
 
   onCartTap: function() {
@@ -641,32 +704,25 @@ Page({
     this.setData({ orderNote: e.detail.value });
   },
 
-  onSubmitOrder: function() {
-    var that = this;
-    var cart = this.data.cart;
-    if (cart.length === 0) return;
-    var dishNames = [];
-    for (var i = 0; i < cart.length; i++) {
-      for (var j = 0; j < cart[i].quantity; j++) {
-        dishNames.push(cart[i].name);
-      }
+  onGoToOrder: function() {
+    if (this.data.cart.length === 0) {
+      wx.showToast({ title: '购物车是空的', icon: 'none' });
+      return;
     }
-    this.setData({ showCartPanel: false });
-    wx.setStorageSync('ai-order-last-order', { dishes: dishNames, total: this.data.totalPrice });
-    var orderMsg = {
-      id: ++msgIdCounter,
-      role: 'ai',
-      content: '✅ 下单成功！\n已点：' + dishNames.join('、') + '\n合计：¥' + this.data.totalPrice + '\n\n感谢使用智能点菜，祝用餐愉快！'
-    };
-    var newMsgs = that.data.messages.concat([orderMsg]);
-    that.setData({
-      messages: newMsgs,
-      cart: [],
-      totalPrice: 0,
-      cartItemCount: 0,
-      chatExpanded: true
+    this._saveCart();
+    wx.navigateTo({
+      url: '/ai-order/pages/order/order?merchantId=' + this.data.merchantId
     });
-    that._scrollChatBottom();
+  },
+
+  onSubmitOrder: function() {
+    if (this.data.cart.length === 0) return;
+    this.setData({ showCartPanel: false });
+    wx.setStorageSync('ai-order-note', this.data.orderNote || '');
+    this._saveCart();
+    wx.navigateTo({
+      url: '/ai-order/pages/order/order?merchantId=' + this.data.merchantId
+    });
   },
 
   highlightDish: function(dishId) {

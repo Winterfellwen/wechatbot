@@ -1,0 +1,166 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F8F9FA;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #FFFFFF;
+  border-bottom: 2rpx solid #F0F0F0;
+  flex-shrink: 0;
+}
+
+.back-btn {
+  font-size: 32rpx;
+  color: #4F46E5;
+  padding: 8rpx 16rpx;
+  margin-left: -16rpx;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-right: 60rpx;
+}
+
+.order-body {
+  flex: 1;
+  padding: 24rpx;
+}
+
+.section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 16rpx;
+}
+
+.dish-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #F5F5F5;
+}
+
+.dish-item:last-child {
+  border-bottom: none;
+}
+
+.dish-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.dish-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.dish-qty {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.dish-price {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #E74C3C;
+}
+
+.dish-item-empty {
+  justify-content: center;
+  padding: 40rpx 0;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.note-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.total-section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.total-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.total-price {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #E74C3C;
+}
+
+.hint-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  background: #FFF8E1;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.hint-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.hint-text {
+  font-size: 26rpx;
+  color: #B8860B;
+  line-height: 1.5;
+}
+
+.bottom-bar {
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 2rpx solid #F0F0F0;
+  flex-shrink: 0;
+}
+
+.pay-btn {
+  background: #4F46E5;
+  border-radius: 44rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.pay-btn:active {
+  background: #4338CA;
+}

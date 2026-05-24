@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="header">
+    <text class="back-btn" catchtap="onBack">‹ 返回</text>
+    <text class="title">确认订单</text>
+  </view>
+
+  <scroll-view class="order-body" scroll-y>
+    <view class="section">
+      <text class="section-title">已选菜品</text>
+      <view class="dish-item" wx:for="{{dishes}}" wx:key="id">
+        <view class="dish-info">
+          <text class="dish-name">{{item.name}}</text>
+          <text class="dish-qty">x{{item.quantity}}</text>
+        </view>
+        <text class="dish-price">¥{{item.subtotal}}</text>
+      </view>
+      <view class="dish-item dish-item-empty" wx:if="{{dishes.length === 0}}">
+        <text class="empty-text">购物车为空</text>
+      </view>
+    </view>
+
+    <view wx:if="{{orderNote}}" class="section">
+      <text class="section-title">备注</text>
+      <text class="note-text">{{orderNote}}</text>
+    </view>
+
+    <view class="total-section">
+      <text class="total-label">合计</text>
+      <text class="total-price">¥{{totalDisplay}}</text>
+    </view>
+
+    <view class="hint-section">
+      <text class="hint-icon">⚠️</text>
+      <text class="hint-text">此为演示版本，不进行真实扣款</text>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-bar">
+    <view class="pay-btn" catchtap="onVirtualPay">
+      <text>确认下单</text>
+    </view>
+  </view>
+</view>

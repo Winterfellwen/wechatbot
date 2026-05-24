@@ -68,7 +68,8 @@
       "pages": [
         "pages/index/index",
         "pages/merchant/merchant",
-        "pages/customer/customer"
+        "pages/customer/customer",
+        "pages/order/order"
       ]
     }
   ],

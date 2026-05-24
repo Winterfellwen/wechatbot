@@ -20,22 +20,19 @@ Page({
 
   onShow: function () {
     var user = loginLib.getUserInfo();
-    console.log('[DEBUG] user.onShow: getUserInfo=', JSON.stringify(user));
     if (!user) {
-      this.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null, showFirstSetup: false });
-      console.log('[DEBUG] user.onShow: no user, showing login');
+      this.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null, showFirstSetup: false, isNewUser: false });
       return;
     }
-    var firstLoginPending = wx.getStorageSync('firstLoginPending');
-    console.log('[DEBUG] user.onShow: firstLoginPending=', firstLoginPending);
+    // 根据实际用户数据判断是否需要完善资料，不使用持久标志
+    var needsSetup = !validation.isValidAvatarUrl(user.avatarUrl) || !validation.isValidNickname(user.nickName);
     var display = validation.getDisplayUserInfo(user, '微信用户');
-    console.log('[DEBUG] user.onShow: displayUserInfo=', JSON.stringify(display));
     this.setData({
       isLoggedIn: true,
       userInfo: user,
       displayUserInfo: display,
-      isNewUser: !!firstLoginPending,
-      showFirstSetup: !!firstLoginPending
+      isNewUser: needsSetup,
+      showFirstSetup: needsSetup
     });
   },
 
@@ -46,27 +43,18 @@ Page({
     wx.showLoading({ title: '登录中...', mask: true });
     loginLib.login().then(function (result) {
       wx.hideLoading();
-      if (result.isNew) {
-        wx.setStorageSync('firstLoginPending', true);
-        that.setData({
-          isLoggedIn: true,
-          isNewUser: true,
-          showFirstSetup: true,
-          setupAvatarUrl: result.user.avatarUrl || '/images/avatar-default.png',
-          setupNickName: result.user.nickName || '',
-          userInfo: result.user,
-          displayUserInfo: validation.getDisplayUserInfo(result.user, result.user.nickName || '新朋友')
-        });
-      } else {
-        that.setData({
-          isLoggedIn: true,
-          isNewUser: false,
-          showFirstSetup: false,
-          userInfo: result.user,
-          displayUserInfo: validation.getDisplayUserInfo(result.user, '微信用户')
-        });
-        wx.showToast({ title: '欢迎回来', icon: 'success' });
-      }
+      var user = result.user;
+      var needsSetup = !validation.isValidAvatarUrl(user.avatarUrl) || !validation.isValidNickname(user.nickName);
+      that.setData({
+        isLoggedIn: true,
+        userInfo: user,
+        displayUserInfo: validation.getDisplayUserInfo(user, '微信用户'),
+        isNewUser: needsSetup,
+        showFirstSetup: needsSetup,
+        setupAvatarUrl: user.avatarUrl || '/images/avatar-default.png',
+        setupNickName: needsSetup ? '' : user.nickName
+      });
+      if (!needsSetup) wx.showToast({ title: '欢迎回来', icon: 'success' });
     }).catch(function () {
       wx.hideLoading();
       wx.showToast({ title: '登录失败，请重试', icon: 'none' });
@@ -101,24 +89,20 @@ Page({
     var serverAvatarUrl = null;
 
     function applyResult(user, toastTitle, toastIcon) {
-      console.log('[DEBUG] applyResult user:', JSON.stringify(user));
-      wx.setStorageSync('hasSetNickname', true);
-      wx.removeStorageSync('firstLoginPending');
-      wx.setStorageSync('user', user);
-      console.log('[DEBUG] storage after set:', JSON.stringify(wx.getStorageSync('user')));
+      if (user) wx.setStorageSync('user', user);
       that.setData({
         showFirstSetup: false,
         isNewUser: false,
         userInfo: user,
-        displayUserInfo: validation.getDisplayUserInfo(user, user.nickName)
+        displayUserInfo: validation.getDisplayUserInfo(user, user && user.nickName)
       });
-      console.log('[DEBUG] after setData, displayUserInfo:', that.data.displayUserInfo);
       if (toastTitle) wx.showToast({ title: toastTitle, icon: toastIcon || 'success' });
     }
 
     wx.showLoading({ title: '保存中...', mask: true });
 
-    // Promise 瀑布流：上传头像 → 更新昵称 → 应用结果
+    // Promise 瀑布流：上传头像 → updateProfile → 应用结果
+    // 始终调用 updateProfile 确保 DB 也更新（避免下次登录旧数据覆盖缓存）
     var chain = Promise.resolve();
 
     if (avatarChanged) {
@@ -138,30 +122,21 @@ Page({
       });
     }
 
-    if (nickChanged) {
-      chain = chain.then(function () {
-        var profileData = { nickName: nickName };
-        if (avatarChanged && serverAvatarUrl) profileData.avatarUrl = serverAvatarUrl;
-        console.log('[DEBUG] updateProfile with:', JSON.stringify(profileData));
-        return loginLib.updateProfile(profileData).then(function (u) {
-          console.log('[DEBUG] updateProfile response:', JSON.stringify(u));
-          return u;
-        });
+    chain = chain.then(function () {
+      var profileData = {};
+      if (nickChanged) profileData.nickName = nickName;
+      if (avatarChanged && serverAvatarUrl) profileData.avatarUrl = serverAvatarUrl;
+      if (Object.keys(profileData).length === 0) return that.data.userInfo;
+      return loginLib.updateProfile(profileData).then(function (u) {
+        console.log('[DEBUG] updateProfile response:', JSON.stringify(u));
+        return u;
       });
-    } else if (avatarChanged) {
-      chain = chain.then(function () {
-        var user = that.data.userInfo || {};
-        var patched = Object.assign({}, user, { avatarUrl: serverAvatarUrl });
-        console.log('[DEBUG] avatarOnly patched:', JSON.stringify(patched));
-        return patched;
-      });
-    }
+    });
 
     chain.then(function (user) {
       wx.hideLoading();
       applyResult(user, '资料已保存', 'success');
     }).catch(function (err) {
-      console.error('[DEBUG] saveFirstSetup catch:', err);
       wx.hideLoading();
       if (serverAvatarUrl) {
         var user = that.data.userInfo || {};
@@ -169,13 +144,12 @@ Page({
         if (nickChanged) patched.nickName = nickName;
         applyResult(patched, '头像已更新，昵称同步失败', 'none');
       } else {
-        wx.showToast({ title: '保存失败', icon: 'none' });
+        applyResult(null);
       }
     });
   },
 
   skipFirstSetup: function () {
-    wx.removeStorageSync('firstLoginPending');
     this.setData({ showFirstSetup: false, isNewUser: false });
     wx.showToast({ title: '已登录', icon: 'success' });
   },
@@ -263,7 +237,6 @@ Page({
       content: '确定要退出登录吗？',
       success: function (res) {
         if (res.confirm) {
-          wx.removeStorageSync('firstLoginPending');
           loginLib.logout();
           that.setData({ isLoggedIn: false, userInfo: null, displayUserInfo: null, isNewUser: false, showFirstSetup: false, showNickInput: false });
           wx.showToast({ title: '已退出', icon: 'none' });
