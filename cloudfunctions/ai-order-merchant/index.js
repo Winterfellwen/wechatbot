@@ -42,7 +42,8 @@ exports.main = async (event, context) => {
 
     case 'delete': {
       const id = event.id;
-      const { data: [doc] } = await merchants.doc(id).get().catch(() => ({ data: [] }));
+      const result = await merchants.doc(id).get().catch(() => null);
+      const doc = (result && result.data && result.data[0]) || null;
       if (!doc) return { success: false, error: 'not found' };
       await Promise.all([
         merchants.doc(id).remove(),

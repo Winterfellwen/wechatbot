@@ -57,6 +57,15 @@ Page({
       .then(function(data) {
         clearTimeout(safetyTimer);
         var list = (data && data.data) || [];
+        // 始终在列表末尾追加 demo 商家，方便浏览
+        var demoList = demoMenus.getMerchantList();
+        for (var di = 0; di < demoList.length; di++) {
+          var isDup = false;
+          for (var ri = 0; ri < list.length; ri++) {
+            if (list[ri].id === demoList[di].id) { isDup = true; break; }
+          }
+          if (!isDup) list.push(demoList[di]);
+        }
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
         var selectedId = '';
