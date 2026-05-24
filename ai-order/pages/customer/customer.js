@@ -4,7 +4,6 @@ var msgIdCounter = 0;
 
 var menuData = null;
 
-var OCI_BASE = 'https://objectstorage.ap-singapore-1.oraclecloud.com/n/axbfkubuntlt/b/wechatbot-demo/o';
 var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 
 var plugin = null;
@@ -140,24 +139,8 @@ Page({
       return;
     }
 
-    // 3. Try OCI direct fetch (faster, no cold start)
-    var ociUrl = OCI_BASE + '/menus/default/' + merchantId + '.json';
-    wx.request({
-      url: ociUrl,
-      timeout: 5000,
-      success: function(res) {
-        that.setData({ menuLoading: false });
-        if (res.statusCode === 200 && res.data && res.data.dishes) {
-          wx.setStorageSync(cacheKey, res.data);
-          that._applyMenuData(res.data);
-          return;
-        }
-        that._loadMenuFromServer();
-      },
-      fail: function() {
-        that._loadMenuFromServer();
-      }
-    });
+    // 3. Load from cloud function
+    that._loadMenuFromServer();
   },
 
   _loadMenuFromServer: function() {

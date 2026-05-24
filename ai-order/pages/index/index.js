@@ -179,8 +179,10 @@ Page({
             // 从演示商家复制菜单
             var demo = demoMenus.getMerchant(selectedDemoId);
             if (demo && demo.dishes) {
-              var dishes = demo.dishes.map(function(d) {
+              var ts = Date.now();
+              var dishes = demo.dishes.map(function(d, idx) {
                 return {
+                  id: d.id || ('dish-' + ts + '-' + idx),
                   name: d.name,
                   price: d.price,
                   image: d.image || '',
