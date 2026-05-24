@@ -43,7 +43,10 @@ exports.main = async (event, context) => {
               updatedAt: new Date()
             }
           });
-          const { data: [updated] } = await menus.doc(doc._id).get();
+          const result = await menus.doc(doc._id).get();
+          const updated = (result && result.data && result.data.length)
+            ? result.data[0]
+            : {};
           return {
             success: true,
             etag: String(updated._updateTime || updated.updatedAt || '')
@@ -58,13 +61,17 @@ exports.main = async (event, context) => {
               updatedAt: new Date()
             }
           });
-          const { data: [created] } = await menus.doc(_id).get();
+          const result = await menus.doc(_id).get();
+          const created = (result && result.data && result.data.length)
+            ? result.data[0]
+            : {};
           return {
             success: true,
             etag: String(created._updateTime || created.updatedAt || '')
           };
         }
       } catch (err) {
+        console.error('[ai-order-menu] save error:', err);
         return { success: false, error: 'save_failed', detail: err.message };
       }
     }
