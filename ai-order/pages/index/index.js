@@ -44,8 +44,18 @@ Page({
   _fetchMerchants: function() {
     var that = this;
     that.setData({ loading: true });
+
+    // 安全超时：8 秒无响应自动 fallback 到本地演示数据
+    var safetyTimer = setTimeout(function() {
+      if (that.data.loading) {
+        that._loadLocalDemo();
+        wx.showToast({ title: '服务器响应超时，使用本地数据', icon: 'none' });
+      }
+    }, 8000);
+
     loginLib.request('GET', '/api/ai-order/merchants', null, true)
       .then(function(data) {
+        clearTimeout(safetyTimer);
         var list = (data && data.success && data.data) || [];
         if (list.length === 0) { that._loadLocalDemo(); return; }
         var savedId = wx.getStorageSync('ai-order-merchant-id') || '';
@@ -58,6 +68,7 @@ Page({
         if (selectedId) wx.setStorageSync('ai-order-merchant-id', selectedId);
       })
       .catch(function(err) {
+        clearTimeout(safetyTimer);
         if (err && err._statusCode === 401) {
           loginLib.login().then(function() {
             that._fetchMerchants();

@@ -8,6 +8,25 @@ const config = require('./config');
 const demoMenus = require('./ai-order/data/demo-menus');
 const http = require('http');
 const { WebSocketServer } = require('ws');
+const dns = require('dns');
+
+// DNS fallback: 系统 DNS 失败时用 Google DNS 解析 Aiven MySQL 主机名 (Render 兼容)
+if (process.env.RENDER) {
+  const origLookup = dns.lookup;
+  dns.lookup = function(hostname, options, callback) {
+    if (typeof options === 'function') { callback = options; options = {}; }
+    origLookup(hostname, options, function(err, address, family) {
+      if (!err) return callback(null, address, family);
+      const resolver = new dns.Resolver();
+      resolver.setServers(['8.8.8.8']);
+      resolver.resolve4(hostname, function(err2, addresses) {
+        if (err2) return callback(err);
+        console.log('[dns] fallback resolved ' + hostname + ' -> ' + addresses[0]);
+        callback(null, addresses[0], 4);
+      });
+    });
+  };
+}
 
 const ociConfig = config.oci;
 
