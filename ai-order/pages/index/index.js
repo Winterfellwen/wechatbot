@@ -20,6 +20,19 @@ Page({
   },
 
   onShow: function() {
+    if (!loginLib.isLoggedIn()) {
+      wx.showModal({
+        title: '需要注册',
+        content: '使用AI点菜需要先注册账号',
+        confirmText: '去注册',
+        cancelText: '返回',
+        success: function(res) {
+          if (res.confirm) wx.switchTab({ url: '/pages/user/user' });
+          else wx.navigateBack({ delta: 1 });
+        }
+      });
+      return;
+    }
     if (this.data.merchants.length > 0) {
       this.loadMerchants();
     }
@@ -28,7 +41,7 @@ Page({
   loadMerchants: function() {
     var that = this;
     if (!loginLib.isLoggedIn()) {
-      that._loadLocalDemo();
+      that.setData({ loading: false, merchants: [] });
       return;
     }
     that._fetchMerchants();

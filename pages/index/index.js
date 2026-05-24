@@ -84,6 +84,18 @@ Page({
     } else if (type === 'assistant') {
       wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
     } else if (type === 'ai-order') {
+      if (!loginLib.isLoggedIn()) {
+        wx.showModal({
+          title: '需要注册',
+          content: '使用AI点菜需要先注册账号',
+          confirmText: '去注册',
+          cancelText: '取消',
+          success: function(res) {
+            if (res.confirm) wx.switchTab({ url: '/pages/user/user' });
+          }
+        });
+        return;
+      }
       wx.navigateTo({ url: '/ai-order/pages/index/index' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
