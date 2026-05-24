@@ -109,8 +109,7 @@ Page({
           };
           wx.setStorageSync(cacheKey, newCacheInfo);
           console.log('[merchant] menu saved to server');
-        }
-      })
+        })
       .catch(function(err) {
         if (err && err.error === 'CONFLICT') {
           // 冲突处理：刷新菜单
