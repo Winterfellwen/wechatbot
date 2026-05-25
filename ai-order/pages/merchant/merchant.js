@@ -126,13 +126,13 @@ Page({
   saveMenu: function(menu) {
     var that = this;
     var merchantId = that.data.merchantId;
-    if (!merchantId || !menu) return;
+    if (!merchantId || !menu) { return Promise.reject('no merchant or menu'); }
 
     var cacheKey = 'menu-cache-' + merchantId;
     var cached = wx.getStorageSync(cacheKey);
     var expectedEtag = cached && cached.etag ? cached.etag : null;
 
-    loginLib.callCloud('ai-order-menu', {
+    return loginLib.callCloud('ai-order-menu', {
       action: 'save',
       merchantId: merchantId,
       menu: menu,
@@ -146,13 +146,15 @@ Page({
           etag: data.etag || new Date().getTime().toString()
         };
         wx.setStorageSync(cacheKey, newCacheInfo);
+        return data;
       })
       .catch(function(err) {
         if (err && err.error === 'CONFLICT') {
           that.loadMenu().catch(function() {});
-          wx.showToast({ title: '菜单已被修改，请重试', icon: 'none', duration: 2000 });
+          throw err;
         } else {
           console.warn('[merchant] failed to save menu:', err);
+          throw err;
         }
       });
   },
@@ -556,7 +558,8 @@ Page({
   },
 
   onDeleteSelected: function() {
-    var groups = this.data.tasteGroups;
+    var that = this;
+    var groups = that.data.tasteGroups;
     var ids = [];
     var names = [];
     for (var g = 0; g < groups.length; g++) {
@@ -575,9 +578,12 @@ Page({
         dishes.splice(i, 1);
       }
     }
-    this.saveMenu(menuData);
     this.setData({ showMenuOverlay: false, menuOverlayMode: 'view' });
-    this.sendMessage('已删除菜品：' + names.join('、'));
+    that.saveMenu(menuData).then(function() {
+      that.sendMessage('已删除菜品：' + names.join('、'));
+    }).catch(function() {
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
+    });
   },
 
   onModifySelected: function() {
@@ -810,6 +816,8 @@ Page({
     if (!menuData) menuData = { dishes: [] };
     if (!menuData.dishes) menuData.dishes = [];
 
+    var that = this;
+    var dishName = data.name;
     var newDish = {
       id: 'dish-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       name: data.name,
@@ -823,14 +831,17 @@ Page({
     };
 
     menuData.dishes.push(newDish);
-    this.saveMenu(menuData);
-
-    this.sendMessage('菜品「' + data.name + '」已确认添加');
+    that.saveMenu(menuData).then(function() {
+      that.sendMessage('菜品「' + dishName + '」已确认添加');
+    }).catch(function() {
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
+    });
   },
 
   _executeModifyDish: function(data) {
+    var that = this;
     if (!menuData || !menuData.dishes) {
-      this.sendMessage('修改失败，菜单数据不存在');
+      that.sendMessage('修改失败，菜单数据不存在');
       return;
     }
 
@@ -851,17 +862,21 @@ Page({
     }
 
     if (!found) {
-      this.sendMessage('未找到菜品「' + name + '」，无法修改');
+      that.sendMessage('未找到菜品「' + name + '」，无法修改');
       return;
     }
 
-    this.saveMenu(menuData);
-    this.sendMessage('菜品「' + name + '」已修改');
+    that.saveMenu(menuData).then(function() {
+      that.sendMessage('菜品「' + name + '」已修改');
+    }).catch(function() {
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
+    });
   },
 
   _executeRemoveDish: function(data) {
+    var that = this;
     if (!menuData || !menuData.dishes) {
-      this.sendMessage('删除失败，菜单数据不存在');
+      that.sendMessage('删除失败，菜单数据不存在');
       return;
     }
 
@@ -876,12 +891,15 @@ Page({
     }
 
     if (!found) {
-      this.sendMessage('未找到菜品「' + name + '」，无法删除');
+      that.sendMessage('未找到菜品「' + name + '」，无法删除');
       return;
     }
 
-    this.saveMenu(menuData);
-    this.sendMessage('菜品「' + name + '」已删除');
+    that.saveMenu(menuData).then(function() {
+      that.sendMessage('菜品「' + name + '」已删除');
+    }).catch(function() {
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
+    });
   },
 
   _pickAndUploadImage: function(data) {
@@ -994,9 +1012,13 @@ Page({
     if (found) {
       console.log('[merchant] _updateDishImage: SUCCESS via ' + matchType + ', image now=' + menuData.dishes.map(function(d) { return d.name + ':' + (d.image ? d.image.substring(0, 30) : 'EMPTY'); }).join(' '));
       _pendingImageRestore = { dishId: dishId, dishName: dishName, fileID: fileID };
-      this.saveMenu(menuData);
-      wx.showToast({ title: '图片已更新', icon: 'success' });
-      this.sendMessage('菜品图片已更新');
+      var that2 = this;
+      that2.saveMenu(menuData).then(function() {
+        wx.showToast({ title: '图片已更新', icon: 'success' });
+        that2.sendMessage('菜品图片已更新');
+      }).catch(function() {
+        wx.showToast({ title: '图片保存失败', icon: 'none' });
+      });
     } else {
       console.warn('[merchant] _updateDishImage: FAILED - no matching dish found');
       wx.showToast({ title: '未找到对应菜品', icon: 'none' });

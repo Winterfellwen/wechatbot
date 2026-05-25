@@ -12,7 +12,7 @@ exports.main = async (event, context) => {
     case 'list': {
       const merchantId = event.merchantId;
       if (!merchantId) return { success: false, error: 'merchantId required' };
-      const { data: docs } = await menus.where({ merchantId, _openid: openid }).limit(1).get();
+      const { data: docs } = await menus.where({ merchantId }).limit(1).get();
       const doc = docs[0];
       return {
         success: true,
@@ -27,7 +27,7 @@ exports.main = async (event, context) => {
         const { merchantId, menu, expectedEtag } = event;
         if (!merchantId || !menu) return { success: false, error: 'merchantId and menu required' };
 
-        const { data: existing } = await menus.where({ merchantId, _openid: openid }).limit(1).get();
+        const { data: existing } = await menus.where({ merchantId }).limit(1).get();
 
         if (existing.length > 0) {
           const doc = existing[0];

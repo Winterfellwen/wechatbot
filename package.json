@@ -4,6 +4,7 @@
   "description": "多功能小机器人 - 微信小程序云开发版",
   "private": true,
   "devDependencies": {
-    "@cloudbase/node-sdk": "^3.18.1"
+    "@cloudbase/node-sdk": "^3.18.1",
+    "miniprogram-automator": "^0.12.1"
   }
 }
