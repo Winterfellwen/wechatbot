@@ -2,6 +2,7 @@ var loginLib = require('../../../utils/login');
 var DEMO_MERCHANT_IDS = ['demo-restaurant-1', 'demo-restaurant-2', 'demo-restaurant-3'];
 var msgIdCounter = 0;
 var menuData = null;
+var _pendingImageRestore = null;
 
 var TASTE_CONFIG = {
   '麻辣': { bg: 'linear-gradient(135deg, #FF4500, #FF6B35)', light: '#FFF0ED' },
@@ -61,9 +62,9 @@ Page({
 
     if (merchantId && DEMO_MERCHANT_IDS.indexOf(merchantId) !== -1) {
       that._loadMenuFromDemoData(merchantId);
-      return;
+      return Promise.resolve();
     }
-    loginLib.callCloud('ai-order-menu', { action: 'list', merchantId: merchantId })
+    return loginLib.callCloud('ai-order-menu', { action: 'list', merchantId: merchantId })
       .then(function(data) {
         if (data && data.success && data.data) {
           menuData = data.data;
@@ -73,6 +74,28 @@ Page({
             etag: data.etag || null
           };
           wx.setStorageSync(cacheKey, cacheInfo);
+        }
+        if (_pendingImageRestore && menuData && menuData.dishes) {
+          var restored = false;
+          if (_pendingImageRestore.dishId) {
+            for (var i = 0; i < menuData.dishes.length; i++) {
+              if (menuData.dishes[i].id === _pendingImageRestore.dishId) {
+                menuData.dishes[i].image = _pendingImageRestore.fileID;
+                restored = true;
+                break;
+              }
+            }
+          }
+          if (!restored && _pendingImageRestore.dishName) {
+            for (var i = 0; i < menuData.dishes.length; i++) {
+              if (menuData.dishes[i].name === _pendingImageRestore.dishName) {
+                menuData.dishes[i].image = _pendingImageRestore.fileID;
+                restored = true;
+                break;
+              }
+            }
+          }
+          _pendingImageRestore = null;
         }
       })
       .catch(function(err) {
@@ -114,6 +137,7 @@ Page({
       expectedEtag: expectedEtag
     })
       .then(function(data) {
+        _pendingImageRestore = null;
         var newCacheInfo = {
           menu: menu,
           updatedAt: new Date().toISOString(),
@@ -123,7 +147,7 @@ Page({
       })
       .catch(function(err) {
         if (err && err.error === 'CONFLICT') {
-          that.loadMenu();
+          that.loadMenu().catch(function() {});
           wx.showToast({ title: '菜单已被修改，请重试', icon: 'none', duration: 2000 });
         } else {
           console.warn('[merchant] failed to save menu:', err);
@@ -616,8 +640,9 @@ Page({
             that._updateDishImage(dishId, that.data.pendingDishName, upRes.fileID);
             that.setData({ pendingImages: null, pendingDishId: '', pendingDishName: '' });
           },
-          fail: function() {
+          fail: function(err) {
             wx.hideLoading();
+            console.error('[merchant] uploadFile failed:', err);
             wx.showToast({ title: '上传失败', icon: 'none' });
           }
         });
@@ -654,8 +679,9 @@ Page({
             that._updateDishImage(dishId, that.data.pendingDishName, fileID);
             that.setData({ pendingImages: null, pendingDishId: '', pendingDishName: '' });
           },
-          fail: function() {
+          fail: function(err) {
             wx.hideLoading();
+            console.error('[merchant] uploadFile failed:', err);
             wx.showToast({ title: '上传失败', icon: 'none' });
           }
         });
@@ -763,8 +789,9 @@ Page({
             wx.hideLoading();
             that._updateDishImage(data.dishId, data.dishName, upRes.fileID);
           },
-          fail: function() {
+          fail: function(err) {
             wx.hideLoading();
+            console.error('[merchant] uploadFile failed:', err);
             wx.showToast({ title: '上传失败', icon: 'none' });
           }
         });
@@ -855,6 +882,7 @@ Page({
 
     if (found) {
       console.log('[merchant] _updateDishImage: SUCCESS via ' + matchType + ', image now=' + menuData.dishes.map(function(d) { return d.name + ':' + (d.image ? d.image.substring(0, 30) : 'EMPTY'); }).join(' '));
+      _pendingImageRestore = { dishId: dishId, dishName: dishName, fileID: fileID };
       this.saveMenu(menuData);
       wx.showToast({ title: '图片已更新', icon: 'success' });
       this.sendMessage('菜品图片已更新');

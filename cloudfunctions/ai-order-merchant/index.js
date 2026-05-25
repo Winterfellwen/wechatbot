@@ -37,6 +37,15 @@ exports.main = async (event, context) => {
         updatedAt: new Date()
       };
       const { _id } = await merchants.add({ data: doc });
+      await menus.add({
+        data: {
+          _openid: openid,
+          merchantId: _id,
+          dishes: [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      }).catch(function() {});
       return { success: true, data: { id: _id, name: doc.name, description: doc.description, dishCount: 0 } };
     }
 
