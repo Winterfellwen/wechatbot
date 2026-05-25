@@ -5,9 +5,22 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F8F9FA;
+  background: linear-gradient(180deg, #FFF7ED 0%, #FFFBEB 50%, #F0FDF4 100%);
   overflow: hidden;
   position: relative;
+}
+
+/* Subtle background decoration */
+.customer-container::before {
+  content: '';
+  position: fixed;
+  top: -300rpx; right: -200rpx;
+  width: 600rpx; height: 600rpx;
+  background: rgba(5,150,105,0.04);
+  border-radius: 50%;
+  filter: blur(140rpx);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ====== Dish grid area ====== */
@@ -16,8 +29,10 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: #FFFFFF;
-  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+  box-shadow: 0 4rpx 24rpx rgba(217,119,6,0.04);
   z-index: 1;
 }
 
@@ -858,7 +873,7 @@
   justify-content: space-between;
   padding: 14rpx 32rpx;
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  background: #1A1A1A;
+  background: #1E293B;
   flex-shrink: 0;
   position: relative;
   z-index: 10;
@@ -1063,11 +1078,12 @@
 
 .cart-checkout-btn {
   padding: 16rpx 36rpx;
-  background: linear-gradient(135deg, #f5576c, #ff6b81);
+  background: linear-gradient(135deg, #059669, #10B981);
   color: #fff;
   border-radius: 40rpx;
   font-size: 28rpx;
   font-weight: 700;
+  box-shadow: 0 4rpx 16rpx rgba(5,150,105,0.3);
 }
 
 .cart-checkout-btn:active {

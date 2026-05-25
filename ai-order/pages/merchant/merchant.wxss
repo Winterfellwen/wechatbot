@@ -3,8 +3,33 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F7 100%);
+  background: linear-gradient(180deg, #FFF7ED 0%, #FFFBEB 50%, #F0FDF4 100%);
   position: relative;
+}
+
+/* Warm decorative orbs */
+.chat-container::before {
+  content: '';
+  position: fixed;
+  top: -200rpx; right: -100rpx;
+  width: 500rpx; height: 500rpx;
+  background: rgba(217,119,6,0.06);
+  border-radius: 50%;
+  filter: blur(120rpx);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chat-container::after {
+  content: '';
+  position: fixed;
+  bottom: -100rpx; left: -150rpx;
+  width: 400rpx; height: 400rpx;
+  background: rgba(5,150,105,0.05);
+  border-radius: 50%;
+  filter: blur(100rpx);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ========== Message List ========== */
@@ -14,6 +39,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 1;
 }
 
 .list-bottom {
@@ -22,7 +49,17 @@
 
 .msg-wrapper {
   margin-bottom: 32rpx;
-  animation: fadeInUp 0.3s ease-out;
+  animation: msgSlideIn 0.35s ease-out both;
+}
+
+.msg-wrapper:nth-child(1) { animation-delay: 0.02s; }
+.msg-wrapper:nth-child(2) { animation-delay: 0.06s; }
+.msg-wrapper:nth-child(3) { animation-delay: 0.1s; }
+.msg-wrapper:nth-child(4) { animation-delay: 0.14s; }
+
+@keyframes msgSlideIn {
+  from { opacity: 0; transform: translateY(16rpx); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
@@ -99,16 +136,18 @@
 }
 
 .ai-bubble {
-  background: #FFFFFF;
-  border: 1rpx solid rgba(0, 0, 0, 0.06);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(217,119,6,0.06);
   border-top-left-radius: 8rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 20rpx rgba(217,119,6,0.04), 0 1rpx 4rpx rgba(0,0,0,0.04);
 }
 
 .user-bubble {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
   border-top-right-radius: 8rpx;
-  box-shadow: 0 6rpx 20rpx rgba(16, 185, 129, 0.25);
+  box-shadow: 0 6rpx 24rpx rgba(5,150,105,0.3);
 }
 
 .bubble-text {
@@ -214,13 +253,15 @@
 
 /* ========== Input Section ========== */
 .input-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(20rpx);
   -webkit-backdrop-filter: blur(20rpx);
-  border-top: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-top: 1rpx solid rgba(217,119,6,0.06);
   padding: 16rpx 24rpx;
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .input-bar {
@@ -282,6 +323,8 @@
   padding: 8rpx 16rpx 0;
   background: transparent;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .fixed-action-btn {
@@ -292,16 +335,16 @@
   padding: 10rpx 16rpx 8rpx;
   min-width: 112rpx;
   border-radius: 20rpx;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(12rpx);
-  -webkit-backdrop-filter: blur(12rpx);
-  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06), 0 1rpx 4rpx rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16rpx);
+  -webkit-backdrop-filter: blur(16rpx);
+  box-shadow: 0 4rpx 24rpx rgba(217,119,6,0.06), 0 1rpx 4rpx rgba(0,0,0,0.04);
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  border: 1rpx solid rgba(0,0,0,0.04);
+  border: 1rpx solid rgba(217,119,6,0.06);
 }
 .fixed-action-btn:active {
   transform: translateY(-4rpx) scale(0.94);
-  box-shadow: 0 12rpx 36rpx rgba(0,0,0,0.12);
+  box-shadow: 0 12rpx 40rpx rgba(217,119,6,0.12), 0 2rpx 8rpx rgba(0,0,0,0.06);
 }
 
 .fab-icon {
@@ -427,7 +470,7 @@
 .menu-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: #F8F9FA;
+  background: linear-gradient(180deg, #FFF7ED 0%, #FFFBEB 100%);
   z-index: 1000;
   animation: overlayFadeIn 0.3s ease;
   display: flex;
@@ -636,9 +679,9 @@
 }
 
 .card-selected {
-  border-color: #10B981 !important;
-  background: rgba(16, 185, 129, 0.06) !important;
-  box-shadow: 0 0 0 2rpx rgba(16, 185, 129, 0.3), 0 6rpx 24rpx rgba(16, 185, 129, 0.15) !important;
+  border-color: #059669 !important;
+  background: rgba(5,150,105,0.06) !important;
+  box-shadow: 0 0 0 2rpx rgba(5,150,105,0.25), 0 6rpx 28rpx rgba(5,150,105,0.12) !important;
 }
 
 .card-select-indicator {
@@ -659,9 +702,9 @@
 }
 
 .indicator-checked {
-  background: #10B981;
-  border-color: #10B981;
-  box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.4);
+  background: #059669;
+  border-color: #059669;
+  box-shadow: 0 2rpx 12rpx rgba(5,150,105,0.4);
 }
 
 .indicator-icon {
@@ -701,9 +744,9 @@
 .overlay-cancel-btn:active { background: rgba(0,0,0,0.08); }
 
 .overlay-confirm-btn {
-  background: linear-gradient(135deg, #10B981, #059669);
+  background: linear-gradient(135deg, #059669, #10B981);
   color: #FFFFFF;
-  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4rpx 20rpx rgba(5,150,105,0.3);
 }
 
 .overlay-confirm-btn.disabled {

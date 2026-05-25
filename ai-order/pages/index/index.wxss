@@ -2,7 +2,7 @@
 
 .page {
   min-height: 100vh;
-  background: #fafafa;
+  background: linear-gradient(180deg, #FFF7ED 0%, #FAFAFA 40%, #F0FDF4 100%);
   padding: 0 32rpx 40rpx;
   position: relative;
   display: flex;
@@ -120,6 +120,19 @@
   margin-bottom: 20rpx;
   transition: all 0.3s ease;
   box-shadow: 0 1rpx 8rpx rgba(0,0,0,0.02);
+  animation: cardFadeUp 0.45s ease-out both;
+}
+
+.merchant-card:nth-child(1) { animation-delay: 0.05s; }
+.merchant-card:nth-child(2) { animation-delay: 0.1s; }
+.merchant-card:nth-child(3) { animation-delay: 0.15s; }
+.merchant-card:nth-child(4) { animation-delay: 0.2s; }
+.merchant-card:nth-child(5) { animation-delay: 0.25s; }
+.merchant-card:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes cardFadeUp {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .merchant-card:active {
