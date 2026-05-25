@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "AI菜单助手",
+  "disableScroll": true,
   "usingComponents": {}
 }

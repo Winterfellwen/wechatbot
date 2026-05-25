@@ -41,7 +41,9 @@ Page({
     groupModes: [{ key: 'taste', label: '按口味' }, { key: 'category', label: '按分类' }, { key: 'price', label: '按价格' }],
     pendingImages: null,
     pendingDishId: '',
-    pendingDishName: ''
+    pendingDishName: '',
+    menuOverlayMode: 'view',
+    selectedDishIds: []
   },
 
   onLoad: function(options) {
@@ -159,13 +161,7 @@ Page({
     var welcomeMsg = {
       id: ++msgIdCounter,
       role: 'ai',
-      content: '你好，我是AI菜单助手！\n请选择你要做的操作：',
-      actions: [
-        { id: '__send__0', label: '📝 添加菜品', type: 'primary', data: { reply: '我要添加菜品' } },
-        { id: '__send__1', label: '✏️ 修改菜品', type: 'default', data: { reply: '我要修改菜品' } },
-        { id: '__send__2', label: '🗑️ 删除菜品', type: 'danger', data: { reply: '我要删除菜品' } },
-        { id: '__view_menu__', label: '📋 查看菜单', type: 'ghost', data: {} }
-      ]
+      content: '你好，我是AI菜单助手！\n请点击底部按钮选择操作，或在输入框直接输入需求（也支持语音输入）。'
     };
     this.setData({ messages: [welcomeMsg] });
   },
@@ -210,18 +206,18 @@ Page({
         '- **添加时**：缺少口味/分类/描述等时问"需要我帮你补全其他信息吗？"，不强求\n' +
         '- **添加时始终提供图片选项**：确认添加后必须输出 image-options 代码块提供 [上传/AI/跳过] 三个按钮，除非商家已明确说不需要图片\n' +
         '- **修改时只改指定的字段**：商家说改什么就改什么，不询问补全，不覆盖未提及的字段\n' +
-        '- **操作后引导**：添加/修改/删除/图片更新/取消 等任何操作完成后，**必须**输出 actions 代码块提供操作选项（添加菜品 / 修改菜品 / 删除菜品 / 查看菜单 / 完成），不得只回复文字\n\n' +
+        '- **操作后引导**：添加/修改/删除/图片更新/取消 等任何操作完成后，回复确认并给出文字引导，可提供下一步建议选项\n\n' +
         '### 系统事件消息（前端自动发送，操作已由前端执行完毕）\n' +
         '当用户发送以下格式消息时，它们是前端在数据库操作完成后自动发送的，不是用户打字输入的：\n' +
-        '- "菜品「XXX」已确认添加" → 菜品已入库。回复确认并**必须**输出 image-options 代码块（提供上传/AI/跳过三个选项），最后给后续选项\n' +
-        '- "菜品「XXX」已修改" → 菜品已更新。回复确认，给后续选项\n' +
-        '- "菜品「XXX」已删除" → 菜品已删除。回复确认，给后续选项\n' +
-        '- "取消" → 用户取消了操作。回复确认，给主操作选项\n' +
-        '- "跳过图片，不需要了" → 用户跳过图片。回复确认，给后续选项\n' +
-        '- "菜品图片已更新" → 图片已保存。回复确认，**必须**输出 actions 代码块提供后续操作选项\n' +
+        '- "菜品「XXX」已确认添加" → 菜品已入库。回复确认并**必须**输出 image-options 代码块，最后可提供后续选项\n' +
+        '- "菜品「XXX」已修改" → 菜品已更新。回复确认，可提供后续选项\n' +
+        '- "菜品「XXX」已删除" → 菜品已删除。回复确认，可提供后续选项\n' +
+        '- "取消" → 用户取消了操作。回复确认，可提供后续选项\n' +
+        '- "跳过图片，不需要了" → 用户跳过图片。回复确认，可提供后续选项\n' +
+        '- "菜品图片已更新" → 图片已保存。回复确认，可提供后续选项\n' +
         '- "未找到菜品「XXX」…" 或 "修改/删除失败…" → 操作失败。回复说明，让用户确认名称后重试\n' +
         '**重要：这些消息表示数据库操作已被前端执行，你不需要再输出 dish-add/dish-modify/dish-remove 等操作代码块！**\n\n' +
-        '### 通用选项按钮\n' +
+        '### actions 代码块（操作中使用的临时按钮）\n' +
         '在回复末尾输出 actions 代码块提供可点击按钮：\n' +
         '```actions\n' +
         '[{"label":"按钮文字","type":"primary|default|danger|ghost","reply":"点击后发送的回复"}]\n' +
@@ -230,8 +226,8 @@ Page({
         '- 涉及口味时给出常见按钮：咸鲜、酸甜、麻辣、清淡等\n' +
         '- 涉及分类时给出：热菜、凉菜、汤品、主食、饮品等\n' +
         '- 确认步骤给出：确认 / 取消\n' +
-        '- 操作完成后给出全部操作选项：添加菜品 / 修改菜品 / 删除菜品 / 查看菜单 / 完成\n' +
-        '- __view_menu__ 作为 reply 值会直接打开菜单预览\n\n' +
+        '- 添加菜品/修改菜品/删除菜品/查看菜单 四个主操作按钮已固定在界面底部，商家也可点击触发\n' +
+        '\n' +
         '### 添加菜品\n' +
         '当商家要求添加菜品时：\n' +
         '1. 从商家消息中提取已有信息（名称、价格、口味、分类等），用了即可\n' +
@@ -256,11 +252,8 @@ Page({
         '```image-options\n{"dishName":"菜品名","dishId":"dish-xxx"}\n```\n' +
         '如果还没生成 dishId，dishId 留空。\n' +
         '用户有三个选项：上传图片 / AI提供图片 / 暂不需要。这是每次添加菜品后的必要步骤。\n\n' +
-        '### 查看菜单\n' +
-        '当商家要求查看完整菜单时，在回复末尾输出：\n' +
-        '```menu-preview\n```\n\n' +
         '注意：\n' +
-        '- dish-add、dish-modify、dish-remove、image-options、menu-preview、actions 代码块放在回复末尾，每次只输出一个操作代码块（可以与 actions 共存，actions 放在最后）\n' +
+        '- dish-add、dish-modify、dish-remove、image-options、actions 代码块放在回复末尾，每次只输出一个操作代码块（可以与 actions 共存，actions 放在最后）\n' +
         '- **必须始终包含说明文字**：每个回复必须包含自然语言引导，不能只有代码块。代码块前面要有清晰说明（如"请确认："、"请选择图片："）。'
     }];
     for (var i = 0; i < messages.length; i++) {
@@ -495,6 +488,124 @@ Page({
     }, delay);
   },
 
+  onFixedActionTap: function(e) {
+    var reply = e.currentTarget.dataset.reply;
+    if (!reply) return;
+    if (reply === '我要修改菜品') {
+      this._openMenuOverlay('modify');
+      return;
+    }
+    if (reply === '我要删除菜品') {
+      this._openMenuOverlay('delete');
+      return;
+    }
+    this.sendMessage(reply);
+  },
+
+  _openMenuOverlay: function(mode) {
+    if (this.data.loading) return;
+    var dishes = (menuData && menuData.dishes) || [];
+    var enriched = [];
+    for (var i = 0; i < dishes.length; i++) {
+      var d = dishes[i];
+      if (d.status === 'online') {
+        enriched.push({
+          id: d.id, name: d.name, price: d.price, image: d.image || '',
+          taste: d.taste || '', category: d.category || '',
+          description: d.description || '', spicyLevel: d.spicyLevel || 0,
+          bgStyle: (TASTE_CONFIG[d.taste] || TASTE_DEFAULT).bg,
+          avatarChar: d.name.slice(0, 1),
+          imageUrl: d.image || '',
+          _selected: false
+        });
+      }
+    }
+    var groups = this._rebuildGroups(enriched, this.data.groupMode);
+    this.setData({
+      showMenuOverlay: true,
+      menuOverlayDishes: enriched,
+      tasteGroups: groups,
+      menuOverlayMode: mode,
+      _overlaySelectedCount: 0
+    });
+  },
+
+  onDishCardTap: function(e) {
+    var dishId = e.currentTarget.dataset.dishid;
+    var mode = this.data.menuOverlayMode;
+    if (mode === 'view') return;
+    var groups = this.data.tasteGroups;
+    var selectedCount = 0;
+    for (var g = 0; g < groups.length; g++) {
+      var group = groups[g];
+      for (var i = 0; i < group.dishes.length; i++) {
+        var d = group.dishes[i];
+        if (d.id === dishId) {
+          if (mode === 'modify') {
+            d._selected = true;
+          } else {
+            d._selected = !d._selected;
+          }
+        } else if (mode === 'modify') {
+          d._selected = false;
+        }
+        if (d._selected) selectedCount++;
+      }
+    }
+    this.setData({ tasteGroups: groups, _overlaySelectedCount: selectedCount });
+  },
+
+  onDeleteSelected: function() {
+    var groups = this.data.tasteGroups;
+    var ids = [];
+    var names = [];
+    for (var g = 0; g < groups.length; g++) {
+      for (var i = 0; i < groups[g].dishes.length; i++) {
+        var d = groups[g].dishes[i];
+        if (d._selected) {
+          ids.push(d.id);
+          names.push(d.name);
+        }
+      }
+    }
+    if (ids.length === 0) return;
+    var dishes = (menuData && menuData.dishes) || [];
+    for (var i = dishes.length - 1; i >= 0; i--) {
+      if (ids.indexOf(dishes[i].id) >= 0) {
+        dishes.splice(i, 1);
+      }
+    }
+    this.saveMenu(menuData);
+    this.setData({ showMenuOverlay: false, menuOverlayMode: 'view' });
+    this.sendMessage('已删除菜品：' + names.join('、'));
+  },
+
+  onModifySelected: function() {
+    var groups = this.data.tasteGroups;
+    var name = '';
+    for (var g = 0; g < groups.length; g++) {
+      for (var i = 0; i < groups[g].dishes.length; i++) {
+        if (groups[g].dishes[i]._selected) {
+          name = groups[g].dishes[i].name;
+          break;
+        }
+      }
+      if (name) break;
+    }
+    if (!name) return;
+    this.setData({ showMenuOverlay: false, menuOverlayMode: 'view' });
+    this.sendMessage('我要修改菜品「' + name + '」');
+  },
+
+  onOverlayConfirm: function() {
+    if (this.data._overlaySelectedCount === 0) return;
+    if (this.data.menuOverlayMode === 'delete') {
+      this.onDeleteSelected();
+    } else {
+      this.onModifySelected();
+    }
+  },
+
   // ====== Action Handlers ======
 
   onActionTap: function(e) {
@@ -599,11 +710,11 @@ Page({
       }
     }
     var groups = this._rebuildGroups(enriched, this.data.groupMode);
-    this.setData({ showMenuOverlay: true, menuOverlayDishes: enriched, tasteGroups: groups });
+    this.setData({ showMenuOverlay: true, menuOverlayDishes: enriched, tasteGroups: groups, menuOverlayMode: 'view', selectedDishIds: [] });
   },
 
   onHideMenu: function() {
-    this.setData({ showMenuOverlay: false, menuOverlayDishes: [], tasteGroups: [] });
+    this.setData({ showMenuOverlay: false, menuOverlayDishes: [], tasteGroups: [], menuOverlayMode: 'view', selectedDishIds: [] });
   },
 
   onGroupModeChange: function(e) {

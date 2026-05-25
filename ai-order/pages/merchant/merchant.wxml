@@ -75,6 +75,26 @@
     <view class="list-bottom" id="msg-bottom"></view>
   </scroll-view>
 
+  <!-- Fixed action buttons -->
+  <view class="fixed-action-bar">
+    <view class="fixed-action-btn btn-add" catchtap="onFixedActionTap" data-reply="我要添加菜品">
+      <text class="fab-icon">📝</text>
+      <text class="fab-label">添加菜品</text>
+    </view>
+    <view class="fixed-action-btn btn-edit" catchtap="onFixedActionTap" data-reply="我要修改菜品">
+      <text class="fab-icon">✏️</text>
+      <text class="fab-label">修改菜品</text>
+    </view>
+    <view class="fixed-action-btn btn-delete" catchtap="onFixedActionTap" data-reply="我要删除菜品">
+      <text class="fab-icon">🗑️</text>
+      <text class="fab-label">删除菜品</text>
+    </view>
+    <view class="fixed-action-btn btn-view" catchtap="onShowMenu">
+      <text class="fab-icon">📋</text>
+      <text class="fab-label">查看菜单</text>
+    </view>
+  </view>
+
   <!-- Bottom input bar -->
   <view class="input-section">
     <view class="input-bar">
@@ -127,11 +147,11 @@
 
   <view class="picker-overlay-bg" wx:if="{{pendingImages}}" catchtap="onCloseImagePicker"></view>
 
-  <!-- Menu preview overlay (grouped grid, same style as customer page) -->
+  <!-- Menu preview overlay (view / modify / delete modes) -->
   <view class="menu-overlay" wx:if="{{showMenuOverlay}}">
     <view class="menu-overlay-header">
       <view class="menu-overlay-header-left">
-        <text class="menu-overlay-title">完整菜单</text>
+        <text class="menu-overlay-title">{{menuOverlayMode === 'view' ? '完整菜单' : menuOverlayMode === 'delete' ? '选择要删除的菜品' : '选择要修改的菜品'}}</text>
         <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
           <view class="group-picker">
             <text class="group-picker-label">{{groupModeLabel}}</text>
@@ -153,7 +173,10 @@
           <text class="menu-taste-label">{{zone.taste}}</text>
         </view>
         <view class="menu-dish-row">
-          <view wx:for="{{zone.dishes}}" wx:key="id" class="menu-dish-card">
+          <view wx:for="{{zone.dishes}}" wx:key="id" class="menu-dish-card {{menuOverlayMode !== 'view' && item._selected ? 'card-selected' : ''}} {{menuOverlayMode !== 'view' ? 'card-selectable' : ''}}" catchtap="onDishCardTap" data-dishid="{{item.id}}">
+            <view wx:if="{{menuOverlayMode !== 'view'}}" class="card-select-indicator {{item._selected ? 'indicator-checked' : ''}}">
+              <text class="indicator-icon">✓</text>
+            </view>
             <view wx:if="{{!item.imageUrl}}" class="menu-dish-avatar" style="background: {{item.bgStyle}}">
               <text class="menu-dish-avatar-char">{{item.avatarChar}}</text>
             </view>
@@ -170,5 +193,11 @@
         </view>
       </view>
     </scroll-view>
+    <view wx:if="{{menuOverlayMode !== 'view'}}" class="menu-overlay-action">
+      <view class="overlay-action-btn overlay-cancel-btn" catchtap="onHideMenu">取消</view>
+      <view class="overlay-action-btn overlay-confirm-btn {{_overlaySelectedCount === 0 ? 'disabled' : ''}}" catchtap="onOverlayConfirm">
+        {{menuOverlayMode === 'delete' ? '删除所选' : '确认修改'}}<text wx:if="{{_overlaySelectedCount > 0}}">（{{_overlaySelectedCount}}）</text>
+      </view>
+    </view>
   </view>
 </view>
