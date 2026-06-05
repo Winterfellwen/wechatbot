@@ -44,8 +44,16 @@ export const LoginUserSchema = z.object({
   password: z.string(),
 });
 
+export const CreateCredentialSchema = z.object({
+  cloud_provider: z.string().min(1),
+  name: z.string().min(1),
+  encrypted_data: z.string().min(1),
+  metadata: z.record(z.any()).optional(),
+});
+
 export type ResourceType = z.infer<typeof ResourceSchema>;
 export type CreateResourceType = z.infer<typeof CreateResourceSchema>;
 export type UserType = z.infer<typeof UserSchema>;
 export type RegisterUserType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserType = z.infer<typeof LoginUserSchema>;
+export type CreateCredentialType = z.infer<typeof CreateCredentialSchema>;

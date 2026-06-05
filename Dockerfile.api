@@ -1,17 +1,30 @@
-FROM node:20-alpine
-
+# Build stage
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files
-COPY apps/api/package*.json ./
-RUN npm install
+# Copy root package files and workspace package manifests for better caching
+COPY package*.json ./
+COPY apps/api/package*.json ./apps/api/
+COPY packages/shared/package*.json ./packages/shared/
 
-# Copy source code
-COPY apps/api .
+# Install all workspace dependencies
+RUN npm ci
 
-# Build application
-RUN npm run build
+# Copy entire source tree
+COPY . .
+
+# Build the API workspace
+RUN npm run build -w apps/api
+
+# Production stage
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy built output and production dependencies
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/api/package.json ./
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]

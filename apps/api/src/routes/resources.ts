@@ -1,7 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { getPool } from '../database';
+import { authenticate } from '../middleware/auth';
+import { CreateResourceSchema } from '@cloud-manager/shared';
 
 export async function resourceRoutes(server: FastifyInstance): Promise<void> {
+  // Apply authentication to all resource routes
+  server.addHook('preHandler', authenticate);
+
   // Get all resources
   server.get('/resources', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -32,13 +37,18 @@ export async function resourceRoutes(server: FastifyInstance): Promise<void> {
 
   // Create resource
   server.post('/resources', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { cloud_provider, resource_type, name, status, region, metadata } = request.body as any;
+    const validationResult = CreateResourceSchema.safeParse(request.body);
+    if (!validationResult.success) {
+      return reply.status(400).send({ error: validationResult.error.issues });
+    }
+
+    const { cloudProvider, resourceType, name, status, region, metadata } = validationResult.data;
     try {
       const pool = getPool();
       const result = await pool.query(
-        `INSERT INTO resources (cloud_provider, resource_type, name, status, region, metadata) 
+        `INSERT INTO resources (cloud_provider, resource_type, name, status, region, metadata)
          VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [cloud_provider, resource_type, name, status, region, JSON.stringify(metadata)]
+        [cloudProvider, resourceType, name, status || 'pending', region, metadata ? JSON.stringify(metadata) : null]
       );
       return reply.status(201).send(result.rows[0]);
     } catch (error) {
@@ -50,13 +60,13 @@ export async function resourceRoutes(server: FastifyInstance): Promise<void> {
   // Update resource
   server.put<{ Params: { id: string } }>('/resources/:id', async (request, reply) => {
     const { id } = request.params;
-    const { name, status, metadata } = request.body as any;
+    const { name, status, metadata } = request.body as { name?: string; status?: string; metadata?: Record<string, unknown> };
     try {
       const pool = getPool();
       const result = await pool.query(
-        `UPDATE resources SET name = $1, status = $2, metadata = $3, updated_at = CURRENT_TIMESTAMP 
+        `UPDATE resources SET name = $1, status = $2, metadata = $3, updated_at = CURRENT_TIMESTAMP
          WHERE id = $4 RETURNING *`,
-        [name, status, JSON.stringify(metadata), id]
+        [name, status, metadata ? JSON.stringify(metadata) : null, id]
       );
       if (result.rows.length === 0) {
         return reply.status(404).send({ error: 'Resource not found' });
