@@ -1,43 +1,40 @@
-import Redis from 'ioredis';
-import pino from 'pino';
-import { config } from './config';
-import { ResourceWorker } from './workers/resourceWorker';
-import { AuditWorker } from './workers/auditWorker';
+import { Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
+import { syncResourcesJob } from './jobs/sync-resources';
 
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-    },
+const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379');
+
+// Create queue
+export const syncQueue = new Queue('cloud-resource-sync', { connection });
+
+// Create worker
+const worker = new Worker(
+  'cloud-resource-sync',
+  async (job) => {
+    console.log(`Processing job ${job.id} of type ${job.name}`);
+
+    if (job.name === 'sync-resources') {
+      await syncResourcesJob(job.data);
+    }
   },
+  { connection }
+);
+
+worker.on('completed', (job) => {
+  console.log(`Job ${job.id} completed`);
 });
 
-async function startWorker() {
-  const redis = new Redis({
-    host: config.redisHost,
-    port: config.redisPort,
-  });
-
-  logger.info('Worker started, listening for jobs...');
-
-  const resourceWorker = new ResourceWorker(redis, logger);
-  const auditWorker = new AuditWorker(redis, logger);
-
-  await resourceWorker.start();
-  await auditWorker.start();
-
-  // Graceful shutdown
-  process.on('SIGTERM', async () => {
-    logger.info('SIGTERM received, shutting down...');
-    await resourceWorker.stop();
-    await auditWorker.stop();
-    await redis.quit();
-    process.exit(0);
-  });
-}
-
-startWorker().catch((error) => {
-  logger.error('Failed to start worker:', error);
-  process.exit(1);
+worker.on('failed', (job, err) => {
+  console.error(`Job ${job?.id} failed: ${err.message}`);
 });
+
+console.log('Worker started and listening for jobs...');
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('Shutting down worker...');
+  await worker.close();
+  await connection.quit();
+  process.exit(0);
+});
+
