@@ -1,0 +1,14 @@
+{
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx"],
+  "transform": {
+    "^.+\\.tsx?$": "ts-jest"
+  },
+  "testMatch": ["**/*.test.ts"],
+  "collectCoverageFrom": ["src/**/*.ts", "!src/**/*.test.ts"],
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "tsconfig.json",
+      "isolatedModules": true
+    }
+  }
+}
