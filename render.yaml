@@ -1,33 +1,57 @@
 services:
+  # Frontend Web Service
   - type: web
-    name: wechatbot-api
+    name: multicloud-web
     runtime: node
-    buildCommand: npm install
-    startCommand: node index.js
+    plan: free
+    buildCommand: cd apps/web && npm install && npm run build
+    startCommand: cd apps/web && npm start
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: MYSQL_HOST
+      - key: NEXT_PUBLIC_API_URL
+        value: https://multicloud-api.onrender.com
+      - key: NODE_ENV
+        value: production
+
+  # Backend API Service
+  - type: web
+    name: multicloud-api
+    runtime: node
+    plan: free
+    buildCommand: cd apps/api && npm install && npm run build
+    startCommand: cd apps/api && node dist/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8765"
+      - key: DATABASE_URL
         sync: false
-      - key: MYSQL_PORT
-        value: "3307"
-      - key: MYSQL_USER
-        value: "admin"
-      - key: MYSQL_PASSWORD
+      - key: REDIS_URL
         sync: false
-      - key: MYSQL_DATABASE
-        value: "wechatbot"
-      - key: MYSQL_SSL
-        value: "true"
-      - key: WECHAT_APP_ID
-        value: "wx2510f82943d7741e"
-      - key: WECHAT_APP_SECRET
+      - key: JWT_SECRET
+        generateValue: true
+      - key: VAULT_KEY
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://multicloud-web.onrender.com
+
+  # Background Worker
+  - type: worker
+    name: multicloud-worker
+    runtime: node
+    plan: free
+    buildCommand: cd apps/worker && npm install
+    startCommand: cd apps/worker && node dist/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
         sync: false
-      - key: OPENROUTER_KEY
-        sync: false
-      - key: PDF_SERVICE_URLS
-        sync: false
-      - key: PDF_SERVICE_API_KEY
-        sync: false
-      - key: TTS_API_AZURE
+      - key: REDIS_URL
         sync: false
