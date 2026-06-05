@@ -4,6 +4,7 @@ import websocket from '@fastify/websocket';
 import rateLimit from '@fastify/rate-limit';
 import { Pool } from 'pg';
 import { credentialRoutes } from './routes/credentials';
+import { dialogueRoutes } from './routes/dialogue';
 import { VaultService } from './services/vault/vault.service';
 
 export async function buildApp(options: { testing?: boolean } = {}): Promise<FastifyInstance> {
@@ -38,6 +39,7 @@ export async function buildApp(options: { testing?: boolean } = {}): Promise<Fas
 
   // Routes
   await app.register(credentialRoutes, { prefix: '/api/credentials' });
+  await app.register(dialogueRoutes, { prefix: '/api/dialogue' });
 
   return app;
 }
