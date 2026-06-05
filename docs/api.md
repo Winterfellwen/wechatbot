@@ -122,7 +122,7 @@ Response:
 ### Connect
 
 ```javascript
-const socket = io('http://localhost:8080');
+const socket = io('http://localhost:8765');
 ```
 
 ### Send Message

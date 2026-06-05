@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - API_URL=http://api:8080
+      - API_URL=http://api:8765
     volumes:
       - ./apps/web:/app
       - /app/node_modules
@@ -24,10 +24,10 @@ services:
       context: .
       dockerfile: Dockerfile.api
     ports:
-      - "8080:8080"
+      - "8765:8765"
     environment:
       - NODE_ENV=development
-      - PORT=8080
+      - PORT=8765
       - HOST=0.0.0.0
       - DB_HOST=postgres
       - DB_PORT=5432

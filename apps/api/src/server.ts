@@ -47,7 +47,7 @@ export async function buildApp(options: { testing?: boolean } = {}): Promise<Fas
 // Start server if run directly
 if (require.main === module) {
   buildApp().then((app) => {
-    app.listen({ port: 8080, host: '0.0.0.0' }, (err) => {
+    app.listen({ port: 8765, host: '0.0.0.0' }, (err) => {
       if (err) {
         app.log.error(err);
         process.exit(1);

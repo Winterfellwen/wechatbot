@@ -33,8 +33,8 @@ A web-based multi-cloud management platform with AI-powered conversational inter
 
 4. Access the application:
    - Web UI: http://localhost:3000
-   - API: http://localhost:8080
-   - Health Check: http://localhost:8080/health
+   - API: http://localhost:8765
+   - Health Check: http://localhost:8765/health
 
 ## Architecture
 
