@@ -42,6 +42,8 @@ NEXT_PUBLIC_API_URL=https://multicloud-api.onrender.com
 
 Render will automatically deploy when you push to the `multicloud-render` branch.
 
+**Note**: The deployment uses Docker containers with all necessary build tools (python3, make, g++) to compile native modules like `better-sqlite3`.
+
 ### 4. Access Your Application
 
 - **Web UI**: https://multicloud-web.onrender.com

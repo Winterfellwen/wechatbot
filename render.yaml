@@ -2,10 +2,9 @@ services:
   # Frontend Web Service
   - type: web
     name: multicloud-web
-    runtime: node
+    runtime: docker
+    dockerfilePath: ./Dockerfile.web.render
     plan: free
-    buildCommand: cd apps/web && npm install && npm run build
-    startCommand: cd apps/web && npm start
     envVars:
       - key: NODE_VERSION
         value: "20"
@@ -17,10 +16,9 @@ services:
   # Backend API Service
   - type: web
     name: multicloud-api
-    runtime: node
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api.render
     plan: free
-    buildCommand: cd apps/api && npm install && npm run build
-    startCommand: cd apps/api && node dist/index.js
     envVars:
       - key: NODE_VERSION
         value: "20"
@@ -42,10 +40,9 @@ services:
   # Background Worker
   - type: worker
     name: multicloud-worker
-    runtime: node
+    runtime: docker
+    dockerfilePath: ./Dockerfile.worker.render
     plan: free
-    buildCommand: cd apps/worker && npm install
-    startCommand: cd apps/worker && node dist/index.js
     envVars:
       - key: NODE_VERSION
         value: "20"
