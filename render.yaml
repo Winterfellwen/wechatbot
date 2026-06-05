@@ -1,23 +1,9 @@
 services:
-  # Frontend Web Service
+  # Single Web Service (includes API)
   - type: web
-    name: multicloud-web
+    name: multicloud-app
     runtime: docker
-    dockerfilePath: ./Dockerfile.web.render
-    plan: free
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: NEXT_PUBLIC_API_URL
-        value: https://multicloud-api.onrender.com
-      - key: NODE_ENV
-        value: production
-
-  # Backend API Service
-  - type: web
-    name: multicloud-api
-    runtime: docker
-    dockerfilePath: ./Dockerfile.api.render
+    dockerfilePath: ./Dockerfile.render
     plan: free
     envVars:
       - key: NODE_VERSION
@@ -34,21 +20,3 @@ services:
         generateValue: true
       - key: VAULT_KEY
         generateValue: true
-      - key: CORS_ORIGIN
-        value: https://multicloud-web.onrender.com
-
-  # Background Worker
-  - type: worker
-    name: multicloud-worker
-    runtime: docker
-    dockerfilePath: ./Dockerfile.worker.render
-    plan: free
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        sync: false
-      - key: REDIS_URL
-        sync: false

@@ -56,24 +56,14 @@ Render will automatically deploy when you push to the `multicloud-render` branch
 - **PostgreSQL**: 512MB storage, expires after 90 days
 - **Redis**: Not available on free tier (app works without it)
 
-## Architecture on Render
+## Architecture on Render (Free Tier)
 
 ```
 ┌─────────────────────────────────────┐
-│     multicloud-web (Free)           │
-│     Next.js Frontend                │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│     multicloud-api (Free)           │
-│     Fastify Backend                 │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│     multicloud-worker (Free)        │
-│     Background Jobs                 │
+│     multicloud-app (Free)           │
+│     Next.js + Fastify Combined      │
+│     Port 3000 (Web)                 │
+│     Port 8765 (API)                 │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -81,6 +71,8 @@ Render will automatically deploy when you push to the `multicloud-render` branch
 │     PostgreSQL Database (Free)      │
 └─────────────────────────────────────┘
 ```
+
+**Note**: For free tier, we combine web and API into a single service to save hours (750 hours/month limit).
 
 ## Troubleshooting
 
