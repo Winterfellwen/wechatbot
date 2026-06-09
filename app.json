@@ -1,7 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/user/user"
+    "pages/user/user",
+    "pages/learn-agent/learn-agent",
+    "pages/tool-agent/tool-agent"
   ],
   "lazyCodeLoading": "requiredComponents",
   "subpackages": [

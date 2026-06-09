@@ -6,8 +6,7 @@ Page({
     userInfo: null,
     displayUserInfo: null,
     isLoggedIn: false,
-    greeting: '你好',
-    teacherVisible: false
+    greeting: '你好'
   },
 
   getGreeting: function () {
@@ -39,43 +38,18 @@ Page({
     this.setData({ userInfo: { avatarUrl: '/images/avatar-default.png' } });
   },
 
-  onReady: function () {
-    var that = this;
-    this._observer = wx.createIntersectionObserver(this);
-    this._observer.relativeToViewport({ bottom: 100 }).observe('.teacher-card', function (res) {
-      if (res.intersectionRatio > 0) {
-        that.setData({ teacherVisible: true });
-        that._observer.disconnect();
-      }
-    });
-  },
-
-  onUnload: function () {
-    if (this._observer) { this._observer.disconnect(); }
-  },
-
   onShareAppMessage: function () {
     return { title: '多功能小机器人', path: '/pages/index/index' };
   },
 
   handleEntryTap: function (e) {
     var type = e.currentTarget.dataset.type;
-    if (type === 'japanese') {
-      wx.navigateTo({ url: '/japanese/pages/learn/learn' });
-    } else if (type === 'german') {
-      wx.navigateTo({ url: '/german/pages/learn/learn' });
-    } else if (type === 'word') {
-      wx.navigateTo({ url: '/word/pages/index/index' });
-    } else if (type === 'pdf') {
-      wx.navigateTo({ url: '/pdf/pages/index/index' });
-    } else if (type === 'teacher') {
-      wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
-    } else if (type === 'ai-order') {
-      wx.navigateTo({ url: '/ai-order/pages/index/index' });
+    if (type === 'learn') {
+      wx.navigateTo({ url: '/pages/learn-agent/learn-agent' });
+    } else if (type === 'tool') {
+      wx.navigateTo({ url: '/pages/tool-agent/tool-agent' });
     } else if (type === 'cloud') {
       wx.navigateTo({ url: '/cloud-manager/pages/index/index' });
-    } else if (type === 'developing') {
-      wx.showToast({ title: '功能开发中', icon: 'none' });
     }
   }
 });

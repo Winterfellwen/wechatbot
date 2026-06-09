@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">工具Agent</text>
+    <text class="page-subtitle">AI实用工具集合</text>
+  </view>
+
+  <view class="section">
+    <view class="entry-grid">
+      <view class="entry-card card-word" bindtap="handleTap" data-type="word">
+        <view class="card-icon-wrap icon-bg-word">
+          <view class="icon-word-body">
+            <view class="icon-word-fold"></view>
+            <text class="icon-word-letter">W</text>
+          </view>
+        </view>
+        <text class="entry-title">Word编辑</text>
+        <text class="entry-desc">文档编辑工具</text>
+      </view>
+
+      <view class="entry-card card-pdf" bindtap="handleTap" data-type="pdf">
+        <view class="card-icon-wrap icon-bg-pdf">
+          <image class="entry-icon" src="/images/icon-pdf.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">PDF工具</text>
+        <text class="entry-desc">PDF处理工具</text>
+      </view>
+
+      <view class="entry-card card-ai-order" bindtap="handleTap" data-type="ai-order">
+        <view class="card-icon-wrap icon-bg-ai-order">
+          <text class="icon-ai-order-text">🍽️</text>
+        </view>
+        <text class="entry-title">AI点菜</text>
+        <text class="entry-desc">智能推荐菜品</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,5 +1,4 @@
-/* pages/index/index.wxss - UI/UX Pro Max 优化版 */
-/* 设计系统: Glassmorphism, 颜色: Primary #2563EB, CTA #F97316 */
+/* pages/index/index.wxss */
 
 /* ========== 基础容器 ========== */
 .container {
@@ -26,7 +25,6 @@
   z-index: 0;
 }
 
-/* 装饰圆形 */
 .header-bg::after {
   content: '';
   position: absolute;
@@ -58,7 +56,6 @@
   align-items: center;
 }
 
-/* 头像 - 触摸目标 >= 44px */
 .avatar-wrap {
   width: 120rpx;
   height: 120rpx;
@@ -124,7 +121,6 @@
   padding-left: 16rpx;
 }
 
-/* 标题左侧装饰线 */
 .section-title::before {
   content: '';
   position: absolute;
@@ -138,15 +134,9 @@
 }
 
 /* ========== 卡片入场动画 ========== */
-.entry-card {
-  animation: fadeInUp 0.5s ease both;
-}
 .entry-card:nth-child(1) { animation-delay: 0.1s; }
 .entry-card:nth-child(2) { animation-delay: 0.2s; }
 .entry-card:nth-child(3) { animation-delay: 0.3s; }
-.entry-card:nth-child(4) { animation-delay: 0.4s; }
-.entry-card:nth-child(5) { animation-delay: 0.5s; }
-.entry-card:nth-child(6) { animation-delay: 0.6s; }
 
 /* ========== 功能卡片网格 ========== */
 .entry-grid {
@@ -155,7 +145,6 @@
   justify-content: space-between;
 }
 
-/* 卡片 - 触摸目标 >= 44px */
 .entry-card {
   width: calc(50% - 12rpx);
   background-color: #ffffff;
@@ -172,6 +161,7 @@
   overflow: hidden;
   cursor: pointer;
   min-height: 220rpx;
+  animation: fadeInUp 0.5s ease both;
 }
 
 .entry-card:active {
@@ -189,12 +179,8 @@
   height: 4rpx;
 }
 
-.card-japanese::before { background: linear-gradient(90deg, #ff6b6b, #ee5a24); }
-.card-german::before { background: linear-gradient(90deg, #51cf66, #37b24d); }
-.card-word::before { background: linear-gradient(90deg, #2563EB, #3B82F6); }
-.card-pdf::before { background: linear-gradient(90deg, #ff922b, #f76707); }
-.card-ai::before { background: linear-gradient(90deg, #667eea, #764ba2); }
-.card-ai-order::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.card-learn::before { background: linear-gradient(90deg, #2563EB, #764ba2); }
+.card-tool::before { background: linear-gradient(90deg, #ff922b, #f5576c); }
 .card-cloud::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
 
 /* 卡片右上角装饰圆 */
@@ -210,19 +196,15 @@
   transition: opacity 0.2s ease;
 }
 
-.card-japanese::after { background: #ff6b6b; }
-.card-german::after { background: #51cf66; }
-.card-word::after { background: #339af0; }
-.card-pdf::after { background: #ff922b; }
-.card-ai::after { background: #764ba2; }
-.card-ai-order::after { background: #f5576c; }
+.card-learn::after { background: #764ba2; }
+.card-tool::after { background: #f5576c; }
 .card-cloud::after { background: #06b6d4; }
 
 .entry-card:active::after {
   opacity: 0.1;
 }
 
-/* ========== 图标背景容器 - 触摸目标 >= 44px ========== */
+/* ========== 图标背景容器 ========== */
 .card-icon-wrap {
   width: 100rpx;
   height: 100rpx;
@@ -240,34 +222,14 @@
   transform: scale(0.95);
 }
 
-.icon-bg-japanese {
-  background: linear-gradient(135deg, #fff5f5, #ffe0e0);
-  box-shadow: 0 6rpx 20rpx rgba(255, 107, 107, 0.2);
-}
-
-.icon-bg-german {
-  background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  box-shadow: 0 6rpx 20rpx rgba(81, 207, 102, 0.2);
-}
-
-.icon-bg-word {
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+.icon-bg-learn {
+  background: linear-gradient(135deg, #eff6ff, #ede9fe);
   box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.2);
 }
 
-.icon-bg-pdf {
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+.icon-bg-tool {
+  background: linear-gradient(135deg, #fff7ed, #ffe0e6);
   box-shadow: 0 6rpx 20rpx rgba(255, 146, 43, 0.2);
-}
-
-.icon-bg-ai {
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-  box-shadow: 0 6rpx 20rpx rgba(118, 75, 162, 0.2);
-}
-
-.icon-bg-ai-order {
-  background: linear-gradient(135deg, #fff0f3, #ffe0e6);
-  box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
 }
 
 .icon-bg-cloud {
@@ -275,14 +237,11 @@
   box-shadow: 0 6rpx 20rpx rgba(6, 182, 212, 0.2);
 }
 
-.icon-ai-text {
-  font-size: 36rpx;
-  font-weight: 800;
-  color: #764ba2;
-  letter-spacing: -1rpx;
+.icon-learn-text {
+  font-size: 48rpx;
 }
 
-.icon-ai-order-text {
+.icon-tool-text {
   font-size: 48rpx;
 }
 
@@ -290,42 +249,7 @@
   font-size: 48rpx;
 }
 
-.entry-icon {
-  width: 56rpx;
-  height: 56rpx;
-}
-
-/* Word 图标特殊处理 */
-.icon-word-body {
-  width: 56rpx;
-  height: 56rpx;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #2563EB, #3B82F6);
-  border-radius: 8rpx;
-}
-
-.icon-word-fold {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 16rpx;
-  height: 16rpx;
-  background: linear-gradient(225deg, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 50%);
-}
-
-.icon-word-letter {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: bold;
-  font-family: Georgia, serif;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.15);
-}
-
-/* 文字样式 - 颜色对比 >= 4.5:1 */
+/* 文字样式 */
 .entry-title {
   font-size: 30rpx;
   font-weight: 600;
@@ -338,130 +262,6 @@
   color: #64748B;
   margin-top: 8rpx;
   line-height: 1.4;
-}
-
-.entry-card.disabled { 
-  opacity: 0.5; 
-}
-
-.entry-card.disabled .entry-title { 
-  color: #94A3B8; 
-}
-
-.entry-icon.gray { 
-  filter: grayscale(100%); 
-}
-
-/* 智能老师初始隐藏（Observer 触发后再显示） */
-.teacher-card:not(.visible) {
-  opacity: 0;
-  transform: translateY(30rpx);
-}
-.teacher-card.visible {
-  animation: fadeInUp 0.5s ease both;
-}
-
-/* ========== 智能老师卡片 ========== */
-.teacher-card {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #764ba2 100%);
-  border-radius: 24rpx;
-  padding: 32rpx 28rpx;
-  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.25);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 140rpx;
-}
-
-.teacher-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 4rpx 20rpx rgba(37, 99, 235, 0.3);
-}
-
-.teacher-card::after {
-  content: '';
-  position: absolute;
-  width: 240rpx;
-  height: 240rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  top: -80rpx;
-  right: -40rpx;
-}
-
-.teacher-card::before {
-  content: '';
-  position: absolute;
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  bottom: -50rpx;
-  right: 80rpx;
-}
-
-.teacher-left {
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.teacher-icon-wrap {
-  width: 96rpx;
-  height: 96rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10rpx);
-  min-width: 88rpx;
-  min-height: 88rpx;
-}
-
-/* 使用图标替代 emoji */
-.teacher-icon {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 24rpx;
-}
-
-.teacher-info {
-  flex: 1;
-  margin-left: 24rpx;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-}
-
-.teacher-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 8rpx;
-}
-
-.teacher-desc {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.4;
-}
-
-.teacher-arrow {
-  flex-shrink: 0;
-  margin-left: 16rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.arrow-icon {
-  font-size: 48rpx;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
 }
 
 /* ========== 底部注脚 ========== */

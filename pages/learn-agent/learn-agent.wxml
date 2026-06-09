@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">学习Agent</text>
+    <text class="page-subtitle">AI智能学习助手</text>
+  </view>
+
+  <view class="section">
+    <view class="entry-grid">
+      <view class="entry-card card-japanese" bindtap="handleTap" data-type="japanese">
+        <view class="card-icon-wrap icon-bg-japanese">
+          <image class="entry-icon" src="/images/icon-japanese.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">日语学习</text>
+        <text class="entry-desc">日语学习好帮手</text>
+      </view>
+
+      <view class="entry-card card-german" bindtap="handleTap" data-type="german">
+        <view class="card-icon-wrap icon-bg-german">
+          <image class="entry-icon" src="/images/icon-german.png" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">德语学习</text>
+        <text class="entry-desc">德语学习好帮手</text>
+      </view>
+
+      <view class="entry-card card-teacher" bindtap="handleTap" data-type="teacher">
+        <view class="card-icon-wrap icon-bg-teacher">
+          <image class="entry-icon" src="/images/avatar-teacher.jpg" mode="aspectFit"></image>
+        </view>
+        <text class="entry-title">智能老师</text>
+        <text class="entry-desc">拍照问答，智能答疑</text>
+      </view>
+    </view>
+  </view>
+</view>
