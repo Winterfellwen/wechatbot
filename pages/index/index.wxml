@@ -63,6 +63,14 @@
         <text class="entry-title">AI点菜</text>
         <text class="entry-desc">智能推荐菜品</text>
       </view>
+
+      <view class="entry-card card-cloud" bindtap="handleEntryTap" data-type="cloud">
+        <view class="card-icon-wrap icon-bg-cloud">
+          <text class="icon-cloud-text">☁️</text>
+        </view>
+        <text class="entry-title">AI云管理</text>
+        <text class="entry-desc">多云服务管理面板</text>
+      </view>
     </view>
   </view>
 

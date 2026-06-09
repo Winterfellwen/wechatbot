@@ -146,6 +146,7 @@
 .entry-card:nth-child(3) { animation-delay: 0.3s; }
 .entry-card:nth-child(4) { animation-delay: 0.4s; }
 .entry-card:nth-child(5) { animation-delay: 0.5s; }
+.entry-card:nth-child(6) { animation-delay: 0.6s; }
 
 /* ========== 功能卡片网格 ========== */
 .entry-grid {
@@ -194,6 +195,7 @@
 .card-pdf::before { background: linear-gradient(90deg, #ff922b, #f76707); }
 .card-ai::before { background: linear-gradient(90deg, #667eea, #764ba2); }
 .card-ai-order::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.card-cloud::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
 
 /* 卡片右上角装饰圆 */
 .entry-card::after {
@@ -214,6 +216,7 @@
 .card-pdf::after { background: #ff922b; }
 .card-ai::after { background: #764ba2; }
 .card-ai-order::after { background: #f5576c; }
+.card-cloud::after { background: #06b6d4; }
 
 .entry-card:active::after {
   opacity: 0.1;
@@ -267,6 +270,11 @@
   box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
 }
 
+.icon-bg-cloud {
+  background: linear-gradient(135deg, #ecfeff, #cffafe);
+  box-shadow: 0 6rpx 20rpx rgba(6, 182, 212, 0.2);
+}
+
 .icon-ai-text {
   font-size: 36rpx;
   font-weight: 800;
@@ -275,6 +283,10 @@
 }
 
 .icon-ai-order-text {
+  font-size: 48rpx;
+}
+
+.icon-cloud-text {
   font-size: 48rpx;
 }
 

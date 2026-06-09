@@ -62,6 +62,12 @@
         "pages/merchant/merchant",
         "pages/customer/customer"
       ]
+    },
+    {
+      "root": "cloud-manager",
+      "pages": [
+        "pages/index/index"
+      ]
     }
   ],
   "window": {

@@ -72,6 +72,8 @@ Page({
       wx.navigateTo({ url: '/smart-teacher/pages/chat/chat' });
     } else if (type === 'ai-order') {
       wx.navigateTo({ url: '/ai-order/pages/index/index' });
+    } else if (type === 'cloud') {
+      wx.navigateTo({ url: '/cloud-manager/pages/index/index' });
     } else if (type === 'developing') {
       wx.showToast({ title: '功能开发中', icon: 'none' });
     }
