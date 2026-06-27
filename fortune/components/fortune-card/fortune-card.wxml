@@ -17,7 +17,17 @@
     </view>
     
     <view class="content-state" wx:elif="{{status === 'streaming' || status === 'completed'}}">
-      <text class="content-text">{{displayContent}}</text>
+      <view class="section" wx:for="{{sections}}" wx:key="index">
+        <view class="section-header" wx:if="{{item.header}}">
+          <text class="section-title">{{item.header}}</text>
+        </view>
+        <view class="section-body" wx:if="{{item.body}}">
+          <text class="section-text">{{item.body}}</text>
+        </view>
+      </view>
+      <view wx:if="{{sections.length === 0 && displayContent}}">
+        <text class="content-text">{{displayContent}}</text>
+      </view>
       <text class="cursor" wx:if="{{showCursor}}">|</text>
     </view>
     

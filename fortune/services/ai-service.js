@@ -25,16 +25,37 @@ function buildReadingPrompt(type, profile) {
     profileInfo += `\n出生时辰：${profile.birthTime}`;
   }
 
-  return `你是精通${typeName}的AI分析师。请根据以下用户信息进行${typeName}分析。
+  return `你是精通${typeName}的资深AI命理分析师。你必须全程使用中文回答，绝对不要使用英文。
+
+请根据以下用户信息进行${typeName}分析。
 
 【用户信息】
 ${profileInfo}
 
+【输出格式要求】
+你必须严格按照以下格式输出，使用emoji作为段落标记：
+
+📊 基本信息概览
+（简要总结用户的关键命理信息）
+
+🔮 核心分析
+（根据${typeName}进行深入分析，分2-3个要点展开）
+
+📈 运势解读
+（详细的运势分析，包含各方面）
+
+💡 开运建议
+（给出3-5条具体实用的建议）
+
+⚠️ 注意事项
+（需要特别注意的事项）
+
 【要求】
-1. 提供专业、详细的${typeName}分析
-2. 分析要有深度，包含具体解读
-3. 给出实用的建议和指导
-4. 语言通俗易懂
+1. 必须使用中文，绝对不要出现英文
+2. 每个段落用emoji开头
+3. 分析要专业有深度，引用具体的命理知识
+4. 语言生动有趣，通俗易懂
+5. 建议要具体可执行
 
 请直接输出分析结果，不要多余的开场白。`;
 }
@@ -46,7 +67,9 @@ function buildChatPrompt(profile, results, question) {
     resultsText = results.map(r => `【${r.typeName}】\n${r.content}`).join('\n\n');
   }
 
-  return `你是一个专业的运势分析师。以下是用户的信息和运势分析结果：
+  return `你是一个专业的运势分析师，精通中国传统文化和西方占星术。你必须全程使用中文回答，绝对不要使用英文。
+
+以下是用户的信息和运势分析结果：
 
 【用户档案】
 姓名：${profile.name}
@@ -57,7 +80,10 @@ ${profile.birthTime ? '出生时辰：' + profile.birthTime : ''}
 【运势分析结果】
 ${resultsText}
 
-请基于以上信息回答用户的问题。回答要专业、详细、有深度。`;
+请基于以上信息回答用户的问题。要求：
+1. 必须使用中文，绝对不要出现英文
+2. 回答要专业、详细、有深度
+3. 适当使用emoji增加可读性`;
 }
 
 // 流式调用AI API
@@ -78,7 +104,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
       data: {
         model: NVIDIA_CONFIG.model,
         messages: [
-          { role: 'system', content: '你是一个专业的运势分析师，精通中国传统文化和西方占星术。请用中文回答。' },
+          { role: 'system', content: '你是专业的AI命理分析师，精通中国传统文化和西方占星术。你必须全程使用中文回答，绝对不要使用英文。输出要使用emoji作为段落标记，让内容更生动有趣。' },
           { role: 'user', content: prompt }
         ],
         max_tokens: NVIDIA_CONFIG.maxTokens,
@@ -155,7 +181,7 @@ function callAI(prompt) {
       data: {
         model: NVIDIA_CONFIG.model,
         messages: [
-          { role: 'system', content: '你是一个专业的运势分析师，精通中国传统文化和西方占星术。请用中文回答。' },
+          { role: 'system', content: '你是专业的AI命理分析师，精通中国传统文化和西方占星术。你必须全程使用中文回答，绝对不要使用英文。输出要使用emoji作为段落标记，让内容更生动有趣。' },
           { role: 'user', content: prompt }
         ],
         max_tokens: NVIDIA_CONFIG.maxTokens,
