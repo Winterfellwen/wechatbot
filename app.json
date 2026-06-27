@@ -75,11 +75,9 @@
       "root": "fortune",
       "pages": [
         "pages/index/index",
-        "pages/types/types",
-        "pages/input/input",
-        "pages/result/result",
-        "pages/history/history",
-        "pages/daily/daily"
+        "pages/reading/reading",
+        "pages/chat/chat",
+        "pages/history/history"
       ]
     }
   ],
