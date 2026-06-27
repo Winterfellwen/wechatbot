@@ -77,25 +77,23 @@ ${resultsText}
 请回答用户的问题。要求：使用中文，适当使用emoji。`;
 }
 
+// 清理thinking标签
 function stripThinking(text) {
   return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
 
-// 流式调用
-function streamAI(prompt, onChunk, onDone, onError, onThinking) {
-  var buffer = '';
-  var hasRealContent = false;
+// 流式调用 - 不过滤reasoning_content，全部输出
+function streamAI(prompt, onChunk, onDone, onError) {
+  var fullText = '';
   var finishCalled = false;
-  var chunkCount = 0;
 
   function finish() {
     if (finishCalled) return;
     finishCalled = true;
-    console.log('[streamAI] finish called, total chunks:', chunkCount);
-    if (onDone) onDone();
+    // 最后清理<think>标签再输出
+    var cleaned = stripThinking(fullText);
+    if (onDone) onDone(cleaned);
   }
-
-  console.log('[streamAI] starting request...');
 
   var task = wx.request({
     url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
@@ -117,32 +115,22 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
       stream: true
     },
     success: function(res) {
-      console.log('[streamAI] success, statusCode:', res.statusCode);
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        console.log('[streamAI] error status, calling onError');
         if (onError) onError(new Error('API error: ' + res.statusCode));
         finish();
       }
     },
     fail: function(err) {
-      console.log('[streamAI] request failed:', err.errMsg);
       if (onError) onError(new Error('Request failed: ' + (err.errMsg || 'unknown')));
       finish();
     }
   });
 
-  console.log('[streamAI] task created, has onChunkReceived:', !!(task && task.onChunkReceived));
-
   if (task && task.onChunkReceived) {
-    console.log('[streamAI] registering onChunkReceived...');
     task.onChunkReceived(function(res) {
-      chunkCount++;
       try {
         var data = new TextDecoder().decode(res.data);
-        buffer += data;
-
-        var lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        var lines = data.split('\n');
 
         for (var i = 0; i < lines.length; i++) {
           var line = lines[i];
@@ -150,7 +138,6 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
 
           var jsonStr = line.slice(6).trim();
           if (jsonStr === '[DONE]') {
-            console.log('[streamAI] received [DONE]');
             finish();
             return;
           }
@@ -160,39 +147,23 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
             if (!json.choices || !json.choices[0] || !json.choices[0].delta) continue;
 
             var delta = json.choices[0].delta;
-            var reasoning = delta.reasoning_content || '';
-            var content = delta.content || '';
+            // 同时取reasoning_content和content，拼接到一起
+            var chunk = delta.reasoning_content || delta.content || '';
 
-            content = stripThinking(content);
-
-            if (reasoning && !content && !hasRealContent) {
-              if (onThinking) onThinking(reasoning);
-              continue;
+            if (chunk) {
+              fullText += chunk;
+              // 实时输出（带<think>标签，最后清理）
+              if (onChunk) onChunk(fullText);
             }
-
-            if (content) {
-              hasRealContent = true;
-              if (chunkCount <= 3 || chunkCount % 10 === 0) {
-                console.log('[streamAI] chunk #' + chunkCount + ', content length:', content.length);
-              }
-              if (onChunk) onChunk(content);
-            }
-          } catch (e) {
-            console.log('[streamAI] JSON parse error:', e.message);
-          }
+          } catch (e) {}
         }
-      } catch (e) {
-        console.log('[streamAI] chunk decode error:', e.message);
-      }
+      } catch (e) {}
     });
-  } else {
-    console.log('[streamAI] WARNING: onChunkReceived not available!');
   }
 
   setTimeout(function() {
-    console.log('[streamAI] 60s timeout, finishCalled:', finishCalled);
     finish();
-  }, 60000);
+  }, 90000);
 }
 
 function callAI(prompt) {
@@ -243,37 +214,28 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
 
   var currentTypeIndex = 0;
 
-  console.log('[streamReadings] starting, category:', category, 'types:', types);
-
   function processNext() {
     if (currentTypeIndex >= types.length) {
-      console.log('[streamReadings] all done');
       if (onAllComplete) onAllComplete();
       return;
     }
 
     var type = types[currentTypeIndex];
-    var content = '';
-
-    console.log('[streamReadings] processing card', currentTypeIndex + 1, 'of', types.length, ':', type);
 
     if (onReadingStart) onReadingStart(type, typeNames[type]);
 
     var prompt = buildReadingPrompt(type, profile);
 
     streamAI(prompt,
-      function(chunk) {
-        content += chunk;
+      function(content) {
         if (onChunk) onChunk(type, content);
       },
-      function() {
-        console.log('[streamReadings] card', type, 'complete, content length:', content.length);
-        if (onReadingComplete) onReadingComplete(type, typeNames[type], content);
+      function(cleanedContent) {
+        if (onReadingComplete) onReadingComplete(type, typeNames[type], cleanedContent);
         currentTypeIndex++;
         processNext();
       },
       function(err) {
-        console.log('[streamReadings] card', type, 'error:', err.message);
         if (onError) onError(type, err);
         currentTypeIndex++;
         processNext();
