@@ -378,6 +378,11 @@
   line-height: 1;
 }
 
+.preview-remove-icon-img {
+  width: 24rpx;
+  height: 24rpx;
+}
+
 .input-bar {
   display: flex;
   align-items: center;
@@ -412,6 +417,11 @@
   color: #666666;
   font-weight: 400;
   line-height: 1;
+}
+
+.icon-img-img {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .input-center {
@@ -462,6 +472,11 @@
   color: #FFFFFF;
   font-weight: 600;
   line-height: 1;
+}
+
+.icon-send-img {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 /* ========== 安全区域适配 ========== */

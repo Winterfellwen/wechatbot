@@ -1,61 +1,129 @@
 /**
  * Prompt generation service for fortune-telling
- * Loads templates and generates complete prompts for AI
+ * Uses embedded prompts for WeChat Mini Program compatibility
  */
 
-const fs = require('fs');
-const path = require('path');
+// Embedded prompt templates
+const PROMPT_TEMPLATES = {
+  yijing: `你是精通易经的AI分析师。根据以下用户信息和问题，进行易经卦象分析：
 
-const PROMPT_DIR = path.join(__dirname, '..', 'data', 'prompts');
+**用户信息：**
+- 出生日期：{birthDate}
+- 出生时辰：{birthTime}
+- 性别：{gender}
 
-// Fortune type to prompt section mapping
-const FORTUNE_TYPE_MAP = {
-  // Chinese types
-  yijing: { file: 'chinese_prompt.md', section: '易经卦象' },
-  bazi: { file: 'chinese_prompt.md', section: '八字命理' },
-  ziwei: { file: 'chinese_prompt.md', section: '紫微斗数' },
-  wuxing: { file: 'chinese_prompt.md', section: '五行分析' },
-  // Western types
-  constellation: { file: 'western_prompt.md', section: '星座分析' },
-  tarot: { file: 'western_prompt.md', section: '塔罗占卜' },
-  astrology: { file: 'western_prompt.md', section: '占星术' }
+**预测信息：**
+- 预测类型：易经卦象
+- 具体问题：{question}
+
+**要求：**
+1. 生成一个随机卦象（1-64）
+2. 解读该卦的卦辞和象辞
+3. 结合用户的具体问题进行分析
+4. 引用易经中的相关典故
+5. 提供具体的建议和指导
+6. 语言要通俗易懂，有深度`,
+
+  bazi: `你是精通八字命理的AI分析师。根据以下用户信息，进行八字命理分析：
+
+**用户信息：**
+- 出生日期：{birthDate}
+- 出生时辰：{birthTime}
+- 性别：{gender}
+
+**预测信息：**
+- 预测类型：八字命理
+- 具体问题：{question}
+
+**要求：**
+1. 分析用户的八字格局
+2. 解读天干地支的五行属性
+3. 分析十神关系
+4. 结合用户问题给出运势分析
+5. 引用八字命理中的相关典故
+6. 提供具体的建议和指导`,
+
+  ziwei: `你是精通紫微斗数的AI分析师。根据以下用户信息，进行紫微斗数分析：
+
+**用户信息：**
+- 出生日期：{birthDate}
+- 出生时辰：{birthTime}
+- 性别：{gender}
+
+**预测信息：**
+- 预测类型：紫微斗数
+- 具体问题：{question}
+
+**要求：**
+1. 分析用户的命盘格局
+2. 解读主要星曜的影响
+3. 分析十二宫位的吉凶
+4. 结合用户问题给出运势分析
+5. 引用紫微斗数中的相关典故
+6. 提供具体的建议和指导`,
+
+  constellation: `你是精通星座学的AI分析师。根据以下用户信息和问题，进行星座运势分析：
+
+**用户信息：**
+- 星座：{constellation}
+
+**预测信息：**
+- 预测类型：星座分析
+- 具体问题：{question}
+
+**要求：**
+1. 分析星座特质
+2. 预测今日运势
+3. 结合希腊神话典故
+4. 给出具体建议
+5. 包含幸运数字、幸运颜色
+6. 语言要生动有趣`,
+
+  tarot: `你是精通塔罗牌的AI分析师。根据以下用户信息和问题，进行塔罗牌占卜：
+
+**用户信息：**
+- 星座：{constellation}
+
+**预测信息：**
+- 预测类型：塔罗占卜
+- 具体问题：{question}
+
+**要求：**
+1. 随机抽取三张塔罗牌
+2. 解读每张牌的含义
+3. 结合用户问题进行分析
+4. 给出具体建议
+5. 引用塔罗牌的相关典故
+6. 语言要有神秘感`,
+
+  astrology: `你是精通占星术的AI分析师。根据以下用户信息，进行占星术分析：
+
+**用户信息：**
+- 出生日期：{birthDate}
+- 星座：{constellation}
+
+**预测信息：**
+- 预测类型：占星术
+- 具体问题：{question}
+
+**要求：**
+1. 分析用户的星盘配置
+2. 解读主要行星和相位的影响
+3. 分析十二宫位的含义
+4. 结合用户问题给出运势分析
+5. 引用占星术中的相关典故
+6. 提供具体的建议和指导`
 };
 
-/**
- * Load prompt template for fortune type
- * @param {string} type - Fortune type (e.g., 'yijing', 'tarot')
- * @returns {string|null} Prompt template or null if not found
- */
-function loadPromptTemplate(type) {
-  const typeConfig = FORTUNE_TYPE_MAP[type];
-  if (!typeConfig) {
-    console.error(`Unknown fortune type: ${type}`);
-    return null;
-  }
-
-  try {
-    const filePath = path.join(PROMPT_DIR, typeConfig.file);
-    const content = fs.readFileSync(filePath, 'utf8');
-    
-    // Extract the section for this fortune type
-    const sectionStart = content.indexOf(`## ${typeConfig.section}提示词`);
-    if (sectionStart === -1) {
-      console.error(`Section not found: ${typeConfig.section}`);
-      return null;
-    }
-    
-    // Find the next section or end of file
-    const nextSection = content.indexOf('\n## ', sectionStart + 1);
-    const section = nextSection === -1 
-      ? content.substring(sectionStart)
-      : content.substring(sectionStart, nextSection);
-    
-    return section;
-  } catch (e) {
-    console.error('Failed to load prompt template:', e);
-    return null;
-  }
-}
+// Fortune type to Chinese name mapping
+const TYPE_NAMES = {
+  yijing: '易经卦象',
+  bazi: '八字命理',
+  ziwei: '紫微斗数',
+  constellation: '星座分析',
+  tarot: '塔罗占卜',
+  astrology: '占星术'
+};
 
 /**
  * Generate complete prompt for AI
@@ -65,7 +133,7 @@ function loadPromptTemplate(type) {
  * @returns {string} Complete prompt
  */
 function generatePrompt(type, userInfo, question) {
-  const template = loadPromptTemplate(type);
+  const template = PROMPT_TEMPLATES[type];
   if (!template) {
     return generateDefaultPrompt(type, userInfo, question);
   }
@@ -76,9 +144,8 @@ function generatePrompt(type, userInfo, question) {
   const replacements = {
     '{birthDate}': userInfo.birthDate || '未知',
     '{birthTime}': userInfo.birthTime || '未知',
-    '{gender}': userInfo.gender || '未知',
+    '{gender}': userInfo.gender === 'male' ? '男' : userInfo.gender === 'female' ? '女' : '未知',
     '{constellation}': userInfo.constellation || '未知',
-    '{birthPlace}': userInfo.birthPlace || '未知',
     '{question}': question || '综合运势'
   };
 
@@ -97,24 +164,14 @@ function generatePrompt(type, userInfo, question) {
  * @returns {string} Default prompt
  */
 function generateDefaultPrompt(type, userInfo, question) {
-  const typeNames = {
-    yijing: '易经卦象',
-    bazi: '八字命理',
-    ziwei: '紫微斗数',
-    wuxing: '五行分析',
-    constellation: '星座分析',
-    tarot: '塔罗占卜',
-    astrology: '占星术'
-  };
-
-  const typeName = typeNames[type] || '运势分析';
+  const typeName = TYPE_NAMES[type] || '运势分析';
 
   return `你是精通${typeName}的AI分析师。根据以下用户信息和问题，进行${typeName}分析：
 
 **用户信息：**
 - 出生日期：${userInfo.birthDate || '未知'}
 - 出生时辰：${userInfo.birthTime || '未知'}
-- 性别：${userInfo.gender || '未知'}
+- 性别：${userInfo.gender === 'male' ? '男' : userInfo.gender === 'female' ? '女' : '未知'}
 - 星座：${userInfo.constellation || '未知'}
 
 **预测信息：**
@@ -125,15 +182,10 @@ function generateDefaultPrompt(type, userInfo, question) {
 1. 提供专业的${typeName}分析
 2. 结合用户的具体问题进行解读
 3. 给出有深度的建议和指导
-4. 语言要通俗易懂
-
-**格式：**
-- 分析结果
-- 建议和指导`;
+4. 语言要通俗易懂`;
 }
 
 module.exports = {
-  loadPromptTemplate,
   generatePrompt,
-  FORTUNE_TYPE_MAP
+  TYPE_NAMES
 };

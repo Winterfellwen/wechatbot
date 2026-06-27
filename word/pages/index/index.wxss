@@ -442,3 +442,55 @@
   padding: 10rpx 0;
   font-size: 22rpx;
 }
+
+/* ========== Icon image replacements ========== */
+.notice-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+  flex-shrink: 0;
+}
+
+.search-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.search-clear-img {
+  width: 44rpx;
+  height: 44rpx;
+  padding: 0 8rpx;
+  flex-shrink: 0;
+}
+
+.new-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.import-icon-img {
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 10rpx;
+  flex-shrink: 0;
+}
+
+.doc-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.sort-arrow-img {
+  width: 20rpx;
+  height: 20rpx;
+  margin-left: 6rpx;
+  flex-shrink: 0;
+}
+
+.view-toggle-img {
+  width: 28rpx;
+  height: 28rpx;
+}

@@ -18,6 +18,12 @@
   margin-bottom: 30rpx;
 }
 
+.empty-icon-img {
+  width: 96rpx;
+  height: 96rpx;
+  margin-bottom: 30rpx;
+}
+
 .empty-title {
   font-size: 40rpx;
   font-weight: bold;
@@ -119,6 +125,11 @@
   font-size: 32rpx;
   color: #2563EB;
   padding: 4rpx;
+}
+
+.audio-icon-img {
+  width: 48rpx;
+  height: 48rpx;
 }
 
 .word-translation {
@@ -365,6 +376,15 @@
 .nav-icon-active {
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   box-shadow: 0 4rpx 12rpx rgba(37,99,235,0.25);
+}
+
+.nav-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .nav-icon-text {

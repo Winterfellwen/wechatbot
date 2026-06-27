@@ -53,6 +53,13 @@ page {
   background: rgba(255,255,255,0.3);
 }
 
+.records-btn-img {
+  width: 28rpx;
+  height: 28rpx;
+  vertical-align: middle;
+  margin-right: 4rpx;
+}
+
 .header::before {
   content: '';
   position: absolute;
@@ -130,12 +137,19 @@ page {
   background: linear-gradient(90deg, var(--primary), var(--primary-light));
 }
 
-.upload-icon { 
-  font-size: 64rpx; 
+.upload-icon {
+  font-size: 64rpx;
   color: var(--primary);
   display: block;
   font-weight: 200;
   line-height: 1;
+}
+
+.upload-icon-img {
+  width: 64rpx;
+  height: 64rpx;
+  display: block;
+  margin: 0 auto;
 }
 
 .upload-text { 
@@ -193,6 +207,11 @@ page {
   font-size: 32rpx; color: var(--primary); flex-shrink: 0;
 }
 .edit-op-card.selected .edit-op-icon { background: var(--primary); color: #fff; }
+.edit-op-icon-img {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
 .edit-op-info { flex: 1; }
 .edit-op-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
 .edit-op-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
@@ -206,10 +225,20 @@ page {
   margin: 0 32rpx 24rpx;
 }
 .merge-icon { font-size: 40rpx; color: var(--primary); }
+.merge-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+  flex-shrink: 0;
+}
 .merge-info { flex: 1; }
 .merge-name { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; }
 .merge-desc { font-size: 24rpx; color: var(--text-muted); display: block; margin-top: 4rpx; }
 .merge-arrow { font-size: 36rpx; color: var(--primary); }
+.merge-arrow-img {
+  width: 36rpx;
+  height: 36rpx;
+  flex-shrink: 0;
+}
 
 /* ========== 选项面板 ========== */
 .options-panel { padding: 0 32rpx 20rpx; }
@@ -305,6 +334,11 @@ page {
 .file-del:active {
   transform: scale(0.95);
   background: rgba(239, 68, 68, 0.15);
+}
+
+.file-del-img {
+  width: 24rpx;
+  height: 24rpx;
 }
 
 .section-label { 

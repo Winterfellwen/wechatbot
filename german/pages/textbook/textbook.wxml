@@ -1,7 +1,7 @@
 <view class="container">
   <view class="top-bar">
     <view class="back-btn" bindtap="goBack">
-      <text class="back-icon">&lt;</text>
+      <image class="back-icon-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image>
     </view>
     <text class="top-title">课本</text>
     <view class="top-placeholder"></view>
@@ -42,7 +42,7 @@
 
   <view wx:if="{{!currentBook && books.length === 0}}" class="empty-state">
     <view class="empty-icon-wrap">
-      <text class="empty-icon-text">B</text>
+      <image class="empty-icon-img" src="/images/icons/book-text-48-dark.png" mode="aspectFit"></image>
     </view>
     <text class="empty-title">课本加载中</text>
     <text class="empty-desc">请稍后再试</text>

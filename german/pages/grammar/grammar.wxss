@@ -33,6 +33,11 @@
   font-weight: 700;
 }
 
+.back-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 .top-title {
   flex: 1;
   text-align: center;
@@ -164,6 +169,11 @@
   font-size: 52rpx;
   font-weight: 800;
   color: #2563EB;
+}
+
+.empty-icon-img {
+  width: 64rpx;
+  height: 64rpx;
 }
 
 .empty-title {

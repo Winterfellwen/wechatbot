@@ -1,0 +1,67 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{typeName}}</text>
+  </view>
+
+  <view class="form">
+    <!-- 日期输入 -->
+    <view class="form-item" wx:if="{{['bazi', 'ziwei', 'astrology'].includes(type)}}">
+      <text class="label">出生日期</text>
+      <picker mode="date" value="{{birthDate}}" bindchange="handleDateChange">
+        <view class="picker">
+          <text class="picker-text">{{birthDate || '请选择出生日期'}}</text>
+        </view>
+      </picker>
+      <text class="error" wx:if="{{errors.birthDate}}">{{errors.birthDate}}</text>
+    </view>
+
+    <!-- 时辰输入 -->
+    <view class="form-item" wx:if="{{['bazi', 'ziwei'].includes(type)}}">
+      <text class="label">出生时辰</text>
+      <picker bindchange="handleTimeChange">
+        <view class="picker">
+          <text class="picker-text">{{birthTime || '请选择出生时辰'}}</text>
+        </view>
+      </picker>
+      <text class="error" wx:if="{{errors.birthTime}}">{{errors.birthTime}}</text>
+    </view>
+
+    <!-- 性别输入 -->
+    <view class="form-item" wx:if="{{['bazi', 'ziwei'].includes(type)}}">
+      <text class="label">性别</text>
+      <picker bindchange="handleGenderChange">
+        <view class="picker">
+          <text class="picker-text">{{gender === 'male' ? '男' : gender === 'female' ? '女' : '请选择性别'}}</text>
+        </view>
+      </picker>
+      <text class="error" wx:if="{{errors.gender}}">{{errors.gender}}</text>
+    </view>
+
+    <!-- 星座输入 -->
+    <view class="form-item" wx:if="{{['constellation', 'tarot'].includes(type)}}">
+      <text class="label">星座</text>
+      <picker bindchange="handleConstellationChange">
+        <view class="picker">
+          <text class="picker-text">{{constellation || '请选择星座'}}</text>
+        </view>
+      </picker>
+      <text class="error" wx:if="{{errors.constellation}}">{{errors.constellation}}</text>
+    </view>
+
+    <!-- 问题输入 -->
+    <view class="form-item">
+      <text class="label">您想要预测的问题</text>
+      <textarea
+        class="textarea"
+        placeholder="请输入您想要预测的问题"
+        value="{{question}}"
+        bindinput="handleQuestionInput"
+        maxlength="200"
+      />
+      <text class="error" wx:if="{{errors.question}}">{{errors.question}}</text>
+    </view>
+
+    <!-- 提交按钮 -->
+    <button class="submit-btn" bindtap="handleSubmit">开始预测</button>
+  </view>
+</view>

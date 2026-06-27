@@ -1,6 +1,6 @@
 <view class="container">
   <view class="header">
-    <view class="back-btn" bindtap="goBack">← 返回</view>
+    <view class="back-btn" bindtap="goBack"><image class="back-btn-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image> 返回</view>
     <text class="header-title">合并 PDF</text>
     <view class="header-placeholder"></view>
   </view>
@@ -17,7 +17,7 @@
 
   <!-- 交换按钮 -->
   <view class="swap-btn" bindtap="swapFiles">
-    <text class="swap-icon">⇅</text>
+    <image class="swap-icon-img" src="/images/icons/refresh-cw-48-dark.png" mode="aspectFit"></image>
     <text class="swap-text">交换顺序</text>
   </view>
 

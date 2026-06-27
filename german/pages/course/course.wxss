@@ -302,8 +302,18 @@ page {
   font-size: 36rpx;
 }
 
+.audio-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+}
+
 .audio-icon-small-text {
   font-size: 28rpx;
+}
+
+.audio-icon-small-img {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 /* 生词本按钮 */
@@ -333,6 +343,11 @@ page {
   font-weight: 700;
   color: #64748B;
   transition: all 0.2s ease;
+}
+
+.wordbook-icon-img {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .wordbook-btn.added .wordbook-icon {
@@ -509,6 +524,15 @@ page {
   font-size: 24rpx;
   font-weight: 600;
   color: #64748B;
+}
+
+.nav-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .nav-item.active .nav-icon-text {

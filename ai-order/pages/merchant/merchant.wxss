@@ -273,3 +273,9 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ========== Icon image replacements ========== */
+.send-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}

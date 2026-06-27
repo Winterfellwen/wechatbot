@@ -9,7 +9,7 @@
       <picker mode="selector" range="{{groupModes}}" range-key="label" bindchange="onGroupModeChange">
         <view class="group-picker">
           <text class="group-picker-label">{{groupModeLabel}}</text>
-          <text class="group-picker-arrow">▼</text>
+          <image class="group-picker-arrow-img" src="/images/icons/chevron-down-48-dark.png" mode="aspectFit"></image>
         </view>
       </picker>
     </view>
@@ -28,7 +28,7 @@
             <text class="dish-card-name">{{item.name}}</text>
             <text class="dish-card-price">¥{{item.price}}</text>
             <view wx:if="{{item.spicyLevel > 0}}" class="spicy-indicator">
-              <text wx:for="{{item.spicyLevel}}" wx:key="index">🌶</text>
+              <image wx:for="{{item.spicyLevel}}" wx:key="index" class="spicy-icon-img" src="/images/icons/flame-48-danger.png" mode="aspectFit"></image>
             </view>
             <view class="cart-btn" catchtap="addToCart" data-dishid="{{item.id}}" data-name="{{item.name}}" data-price="{{item.price}}">
               <text class="cart-btn-text">加入购物车</text>
@@ -54,7 +54,8 @@
         <text>{{item}}</text>
       </view>
       <view wx:if="{{lastOrder && lastOrder.dishes && lastOrder.dishes.length > 0}}" class="chip chip-reorder" catchtap="showLastOrder">
-        <text>🔄 再来一单</text>
+        <image class="reorder-icon-img" src="/images/icons/refresh-cw-48-dark.png" mode="aspectFit"></image>
+        <text>再来一单</text>
       </view>
     </scroll-view>
   </view>
@@ -113,7 +114,7 @@
     <view class="input-bar">
       <input class="msg-input" placeholder="输入想吃的口味..." value="{{inputText}}" bindinput="onInput" bindfocus="expandChat" bindblur="onChatBlur" confirm-type="send" bindconfirm="onSend" cursor-spacing="20" />
       <view class="send-btn {{hasInput ? 'active' : ''}}" catchtap="onSend">
-        <text class="icon-send">↑</text>
+        <image class="send-icon-img" src="/images/icons/send-48-primary.png" mode="aspectFit"></image>
       </view>
     </view>
   </view>
@@ -122,7 +123,7 @@
   <view wx:if="{{cartItemCount > 0}}" class="cart-bar" catchtap="onCartTap">
     <view class="cart-bar-left">
       <view class="cart-icon-wrap">
-        <text class="cart-icon">🛒</text>
+        <image class="cart-icon-img" src="/images/icons/shopping-cart-48-white.png" mode="aspectFit"></image>
         <text class="cart-badge">{{cartItemCount}}</text>
       </view>
       <view class="cart-summary">
@@ -141,7 +142,7 @@
       <view class="panel-header">
         <text class="panel-title">确认订单</text>
         <view class="panel-close" catchtap="onCloseCartPanel">
-          <text>✕</text>
+          <image class="panel-close-img" src="/images/icons/x-48-dark.png" mode="aspectFit"></image>
         </view>
       </view>
       <scroll-view class="panel-dish-list" scroll-y>
@@ -151,9 +152,13 @@
             <text class="panel-dish-price">¥{{item.price}}</text>
           </view>
           <view class="panel-qty-controls">
-            <view class="qty-btn" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{-1}}">−</view>
+            <view class="qty-btn" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{-1}}">
+              <image class="qty-btn-img" src="/images/icons/minus-48-dark.png" mode="aspectFit"></image>
+            </view>
             <text class="qty-num">{{item.quantity}}</text>
-            <view class="qty-btn qty-plus" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{1}}">+</view>
+            <view class="qty-btn qty-plus" catchtap="updateItemQty" data-dishid="{{item.id}}" data-delta="{{1}}">
+              <image class="qty-btn-img" src="/images/icons/plus-48-dark.png" mode="aspectFit"></image>
+            </view>
           </view>
         </view>
       </scroll-view>

@@ -6,12 +6,15 @@
     <text class="title-text" wx:if="{{previewMode}}">{{title}}</text>
     <view class="top-actions">
       <view class="mode-btn" bindtap="togglePreview">
-        <text>{{previewMode ? '✎编辑' : '👁预览'}}</text>
+        <image class="mode-btn-img" src="{{previewMode ? '/images/icons/pencil-48-dark.png' : '/images/icons/eye-48-dark.png'}}" mode="aspectFit"></image>
+        <text>{{previewMode ? '编辑' : '预览'}}</text>
       </view>
       <view class="save-btn-top {{saveStatus === '保存中...' ? 'disabled' : ''}}" bindtap="saveDoc">
         <text>{{saveStatus === '保存中...' ? '保存中...' : '保存'}}</text>
       </view>
-      <view class="close-btn" bindtap="goBack">✕</view>
+      <view class="close-btn" bindtap="goBack">
+        <image class="close-btn-img" src="/images/icons/x-48-dark.png" mode="aspectFit"></image>
+      </view>
     </view>
   </view>
 
@@ -55,7 +58,7 @@
         <text class="tool-label">1.</text>
       </view>
       <view class="tool-btn {{fmt.list === 'bullet' ? 'active' : ''}}" bindtap="setList" data-list="bullet">
-        <text class="tool-icon">•</text>
+        <image class="tool-icon-img" src="/images/icons/list-48-dark.png" mode="aspectFit"></image>
       </view>
       <view class="tool-divider"></view>
       <view class="tool-btn" bindtap="pickColor" data-target="color">
@@ -64,7 +67,7 @@
       </view>
       <view class="tool-btn" bindtap="pickColor" data-target="backgroundColor">
         <view class="color-swatch highlight" style="background:{{fmt.backgroundColor || '#ffff00'}}"></view>
-        <text class="tool-icon-sm">🖌</text>
+        <image class="tool-icon-sm-img" src="/images/icons/highlighter-48-dark.png" mode="aspectFit"></image>
       </view>
     </view>
 
@@ -97,7 +100,8 @@
 
     <view class="tool-row expanded-row" wx:if="{{toolbarExpanded}}">
       <view class="tool-btn" bindtap="insertImage">
-        <text class="tool-label">🖼图片</text>
+        <image class="tool-label-img" src="/images/icons/image-48-dark.png" mode="aspectFit"></image>
+        <text class="tool-label">图片</text>
       </view>
       <view class="tool-btn" bindtap="clearFormat">
         <text class="tool-label">清除格式</text>

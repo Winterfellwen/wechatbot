@@ -102,7 +102,7 @@
       <view class="preview-item">
         <image class="preview-thumb" src="{{previewImage}}" mode="aspectFill"></image>
         <view class="preview-remove" bindtap="removePreviewImage">
-          <text class="preview-remove-icon">×</text>
+          <image class="preview-remove-icon-img" src="/images/icons/x-48-white.png" mode="aspectFit"></image>
         </view>
       </view>
     </view>
@@ -110,7 +110,7 @@
     <view class="input-bar">
       <view class="input-left">
         <view class="image-btn" bindtap="chooseImage" hover-class="image-btn-hover">
-          <text class="icon-img">+</text>
+          <image class="icon-img-img" src="/images/icons/image-plus-48-dark.png" mode="aspectFit"></image>
         </view>
       </view>
       <view class="input-center">
@@ -129,7 +129,7 @@
         class="send-btn {{hasInput ? 'active' : ''}}" 
         bindtap="onSend"
         hover-class="{{hasInput ? 'send-btn-hover' : ''}}">
-        <text class="icon-send">↑</text>
+        <image class="icon-send-img" src="/images/icons/send-48-primary.png" mode="aspectFit"></image>
       </view>
     </view>
   </view>

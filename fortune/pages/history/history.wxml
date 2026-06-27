@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="header">
+    <text class="title">历史记录</text>
+    <text class="clear-btn" wx:if="{{!isEmpty}}" bindtap="handleClear">清空</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{isEmpty}}">
+    <view class="empty-icon">📝</view>
+    <text class="empty-text">暂无历史记录</text>
+    <text class="empty-sub">去预测一下吧</text>
+  </view>
+
+  <!-- 历史列表 -->
+  <view class="history-list" wx:else>
+    <view class="history-item" wx:for="{{history}}" wx:key="id">
+      <view class="item-content" bindtap="handleItemTap" data-index="{{index}}">
+        <view class="item-header">
+          <text class="item-type">{{item.typeName}}</text>
+          <text class="item-time">{{item.timestamp}}</text>
+        </view>
+        <text class="item-question" wx:if="{{item.question}}">{{item.question}}</text>
+        <text class="item-result">{{item.result}}</text>
+      </view>
+      <view class="item-actions">
+        <text class="delete-btn" bindtap="handleDelete" data-index="{{index}}">删除</text>
+      </view>
+    </view>
+  </view>
+</view>

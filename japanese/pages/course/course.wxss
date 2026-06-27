@@ -57,11 +57,19 @@
 .hub-blue { background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%); }
 .hub-orange { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
 
-.hub-icon-text { 
-  font-size: 56rpx; 
-  font-weight: bold; 
-  margin-bottom: 12rpx; 
-  opacity: 0.9; 
+.hub-icon-text {
+  font-size: 56rpx;
+  font-weight: bold;
+  margin-bottom: 12rpx;
+  opacity: 0.9;
+}
+
+.hub-icon-img {
+  width: 56rpx;
+  height: 56rpx;
+  margin-bottom: 12rpx;
+  opacity: 0.9;
+  filter: brightness(0) invert(1);
 }
 .hub-name { 
   font-size: 44rpx; 
@@ -133,6 +141,14 @@
   color: #64748B;
 }
 .nav-item.active .nav-icon-text { color: #ffffff; }
+
+.nav-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
+}
 
 .nav-text { 
   font-size: 24rpx; 

@@ -1,7 +1,7 @@
 <view class="container">
   <view class="top-bar">
     <view class="back-btn" bindtap="goBack">
-      <text class="back-icon">&lt;</text>
+      <image class="back-icon-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image>
     </view>
     <text class="top-title">课程详情</text>
     <view class="top-placeholder"></view>
@@ -17,7 +17,7 @@
           <view class="vocab-word">{{item.word}}</view>
           <view class="vocab-translation">{{item.translation}}</view>
           <view class="play-btn" bindtap="playAudio" data-word="{{item.word}}">
-            <text class="play-icon">A</text>
+            <image class="play-icon-img" src="/images/icons/play-48-primary.png" mode="aspectFit"></image>
           </view>
         </view>
       </view>

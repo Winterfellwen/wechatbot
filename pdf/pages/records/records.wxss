@@ -51,6 +51,12 @@
   margin-right: 12rpx;
 }
 
+.record-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 12rpx;
+}
+
 .record-name {
   flex: 1;
   font-size: 30rpx;
@@ -119,6 +125,13 @@
 .empty-icon {
   font-size: 100rpx;
   margin-bottom: 20rpx;
+}
+
+.empty-icon-img {
+  width: 100rpx;
+  height: 100rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.5;
 }
 
 .empty-text {

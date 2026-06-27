@@ -3,7 +3,7 @@
   <view class="header">
     <text class="header-title">PDF 工具箱</text>
     <text class="header-sub">转换 · 编辑 · 合并</text>
-    <view class="records-btn" bindtap="goRecords">📋 记录</view>
+    <view class="records-btn" bindtap="goRecords"><image class="records-btn-img" src="/images/icons/check-48-success.png" mode="aspectFit"></image> 记录</view>
   </view>
 
   <!-- Tab 切换 -->
@@ -17,7 +17,7 @@
     <!-- 文件选择 -->
     <view class="upload-section">
       <view wx:if="{{!fileName}}" class="upload-btn {{uploading ? 'disabled' : ''}}" bindtap="uploadFile">
-        <text class="upload-icon">+</text>
+        <image class="upload-icon-img" src="/images/icons/upload-48-dark.png" mode="aspectFit"></image>
         <text class="upload-text">选择文件</text>
         <text class="upload-hint">支持 PDF / DOC / DOCX</text>
       </view>
@@ -26,7 +26,7 @@
           <text class="file-name">{{fileName}}</text>
           <text class="file-type">{{fromFormat === 'pdf' ? 'PDF文档' : fromFormat === 'docx' ? 'Word文档' : '旧版Word'}}</text>
         </view>
-        <view class="file-del" bindtap="clearFile">×</view>
+        <view class="file-del" bindtap="clearFile"><image class="file-del-img" src="/images/icons/x-48-danger.png" mode="aspectFit"></image></view>
       </view>
     </view>
 
@@ -53,7 +53,7 @@
     <!-- 文件选择 -->
     <view class="upload-section">
       <view wx:if="{{!fileName}}" class="upload-btn {{editUploading ? 'disabled' : ''}}" bindtap="uploadFile">
-        <text class="upload-icon">+</text>
+        <image class="upload-icon-img" src="/images/icons/upload-48-dark.png" mode="aspectFit"></image>
         <text class="upload-text">选择 PDF 文件</text>
         <text class="upload-hint">仅支持 PDF 格式</text>
       </view>
@@ -62,21 +62,21 @@
           <text class="file-name">{{fileName}}</text>
           <text class="file-type">PDF文档</text>
         </view>
-        <view class="file-del" bindtap="clearFile">×</view>
+        <view class="file-del" bindtap="clearFile"><image class="file-del-img" src="/images/icons/x-48-danger.png" mode="aspectFit"></image></view>
       </view>
     </view>
 
     <!-- 编辑操作 -->
     <view class="edit-op-list">
       <view class="edit-op-card {{editOp === 'watermark' ? 'selected' : ''}}" bindtap="selectEditOp" data-op="watermark">
-        <text class="edit-op-icon">T</text>
+        <image class="edit-op-icon-img" src="/images/icons/type-48-dark.png" mode="aspectFit"></image>
         <view class="edit-op-info">
           <text class="edit-op-name">添加水印</text>
           <text class="edit-op-desc">在 PDF 页面上添加文字</text>
         </view>
       </view>
       <view class="edit-op-card {{editOp === 'rotate' ? 'selected' : ''}}" bindtap="selectEditOp" data-op="rotate">
-        <text class="edit-op-icon">↻</text>
+        <image class="edit-op-icon-img" src="/images/icons/rotate-cw-48-dark.png" mode="aspectFit"></image>
         <view class="edit-op-info">
           <text class="edit-op-name">旋转页面</text>
           <text class="edit-op-desc">旋转 PDF 页面方向</text>
@@ -92,12 +92,12 @@
 
     <!-- 合并入口 -->
     <view class="merge-entry" bindtap="goMerge">
-      <text class="merge-icon">⊞</text>
+      <image class="merge-icon-img" src="/images/icons/merge-48-dark.png" mode="aspectFit"></image>
       <view class="merge-info">
         <text class="merge-name">合并 PDF</text>
         <text class="merge-desc">将两个 PDF 文件合并为一个</text>
       </view>
-      <text class="merge-arrow">›</text>
+      <image class="merge-arrow-img" src="/images/icons/chevron-right-48-dark.png" mode="aspectFit"></image>
     </view>
 
     <!-- 处理按钮 -->

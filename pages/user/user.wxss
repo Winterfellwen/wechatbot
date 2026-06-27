@@ -301,6 +301,11 @@
   font-weight: 600;
 }
 
+.action-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+}
+
 .icon-logout .action-icon-text {
   color: #2563EB;
 }

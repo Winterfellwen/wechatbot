@@ -62,7 +62,7 @@
               class="audio-btn {{playingWord === item.word ? 'playing' : ''}}"
               bindtap="playAudio" 
               data-word="{{item.word}}">
-              <text class="audio-icon-text">🔊</text>
+              <image class="audio-icon-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
             </view>
             
             <!-- 生词本按钮 -->
@@ -70,7 +70,8 @@
               class="wordbook-btn {{item.isInWordBook ? 'added' : ''}}"
               bindtap="addToWordBook" 
               data-word="{{item}}">
-              <text class="wordbook-icon">{{item.isInWordBook ? '✓' : '+'}}</text>
+              <image class="wordbook-icon-img" wx:if="{{item.isInWordBook}}" src="/images/icons/check-48-success.png" mode="aspectFit"></image>
+              <image class="wordbook-icon-img" wx:else src="/images/icons/plus-48-dark.png" mode="aspectFit"></image>
             </view>
           </view>
         </view>
@@ -105,7 +106,7 @@
         <view class="pronunciation-example" bindtap="playAudio" data-word="{{item.example}}">
             <text>{{item.example}}</text>
           <view class="audio-btn-small {{playingWord === item.example ? 'playing' : ''}}">
-              <text class="audio-icon-small-text">🔊</text>
+              <image class="audio-icon-small-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
           </view>
         </view>
       </view>
@@ -131,19 +132,19 @@
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLearn">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">闯</text>
+        <image class="nav-icon-img" src="/images/icons/swords-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item active">
       <view class="nav-icon-wrap nav-icon-active">
-        <text class="nav-icon-text">课</text>
+        <image class="nav-icon-img" src="/images/icons/book-open-text-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text nav-text-active">课程</text>
     </view>
     <view class="nav-item" bindtap="goToWordbook">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">词</text>
+        <image class="nav-icon-img" src="/images/icons/book-marked-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">生词本</text>
     </view>

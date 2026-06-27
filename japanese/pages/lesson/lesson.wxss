@@ -124,12 +124,19 @@
   justify-content: center;
   cursor: pointer;
 }
-.expand-btn .arrow { 
-  font-size: 40rpx; 
-  color: #94A3B8; 
-  transition: transform 0.2s; 
+.expand-btn .arrow {
+  font-size: 40rpx;
+  color: #94A3B8;
+  transition: transform 0.2s;
 }
 .expand-btn .arrow.up { transform: rotate(180deg); }
+
+.expand-btn .arrow-img {
+  width: 40rpx;
+  height: 40rpx;
+  transition: transform 0.2s;
+}
+.expand-btn .arrow-img.up { transform: rotate(180deg); }
 .word-extra { 
   margin-top: 16rpx; 
   padding-top: 16rpx; 
@@ -356,6 +363,17 @@
   animation: audioPulse 1s ease-in-out infinite;
 }
 
+.speaker-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.speaker-icon-img.playing {
+  animation: audioPulse 1s ease-in-out infinite;
+}
+
 /* 扬声器图标 - 大号（听力题用） */
 .audio-btn-big.playing {
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
@@ -371,6 +389,11 @@
 .speaker-icon-lg {
   font-size: 80rpx;
   line-height: 1;
+}
+
+.speaker-icon-lg-img {
+  width: 80rpx;
+  height: 80rpx;
 }
 
 @keyframes pulse {
@@ -512,10 +535,15 @@
   justify-content: center; 
   margin: 0 auto 20rpx; 
 }
-.result-icon { 
-  font-size: 52rpx; 
-  color: #fff; 
-  font-weight: bold; 
+.result-icon {
+  font-size: 52rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+.result-icon-img {
+  width: 52rpx;
+  height: 52rpx;
 }
 .result-msg { 
   display: block; 

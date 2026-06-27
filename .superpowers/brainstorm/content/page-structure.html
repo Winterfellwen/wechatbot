@@ -1,0 +1,137 @@
+<h2>页面结构设计</h2>
+<p class="subtitle">AI运势功能的页面布局和导航结构</p>
+
+<div class="section">
+  <h3>页面层级结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">页面导航图</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e3f2fd; border-radius: 8px; border: 2px solid #1976d2;">
+          <strong>首页</strong><br>
+          <small>fortune/pages/index</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px; border: 2px solid #388e3c;">
+          <strong>预测类型选择</strong><br>
+          <small>fortune/pages/types</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px; border: 2px solid #f57c00;">
+          <strong>信息输入</strong><br>
+          <small>fortune/pages/input</small>
+        </div>
+      </div>
+      <div style="text-align: center; margin: 10px 0;">↓ ↓ ↓</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fce4ec; border-radius: 8px; border: 2px solid #d32f2f;">
+          <strong>结果展示</strong><br>
+          <small>fortune/pages/result</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #f3e5f5; border-radius: 8px; border: 2px solid #7b1fa2;">
+          <strong>历史记录</strong><br>
+          <small>fortune/pages/history</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e0f2f1; border-radius: 8px; border: 2px solid #00796b;">
+          <strong>每日运势</strong><br>
+          <small>fortune/pages/daily</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>首页设计</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">首页布局方案A</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div class="mock-nav">AI运势</div>
+        <div style="margin: 10px 0;">
+          <div class="placeholder" style="padding: 20px; margin: 10px 0; background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%); color: white; border-radius: 8px;">
+            <strong>中国运势</strong><br>
+            <small>易经、八字、紫微</small>
+          </div>
+          <div class="placeholder" style="padding: 20px; margin: 10px 0; background: linear-gradient(135deg, #1a237e 0%, #4a148c 100%); color: white; border-radius: 8px;">
+            <strong>西方运势</strong><br>
+            <small>星座、塔罗、占星</small>
+          </div>
+        </div>
+        <div class="placeholder" style="padding: 15px; margin: 10px 0; background: #f5f5f5; border-radius: 8px;">
+          <strong>每日运势</strong><br>
+          <small>今日综合运、爱情运、事业运</small>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">首页布局方案B</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div class="mock-nav">AI运势</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+          <div class="placeholder" style="padding: 15px; text-align: center; background: #e3f2fd; border-radius: 8px;">
+            <strong>易经</strong>
+          </div>
+          <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px;">
+            <strong>八字</strong>
+          </div>
+          <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px;">
+            <strong>星座</strong>
+          </div>
+          <div class="placeholder" style="padding: 15px; text-align: center; background: #fce4ec; border-radius: 8px;">
+            <strong>塔罗</strong>
+          </div>
+        </div>
+        <div class="placeholder" style="padding: 15px; margin: 10px 0; background: #f5f5f5; border-radius: 8px;">
+          <strong>紫微斗数</strong><br>
+          <small>中国传统命理学</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>导航结构</h3>
+  <div class="options">
+    <div class="option" data-choice="nav" onclick="toggleSelect(this)">
+      <div class="letter">📱</div>
+      <div class="content">
+        <h3>页面导航设计</h3>
+        <p><strong>主导航：</strong>底部TabBar（首页、历史、我的）</p>
+        <p><strong>子页面：</strong>预测类型选择 → 信息输入 → 结果展示</p>
+        <p><strong>特殊页面：</strong>每日运势（可设置提醒）</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>页面功能说明</h3>
+  <div class="cards">
+    <div class="card" data-choice="index" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #1976d2; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">首页</h4>
+      </div>
+      <div class="card-body">
+        <p>展示所有预测类型入口，快速访问功能</p>
+      </div>
+    </div>
+    <div class="card" data-choice="history" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #388e3c; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">历史记录</h4>
+      </div>
+      <div class="card-body">
+        <p>保存用户之前的预测结果，支持查看和删除</p>
+      </div>
+    </div>
+    <div class="card" data-choice="daily" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #f57c00; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">每日运势</h4>
+      </div>
+      <div class="card-body">
+        <p>自动推送每日运势，支持订阅消息提醒</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 30px; color: #666;">这是页面结构设计。你更倾向于哪种首页布局方案？或者有其他想法？</p>

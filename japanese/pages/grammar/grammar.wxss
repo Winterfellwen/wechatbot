@@ -29,10 +29,15 @@
   transition: background 0.2s;
 }
 .back-btn:active { background: #F1F5F9; }
-.back-icon { 
-  font-size: 44rpx; 
-  color: #2563EB; 
-  font-weight: bold; 
+.back-icon {
+  font-size: 44rpx;
+  color: #2563EB;
+  font-weight: bold;
+}
+
+.back-icon-img {
+  width: 44rpx;
+  height: 44rpx;
 }
 .header-title { 
   font-size: 38rpx; 

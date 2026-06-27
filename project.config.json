@@ -52,8 +52,8 @@
         "type": "regexp"
       },
       {
-        "type": "folder",
-        "value": "minitest/"
+        "value": "minitest/",
+        "type": "folder"
       }
     ],
     "include": []

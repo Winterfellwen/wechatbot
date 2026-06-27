@@ -236,10 +236,19 @@
 }
 
 /* 节点图标 - 使用文字替代 emoji */
-.node-icon { 
-  font-size: 36rpx; 
-  color: #ffffff; 
+.node-icon {
+  font-size: 36rpx;
+  color: #ffffff;
   font-weight: bold;
+}
+
+.node-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.node-wrap.done .check-img {
+  filter: brightness(0) invert(1);
 }
 
 .node-wrap.current .node-icon { 
@@ -363,6 +372,14 @@
   font-size: 28rpx;
   font-weight: 600;
   color: #64748B;
+}
+
+.nav-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .nav-text { 

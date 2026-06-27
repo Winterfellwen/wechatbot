@@ -18,6 +18,12 @@
   margin-bottom: 24rpx;
 }
 
+.result-icon-img {
+  width: 96rpx;
+  height: 96rpx;
+  margin-bottom: 24rpx;
+}
+
 .result-title {
   font-size: 44rpx;
   font-weight: bold;

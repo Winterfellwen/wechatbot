@@ -23,7 +23,7 @@
     <view class="entry-grid">
       <view class="entry-card card-learn" bindtap="handleEntryTap" data-type="learn">
         <view class="card-icon-wrap icon-bg-learn">
-          <text class="icon-learn-text">📚</text>
+          <image class="entry-icon-img" src="/images/icons/book-open-96-white.png" mode="aspectFit"></image>
         </view>
         <text class="entry-title">学习Agent</text>
         <text class="entry-desc">日语、德语、智能老师</text>
@@ -31,7 +31,7 @@
 
       <view class="entry-card card-tool" bindtap="handleEntryTap" data-type="tool">
         <view class="card-icon-wrap icon-bg-tool">
-          <text class="icon-tool-text">🛠️</text>
+          <image class="entry-icon-img" src="/images/icons/wrench-96-white.png" mode="aspectFit"></image>
         </view>
         <text class="entry-title">工具Agent</text>
         <text class="entry-desc">Word、PDF、AI点菜</text>
@@ -39,10 +39,18 @@
 
       <view class="entry-card card-cloud" bindtap="handleEntryTap" data-type="cloud">
         <view class="card-icon-wrap icon-bg-cloud">
-          <text class="icon-cloud-text">☁️</text>
+          <image class="entry-icon-img" src="/images/icons/cloud-96-white.png" mode="aspectFit"></image>
         </view>
         <text class="entry-title">AI云管理</text>
         <text class="entry-desc">多云服务管理面板</text>
+      </view>
+
+      <view class="entry-card card-fortune" bindtap="handleEntryTap" data-type="fortune">
+        <view class="card-icon-wrap icon-bg-fortune">
+          <text class="entry-icon-text">🔮</text>
+        </view>
+        <text class="entry-title">AI运势</text>
+        <text class="entry-desc">易经、星座、塔罗预测</text>
       </view>
     </view>
   </view>

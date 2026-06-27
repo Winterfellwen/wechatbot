@@ -1,0 +1,182 @@
+<h2>测试策略设计</h2>
+<p class="subtitle">单元测试、集成测试和用户验收测试</p>
+
+<div class="section">
+  <h3>测试层级</h3>
+  <div class="mockup">
+    <div class="mockup-header">测试金字塔</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e3f2fd; border-radius: 8px; border: 2px solid #1976d2;">
+          <strong>单元测试</strong><br>
+          <small>函数、组件测试</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px; border: 2px solid #388e3c;">
+          <strong>集成测试</strong><br>
+          <small>页面流程、API调用测试</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px; border: 2px solid #f57c00;">
+          <strong>用户验收测试</strong><br>
+          <small>真实用户场景测试</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>单元测试设计</h3>
+  <div class="cards">
+    <div class="card" data-choice="utils" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #1976d2; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">工具函数测试</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>测试内容：</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px; font-size: 12px;">
+          <li>日期格式验证函数</li>
+          <li>时辰转换函数</li>
+          <li>星座计算函数</li>
+          <li>生肖计算函数</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" data-choice="components" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #388e3c; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">组件测试</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>测试内容：</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px; font-size: 12px;">
+          <li>预测类型选择组件</li>
+          <li>信息输入表单组件</li>
+          <li>结果展示组件</li>
+          <li>历史记录列表组件</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" data-choice="services" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #f57c00; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">服务层测试</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>测试内容：</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px; font-size: 12px;">
+          <li>AI服务调用函数</li>
+          <li>提示词生成函数</li>
+          <li>响应解析函数</li>
+          <li>缓存管理函数</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>集成测试设计</h3>
+  <div class="mockup">
+    <div class="mockup-header">页面流程测试</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div class="placeholder" style="padding: 10px 15px; background: #e3f2fd; border-radius: 5px;">首页 → 类型选择</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #e8f5e9; border-radius: 5px;">信息输入 → API调用</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #fff3e0; border-radius: 5px;">结果展示 → 历史保存</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #fce4ec; border-radius: 5px;">历史查看</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>测试用例设计</h3>
+  <div class="options">
+    <div class="option" data-choice="test-cases" onclick="toggleSelect(this)">
+      <div class="letter">📝</div>
+      <div class="content">
+        <h3>核心测试用例</h3>
+        <p><strong>1. 正常流程测试：</strong>完整走通预测流程</p>
+        <p><strong>2. 边界条件测试：</strong>输入边界值、空值、特殊字符</p>
+        <p><strong>3. 错误场景测试：</strong>网络断开、API失败、输入错误</p>
+        <p><strong>4. 性能测试：</strong>响应时间、并发处理、内存占用</p>
+        <p><strong>5. 兼容性测试：</strong>不同手机型号、系统版本</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>测试数据准备</h3>
+  <div class="mockup">
+    <div class="mockup-header">测试数据示例</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h4>用户信息测试数据</h4>
+          <div class="placeholder" style="padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: monospace; font-size: 12px;">
+            <strong>正常数据：</strong><br>
+            - 1990-01-15, 子时, male<br>
+            - 1985-06-20, 午时, female<br><br>
+            <strong>边界数据：</strong><br>
+            - 2000-01-01, 亥时, male<br>
+            - 1970-12-31, 子时, female
+          </div>
+        </div>
+        <div>
+          <h4>错误数据测试</h4>
+          <div class="placeholder" style="padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: monospace; font-size: 12px;">
+            <strong>格式错误：</strong><br>
+            - "1990/01/15" (斜杠格式)<br>
+            - "90-01-15" (两位年份)<br><br>
+            <strong>无效值：</strong><br>
+            - "1990-13-01" (月份错误)<br>
+            - "1990-01-32" (日期错误)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>自动化测试配置</h3>
+  <div class="options">
+    <div class="option" data-choice="automation" onclick="toggleSelect(this)">
+      <div class="letter">🤖</div>
+      <div class="content">
+        <h3>自动化测试工具</h3>
+        <p><strong>单元测试：</strong>Jest + 小程序测试工具</p>
+        <p><strong>集成测试：</strong>微信开发者工具自动化测试</p>
+        <p><strong>E2E测试：</strong>Playwright（如果需要）</p>
+        <p><strong>性能测试：</strong>小程序性能监控工具</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>测试覆盖率目标</h3>
+  <div class="mockup">
+    <div class="mockup-header">覆盖率要求</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px;">
+          <strong>代码覆盖率</strong><br>
+          <small>≥ 80%</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e3f2fd; border-radius: 8px;">
+          <strong>分支覆盖率</strong><br>
+          <small>≥ 70%</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px;">
+          <strong>功能覆盖率</strong><br>
+          <small>100%</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 30px; color: #666;">这是测试策略设计。你觉得这个测试策略如何？有没有需要调整的地方？</p>

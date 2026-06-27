@@ -13,7 +13,7 @@
     <block wx:for="{{utils.getFilteredRecords(records, activeTab)}}" wx:key="jobId" wx:for-item="record" wx:for-index="idx">
       <view class="record-card" bindtap="openFile" data-idx="{{idx}}">
         <view class="record-header">
-          <text class="record-icon">{{record.type === 'convert' ? '📄' : '✏️'}}</text>
+          <image class="record-icon-img" src="/images/icons/pencil-48-dark.png" mode="aspectFit"></image>
           <text class="record-name">{{utils.getDisplayName(record)}}</text>
           <text class="record-del" data-idx="{{idx}}" catchtap="deleteRecord">×</text>
         </view>
@@ -31,7 +31,7 @@
 
   <!-- 空状态 -->
   <view wx:if="{{utils.getFilteredRecords(records, activeTab).length === 0}}" class="empty-state">
-    <text class="empty-icon">📋</text>
+    <image class="empty-icon-img" src="/images/icons/upload-48-dark.png" mode="aspectFit"></image>
     <text class="empty-text">暂无记录</text>
   </view>
 </view>

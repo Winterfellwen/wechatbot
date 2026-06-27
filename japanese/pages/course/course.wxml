@@ -7,21 +7,21 @@
 
   <view class="hub-grid">
     <view class="hub-card hub-green" bindtap="goToTextbook">
-      <view class="hub-icon-text">文</view>
+      <image class="hub-icon-img" src="/images/icons/book-text-48-dark.png" mode="aspectFit"></image>
       <view class="hub-name">课本</view>
       <view class="hub-desc">N5 → N1 完整学习</view>
       <view class="hub-badge">76课</view>
     </view>
 
     <view class="hub-card hub-blue" bindtap="goToWordbook">
-      <view class="hub-icon-text">詞</view>
+      <image class="hub-icon-img" src="/images/icons/spell-check-48-dark.png" mode="aspectFit"></image>
       <view class="hub-name">单词本</view>
       <view class="hub-desc">高效背单词</view>
       <view class="hub-badge">{{masteredCount}}/{{wordCount}}</view>
     </view>
 
     <view class="hub-card hub-orange" bindtap="goToGrammar">
-      <view class="hub-icon-text">文</view>
+      <image class="hub-icon-img" src="/images/icons/book-text-48-dark.png" mode="aspectFit"></image>
       <view class="hub-name">语法</view>
       <view class="hub-desc">系统语法讲解</view>
       <view class="hub-badge">{{grammarCount}}条</view>
@@ -31,19 +31,19 @@
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLesson">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">关</text>
+        <image class="nav-icon-img" src="/images/icons/target-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item active">
       <view class="nav-icon-wrap nav-icon-active">
-        <text class="nav-icon-text">课</text>
+        <image class="nav-icon-img" src="/images/icons/book-open-text-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text nav-text-active">课程</text>
     </view>
     <view class="nav-item" bindtap="goToRank">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">榜</text>
+        <image class="nav-icon-img" src="/images/icons/trophy-48-primary.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">排行榜</text>
     </view>

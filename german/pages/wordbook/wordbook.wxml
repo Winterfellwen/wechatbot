@@ -1,7 +1,7 @@
 <view class="container">
   <!-- 空状态 -->
   <view wx:if="{{isEmpty}}" class="empty-state">
-    <text class="empty-icon">📚</text>
+    <image class="empty-icon-img" src="/images/icons/book-open-text-96-white.png" mode="aspectFit"></image>
     <text class="empty-title">生词本为空</text>
     <text class="empty-desc">在课程或闯关中添加生词</text>
   </view>
@@ -19,7 +19,7 @@
         <view class="word-main">
           <view class="word-text" bindtap="playAudio" data-word="{{item.word}}">
             <text class="word">{{item.word}}</text>
-            <text class="audio-icon">🔊</text>
+            <image class="audio-icon-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
           </view>
           <view class="word-translation">{{item.translation}}</view>
           <view class="word-phonetic" wx:if="{{item.phonetic}}">/{{item.phonetic}}/</view>
@@ -41,7 +41,7 @@
       <view class="review-card" wx:if="{{wordList.length > 0}}">
         <view class="card-word" bindtap="playAudio" data-word="{{wordList[currentCard].word}}">
           <text>{{wordList[currentCard].word}}</text>
-          <text class="audio-icon">🔊</text>
+          <image class="audio-icon-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
         </view>
         <view class="card-phonetic" wx:if="{{wordList[currentCard].phonetic}}">
           /{{wordList[currentCard].phonetic}}/
@@ -70,19 +70,19 @@
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLearn">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">闯</text>
+        <image class="nav-icon-img" src="/images/icons/swords-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item" bindtap="goToCourse">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">课</text>
+        <image class="nav-icon-img" src="/images/icons/book-open-text-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item active">
       <view class="nav-icon-wrap nav-icon-active">
-        <text class="nav-icon-text">词</text>
+        <image class="nav-icon-img" src="/images/icons/book-marked-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text nav-text-active">生词本</text>
     </view>

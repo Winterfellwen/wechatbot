@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{typeName}}</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <view class="loading-icon">⏳</view>
+    <text class="loading-text">正在为您生成运势分析...</text>
+    <text class="loading-sub">请稍候，AI正在分析您的信息</text>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="error" wx:elif="{{error}}">
+    <view class="error-icon">❌</view>
+    <text class="error-text">{{error}}</text>
+    <button class="retry-btn" bindtap="handleRetry">重试</button>
+  </view>
+
+  <!-- 结果展示 -->
+  <view class="result" wx:else>
+    <result-display result="{{result}}" type="{{type}}" />
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="footer">
+    <button class="footer-btn back-btn" bindtap="handleBack">返回</button>
+    <button class="footer-btn home-btn" bindtap="handleHome">首页</button>
+  </view>
+</view>

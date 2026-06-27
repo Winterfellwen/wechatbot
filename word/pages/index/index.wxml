@@ -6,27 +6,27 @@
   </view>
 
   <view class="notice">
-    <text class="notice-icon">!</text>
+    <image class="notice-icon-img" src="/images/icons/circle-alert-48-danger.png" mode="aspectFit"></image>
     <text class="notice-text">Word 编辑功能仅供临时急用，不支持表格功能。</text>
   </view>
 
   <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input-wrap">
-      <text class="search-icon">搜</text>
+      <image class="search-icon-img" src="/images/icons/search-48-dark.png" mode="aspectFit"></image>
       <input class="search-input" placeholder="搜索文档..." value="{{searchKey}}" bindinput="onSearchInput" />
-      <text class="search-clear" wx:if="{{searchKey}}" bindtap="onSearchClear">×</text>
+      <image class="search-clear-img" wx:if="{{searchKey}}" bindtap="onSearchClear" src="/images/icons/x-48-dark.png" mode="aspectFit"></image>
     </view>
   </view>
 
   <!-- 操作按钮 -->
   <view class="btn-row">
     <view class="new-btn" bindtap="createDoc">
-      <text class="new-icon">+</text>
+      <image class="new-icon-img" src="/images/icons/plus-48-dark.png" mode="aspectFit"></image>
       <text class="new-text">新建文档</text>
     </view>
     <view class="import-btn" bindtap="importDoc">
-      <text class="import-icon">↑</text>
+      <image class="import-icon-img" src="/images/icons/upload-48-dark.png" mode="aspectFit"></image>
       <text class="import-text">导入Word</text>
     </view>
   </view>
@@ -37,10 +37,11 @@
     <text class="section-title">全部文档 ({{filteredDocs.length}})</text>
     <view class="toolbar-actions">
       <view class="sort-btn" bindtap="showSortPicker">
-        <text>{{sortBy === 'updatedAt_desc' ? '最新' : sortBy === 'updatedAt_asc' ? '最早' : sortBy === 'title' ? '名称' : '创建'}} ▼</text>
+        <text>{{sortBy === 'updatedAt_desc' ? '最新' : sortBy === 'updatedAt_asc' ? '最早' : sortBy === 'title' ? '名称' : '创建'}}</text>
+        <image class="sort-arrow-img" src="/images/icons/chevron-down-48-dark.png" mode="aspectFit"></image>
       </view>
       <view class="view-toggle" bindtap="toggleViewMode">
-        <text>{{viewMode === 'list' ? '▦' : '≡'}}</text>
+        <image class="view-toggle-img" src="{{viewMode === 'list' ? '/images/icons/layout-grid-48-dark.png' : '/images/icons/list-48-dark.png'}}" mode="aspectFit"></image>
       </view>
     </view>
   </view>
@@ -60,7 +61,7 @@
     <view class="doc-card {{viewMode}}" wx:for="{{filteredDocs}}" wx:key="id">
       <view class="doc-info" bindtap="openDoc" data-id="{{item.id}}">
         <view class="doc-icon-wrap">
-          <text class="doc-icon">W</text>
+          <image class="doc-icon-img" src="/images/icons/pencil-48-dark.png" mode="aspectFit"></image>
         </view>
         <view class="doc-detail">
           <text class="doc-name">{{item.title}}</text>

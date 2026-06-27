@@ -4,7 +4,7 @@
   <view wx:if="{{!currentBook}}">
     <view class="header">
       <view class="header-row">
-        <view class="back-btn" bindtap="goBack"><text class="back-icon">◀</text></view>
+        <view class="back-btn" bindtap="goBack"><image class="back-icon-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image></view>
         <text class="header-title">课本</text>
         <view class="header-placeholder"></view>
       </view>
@@ -29,7 +29,7 @@
               <text class="progress-text">{{item.progress}}%</text>
             </view>
           </view>
-          <view class="book-arrow"><text class="arrow-icon">></text></view>
+          <view class="book-arrow"><image class="arrow-icon-img" src="/images/icons/chevron-right-48-dark.png" mode="aspectFit"></image></view>
         </view>
       </block>
     </view>
@@ -39,7 +39,7 @@
   <view wx:if="{{currentBook}}">
     <view class="header">
       <view class="header-row">
-        <view class="back-btn" bindtap="closeBook"><text class="back-icon">◀</text></view>
+        <view class="back-btn" bindtap="closeBook"><image class="back-icon-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image></view>
         <text class="header-title">{{currentBook.title}}</text>
         <view class="header-placeholder"></view>
       </view>
@@ -49,7 +49,7 @@
       <block wx:for="{{currentBookLessons}}" wx:key="id">
         <view class="lesson-row {{item.done ? 'done' : ''}}" bindtap="startLesson" data-id="{{item.id}}">
           <view class="lesson-num-circle {{item.done ? 'done' : ''}}">
-            <text wx:if="{{item.done}}" class="check-icon">V</text>
+            <image wx:if="{{item.done}}" class="check-icon-img" src="/images/icons/check-circle-48-success.png" mode="aspectFit"></image>
             <text wx:else class="num-text">{{item.number}}</text>
           </view>
           <view class="lesson-info">
@@ -57,7 +57,7 @@
             <text wx:if="{{item.subtitle}}" class="lesson-subtitle">{{item.subtitle}}</text>
             <text class="lesson-meta">{{item.words}}词 · {{item.grammar}}语法</text>
           </view>
-          <text class="lesson-arrow">></text>
+          <image class="lesson-arrow-img" src="/images/icons/chevron-right-48-dark.png" mode="aspectFit"></image>
         </view>
       </block>
     </view>

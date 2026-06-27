@@ -217,6 +217,11 @@
   color: #2563EB;
 }
 
+.empty-icon-img {
+  width: 64rpx;
+  height: 64rpx;
+}
+
 .empty-title {
   font-size: 34rpx;
   font-weight: 600;

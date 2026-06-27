@@ -22,7 +22,7 @@
                 <view class="sw-meaning">{{item.meaning}}</view>
               </view>
               <view class="expand-btn" catchtap="toggleWordExpand" data-index="{{wordIdx}}">
-                <text class="arrow {{item.expanded ? 'up' : ''}}">{{item.expanded ? '▲' : '▼'}}</text>
+                <image class="arrow-img {{item.expanded ? 'up' : ''}}" src="/images/icons/chevron-down-48-dark.png" mode="aspectFit"></image>
               </view>
             </view>
             <view wx:if="{{item.expanded}}" class="word-extra">
@@ -30,7 +30,7 @@
               <view wx:if="{{item.example}}" class="sw-example {{playingWord === item.example ? 'playing' : ''}}" catchtap="playAudio" data-word="{{item.example}}">
                 <text class="example-text">{{item.example}}</text>
                   <view class="audio-indicator {{playingWord === item.example ? 'playing' : ''}}">
-                  <text class="speaker-icon {{playingWord === item.example ? 'playing' : ''}}">🔊</text>
+                  <image class="speaker-icon-img {{playingWord === item.example ? 'playing' : ''}}" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
                 </view>
               </view>
               <view wx:if="{{item.example_translation}}" class="sw-ex-cn">{{item.example_translation}}</view>
@@ -92,7 +92,8 @@
     <view class="quiz-body">
       <view class="question-prompt">{{currentQuestion.prompt}}</view>
       <view wx:if="{{currentQuestion.type === 'listening'}}" class="audio-btn-big {{isPlayingAudio ? 'playing' : ''}}" bindtap="playAudio">
-        <text class="speaker-icon-lg">🔊</text>
+        <image wx:if="{{!isPlayingAudio}}" class="speaker-icon-lg-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
+        <image wx:else class="speaker-icon-lg-img" src="/images/icons/volume-2-48-white.png" mode="aspectFit"></image>
       </view>
 
       <view wx:if="{{currentQuestion.options}}" class="options-list {{showShake ? 'shake-anim' : ''}}">
@@ -117,7 +118,8 @@
       </view>
       <view class="result-card {{isCorrect ? 'result-correct' : 'result-wrong'}}">
         <view class="result-icon-wrap">
-          <text class="result-icon">{{isCorrect ? 'V' : 'X'}}</text>
+          <image wx:if="{{isCorrect}}" class="result-icon-img" src="/images/icons/check-48-white.png" mode="aspectFit"></image>
+          <image wx:else class="result-icon-img" src="/images/icons/x-48-white.png" mode="aspectFit"></image>
         </view>
         <text class="result-msg">{{isCorrect ? '回答正确' : '回答错误'}}</text>
         <text wx:if="{{isCorrect && combo > 1}}" class="result-combo">{{combo}} 连击</text>

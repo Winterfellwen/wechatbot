@@ -716,3 +716,43 @@
   opacity: 0.85;
   transform: scale(0.96);
 }
+
+/* ========== Icon image replacements ========== */
+.group-picker-arrow-img {
+  width: 20rpx;
+  height: 20rpx;
+  flex-shrink: 0;
+}
+
+.spicy-icon-img {
+  width: 20rpx;
+  height: 20rpx;
+  margin-right: 2rpx;
+}
+
+.reorder-icon-img {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 6rpx;
+  flex-shrink: 0;
+}
+
+.send-icon-img {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.cart-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.panel-close-img {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.qty-btn-img {
+  width: 24rpx;
+  height: 24rpx;
+}

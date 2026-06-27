@@ -2,6 +2,12 @@
 .container { min-height: 100vh; background: #F8FAFC; padding-bottom: 40rpx; }
 .header { display: flex; align-items: center; padding: 20rpx 30rpx; background: #fff; box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06); }
 .back-btn { width: 100rpx; font-size: 28rpx; color: #6366F1; }
+.back-btn-img {
+  width: 28rpx;
+  height: 28rpx;
+  vertical-align: middle;
+  margin-right: 4rpx;
+}
 .header-title { flex: 1; text-align: center; font-size: 32rpx; font-weight: bold; color: #333; }
 .header-placeholder { width: 100rpx; }
 
@@ -14,6 +20,11 @@
 
 .swap-btn { display: flex; align-items: center; justify-content: center; margin: 16rpx 30rpx; padding: 16rpx; background: #EEF2FF; border-radius: 12rpx; }
 .swap-icon { font-size: 32rpx; color: #6366F1; margin-right: 8rpx; }
+.swap-icon-img {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 8rpx;
+}
 .swap-text { font-size: 26rpx; color: #6366F1; }
 
 .do-btn-wrap { padding: 20rpx 30rpx; }

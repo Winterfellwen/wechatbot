@@ -33,6 +33,11 @@
   font-weight: 700;
 }
 
+.back-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 .top-title {
   flex: 1;
   text-align: center;
@@ -126,6 +131,11 @@
   font-size: 28rpx;
   font-weight: 800;
   color: #2563EB;
+}
+
+.play-icon-img {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 .grammar-list {

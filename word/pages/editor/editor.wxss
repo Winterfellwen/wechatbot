@@ -327,3 +327,34 @@
   line-height: 1.8;
   color: #333;
 }
+
+/* ========== Icon image replacements ========== */
+.mode-btn-img {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 6rpx;
+  vertical-align: middle;
+}
+
+.close-btn-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.tool-icon-img {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.tool-icon-sm-img {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 4rpx;
+}
+
+.tool-label-img {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 4rpx;
+  vertical-align: middle;
+}

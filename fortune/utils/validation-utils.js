@@ -5,32 +5,45 @@
 /**
  * Validate date format (YYYY-MM-DD)
  * @param {string} dateStr - Date string to validate
- * @returns {boolean} True if valid
+ * @returns {object} { valid: boolean, message: string }
  */
 function validateDate(dateStr) {
-  if (typeof dateStr !== 'string') return false;
+  if (!dateStr) return { valid: false, message: '请输入出生日期' };
   
   const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(dateStr)) return false;
+  if (!regex.test(dateStr)) {
+    return { valid: false, message: '日期格式应为YYYY-MM-DD' };
+  }
   
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const parts = dateStr.split('-');
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]);
+  const day = parseInt(parts[2]);
   
-  // Basic range checks
-  if (year < 1900 || year > 2100) return false;
-  if (month < 1 || month > 12) return false;
-  if (day < 1 || day > 31) return false;
+  if (year < 1900 || year > 2100) {
+    return { valid: false, message: '年份应在1900-2100之间' };
+  }
   
-  // Check actual date validity
+  if (month < 1 || month > 12) {
+    return { valid: false, message: '月份应在1-12之间' };
+  }
+  
+  if (day < 1 || day > 31) {
+    return { valid: false, message: '日期应在1-31之间' };
+  }
+  
   const date = new Date(year, month - 1, day);
-  return date.getFullYear() === year && 
-         date.getMonth() === month - 1 && 
-         date.getDate() === day;
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return { valid: false, message: '请输入有效的日期' };
+  }
+  
+  return { valid: true, message: '' };
 }
 
 /**
  * Validate Chinese hour name
  * @param {string} 时辰 - Chinese hour name to validate
- * @returns {boolean} True if valid
+ * @returns {object} { valid: boolean, message: string }
  */
 function validate时辰(时辰) {
   const valid时辰 = [
@@ -38,23 +51,30 @@ function validate时辰(时辰) {
     '午时', '未时', '申时', '酉时', '戌时', '亥时'
   ];
   
-  return valid时辰.includes(时辰);
+  if (!时辰) return { valid: false, message: '请选择出生时辰' };
+  if (!valid时辰.includes(时辰)) {
+    return { valid: false, message: '请选择有效的时辰' };
+  }
+  return { valid: true, message: '' };
 }
 
 /**
  * Validate gender value
  * @param {string} gender - Gender to validate
- * @returns {boolean} True if valid
+ * @returns {object} { valid: boolean, message: string }
  */
 function validateGender(gender) {
-  const validGenders = ['male', 'female', '男', '女'];
-  return validGenders.includes(gender);
+  if (!gender) return { valid: false, message: '请选择性别' };
+  if (!['male', 'female'].includes(gender)) {
+    return { valid: false, message: '请选择有效的性别' };
+  }
+  return { valid: true, message: '' };
 }
 
 /**
  * Validate zodiac sign
  * @param {string} constellation - Zodiac sign to validate
- * @returns {boolean} True if valid
+ * @returns {object} { valid: boolean, message: string }
  */
 function validate星座(constellation) {
   const valid星座 = [
@@ -63,29 +83,26 @@ function validate星座(constellation) {
     '射手座', '摩羯座', '水瓶座', '双鱼座'
   ];
   
-  return valid星座.includes(constellation);
+  if (!constellation) return { valid: false, message: '请选择星座' };
+  if (!valid星座.includes(constellation)) {
+    return { valid: false, message: '请选择有效的星座' };
+  }
+  return { valid: true, message: '' };
 }
 
 /**
  * Validate question input
  * @param {string} question - Question to validate
- * @returns {boolean} True if valid
+ * @returns {object} { valid: boolean, message: string }
  */
 function validateQuestion(question) {
-  if (typeof question !== 'string') return false;
-  
-  const trimmed = question.trim();
-  
-  // Check minimum length
-  if (trimmed.length < 2) return false;
-  
-  // Check maximum length
-  if (trimmed.length > 500) return false;
-  
-  // Check for only whitespace
-  if (trimmed.length === 0) return false;
-  
-  return true;
+  if (!question || question.trim() === '') {
+    return { valid: false, message: '请输入您想要预测的问题' };
+  }
+  if (question.length > 200) {
+    return { valid: false, message: '问题长度不能超过200字' };
+  }
+  return { valid: true, message: '' };
 }
 
 module.exports = {

@@ -123,42 +123,9 @@
   box-shadow: 0 6rpx 20rpx rgba(245, 87, 108, 0.2);
 }
 
-.icon-word-body {
-  width: 56rpx;
-  height: 56rpx;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #2563EB, #3B82F6);
-  border-radius: 8rpx;
-}
-
-.icon-word-fold {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 16rpx;
-  height: 16rpx;
-  background: linear-gradient(225deg, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 50%);
-}
-
-.icon-word-letter {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: bold;
-  font-family: Georgia, serif;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.15);
-}
-
-.icon-ai-order-text {
-  font-size: 48rpx;
-}
-
 .entry-icon {
-  width: 56rpx;
-  height: 56rpx;
+  width: 96rpx;
+  height: 96rpx;
 }
 
 .entry-title {

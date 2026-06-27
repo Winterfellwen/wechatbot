@@ -84,6 +84,12 @@
   margin-right: 16rpx;
 }
 
+.audio-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+  margin-right: 16rpx;
+}
+
 .options {
   display: flex;
   flex-direction: column;

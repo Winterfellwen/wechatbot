@@ -72,6 +72,11 @@ page {
   font-size: 24rpx;
 }
 
+.stats-pill-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 .stats-pill-text {
   font-size: 24rpx;
   color: #fff;
@@ -196,14 +201,19 @@ page {
   background: #F8FAFC;
 }
 
-.node-icon { 
-  font-size: 28rpx; 
-  color: #ffffff; 
+.node-icon {
+  font-size: 28rpx;
+  color: #ffffff;
   font-weight: bold;
 }
 
-.node-wrap.current .node-icon { 
-  color: #2563EB; 
+.node-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.node-wrap.current .node-icon {
+  color: #2563EB;
 }
 
 .node-num { 
@@ -265,6 +275,11 @@ page {
 
 .status-icon {
   font-size: 22rpx;
+}
+
+.status-icon-img {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .status-text {
@@ -334,6 +349,15 @@ page {
   font-size: 24rpx;
   font-weight: 600;
   color: #64748B;
+}
+
+.nav-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .nav-item.active .nav-icon-text {

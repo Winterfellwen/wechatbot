@@ -37,7 +37,7 @@
     </view>
     <view wx:if="{{rankList.length === 0}}" class="empty-state">
       <view class="empty-icon-wrap">
-        <text class="empty-icon-text">R</text>
+        <image class="empty-icon-img" src="/images/icons/trophy-48-primary.png" mode="aspectFit"></image>
       </view>
       <text class="empty-title">暂无排名数据</text>
       <text class="empty-desc">开始学习后即可上榜</text>

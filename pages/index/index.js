@@ -50,6 +50,8 @@ Page({
       wx.navigateTo({ url: '/pages/tool-agent/tool-agent' });
     } else if (type === 'cloud') {
       wx.navigateTo({ url: '/cloud-manager/pages/index/index' });
+    } else if (type === 'fortune') {
+      wx.navigateTo({ url: '/fortune/pages/index/index' });
     }
   }
 });

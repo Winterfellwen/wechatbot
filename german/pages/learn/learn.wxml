@@ -10,7 +10,7 @@
       <text class="exp-text">{{userProgress.totalPoints || 0}} XP</text>
     </view>
     <view class="stats-pill">
-      <text class="stats-pill-icon">🔥</text>
+      <image class="stats-pill-icon-img" src="/images/icons/flame-48-danger.png" mode="aspectFit"></image>
       <text class="stats-pill-text">{{userProgress.streakDays || 0}}</text>
     </view>
   </view>
@@ -34,8 +34,8 @@
           <view class="node-wrap {{item.done ? 'done' : ''}} {{item.current ? 'current' : ''}} {{!item.done && !item.current ? 'locked' : ''}}"
                 bindtap="startChallenge" data-index="{{item.number}}">
             <view class="node-circle">
-              <text wx:if="{{item.done}}" class="node-icon check">✓</text>
-              <text wx:if="{{!item.done && item.current}}" class="node-icon play">▶</text>
+              <image wx:if="{{item.done}}" class="node-icon-img" src="/images/icons/check-48-success.png" mode="aspectFit"></image>
+              <image wx:if="{{!item.done && item.current}}" class="node-icon-img" src="/images/icons/play-48-primary.png" mode="aspectFit"></image>
               <text wx:if="{{!item.done && !item.current}}" class="node-num">{{item.number}}</text>
             </view>
             <view class="node-info">
@@ -45,7 +45,7 @@
               <text class="node-meta locked" wx:else>未解锁</text>
             </view>
             <view wx:if="{{item.done}}" class="node-status done">
-              <text class="status-icon">✓</text>
+              <image class="status-icon-img" src="/images/icons/check-48-success.png" mode="aspectFit"></image>
             </view>
             <view wx:if="{{item.current && !item.done}}" class="node-status current">
               <text class="status-text">开始</text>
@@ -62,19 +62,19 @@
   <view class="bottom-nav">
     <view class="nav-item active">
       <view class="nav-icon-wrap nav-icon-active">
-        <text class="nav-icon-text">闯</text>
+        <image class="nav-icon-img" src="/images/icons/swords-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text nav-text-active">闯关</text>
     </view>
     <view class="nav-item" bindtap="goToCourse">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">课</text>
+        <image class="nav-icon-img" src="/images/icons/book-open-text-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item" bindtap="goToWordbook">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">词</text>
+        <image class="nav-icon-img" src="/images/icons/book-marked-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">生词本</text>
     </view>

@@ -41,7 +41,7 @@
     <view class="action-card">
       <view class="action-item" bindtap="handleLogout">
         <view class="action-icon-wrap icon-logout">
-          <text class="action-icon-text">⏻</text>
+          <image class="action-icon-img" src="/images/icons/power-48-danger.png" mode="aspectFit"></image>
         </view>
         <text class="action-text">退出登录</text>
         <text class="action-arrow">›</text>
@@ -49,7 +49,7 @@
       <view class="action-divider"></view>
       <view class="action-item action-item-danger" bindtap="handleDeleteAccount">
         <view class="action-icon-wrap icon-danger">
-          <text class="action-icon-text">✕</text>
+          <image class="action-icon-img" src="/images/icons/x-circle-48-danger.png" mode="aspectFit"></image>
         </view>
         <text class="action-text text-danger">注销账号</text>
         <text class="action-arrow">›</text>

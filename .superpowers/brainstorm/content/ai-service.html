@@ -1,0 +1,165 @@
+<h2>AI服务设计</h2>
+<p class="subtitle">AI API调用、提示词工程和响应处理</p>
+
+<div class="section">
+  <h3>AI服务架构</h3>
+  <div class="mockup">
+    <div class="mockup-header">AI服务层架构</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e3f2fd; border-radius: 8px;">
+          <strong>前端界面</strong><br>
+          <small>用户交互、数据收集</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px;">
+          <strong>AI服务层</strong><br>
+          <small>提示词生成、API调用</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px;">
+          <strong>AI API</strong><br>
+          <small>OpenAI/Claude等</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>API调用流程</h3>
+  <div class="mockup">
+    <div class="mockup-header">请求-响应流程</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div class="placeholder" style="padding: 10px 15px; background: #e3f2fd; border-radius: 5px;">1. 收集用户输入</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #e8f5e9; border-radius: 5px;">2. 生成提示词</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #fff3e0; border-radius: 5px;">3. 调用AI API</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #fce4ec; border-radius: 5px;">4. 解析响应</div>
+        <div style="font-size: 20px;">→</div>
+        <div class="placeholder" style="padding: 10px 15px; background: #f3e5f5; border-radius: 5px;">5. 格式化结果</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>提示词工程设计</h3>
+  <div class="cards">
+    <div class="card" data-choice="chinese-prompt" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #8b4513; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">中国预测提示词</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>易经卦象提示词：</strong></p>
+        <div style="font-family: monospace; font-size: 10px; background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 5px;">
+          "你是精通易经的AI分析师。根据用户信息和问题，生成一个易经卦象。要求：<br>
+          1. 生成随机卦象（1-64）<br>
+          2. 解读卦辞和爻辞<br>
+          3. 结合用户问题给出建议<br>
+          4. 引用相关典故"
+        </div>
+      </div>
+    </div>
+    <div class="card" data-choice="western-prompt" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #1a237e; color: white; padding: 15px;">
+        <h4 style="margin: 0; color: white;">西方预测提示词</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>星座分析提示词：</strong></p>
+        <div style="font-family: monospace; font-size: 10px; background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 5px;">
+          "你是精通星座学的AI分析师。根据用户星座和问题，进行星座运势分析。要求：<br>
+          1. 分析星座特质<br>
+          2. 预测今日运势<br>
+          3. 结合希腊神话典故<br>
+          4. 给出具体建议"
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>API配置设计</h3>
+  <div class="mockup">
+    <div class="mockup-header">API配置参数</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h4>API选择</h4>
+          <div class="placeholder" style="padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: monospace; font-size: 12px;">
+            <strong>主要API：</strong>OpenAI GPT-4<br>
+            <strong>备选API：</strong>Claude 3.5 Sonnet<br>
+            <strong>国内API：</strong>文心一言/通义千问
+          </div>
+        </div>
+        <div>
+          <h4>请求参数</h4>
+          <div class="placeholder" style="padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: monospace; font-size: 12px;">
+            <strong>temperature:</strong> 0.7-0.9<br>
+            <strong>max_tokens:</strong> 1000-2000<br>
+            <strong>top_p:</strong> 0.9
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>响应处理设计</h3>
+  <div class="options">
+    <div class="option" data-choice="response" onclick="toggleSelect(this)">
+      <div class="letter">🔄</div>
+      <div class="content">
+        <h3>响应处理策略</h3>
+        <p><strong>1. 内容解析：</strong>从AI响应中提取结构化数据</p>
+        <p><strong>2. 格式转换：</strong>将AI文本转换为小程序可用的格式</p>
+        <p><strong>3. 错误处理：</strong>处理API调用失败、响应异常等情况</p>
+        <p><strong>4. 缓存机制：</strong>相同输入缓存结果，减少API调用</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>费用控制设计</h3>
+  <div class="mockup">
+    <div class="mockup-header">费用控制策略</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px;">
+          <strong>每日限额</strong><br>
+          <small>限制每用户每日调用次数</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fff3e0; border-radius: 8px;">
+          <strong>缓存策略</strong><br>
+          <small>相同结果缓存24小时</small>
+        </div>
+        <div class="placeholder" style="padding: 15px; text-align: center; background: #fce4ec; border-radius: 8px;">
+          <strong>降级方案</strong><br>
+          <small>API失败时使用本地模板</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>错误处理设计</h3>
+  <div class="options">
+    <div class="option" data-choice="error" onclick="toggleSelect(this)">
+      <div class="letter">⚠️</div>
+      <div class="content">
+        <h3>错误处理策略</h3>
+        <p><strong>1. 网络错误：</strong>自动重试3次，失败后提示用户</p>
+        <p><strong>2. API限流：</strong>等待后重试，或切换备用API</p>
+        <p><strong>3. 响应异常：</strong>使用本地模板生成基础运势</p>
+        <p><strong>4. 用户输入错误：</strong>提供输入验证和错误提示</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 30px; color: #666;">这是AI服务设计。你觉得这个设计如何？有没有需要调整的地方？</p>

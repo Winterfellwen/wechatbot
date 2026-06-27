@@ -49,19 +49,19 @@
   <view class="bottom-nav">
     <view class="nav-item" bindtap="goToLesson">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">关</text>
+        <image class="nav-icon-img" src="/images/icons/target-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">闯关</text>
     </view>
     <view class="nav-item" bindtap="goToCourse">
       <view class="nav-icon-wrap">
-        <text class="nav-icon-text">课</text>
+        <image class="nav-icon-img" src="/images/icons/book-open-text-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text">课程</text>
     </view>
     <view class="nav-item active">
       <view class="nav-icon-wrap nav-icon-active">
-        <text class="nav-icon-text">榜</text>
+        <image class="nav-icon-img" src="/images/icons/trophy-48-primary.png" mode="aspectFit"></image>
       </view>
       <text class="nav-text nav-text-active">排行榜</text>
     </view>

@@ -28,7 +28,7 @@
       <view wx:elif="{{questions[currentQuestion].type === 'listen'}}" class="type-listen">
         <view class="question-text">{{questions[currentQuestion].question}}</view>
         <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
-          <text class="audio-icon">{{isPlaying ? '音' : '音'}}</text>
+          <image class="audio-icon-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
           <text>{{isPlaying ? '播放中' : '播放录音'}}</text>
         </view>
         <view class="options">
@@ -48,7 +48,7 @@
       <view wx:elif="{{questions[currentQuestion].type === 'spell'}}" class="type-spell">
         <view class="question-text">{{questions[currentQuestion].question}}</view>
         <view class="audio-btn" bindtap="playAudio" disabled="{{isPlaying}}">
-          <text class="audio-icon">{{isPlaying ? '音' : '音'}}</text>
+          <image class="audio-icon-img" src="/images/icons/volume-2-48-dark.png" mode="aspectFit"></image>
           <text>{{isPlaying ? '播放中' : '播放录音'}}</text>
         </view>
         <input 

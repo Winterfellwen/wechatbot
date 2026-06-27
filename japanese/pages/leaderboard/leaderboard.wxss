@@ -212,6 +212,14 @@
   color: #64748B;
 }
 .nav-item.active .nav-icon-text { color: #ffffff; }
+
+.nav-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) invert(1);
+}
 .nav-text { 
   font-size: 24rpx; 
   color: #64748B; 

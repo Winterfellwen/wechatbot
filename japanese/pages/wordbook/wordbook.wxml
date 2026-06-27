@@ -3,7 +3,7 @@
   <view class="header">
     <view class="header-row">
       <view class="back-btn" bindtap="goBack">
-        <text class="back-icon">◀</text>
+        <image class="back-icon-img" src="/images/icons/chevron-left-48-dark.png" mode="aspectFit"></image>
       </view>
       <text class="header-title">单词本</text>
       <view class="header-placeholder"></view>

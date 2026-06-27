@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{category === 'chinese' ? '中国运势' : '西方运势'}}</text>
+  </view>
+
+  <view class="types-grid">
+    <type-card
+      wx:for="{{types}}"
+      wx:key="type"
+      type="{{item.type}}"
+      name="{{item.name}}"
+      icon="{{item.icon}}"
+      bind:tap="handleTypeTap"
+    />
+  </view>
+
+  <view class="descriptions">
+    <view class="description-item" wx:for="{{types}}" wx:key="type">
+      <text class="desc-name">{{item.name}}</text>
+      <text class="desc-text">{{item.desc}}</text>
+    </view>
+  </view>
+</view>
