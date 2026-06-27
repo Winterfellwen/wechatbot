@@ -35,6 +35,8 @@ Component({
   },
 
   methods: {
+    preventBubble() {},
+
     handleNameInput(e) {
       this.setData({ name: e.detail.value });
       this.clearError('name');
