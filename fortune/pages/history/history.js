@@ -1,3 +1,4 @@
+// fortune/pages/history/history.js
 const storageService = require('../../services/storage-service');
 
 Page({
@@ -23,36 +24,22 @@ Page({
   },
 
   handleItemTap(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.history[index];
-    
-    var params = 'type=' + encodeURIComponent(item.type) +
-      '&birthDate=' + encodeURIComponent(item.userInfo.birthDate || '') +
-      '&birthTime=' + encodeURIComponent(item.userInfo.birthTime || '') +
-      '&gender=' + encodeURIComponent(item.userInfo.gender || '') +
-      '&constellation=' + encodeURIComponent(item.userInfo.constellation || '') +
-      '&question=' + encodeURIComponent(item.question || '');
-    
+    const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: '/fortune/pages/result/result?' + params
+      url: `/fortune/pages/reading/reading?mode=view&id=${id}`
     });
   },
 
   handleDelete(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.history[index];
-    
+    const id = e.currentTarget.dataset.id;
     wx.showModal({
       title: '确认删除',
-      content: '确定要删除这条历史记录吗？',
+      content: '确定要删除这条记录吗？',
       success: (res) => {
         if (res.confirm) {
-          storageService.deleteHistory(item.id);
+          storageService.deleteHistory(id);
           this.loadHistory();
-          wx.showToast({
-            title: '删除成功',
-            icon: 'success'
-          });
+          wx.showToast({ title: '删除成功', icon: 'success' });
         }
       }
     });
@@ -66,12 +53,13 @@ Page({
         if (res.confirm) {
           storageService.clearHistory();
           this.loadHistory();
-          wx.showToast({
-            title: '清空成功',
-            icon: 'success'
-          });
+          wx.showToast({ title: '清空成功', icon: 'success' });
         }
       }
     });
+  },
+
+  handleBack() {
+    wx.navigateBack();
   }
 });
