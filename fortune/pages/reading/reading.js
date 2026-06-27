@@ -68,11 +68,12 @@ Page({
   },
 
   startStreamReadings() {
-    const { category, profile, readings } = this.data;
+    const { category, profile } = this.data;
 
     aiService.streamReadings(
       category,
       profile,
+      // onReadingStart — 全部同时变loading
       (type, typeName) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -81,6 +82,7 @@ Page({
           this.setData({ readings });
         }
       },
+      // onChunk — 打字效果
       (type, content) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -89,6 +91,7 @@ Page({
           this.setData({ readings });
         }
       },
+      // onReadingComplete — 单个卡片完成
       (type, typeName, content) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -97,9 +100,11 @@ Page({
           this.setData({ readings });
         }
       },
+      // onAllComplete
       () => {
         this.saveToHistory();
       },
+      // onError
       (type, err) => {
         console.error('Reading error:', type, err);
         const readings = [...this.data.readings];
@@ -115,7 +120,6 @@ Page({
   handleRetry(e) {
     const type = e.currentTarget.dataset.type;
     const { category, profile } = this.data;
-
     const readings = [...this.data.readings];
     const index = readings.findIndex(r => r.type === type);
     if (index >= 0) {
@@ -123,10 +127,13 @@ Page({
       this.setData({ readings });
     }
 
-    const typeName = readings[index].typeName;
-    const prompt = aiService.buildReadingPrompt(type, profile);
+    const prompt = aiService.buildReadingPrompt(category, profile);
 
-    aiService.callAI(prompt).then((content) => {
+    aiService.callAI(prompt).then((fullText) => {
+      const contents = aiService.parseReadings(fullText);
+      const typeIndex = ['bazi', 'ziwei', 'yijing', 'constellation', 'tarot', 'astrology'].indexOf(type);
+      const content = contents[typeIndex] || contents[0] || '分析失败';
+
       const readings = [...this.data.readings];
       const idx = readings.findIndex(r => r.type === type);
       if (idx >= 0) {
