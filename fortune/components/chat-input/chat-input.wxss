@@ -1,0 +1,30 @@
+/* fortune/components/chat-input/chat-input.wxss */
+.input-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.input {
+  flex: 1;
+  background: #f8fafc;
+  border-radius: 40rpx;
+  padding: 20rpx 30rpx;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+}
+
+.send-btn {
+  padding: 16rpx 32rpx;
+  background: #e5e7eb;
+  color: #9ca3af;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+
+.send-btn.active {
+  background: linear-gradient(135deg, #8b5cf6, #d946ef);
+  color: white;
+}

@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.nav-back {
+  font-size: 40rpx;
+  color: #1E293B;
+  margin-right: 20rpx;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.chat-list {
+  flex: 1;
+  padding: 30rpx;
+}
+
+.loading-hint {
+  text-align: center;
+  padding: 20rpx;
+}
+
+.loading-text {
+  font-size: 24rpx;
+  color: #94A3B8;
+}

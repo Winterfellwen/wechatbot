@@ -1,0 +1,24 @@
+<view class="container">
+  <!-- 顶部导航 -->
+  <view class="nav-bar">
+    <text class="nav-back" bindtap="handleBack">←</text>
+    <text class="nav-title">AI运势助手</text>
+  </view>
+
+  <!-- 对话列表 -->
+  <scroll-view class="chat-list" scroll-y>
+    <chat-bubble
+      wx:for="{{messages}}"
+      wx:key="index"
+      role="{{item.role}}"
+      content="{{item.content}}"
+      streaming="{{isLoading && index === messages.length - 1 && item.role === 'assistant'}}"
+    />
+    <view class="loading-hint" wx:if="{{isLoading}}">
+      <text class="loading-text">AI正在思考...</text>
+    </view>
+  </scroll-view>
+
+  <!-- 输入框 -->
+  <chat-input bind:send="handleSend" />
+</view>

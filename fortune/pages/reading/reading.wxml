@@ -1,0 +1,32 @@
+<view class="container">
+  <view class="nav-bar">
+    <text class="nav-back" bindtap="handleBack">←</text>
+    <text class="nav-title">{{categoryName}} · {{profile.name}}</text>
+  </view>
+
+  <view class="profile-bar">
+    <text class="profile-info">📅 {{profile.birthday}} {{profile.gender === 'male' ? '男' : '女'}}</text>
+    <text class="profile-info" wx:if="{{profile.birthTime}}">⏰ {{profile.birthTime}}</text>
+  </view>
+
+  <view class="warning-bar" wx:if="{{category === 'chinese' && !profile.birthTime}}">
+    <text class="warning-text">⚠️ 未填写出生时辰，易学命理分析可能不准确</text>
+  </view>
+
+  <view class="readings-list">
+    <fortune-card
+      wx:for="{{readings}}"
+      wx:key="type"
+      typeName="{{item.typeName}}"
+      content="{{item.content}}"
+      status="{{item.status}}"
+      data-type="{{item.type}}"
+      bind:retry="handleRetry"
+    />
+  </view>
+
+  <view class="chat-fab" bindtap="handleChatTap">
+    <text class="fab-icon">💬</text>
+    <text class="fab-text">AI提问</text>
+  </view>
+</view>

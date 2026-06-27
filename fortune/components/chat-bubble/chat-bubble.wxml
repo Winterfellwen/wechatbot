@@ -1,0 +1,8 @@
+<!-- fortune/components/chat-bubble/chat-bubble.wxml -->
+<view class="bubble-wrapper {{role === 'user' ? 'user' : 'assistant'}}">
+  <view class="avatar" wx:if="{{role === 'assistant'}}">🤖</view>
+  <view class="bubble">
+    <text class="content">{{content}}</text>
+    <text class="cursor" wx:if="{{streaming}}">|</text>
+  </view>
+</view>

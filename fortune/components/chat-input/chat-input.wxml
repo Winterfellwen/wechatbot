@@ -1,0 +1,12 @@
+<!-- fortune/components/chat-input/chat-input.wxml -->
+<view class="input-bar">
+  <input 
+    class="input" 
+    placeholder="输入你想问的问题..." 
+    value="{{inputValue}}" 
+    bindinput="handleInput"
+    confirm-type="send"
+    bindconfirm="handleSend"
+  />
+  <view class="send-btn {{inputValue ? 'active' : ''}}" bindtap="handleSend">发送</view>
+</view>

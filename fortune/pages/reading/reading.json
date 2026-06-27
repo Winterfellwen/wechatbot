@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "fortune-card": "/fortune/components/fortune-card/fortune-card"
+  }
+}

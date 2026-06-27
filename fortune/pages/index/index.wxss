@@ -1,6 +1,7 @@
+/* fortune/pages/index/index.wxss */
 .container {
-  padding: 20rpx;
-  background-color: #f5f5f5;
+  padding: 30rpx;
+  background: #f8fafc;
   min-height: 100vh;
 }
 
@@ -9,73 +10,108 @@
   text-align: center;
 }
 
-.greeting {
-  font-size: 40rpx;
+.title {
+  font-size: 44rpx;
   font-weight: bold;
-  color: #333;
+  color: #1E293B;
 }
 
-.section {
-  margin-bottom: 40rpx;
-}
-
-.section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #666;
-  margin-bottom: 20rpx;
-}
-
-.type-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20rpx;
-}
-
-.type-card {
+.profile-card {
   background: white;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   padding: 30rpx;
-  text-align: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+  margin-bottom: 30rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
-.type-icon {
-  font-size: 48rpx;
-  margin-bottom: 10rpx;
+.profile-info {
+  flex: 1;
 }
 
-.type-name {
-  font-size: 28rpx;
-  color: #333;
-}
-
-.daily-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16rpx;
-  padding: 40rpx;
-  color: white;
-  text-align: center;
-}
-
-.daily-title {
+.profile-name {
   font-size: 36rpx;
-  font-weight: bold;
+  font-weight: 600;
+  color: #1E293B;
   display: block;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
 }
 
-.daily-desc {
-  font-size: 28rpx;
-  opacity: 0.9;
+.profile-detail {
+  font-size: 26rpx;
+  color: #64748b;
+  display: block;
+  margin-bottom: 4rpx;
 }
 
-.footer {
+.profile-empty {
+  flex: 1;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #1E293B;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #94A3B8;
+}
+
+.profile-arrow {
+  font-size: 40rpx;
+  color: #94A3B8;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+  margin-bottom: 30rpx;
+}
+
+.category-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
   text-align: center;
-  padding: 40rpx 0;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s;
 }
 
-.footer-text {
-  color: #667eea;
+.category-card:active {
+  transform: scale(0.96);
+}
+
+.category-icon {
+  font-size: 64rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.category-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E293B;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.category-desc {
+  font-size: 24rpx;
+  color: #94A3B8;
+}
+
+.history-entry {
+  text-align: center;
+  padding: 30rpx;
+}
+
+.history-text {
   font-size: 28rpx;
+  color: #8b5cf6;
 }

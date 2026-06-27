@@ -1,0 +1,77 @@
+.container {
+  padding: 30rpx;
+  background: #f8fafc;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0 30rpx;
+}
+
+.nav-back {
+  font-size: 40rpx;
+  color: #1E293B;
+  margin-right: 20rpx;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.profile-bar {
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.profile-info {
+  font-size: 26rpx;
+  color: #64748b;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.warning-bar {
+  background: #fef3c7;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.warning-text {
+  font-size: 24rpx;
+  color: #92400e;
+}
+
+.readings-list {
+  margin-bottom: 30rpx;
+}
+
+.chat-fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 80rpx;
+  background: linear-gradient(135deg, #8b5cf6, #d946ef);
+  border-radius: 60rpx;
+  padding: 24rpx 36rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 24rpx rgba(139, 92, 246, 0.4);
+}
+
+.fab-icon {
+  font-size: 36rpx;
+  margin-right: 10rpx;
+}
+
+.fab-text {
+  font-size: 28rpx;
+  color: white;
+  font-weight: 500;
+}
