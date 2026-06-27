@@ -83,15 +83,7 @@ ${resultsText}
 请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
 }
 
-// 实时清理thinking标签 + 英文
-function cleanChunk(text) {
-  return text
-    .replace(/<think>[\s\S]*?<\/think>/g, '')
-    .replace(/<\/?think>/g, '')
-    .trim();
-}
-
-// 流式调用 - 只输出实际内容
+// 流式调用 - 只取content字段，忽略reasoning_content（英文思考）
 function streamAI(prompt, onChunk, onDone, onError) {
   var fullText = '';
   var finishCalled = false;
@@ -99,8 +91,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
   function finish() {
     if (finishCalled) return;
     finishCalled = true;
-    var cleaned = cleanChunk(fullText);
-    if (onDone) onDone(cleaned);
+    if (onDone) onDone(fullText);
   }
 
   var task = wx.request({
@@ -155,15 +146,12 @@ function streamAI(prompt, onChunk, onDone, onError) {
             if (!json.choices || !json.choices[0] || !json.choices[0].delta) continue;
 
             var delta = json.choices[0].delta;
-            var chunk = delta.reasoning_content || delta.content || '';
+            // 只取content字段，reasoning_content是英文思考过程，忽略
+            var chunk = delta.content || '';
 
             if (chunk) {
               fullText += chunk;
-              // 实时输出，清理<think>标签
-              var display = cleanChunk(fullText);
-              if (display) {
-                if (onChunk) onChunk(display);
-              }
+              if (onChunk) onChunk(fullText);
             }
           } catch (e) {}
         }
@@ -198,8 +186,7 @@ function callAI(prompt) {
       success: function(res) {
         if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
           var message = res.data.choices[0].message;
-          var content = message.content || message.reasoning_content || '';
-          resolve(cleanChunk(content));
+          resolve(message.content || '');
         } else {
           reject(new Error('API error: ' + (res.statusCode || 'unknown')));
         }
