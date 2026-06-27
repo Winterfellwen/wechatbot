@@ -98,14 +98,14 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "images/icons/home-81-dark.png",
-        "selectedIconPath": "images/icons/home-81-primary.png"
+        "iconPath": "images/icon-home.png",
+        "selectedIconPath": "images/icon-home-active.png"
       },
       {
         "pagePath": "pages/user/user",
         "text": "我的",
-        "iconPath": "images/icons/user-81-dark.png",
-        "selectedIconPath": "images/icons/user-81-primary.png"
+        "iconPath": "images/icon-user.png",
+        "selectedIconPath": "images/icon-user-active.png"
       }
     ]
   },
