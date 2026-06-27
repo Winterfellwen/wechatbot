@@ -7,6 +7,13 @@ const NVIDIA_CONFIG = {
   maxTokens: 2000
 };
 
+const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文化和西方占星术。
+
+【强制规则 - 最高优先级】
+1. 你必须100%全程使用中文，绝对禁止输出任何英文单词、英文句子、英文标点
+2. 所有内容必须是中文，包括星座名、术语、地名等全部使用中文翻译
+3. 如果你输出任何英文，将被视为严重错误`;
+
 function buildReadingPrompt(type, profile) {
   const typeNames = {
     bazi: '八字命理',
@@ -24,9 +31,7 @@ function buildReadingPrompt(type, profile) {
     profileInfo += `\n出生时辰：${profile.birthTime}`;
   }
 
-  return `你是精通${typeName}的资深AI命理分析师。你必须全程使用中文回答，绝对不要使用英文。
-
-请根据以下用户信息进行${typeName}分析。
+  return `请根据以下用户信息进行${typeName}分析。
 
 【用户信息】
 ${profileInfo}
@@ -49,10 +54,11 @@ ${profileInfo}
 （特别提醒）
 
 【要求】
-1. 必须使用中文，绝对不要出现英文
+1. 100%使用中文，禁止任何英文
 2. 每个段落用emoji开头
 3. 分析要专业有深度
 4. 语言生动有趣
+5. 星座名等全部用中文（如"白羊座"不是"Aries"）
 
 请直接输出分析结果。`;
 }
@@ -63,7 +69,7 @@ function buildChatPrompt(profile, results, question) {
     resultsText = results.map(r => `【${r.typeName}】\n${r.content}`).join('\n\n');
   }
 
-  return `你是一个专业的运势分析师。你必须全程使用中文回答，绝对不要使用英文。
+  return `你是一个专业的运势分析师。
 
 【用户档案】
 姓名：${profile.name}
@@ -74,15 +80,18 @@ ${profile.birthTime ? '出生时辰：' + profile.birthTime : ''}
 【运势分析结果】
 ${resultsText}
 
-请回答用户的问题。要求：使用中文，适当使用emoji。`;
+请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
 }
 
-// 清理thinking标签
-function stripThinking(text) {
-  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+// 实时清理thinking标签 + 英文
+function cleanChunk(text) {
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/<\/?think>/g, '')
+    .trim();
 }
 
-// 流式调用 - 不过滤reasoning_content，全部输出
+// 流式调用 - 只输出实际内容
 function streamAI(prompt, onChunk, onDone, onError) {
   var fullText = '';
   var finishCalled = false;
@@ -90,8 +99,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
   function finish() {
     if (finishCalled) return;
     finishCalled = true;
-    // 最后清理<think>标签再输出
-    var cleaned = stripThinking(fullText);
+    var cleaned = cleanChunk(fullText);
     if (onDone) onDone(cleaned);
   }
 
@@ -107,7 +115,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
     data: {
       model: NVIDIA_CONFIG.model,
       messages: [
-        { role: 'system', content: '你是专业的AI命理分析师，精通中国传统文化和西方占星术。你必须全程使用中文回答，绝对不要使用英文。' },
+        { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
       max_tokens: NVIDIA_CONFIG.maxTokens,
@@ -147,13 +155,15 @@ function streamAI(prompt, onChunk, onDone, onError) {
             if (!json.choices || !json.choices[0] || !json.choices[0].delta) continue;
 
             var delta = json.choices[0].delta;
-            // 同时取reasoning_content和content，拼接到一起
             var chunk = delta.reasoning_content || delta.content || '';
 
             if (chunk) {
               fullText += chunk;
-              // 实时输出（带<think>标签，最后清理）
-              if (onChunk) onChunk(fullText);
+              // 实时输出，清理<think>标签
+              var display = cleanChunk(fullText);
+              if (display) {
+                if (onChunk) onChunk(display);
+              }
             }
           } catch (e) {}
         }
@@ -179,7 +189,7 @@ function callAI(prompt) {
       data: {
         model: NVIDIA_CONFIG.model,
         messages: [
-          { role: 'system', content: '你是专业的AI命理分析师。你必须全程使用中文回答。' },
+          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: prompt }
         ],
         max_tokens: NVIDIA_CONFIG.maxTokens,
@@ -189,7 +199,7 @@ function callAI(prompt) {
         if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
           var message = res.data.choices[0].message;
           var content = message.content || message.reasoning_content || '';
-          resolve(stripThinking(content));
+          resolve(cleanChunk(content));
         } else {
           reject(new Error('API error: ' + (res.statusCode || 'unknown')));
         }
