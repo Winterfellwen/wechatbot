@@ -1,49 +1,28 @@
-/**
- * Local storage service for fortune-telling
- * Handles user info, history, and caching using wx storage API
- */
-
 const STORAGE_KEYS = {
-  USER_INFO: 'fortune_user_info',
+  PROFILE: 'fortune_profile',
   HISTORY: 'fortune_history',
-  CACHE: 'fortune_cache'
+  CHAT: 'fortune_chat_history'
 };
 
-const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
-/**
- * Get user info from storage
- * @returns {Object|null} User info object or null if not found
- */
-function getUserInfo() {
+function getProfile() {
   try {
-    const info = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    return info || null;
+    return wx.getStorageSync(STORAGE_KEYS.PROFILE) || null;
   } catch (e) {
-    console.error('Failed to get user info:', e);
+    console.error('Failed to get profile:', e);
     return null;
   }
 }
 
-/**
- * Save user info to storage
- * @param {Object} userInfo - User info to save
- * @returns {boolean} True if successful
- */
-function saveUserInfo(userInfo) {
+function saveProfile(profile) {
   try {
-    wx.setStorageSync(STORAGE_KEYS.USER_INFO, userInfo);
+    wx.setStorageSync(STORAGE_KEYS.PROFILE, profile);
     return true;
   } catch (e) {
-    console.error('Failed to save user info:', e);
+    console.error('Failed to save profile:', e);
     return false;
   }
 }
 
-/**
- * Get fortune history
- * @returns {Array} Array of history records
- */
 function getHistory() {
   try {
     const history = wx.getStorageSync(STORAGE_KEYS.HISTORY);
@@ -54,33 +33,31 @@ function getHistory() {
   }
 }
 
-/**
- * Add history record
- * @param {Object} record - History record to add
- * @returns {boolean} True if successful
- */
 function addHistory(record) {
   try {
     const history = getHistory();
     const newRecord = {
       id: Date.now().toString(),
-      createTime: new Date().toISOString(),
+      timestamp: Date.now(),
       ...record
     };
     history.unshift(newRecord);
+    if (history.length > 50) {
+      history.pop();
+    }
     wx.setStorageSync(STORAGE_KEYS.HISTORY, history);
-    return true;
+    return newRecord;
   } catch (e) {
     console.error('Failed to add history:', e);
-    return false;
+    return null;
   }
 }
 
-/**
- * Delete history record by id
- * @param {string} id - Record id to delete
- * @returns {boolean} True if successful
- */
+function getHistoryById(id) {
+  const history = getHistory();
+  return history.find(item => item.id === id) || null;
+}
+
 function deleteHistory(id) {
   try {
     const history = getHistory();
@@ -93,10 +70,6 @@ function deleteHistory(id) {
   }
 }
 
-/**
- * Clear all history
- * @returns {boolean} True if successful
- */
 function clearHistory() {
   try {
     wx.setStorageSync(STORAGE_KEYS.HISTORY, []);
@@ -107,60 +80,48 @@ function clearHistory() {
   }
 }
 
-/**
- * Get cached result by key
- * @param {string} key - Cache key
- * @returns {*} Cached result or null if expired/not found
- */
-function getCachedResult(key) {
+function getChatHistory(readingId) {
   try {
-    const cache = wx.getStorageSync(STORAGE_KEYS.CACHE) || {};
-    const item = cache[key];
-    
-    if (!item) return null;
-    
-    // Check if expired
-    if (Date.now() - item.timestamp > CACHE_EXPIRY) {
-      delete cache[key];
-      wx.setStorageSync(STORAGE_KEYS.CACHE, cache);
-      return null;
-    }
-    
-    return item.result;
+    const allChats = wx.getStorageSync(STORAGE_KEYS.CHAT) || [];
+    const chat = allChats.find(c => c.readingId === readingId);
+    return chat ? chat.messages : [];
   } catch (e) {
-    console.error('Failed to get cached result:', e);
-    return null;
+    console.error('Failed to get chat history:', e);
+    return [];
   }
 }
 
-/**
- * Save cached result
- * @param {string} key - Cache key
- * @param {*} result - Result to cache
- * @returns {boolean} True if successful
- */
-function saveCachedResult(key, result) {
+function saveChatHistory(readingId, messages) {
   try {
-    const cache = wx.getStorageSync(STORAGE_KEYS.CACHE) || {};
-    cache[key] = {
-      result: result,
-      timestamp: Date.now()
-    };
-    wx.setStorageSync(STORAGE_KEYS.CACHE, cache);
+    let allChats = wx.getStorageSync(STORAGE_KEYS.CHAT) || [];
+    const existingIndex = allChats.findIndex(c => c.readingId === readingId);
+    
+    if (existingIndex >= 0) {
+      allChats[existingIndex].messages = messages;
+    } else {
+      allChats.push({ readingId, messages });
+    }
+    
+    if (allChats.length > 20) {
+      allChats = allChats.slice(-20);
+    }
+    
+    wx.setStorageSync(STORAGE_KEYS.CHAT, allChats);
     return true;
   } catch (e) {
-    console.error('Failed to save cached result:', e);
+    console.error('Failed to save chat history:', e);
     return false;
   }
 }
 
 module.exports = {
-  getUserInfo,
-  saveUserInfo,
+  getProfile,
+  saveProfile,
   getHistory,
   addHistory,
+  getHistoryById,
   deleteHistory,
   clearHistory,
-  getCachedResult,
-  saveCachedResult
+  getChatHistory,
+  saveChatHistory
 };

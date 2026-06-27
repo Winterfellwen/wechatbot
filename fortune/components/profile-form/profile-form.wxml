@@ -1,0 +1,49 @@
+<!-- fortune/components/profile-form/profile-form.wxml -->
+<view class="modal-mask" wx:if="{{visible}}" bindtap="handleClose">
+  <view class="modal-content" catchtap="">
+    <view class="modal-header">
+      <text class="modal-title">{{profile ? '编辑档案' : '创建档案'}}</text>
+      <text class="modal-close" bindtap="handleClose">×</text>
+    </view>
+    
+    <view class="form">
+      <view class="form-item">
+        <text class="label">姓名 *</text>
+        <input class="input" placeholder="请输入姓名" value="{{name}}" bindinput="handleNameInput" />
+        <text class="error" wx:if="{{errors.name}}">{{errors.name}}</text>
+      </view>
+
+      <view class="form-item">
+        <text class="label">生日 *</text>
+        <picker mode="date" value="{{birthday}}" bindchange="handleDateChange">
+          <view class="picker">
+            <text class="picker-text">{{birthday || '请选择生日'}}</text>
+          </view>
+        </picker>
+        <text class="error" wx:if="{{errors.birthday}}">{{errors.birthday}}</text>
+      </view>
+
+      <view class="form-item">
+        <text class="label">性别 *</text>
+        <picker bindchange="handleGenderChange">
+          <view class="picker">
+            <text class="picker-text">{{gender || '请选择性别'}}</text>
+          </view>
+        </picker>
+        <text class="error" wx:if="{{errors.gender}}">{{errors.gender}}</text>
+      </view>
+
+      <view class="form-item">
+        <text class="label">出生时辰（选填）</text>
+        <picker bindchange="handleTimeChange">
+          <view class="picker">
+            <text class="picker-text">{{birthTime || '请选择出生时辰'}}</text>
+          </view>
+        </picker>
+        <text class="hint">不填时辰，易学命理分析可能不准确</text>
+      </view>
+    </view>
+
+    <button class="save-btn" bindtap="handleSave">保存</button>
+  </view>
+</view>
