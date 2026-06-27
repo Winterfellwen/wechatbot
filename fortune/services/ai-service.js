@@ -91,6 +91,13 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
   let task = null;
   let buffer = '';
   let hasRealContent = false;
+  let doneCalled = false;
+
+  function finish() {
+    if (doneCalled) return;
+    doneCalled = true;
+    if (onDone) onDone();
+  }
 
   try {
     task = wx.request({
@@ -114,7 +121,7 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
       },
       success: function(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          if (onDone) onDone();
+          finish();
         } else {
           if (onError) onError(new Error('API error: ' + res.statusCode));
         }
@@ -138,7 +145,7 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
             if (line.startsWith('data: ')) {
               const jsonStr = line.slice(6).trim();
               if (jsonStr === '[DONE]') {
-                if (onDone) onDone();
+                finish();
                 return;
               }
               try {

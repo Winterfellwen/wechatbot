@@ -26,17 +26,7 @@ Component({
     sections: [],
     thinkingTexts: [],
     currentThinkingIndex: 0,
-    isThinking: false,
     showThinkingAnimation: false
-  },
-
-  lifetimes: {
-    attached() {
-      this.startThinkingTexts();
-    },
-    detached() {
-      this.stopThinkingTexts();
-    }
   },
 
   observers: {
@@ -45,53 +35,45 @@ Component({
       this.parseSections(content);
     },
     'status': function(status) {
+      this.clearTimer();
       if (status === 'loading') {
-        this.setData({ showCursor: false });
-        this.startThinkingAnimation();
-      } else {
-        this.stopThinkingAnimation();
-        if (status === 'streaming') {
-          this.setData({ showCursor: true });
-        }
+        this.setData({ showCursor: false, showThinkingAnimation: true });
+        this.initThinkingTexts();
+      } else if (status === 'streaming') {
+        this.setData({ showThinkingAnimation: false, showCursor: true });
+      } else if (status === 'completed' || status === 'error' || status === 'pending') {
+        this.setData({ showThinkingAnimation: false, showCursor: false });
       }
     }
   },
 
+  detached() {
+    this.clearTimer();
+  },
+
   methods: {
-    startThinkingTexts() {
-      const texts = getRandomTexts(this.data.category, 5);
-      this.setData({ thinkingTexts: texts });
-    },
-
-    startThinkingAnimation() {
-      if (this._thinkingTimer) return;
-      
-      const texts = this.data.thinkingTexts;
-      if (!texts || texts.length === 0) {
-        this.startThinkingTexts();
-      }
-      
-      this.setData({ 
-        isThinking: true, 
-        showThinkingAnimation: true,
-        currentThinkingIndex: 0 
-      });
-      
-      this._thinkingTimer = setInterval(() => {
-        const nextIndex = (this.data.currentThinkingIndex + 1) % this.data.thinkingTexts.length;
-        this.setData({ currentThinkingIndex: nextIndex });
-      }, 2000);
-    },
-
-    stopThinkingAnimation() {
+    clearTimer() {
       if (this._thinkingTimer) {
         clearInterval(this._thinkingTimer);
         this._thinkingTimer = null;
       }
-      this.setData({ 
-        isThinking: false, 
-        showThinkingAnimation: false 
+    },
+
+    initThinkingTexts() {
+      const texts = getRandomTexts(this.data.category, 5);
+      this.setData({
+        thinkingTexts: texts,
+        currentThinkingIndex: 0
       });
+      this.startCycle();
+    },
+
+    startCycle() {
+      this.clearTimer();
+      this._thinkingTimer = setInterval(() => {
+        const nextIndex = (this.data.currentThinkingIndex + 1) % this.data.thinkingTexts.length;
+        this.setData({ currentThinkingIndex: nextIndex });
+      }, 2000);
     },
 
     parseSections(content) {
