@@ -77,7 +77,6 @@ ${resultsText}
 请回答用户的问题。要求：使用中文，适当使用emoji。`;
 }
 
-// 清理thinking标签
 function stripThinking(text) {
   return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
@@ -87,12 +86,16 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
   var buffer = '';
   var hasRealContent = false;
   var finishCalled = false;
+  var chunkCount = 0;
 
   function finish() {
     if (finishCalled) return;
     finishCalled = true;
+    console.log('[streamAI] finish called, total chunks:', chunkCount);
     if (onDone) onDone();
   }
+
+  console.log('[streamAI] starting request...');
 
   var task = wx.request({
     url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
@@ -114,20 +117,26 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
       stream: true
     },
     success: function(res) {
-      // success不调finish，等[DONE]或超时
+      console.log('[streamAI] success, statusCode:', res.statusCode);
       if (res.statusCode < 200 || res.statusCode >= 300) {
+        console.log('[streamAI] error status, calling onError');
         if (onError) onError(new Error('API error: ' + res.statusCode));
         finish();
       }
     },
     fail: function(err) {
+      console.log('[streamAI] request failed:', err.errMsg);
       if (onError) onError(new Error('Request failed: ' + (err.errMsg || 'unknown')));
       finish();
     }
   });
 
+  console.log('[streamAI] task created, has onChunkReceived:', !!(task && task.onChunkReceived));
+
   if (task && task.onChunkReceived) {
+    console.log('[streamAI] registering onChunkReceived...');
     task.onChunkReceived(function(res) {
+      chunkCount++;
       try {
         var data = new TextDecoder().decode(res.data);
         buffer += data;
@@ -141,6 +150,7 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
 
           var jsonStr = line.slice(6).trim();
           if (jsonStr === '[DONE]') {
+            console.log('[streamAI] received [DONE]');
             finish();
             return;
           }
@@ -153,28 +163,34 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
             var reasoning = delta.reasoning_content || '';
             var content = delta.content || '';
 
-            // 从content中移除<think>标签
             content = stripThinking(content);
 
-            // 只有reasoning没有content → 思考阶段
             if (reasoning && !content && !hasRealContent) {
               if (onThinking) onThinking(reasoning);
               continue;
             }
 
-            // 有实际内容
             if (content) {
               hasRealContent = true;
+              if (chunkCount <= 3 || chunkCount % 10 === 0) {
+                console.log('[streamAI] chunk #' + chunkCount + ', content length:', content.length);
+              }
               if (onChunk) onChunk(content);
             }
-          } catch (e) {}
+          } catch (e) {
+            console.log('[streamAI] JSON parse error:', e.message);
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log('[streamAI] chunk decode error:', e.message);
+      }
     });
+  } else {
+    console.log('[streamAI] WARNING: onChunkReceived not available!');
   }
 
-  // 安全网：如果60秒内没收到[DONE]，强制完成
   setTimeout(function() {
+    console.log('[streamAI] 60s timeout, finishCalled:', finishCalled);
     finish();
   }, 60000);
 }
@@ -227,14 +243,19 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
 
   var currentTypeIndex = 0;
 
+  console.log('[streamReadings] starting, category:', category, 'types:', types);
+
   function processNext() {
     if (currentTypeIndex >= types.length) {
+      console.log('[streamReadings] all done');
       if (onAllComplete) onAllComplete();
       return;
     }
 
     var type = types[currentTypeIndex];
     var content = '';
+
+    console.log('[streamReadings] processing card', currentTypeIndex + 1, 'of', types.length, ':', type);
 
     if (onReadingStart) onReadingStart(type, typeNames[type]);
 
@@ -246,11 +267,13 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
         if (onChunk) onChunk(type, content);
       },
       function() {
+        console.log('[streamReadings] card', type, 'complete, content length:', content.length);
         if (onReadingComplete) onReadingComplete(type, typeNames[type], content);
         currentTypeIndex++;
         processNext();
       },
       function(err) {
+        console.log('[streamReadings] card', type, 'error:', err.message);
         if (onError) onError(type, err);
         currentTypeIndex++;
         processNext();
