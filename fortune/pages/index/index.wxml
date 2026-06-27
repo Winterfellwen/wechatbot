@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="header">
+    <text class="greeting">{{greeting}}</text>
+  </view>
+
+  <view class="section">
+    <view class="section-title">中国运势</view>
+    <view class="type-grid">
+      <view class="type-card" bindtap="handleTypeTap" data-type="yijing">
+        <view class="type-icon">☯</view>
+        <text class="type-name">易经卦象</text>
+      </view>
+      <view class="type-card" bindtap="handleTypeTap" data-type="bazi">
+        <view class="type-icon">八字</view>
+        <text class="type-name">八字命理</text>
+      </view>
+      <view class="type-card" bindtap="handleTypeTap" data-type="ziwei">
+        <view class="type-icon">紫微</view>
+        <text class="type-name">紫微斗数</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">西方运势</view>
+    <view class="type-grid">
+      <view class="type-card" bindtap="handleTypeTap" data-type="constellation">
+        <view class="type-icon">♈</view>
+        <text class="type-name">星座分析</text>
+      </view>
+      <view class="type-card" bindtap="handleTypeTap" data-type="tarot">
+        <view class="type-icon">🃏</view>
+        <text class="type-name">塔罗占卜</text>
+      </view>
+      <view class="type-card" bindtap="handleTypeTap" data-type="astrology">
+        <view class="type-icon">🌟</view>
+        <text class="type-name">占星术</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="daily-card" bindtap="handleDailyTap">
+      <text class="daily-title">每日运势</text>
+      <text class="daily-desc">查看今日综合运、爱情运、事业运</text>
+    </view>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text" bindtap="handleHistoryTap">查看历史记录</text>
+  </view>
+</view>
