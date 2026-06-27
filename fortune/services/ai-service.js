@@ -87,9 +87,10 @@ ${resultsText}
 }
 
 // 流式调用AI API
-function streamAI(prompt, onChunk, onDone, onError) {
+function streamAI(prompt, onChunk, onDone, onError, onThinking) {
   let task = null;
   let buffer = '';
+  let hasRealContent = false;
 
   try {
     task = wx.request({
@@ -127,13 +128,11 @@ function streamAI(prompt, onChunk, onDone, onError) {
     if (task && task.onChunkReceived) {
       task.onChunkReceived(function(res) {
         try {
-          // 解析Uint8Array为字符串
           const data = new TextDecoder().decode(res.data);
           buffer += data;
           
-          // 按行解析SSE数据
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // 保留未完成的行
+          buffer = lines.pop() || '';
           
           for (const line of lines) {
             if (line.startsWith('data: ')) {
@@ -145,9 +144,21 @@ function streamAI(prompt, onChunk, onDone, onError) {
               try {
                 const json = JSON.parse(jsonStr);
                 if (json.choices && json.choices[0] && json.choices[0].delta) {
-                  const content = json.choices[0].delta.content || json.choices[0].delta.reasoning_content || '';
-                  if (content && onChunk) {
-                    onChunk(content);
+                  const reasoning = json.choices[0].delta.reasoning_content;
+                  const content = json.choices[0].delta.content;
+                  
+                  // 如果有思考内容但还没有正式内容，继续思考阶段
+                  if (reasoning && !content && !hasRealContent) {
+                    if (onThinking) onThinking(reasoning);
+                    continue;
+                  }
+                  
+                  // 有正式内容时，标记进入输出阶段
+                  if (content) {
+                    if (!hasRealContent) {
+                      hasRealContent = true;
+                    }
+                    if (onChunk) onChunk(content);
                   }
                 }
               } catch (e) {

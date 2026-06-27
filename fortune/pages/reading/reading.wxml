@@ -20,6 +20,7 @@
       typeName="{{item.typeName}}"
       content="{{item.content}}"
       status="{{item.status}}"
+      category="{{category}}"
       data-type="{{item.type}}"
       bind:retry="handleRetry"
     />

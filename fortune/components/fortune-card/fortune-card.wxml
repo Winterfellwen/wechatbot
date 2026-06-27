@@ -3,10 +3,28 @@
     <text class="card-title">{{typeName}}</text>
     <view class="status-badge status-{{status}}">
       <text wx:if="{{status === 'pending'}}">排队中</text>
-      <text wx:elif="{{status === 'loading'}}">分析中...</text>
+      <text wx:elif="{{status === 'loading'}}">推演中...</text>
       <text wx:elif="{{status === 'streaming'}}">解读中</text>
       <text wx:elif="{{status === 'completed'}}">已完成</text>
       <text wx:elif="{{status === 'error'}}">失败</text>
+    </view>
+  </view>
+  
+  <!-- 全屏思考动画 -->
+  <view class="thinking-overlay" wx:if="{{showThinkingAnimation}}">
+    <view class="thinking-animation {{category === 'chinese' ? 'chinese-style' : 'western-style'}}">
+      <view class="thinking-symbol">
+        <text class="symbol-text" wx:if="{{category === 'chinese'}}">☯</text>
+        <text class="symbol-text" wx:else>⭐</text>
+      </view>
+      <view class="thinking-lines">
+        <text class="thinking-line line1">{{thinkingTexts[0]}}</text>
+        <text class="thinking-line line2">{{thinkingTexts[1]}}</text>
+        <text class="thinking-line line3">{{thinkingTexts[2]}}</text>
+      </view>
+      <view class="thinking-status">
+        <text class="status-label">{{category === 'chinese' ? '天机推演中...' : 'Star Reading...'}}</text>
+      </view>
     </view>
   </view>
   
