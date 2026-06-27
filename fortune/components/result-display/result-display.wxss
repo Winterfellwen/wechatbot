@@ -1,0 +1,45 @@
+.result-display {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.result-content {
+  margin-bottom: 30rpx;
+}
+
+.result-text {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20rpx;
+}
+
+.action-btn {
+  font-size: 28rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 8rpx;
+  border: none;
+  min-height: auto;
+  line-height: 1.5;
+}
+
+.action-btn::after {
+  border: none;
+}
+
+.copy-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.share-btn {
+  background: #667eea;
+  color: white;
+}

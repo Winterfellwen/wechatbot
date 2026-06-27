@@ -1,0 +1,9 @@
+<view class="result-display">
+  <view class="result-content">
+    <text class="result-text">{{result}}</text>
+  </view>
+  <view class="result-actions">
+    <button class="action-btn copy-btn" bindtap="handleCopy">复制</button>
+    <button class="action-btn share-btn" bindtap="handleShare">分享</button>
+  </view>
+</view>
