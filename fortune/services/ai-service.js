@@ -4,7 +4,7 @@ const NVIDIA_CONFIG = {
   key: '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',
   apiUrl: 'https://integrate.api.nvidia.com/v1',
   model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
-  maxTokens: 2000
+  maxTokens: 4000
 };
 
 const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文化和西方占星术。
