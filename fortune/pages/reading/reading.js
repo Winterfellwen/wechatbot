@@ -123,37 +123,26 @@ Page({
       this.setData({ readings });
     }
 
+    const typeName = readings[index].typeName;
     const prompt = aiService.buildReadingPrompt(type, profile);
-    let currentContent = '';
 
-    aiService.streamAI(prompt,
-      (chunk) => {
-        currentContent += chunk;
-        const readings = [...this.data.readings];
-        const index = readings.findIndex(r => r.type === type);
-        if (index >= 0) {
-          readings[index] = { ...readings[index], content: currentContent, status: 'streaming' };
-          this.setData({ readings });
-        }
-      },
-      () => {
-        const readings = [...this.data.readings];
-        const index = readings.findIndex(r => r.type === type);
-        if (index >= 0) {
-          readings[index] = { ...readings[index], content: currentContent, status: 'completed' };
-          this.setData({ readings });
-        }
-        this.saveToHistory();
-      },
-      (err) => {
-        const readings = [...this.data.readings];
-        const index = readings.findIndex(r => r.type === type);
-        if (index >= 0) {
-          readings[index] = { ...readings[index], status: 'error' };
-          this.setData({ readings });
-        }
+    aiService.callAI(prompt).then((content) => {
+      const readings = [...this.data.readings];
+      const idx = readings.findIndex(r => r.type === type);
+      if (idx >= 0) {
+        readings[idx] = { ...readings[idx], content, status: 'completed' };
+        this.setData({ readings });
       }
-    );
+      this.saveToHistory();
+    }).catch((err) => {
+      console.error('Retry error:', err);
+      const readings = [...this.data.readings];
+      const idx = readings.findIndex(r => r.type === type);
+      if (idx >= 0) {
+        readings[idx] = { ...readings[idx], status: 'error' };
+        this.setData({ readings });
+      }
+    });
   },
 
   saveToHistory() {
