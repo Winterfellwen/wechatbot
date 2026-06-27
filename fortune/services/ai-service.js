@@ -83,87 +83,7 @@ ${resultsText}
 请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
 }
 
-// 流式调用 - 只取content字段，忽略reasoning_content（英文思考）
-function streamAI(prompt, onChunk, onDone, onError) {
-  var fullText = '';
-  var finishCalled = false;
-
-  function finish() {
-    if (finishCalled) return;
-    finishCalled = true;
-    if (onDone) onDone(fullText);
-  }
-
-  var task = wx.request({
-    url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
-    method: 'POST',
-    enableChunked: true,
-    timeout: 120000,
-    header: {
-      'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
-      'Content-Type': 'application/json'
-    },
-    data: {
-      model: NVIDIA_CONFIG.model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: NVIDIA_CONFIG.maxTokens,
-      temperature: 0.7,
-      stream: true
-    },
-    success: function(res) {
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        if (onError) onError(new Error('API error: ' + res.statusCode));
-        finish();
-      }
-    },
-    fail: function(err) {
-      if (onError) onError(new Error('Request failed: ' + (err.errMsg || 'unknown')));
-      finish();
-    }
-  });
-
-  if (task && task.onChunkReceived) {
-    task.onChunkReceived(function(res) {
-      try {
-        var data = new TextDecoder().decode(res.data);
-        var lines = data.split('\n');
-
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i];
-          if (line.indexOf('data: ') !== 0) continue;
-
-          var jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') {
-            finish();
-            return;
-          }
-
-          try {
-            var json = JSON.parse(jsonStr);
-            if (!json.choices || !json.choices[0] || !json.choices[0].delta) continue;
-
-            var delta = json.choices[0].delta;
-            // 只取content字段，reasoning_content是英文思考过程，忽略
-            var chunk = delta.content || '';
-
-            if (chunk) {
-              fullText += chunk;
-              if (onChunk) onChunk(fullText);
-            }
-          } catch (e) {}
-        }
-      } catch (e) {}
-    });
-  }
-
-  setTimeout(function() {
-    finish();
-  }, 90000);
-}
-
+// 非流式调用（兜底）
 function callAI(prompt) {
   return new Promise(function(resolve, reject) {
     wx.request({
@@ -196,6 +116,107 @@ function callAI(prompt) {
       }
     });
   });
+}
+
+// 流式调用 - 只取content字段，5秒无内容自动降级为非流式
+function streamAI(prompt, onChunk, onDone, onError) {
+  var fullText = '';
+  var finishCalled = false;
+  var fallbackTriggered = false;
+
+  function finish() {
+    if (finishCalled) return;
+    finishCalled = true;
+    if (onDone) onDone(fullText);
+  }
+
+  // 5秒兜底：流式没出内容就降级
+  var fallbackTimer = setTimeout(function() {
+    if (finishCalled || fullText.length > 0) return;
+    fallbackTriggered = true;
+    console.log('[streamAI] streaming fallback to callAI');
+    callAI(prompt).then(function(content) {
+      fullText = content;
+      finish();
+    }).catch(function(err) {
+      if (onError) onError(err);
+      finish();
+    });
+  }, 5000);
+
+  var task = wx.request({
+    url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
+    method: 'POST',
+    enableChunked: true,
+    timeout: 120000,
+    header: {
+      'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
+      'Content-Type': 'application/json'
+    },
+    data: {
+      model: NVIDIA_CONFIG.model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: NVIDIA_CONFIG.maxTokens,
+      temperature: 0.7,
+      stream: true
+    },
+    success: function(res) {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        if (onError) onError(new Error('API error: ' + res.statusCode));
+        clearTimeout(fallbackTimer);
+        finish();
+      }
+    },
+    fail: function(err) {
+      if (onError) onError(new Error('Request failed: ' + (err.errMsg || 'unknown')));
+      clearTimeout(fallbackTimer);
+      finish();
+    }
+  });
+
+  if (task && task.onChunkReceived) {
+    task.onChunkReceived(function(res) {
+      if (fallbackTriggered) return;
+      try {
+        var data = new TextDecoder().decode(res.data);
+        var lines = data.split('\n');
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf('data: ') !== 0) continue;
+
+          var jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') {
+            clearTimeout(fallbackTimer);
+            finish();
+            return;
+          }
+
+          try {
+            var json = JSON.parse(jsonStr);
+            if (!json.choices || !json.choices[0] || !json.choices[0].delta) continue;
+
+            var delta = json.choices[0].delta;
+            var chunk = delta.content || '';
+
+            if (chunk) {
+              fullText += chunk;
+              clearTimeout(fallbackTimer);
+              if (onChunk) onChunk(fullText);
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+    });
+  }
+
+  setTimeout(function() {
+    clearTimeout(fallbackTimer);
+    finish();
+  }, 90000);
 }
 
 // 串行流式测算
