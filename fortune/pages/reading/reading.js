@@ -120,6 +120,7 @@ Page({
   handleRetry(e) {
     const type = e.currentTarget.dataset.type;
     const { category, profile } = this.data;
+
     const readings = [...this.data.readings];
     const index = readings.findIndex(r => r.type === type);
     if (index >= 0) {
@@ -127,29 +128,39 @@ Page({
       this.setData({ readings });
     }
 
-    const prompt = aiService.buildReadingPrompt(category, profile);
+    const typeName = readings[index].typeName;
+    const prompt = aiService.buildReadingPrompt(type, profile);
+    let content = '';
 
-    aiService.callAI(prompt).then((fullText) => {
-      const contents = aiService.parseReadings(fullText);
-      const typeIndex = ['bazi', 'ziwei', 'yijing', 'constellation', 'tarot', 'astrology'].indexOf(type);
-      const content = contents[typeIndex] || contents[0] || '分析失败';
-
-      const readings = [...this.data.readings];
-      const idx = readings.findIndex(r => r.type === type);
-      if (idx >= 0) {
-        readings[idx] = { ...readings[idx], content, status: 'completed' };
-        this.setData({ readings });
+    aiService.streamAI(prompt,
+      (chunk) => {
+        content += chunk;
+        const readings = [...this.data.readings];
+        const idx = readings.findIndex(r => r.type === type);
+        if (idx >= 0) {
+          readings[idx] = { ...readings[idx], content, status: 'streaming' };
+          this.setData({ readings });
+        }
+      },
+      () => {
+        const readings = [...this.data.readings];
+        const idx = readings.findIndex(r => r.type === type);
+        if (idx >= 0) {
+          readings[idx] = { ...readings[idx], content, status: 'completed' };
+          this.setData({ readings });
+        }
+        this.saveToHistory();
+      },
+      (err) => {
+        console.error('Retry error:', err);
+        const readings = [...this.data.readings];
+        const idx = readings.findIndex(r => r.type === type);
+        if (idx >= 0) {
+          readings[idx] = { ...readings[idx], status: 'error' };
+          this.setData({ readings });
+        }
       }
-      this.saveToHistory();
-    }).catch((err) => {
-      console.error('Retry error:', err);
-      const readings = [...this.data.readings];
-      const idx = readings.findIndex(r => r.type === type);
-      if (idx >= 0) {
-        readings[idx] = { ...readings[idx], status: 'error' };
-        this.setData({ readings });
-      }
-    });
+    );
   },
 
   saveToHistory() {

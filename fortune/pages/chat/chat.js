@@ -56,18 +56,27 @@ Page({
     messages.push({ role: 'assistant', content: '' });
     this.setData({ messages });
 
-    aiService.callAI(prompt).then((reply) => {
-      const messages = [...this.data.messages];
-      messages[assistantIndex] = { role: 'assistant', content: reply };
-      this.setData({ messages, isLoading: false });
-      this.saveChatHistory();
-      this.scrollToBottom();
-    }).catch((err) => {
-      console.error('Chat error:', err);
-      const messages = [...this.data.messages];
-      messages[assistantIndex] = { role: 'assistant', content: '抱歉，回答出现问题，请重试。' };
-      this.setData({ messages, isLoading: false });
-    });
+    let reply = '';
+
+    aiService.streamAI(prompt,
+      (chunk) => {
+        reply += chunk;
+        const messages = [...this.data.messages];
+        messages[assistantIndex] = { role: 'assistant', content: reply };
+        this.setData({ messages });
+        this.scrollToBottom();
+      },
+      () => {
+        this.setData({ isLoading: false });
+        this.saveChatHistory();
+      },
+      (err) => {
+        console.error('Chat error:', err);
+        const messages = [...this.data.messages];
+        messages[assistantIndex] = { role: 'assistant', content: '抱歉，回答出现问题，请重试。' };
+        this.setData({ messages, isLoading: false });
+      }
+    );
   },
 
   saveChatHistory() {
