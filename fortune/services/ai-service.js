@@ -104,7 +104,7 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
       url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
       method: 'POST',
       enableChunked: true,
-      timeout: 30000,
+      timeout: 60000,
       header: {
         'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
         'Content-Type': 'application/json'
@@ -124,10 +124,12 @@ function streamAI(prompt, onChunk, onDone, onError, onThinking) {
           finish();
         } else {
           if (onError) onError(new Error('API error: ' + res.statusCode));
+          finish();
         }
       },
       fail: function(err) {
         if (onError) onError(new Error('Request failed: ' + (err.errMsg || 'unknown')));
+        finish();
       }
     });
 
@@ -191,7 +193,7 @@ function callAI(prompt) {
     wx.request({
       url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
       method: 'POST',
-      timeout: 30000,
+      timeout: 60000,
       header: {
         'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
         'Content-Type': 'application/json'
