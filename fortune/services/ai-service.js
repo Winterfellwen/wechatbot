@@ -118,7 +118,7 @@ function callAI(prompt) {
   });
 }
 
-// 流式调用 - 只取content字段，5秒无内容自动降级为非流式
+// 流式调用 - 只取content字段，5秒无内容降级非流式
 function streamAI(prompt, onChunk, onDone, onError) {
   var fullText = '';
   var finishCalled = false;
@@ -134,7 +134,6 @@ function streamAI(prompt, onChunk, onDone, onError) {
   var fallbackTimer = setTimeout(function() {
     if (finishCalled || fullText.length > 0) return;
     fallbackTriggered = true;
-    console.log('[streamAI] streaming fallback to callAI');
     callAI(prompt).then(function(content) {
       fullText = content;
       finish();
@@ -213,6 +212,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
     });
   }
 
+  // 兜底：90秒超时强制完成
   setTimeout(function() {
     clearTimeout(fallbackTimer);
     finish();
