@@ -19,7 +19,7 @@ async function run() {
     try {
       miniProgram = await automator.launch({
         cliPath: WX_CLI,
-        projectPath: path.join(__dirname, '..', 'fortune'),
+        projectPath: path.join(__dirname, '..'),
       });
       console.log('[1] ✓ 已启动并连接');
     } catch (e2) {
@@ -41,6 +41,13 @@ async function run() {
   miniProgram.on('exception', err => {
     console.log('[exception]', JSON.stringify(err).substring(0, 500));
   });
+
+  // 清除被污染的今日运势缓存
+  await miniProgram.evaluate(function() {
+    wx.removeStorageSync('fortune_daily_cache');
+    console.log('已清除 fortune_daily_cache');
+  });
+  await new Promise(r => setTimeout(r, 1000));
 
   // 等待初始化
   await new Promise(r => setTimeout(r, 3000));
@@ -147,21 +154,87 @@ async function run() {
       }
     }
 
-    // 等待流式输出（最多15秒）
-    console.log('\n  --- 等待AI流式输出 (15秒) ---');
-    await new Promise(r => setTimeout(r, 15000));
-    const dataAfter = await page.data();
-    if (dataAfter.readings && dataAfter.readings.length > 0) {
-      const r0 = dataAfter.readings[0];
-      console.log('  八字状态:', r0.status);
-      console.log('  八字内容长度:', r0.content ? r0.content.length : 0);
-      if (r0.content && r0.content.length > 0) {
-        console.log('  ✓ 八字已有内容输出');
-        console.log('  内容预览:', r0.content.substring(0, 100));
-      } else {
-        console.log('  ✗ 八字无内容输出');
+    // 等待流式输出（最多30秒，分3次检查）
+    console.log('\n  --- 等待AI流式输出 (30秒，分3次检查) ---');
+    for (var wait = 0; wait < 3; wait++) {
+      await new Promise(r => setTimeout(r, 10000));
+      var dataMid = await page.data();
+      if (dataMid.readings && dataMid.readings.length > 0) {
+        var r0 = dataMid.readings[0];
+        console.log('  [检查' + (wait+1) + '] 八字状态:', r0.status, ' 内容长度:', r0.content ? r0.content.length : 0);
+        if (r0.content && r0.content.length > 20) {
+          console.log('  ✓ 八字已有内容输出');
+          console.log('  内容预览:', r0.content.substring(0, 150));
+          break;
+        }
+        if (r0.status === 'error') {
+          console.log('  ✗ 八字报错:', r0.content);
+          break;
+        }
       }
     }
+
+    // 直接在页面环境测试 AI 调用和 globalData
+    console.log('\n  --- 直接测试 globalData 和 AI 调用 ---');
+    var testResult = await miniProgram.evaluate(function() {
+      var app = getApp();
+      var result = {
+        appExists: !!app,
+        globalData: app ? {
+          fortuneApiKey: app.globalData.fortuneApiKey ? '存在(' + app.globalData.fortuneApiKey.substring(0, 10) + '...)' : '缺失',
+          fortuneApiUrl: app.globalData.fortuneApiUrl || '缺失',
+          fortuneModel: app.globalData.fortuneModel || '缺失'
+        } : 'app为空',
+      };
+      // 尝试直接发起请求测试域名
+      return new Promise(function(resolve) {
+        var config = {
+          key: app.globalData.fortuneApiKey,
+          apiUrl: app.globalData.fortuneApiUrl,
+          model: app.globalData.fortuneModel
+        };
+        result.requestUrl = config.apiUrl + '/chat/completions';
+        result.timeout = setTimeout(function() {
+          result.status = '请求超时(5秒)';
+          resolve(result);
+        }, 5000);
+        wx.request({
+          url: config.apiUrl + '/chat/completions',
+          method: 'POST',
+          timeout: 5000,
+          header: {
+            'Authorization': 'Bearer ' + config.key,
+            'Content-Type': 'application/json'
+          },
+          data: {
+            model: config.model,
+            messages: [{ role: 'user', content: '测试，回复一个字' }],
+            max_tokens: 10
+          },
+          success: function(res) {
+            clearTimeout(result.timeout);
+            result.status = '成功';
+            result.statusCode = res.statusCode;
+            if (res.data) {
+              result.responsePreview = JSON.stringify(res.data).substring(0, 200);
+            }
+            resolve(result);
+          },
+          fail: function(err) {
+            clearTimeout(result.timeout);
+            result.status = '失败';
+            result.errMsg = err.errMsg || JSON.stringify(err).substring(0, 200);
+            resolve(result);
+          }
+        });
+      });
+    });
+    console.log('  globalData:', JSON.stringify(testResult.globalData));
+    console.log('  请求URL:', testResult.requestUrl);
+    console.log('  请求状态:', testResult.status);
+    if (testResult.statusCode) console.log('  HTTP状态码:', testResult.statusCode);
+    if (testResult.errMsg) console.log('  错误:', testResult.errMsg);
+    if (testResult.responsePreview) console.log('  响应预览:', testResult.responsePreview);
   } catch (e) {
     console.log('  ✗ 解读页测试失败:', e.message);
   }

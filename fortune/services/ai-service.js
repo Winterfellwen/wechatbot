@@ -116,9 +116,10 @@ function callAI(prompt) {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
-      max_tokens: config.maxTokens,
+      max_tokens: 1024,
       temperature: 0.7,
-      reasoning_budget: 0
+      reasoning_budget: 0,
+      stream: false
     };
 
     wx.request({
@@ -133,7 +134,12 @@ function callAI(prompt) {
       success: function(res) {
         if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
           var message = res.data.choices[0].message;
-          resolve(message.content || '');
+          var content = message.content;
+          // NVIDIA 部分模型 content 可能是数组格式 [{type:'text', text:'...'}]，需提取文本
+          if (Array.isArray(content)) {
+            content = content.map(function(c) { return c.text || ''; }).join('');
+          }
+          resolve(content || '');
         } else {
           reject(new Error('API error: ' + (res.statusCode || 'unknown')));
         }
@@ -232,6 +238,10 @@ function streamAI(prompt, onChunk, onDone, onError) {
 
             var delta = json.choices[0].delta;
             var chunk = delta.content || '';
+            // NVIDIA 部分模型 content 可能是数组格式
+            if (Array.isArray(chunk)) {
+              chunk = chunk.map(function(c) { return c.text || ''; }).join('');
+            }
 
             if (chunk) {
               fullText += chunk;
