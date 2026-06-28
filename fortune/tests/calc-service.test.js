@@ -95,5 +95,75 @@ if (ziweiNoTime.needTime === true) {
   failed++;
 }
 
+console.log('\ncalcConstellation:');
+var conResult = calc.calcConstellation({ name: '张三', birthday: '1990-03-15', gender: 'male' });
+if (conResult.error) {
+  console.log('  ✗ calcConstellation failed');
+  failed++;
+} else {
+  console.log('  ✓ sign: ' + conResult.sign);
+  passed++;
+  if (conResult.summary && conResult.summary.length > 5) {
+    console.log('  ✓ summary generated');
+    passed++;
+  } else {
+    console.log('  ✗ summary missing');
+    failed++;
+  }
+}
+
+console.log('\ncalcYijing:');
+var yijingResult = calc.calcYijing();
+if (yijingResult.error) {
+  console.log('  ✗ calcYijing failed');
+  failed++;
+} else {
+  console.log('  ✓ hexagram: ' + yijingResult.hexagramName);
+  passed++;
+  if (yijingResult.changingLine >= 1 && yijingResult.changingLine <= 6) {
+    console.log('  ✓ changingLine: ' + yijingResult.changingLine);
+    passed++;
+  } else {
+    console.log('  ✗ changingLine out of range');
+    failed++;
+  }
+}
+
+console.log('\ncalcTarot:');
+var tarotResult = calc.calcTarot();
+if (tarotResult.error) {
+  console.log('  ✗ calcTarot failed');
+  failed++;
+} else {
+  console.log('  ✓ card: ' + tarotResult.card + (tarotResult.reversed ? ' (逆位)' : ' (正位)'));
+  passed++;
+  if (tarotResult.meanings && tarotResult.meanings.length > 0) {
+    console.log('  ✓ meanings: ' + tarotResult.meanings.join(', '));
+    passed++;
+  } else {
+    console.log('  ✗ meanings missing');
+    failed++;
+  }
+}
+
+console.log('\nbuildContext:');
+var ctx = calc.buildContext({ name: '张三', birthday: '1990-03-15', gender: 'male', birthTime: '子时' }, ['bazi', 'ziwei', 'yijing']);
+if (ctx.bazi && ctx.ziwei && ctx.yijing) {
+  console.log('  ✓ buildContext returns all 3 results');
+  passed++;
+} else {
+  console.log('  ✗ buildContext missing results');
+  failed++;
+}
+
+var ctxWest = calc.buildContext({ name: '张三', birthday: '1990-03-15', gender: 'male' }, ['constellation', 'tarot', 'astrology']);
+if (ctxWest.constellation && ctxWest.tarot && ctxWest.astrology) {
+  console.log('  ✓ buildContext returns western results');
+  passed++;
+} else {
+  console.log('  ✗ buildContext missing western results');
+  failed++;
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
