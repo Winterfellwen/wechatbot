@@ -69,5 +69,31 @@ if (baziNoTime.needTime === true) {
   failed++;
 }
 
+console.log('\ncalcZiwei:');
+var ziweiResult = calc.calcZiwei({ name: '张三', birthday: '1990-03-15', gender: 'male', birthTime: '子时' });
+if (ziweiResult.error || ziweiResult.needTime) {
+  console.log('  ✗ calcZiwei should return valid result, got: ' + JSON.stringify(ziweiResult));
+  failed++;
+} else {
+  console.log('  ✓ calcZiwei returns result without error');
+  passed++;
+  if (ziweiResult.summary && ziweiResult.summary.length > 0) {
+    console.log('  ✓ summary: ' + ziweiResult.summary);
+    passed++;
+  } else {
+    console.log('  ✗ summary missing');
+    failed++;
+  }
+}
+
+var ziweiNoTime = calc.calcZiwei({ name: '张三', birthday: '1990-03-15', gender: 'male' });
+if (ziweiNoTime.needTime === true) {
+  console.log('  ✓ calcZiwei returns needTime when birthTime missing');
+  passed++;
+} else {
+  console.log('  ✗ calcZiwei should return needTime when birthTime missing');
+  failed++;
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

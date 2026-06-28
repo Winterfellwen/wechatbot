@@ -119,9 +119,77 @@ function calcBazi(profile) {
   }
 }
 
+var iztro = require('iztro');
+
+function calcZiwei(profile) {
+  try {
+    var parts = parseBirthday(profile.birthday);
+    var hour = parseBirthTime(profile.birthTime);
+
+    // 紫微斗数必须有时辰才能排盘
+    if (hour === null) {
+      return { needTime: true, error: false };
+    }
+
+    // iztro 的时辰索引：早子时=0, 丑时=1, ... 亥时=11（hour/2 正好对应）
+    var timeIndex = hour / 2;
+    // iztro 接收字符串日期 "YYYY-M-D"
+    var solarDateStr = parts.year + '-' + parts.month + '-' + parts.day;
+    var gender = profile.gender === 'female' ? '女' : '男';
+
+    // 实际 API 为 astrolabeBySolarDate（注意：计划中的 bySolar 是旧名）
+    var astrolabe = iztro.astro.astrolabeBySolarDate(solarDateStr, timeIndex, gender);
+
+    // 从命宫提取主星（palaces 数组，palace.name === '命宫'）
+    var majorStars = [];
+    var lifePalace = '';
+    var fiveElementLevel = astrolabe.fiveElementsClass || '';
+
+    if (astrolabe.palaces && astrolabe.palaces.length > 0) {
+      for (var i = 0; i < astrolabe.palaces.length; i++) {
+        var palace = astrolabe.palaces[i];
+        if (palace.name === '命宫') {
+          lifePalace = palace.name;
+          if (palace.majorStars && palace.majorStars.length > 0) {
+            palace.majorStars.forEach(function(s) {
+              if (s && s.name) majorStars.push(s.name);
+            });
+          }
+          break;
+        }
+      }
+    }
+
+    var summary;
+    if (majorStars.length > 0) {
+      summary = '命宫主星：' + majorStars.join('、') + ' | ' + fiveElementLevel + ' | 命主' + (astrolabe.soul || '') + ' 身主' + (astrolabe.body || '');
+    } else {
+      // 命宫为空宫时，借对宫主星说明
+      summary = '命宫空宫 | ' + fiveElementLevel + ' | 命主' + (astrolabe.soul || '') + ' 身主' + (astrolabe.body || '');
+    }
+
+    return {
+      needTime: false,
+      error: false,
+      lifePalace: lifePalace,
+      majorStars: majorStars,
+      fiveElementLevel: fiveElementLevel,
+      soul: astrolabe.soul || '',
+      body: astrolabe.body || '',
+      sign: astrolabe.sign || '',
+      zodiac: astrolabe.zodiac || '',
+      summary: summary
+    };
+  } catch (e) {
+    console.error('calcZiwei error:', e);
+    return { error: true, needTime: false, summary: '紫微斗数排盘失败' };
+  }
+}
+
 module.exports = {
   parseBirthTime: parseBirthTime,
   parseBirthday: parseBirthday,
   BIRTH_TIME_MAP: BIRTH_TIME_MAP,
-  calcBazi: calcBazi
+  calcBazi: calcBazi,
+  calcZiwei: calcZiwei
 };
