@@ -1,33 +1,38 @@
 <!-- fortune/pages/history/history.wxml -->
-<view class="container">
-  <!-- 顶部导航 -->
-  <view class="nav-bar">
-    <text class="nav-back" bindtap="handleBack">←</text>
-    <text class="nav-title">历史记录</text>
-    <text class="clear-btn" wx:if="{{!isEmpty}}" bindtap="handleClear">清空</text>
-  </view>
-
-  <!-- 空状态 -->
-  <view class="empty-state" wx:if="{{isEmpty}}">
-    <text class="empty-icon">📝</text>
-    <text class="empty-text">暂无历史记录</text>
-    <text class="empty-hint">去测算一下吧</text>
-  </view>
-
-  <!-- 历史列表 -->
-  <scroll-view class="history-list" scroll-y wx:else>
-    <view class="history-item" wx:for="{{history}}" wx:key="id">
-      <view class="item-content" bindtap="handleItemTap" data-id="{{item.id}}">
-        <view class="item-header">
-          <text class="item-name">{{item.profile.name}}</text>
-          <text class="item-category">{{item.category === 'chinese' ? '易学命理' : '西方星象'}}</text>
-        </view>
-        <text class="item-time">{{item.timestamp}}</text>
-        <view class="item-types">
-          <text class="type-tag" wx:for="{{item.results}}" wx:for-item="result" wx:key="type">{{result.typeName}}</text>
-        </view>
-      </view>
-      <view class="item-delete" bindtap="handleDelete" data-id="{{item.id}}">删除</view>
+<view class="page-container bg-neutral">
+  <view class="page-content">
+    <!-- Nav -->
+    <view class="nav-bar">
+      <text class="nav-back" bindtap="handleBack">‹</text>
+      <text class="nav-title">历史记录</text>
+      <text class="nav-clear" wx:if="{{!isEmpty}}" bindtap="handleClear">清空</text>
     </view>
-  </scroll-view>
+
+    <!-- Empty -->
+    <view class="empty" wx:if="{{isEmpty}}">
+      <text class="empty-icon">📜</text>
+      <text class="empty-text">暂无历史记录</text>
+    </view>
+
+    <!-- List -->
+    <view class="list" wx:if="{{!isEmpty}}">
+      <view class="item" wx:for="{{history}}" wx:key="id" data-id="{{item.id}}" bindtap="handleItemTap">
+        <view class="item-bar {{item.isChinese ? 'bar-chinese' : 'bar-western'}}"></view>
+        <view class="item-icon {{item.isChinese ? 'icon-chinese' : 'icon-western'}}">
+          <text>{{item.isChinese ? '☯' : '⭐'}}</text>
+        </view>
+        <view class="item-body">
+          <view class="item-header">
+            <text class="item-title">{{item.isChinese ? '易学命理' : '西方星象'}} · {{item.profile.name}}</text>
+            <text class="item-time">{{item.timeText}}</text>
+          </view>
+          <text class="item-summary" wx:if="{{item.results && item.results.length > 0}}">{{item.results[0].content}}</text>
+          <view class="item-tags">
+            <text class="tag {{item.isChinese ? 'tag-chinese' : 'tag-western'}}" wx:for="{{item.results}}" wx:for-item="result" wx:key="type">{{result.typeName}}</text>
+          </view>
+        </view>
+        <text class="item-arrow" data-id="{{item.id}}" catchtap="handleDelete">🗑</text>
+      </view>
+    </view>
+  </view>
 </view>

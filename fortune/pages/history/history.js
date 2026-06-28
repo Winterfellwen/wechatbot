@@ -17,16 +17,24 @@ Page({
 
   loadHistory() {
     const history = storageService.getHistory();
+    // 为每条记录补充格式化时间戳（兼容旧数据）
+    var formatted = history.map(function(item) {
+      return {
+        ...item,
+        timeText: item.createdAtFormatted || (item.timestamp ? storageService.formatDate(item.timestamp) : '未知时间'),
+        isChinese: item.category === 'chinese'
+      };
+    });
     this.setData({
-      history: history,
-      isEmpty: history.length === 0
+      history: formatted,
+      isEmpty: formatted.length === 0
     });
   },
 
   handleItemTap(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/fortune/pages/reading/reading?mode=view&id=${id}`
+      url: '/pages/reading/reading?mode=view&id=' + id
     });
   },
 
