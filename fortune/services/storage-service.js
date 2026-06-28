@@ -1,8 +1,20 @@
 const STORAGE_KEYS = {
   PROFILE: 'fortune_profile',
   HISTORY: 'fortune_history',
-  CHAT: 'fortune_chat_history'
+  CHAT: 'fortune_chat_history',
+  DAILY_CACHE: 'fortune_daily_cache'
 };
+
+function formatDate(timestamp) {
+  if (!timestamp) return '';
+  var d = new Date(timestamp);
+  var year = d.getFullYear();
+  var month = (d.getMonth() + 1).toString().padStart(2, '0');
+  var day = d.getDate().toString().padStart(2, '0');
+  var hour = d.getHours().toString().padStart(2, '0');
+  var minute = d.getMinutes().toString().padStart(2, '0');
+  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+}
 
 function getProfile() {
   try {
@@ -36,10 +48,14 @@ function getHistory() {
 function addHistory(record) {
   try {
     const history = getHistory();
+    var now = Date.now();
     const newRecord = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      ...record
+      id: 'r_' + now,
+      category: record.category,
+      profile: record.profile,
+      results: record.results || [],
+      createdAt: now,
+      createdAtFormatted: formatDate(now)
     };
     history.unshift(newRecord);
     if (history.length > 50) {
@@ -95,17 +111,17 @@ function saveChatHistory(readingId, messages) {
   try {
     let allChats = wx.getStorageSync(STORAGE_KEYS.CHAT) || [];
     const existingIndex = allChats.findIndex(c => c.readingId === readingId);
-    
+
     if (existingIndex >= 0) {
       allChats[existingIndex].messages = messages;
     } else {
       allChats.push({ readingId, messages });
     }
-    
+
     if (allChats.length > 20) {
       allChats = allChats.slice(-20);
     }
-    
+
     wx.setStorageSync(STORAGE_KEYS.CHAT, allChats);
     return true;
   } catch (e) {
@@ -114,7 +130,25 @@ function saveChatHistory(readingId, messages) {
   }
 }
 
+function getDailyCache() {
+  try {
+    return wx.getStorageSync(STORAGE_KEYS.DAILY_CACHE) || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveDailyCache(cache) {
+  try {
+    wx.setStorageSync(STORAGE_KEYS.DAILY_CACHE, cache);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 module.exports = {
+  formatDate,
   getProfile,
   saveProfile,
   getHistory,
@@ -123,5 +157,7 @@ module.exports = {
   deleteHistory,
   clearHistory,
   getChatHistory,
-  saveChatHistory
+  saveChatHistory,
+  getDailyCache,
+  saveDailyCache
 };
