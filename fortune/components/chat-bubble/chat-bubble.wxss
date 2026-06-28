@@ -1,61 +1,47 @@
-/* fortune/components/chat-bubble/chat-bubble.wxss */
-.bubble-wrapper {
-  display: flex;
-  margin-bottom: 24rpx;
-}
-
-.bubble-wrapper.user {
-  justify-content: flex-end;
-}
-
-.bubble-wrapper.assistant {
-  justify-content: flex-start;
-}
-
-.avatar {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6, #d946ef);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  margin-right: 16rpx;
-  flex-shrink: 0;
-}
-
 .bubble {
-  max-width: 70%;
-  padding: 20rpx 28rpx;
-  border-radius: 20rpx;
-  line-height: 1.6;
+  font-size: 24rpx;
+  line-height: 1.8;
 }
 
-.user .bubble {
-  background: linear-gradient(135deg, #8b5cf6, #d946ef);
-  color: white;
-  border-bottom-right-radius: 4rpx;
+.plain-text {
+  opacity: 0.9;
 }
 
-.assistant .bubble {
-  background: white;
-  color: #1E293B;
-  border-bottom-left-radius: 4rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+/* mp-html 内部样式覆盖 */
+.bubble h1, .bubble h2, .bubble h3 {
+  color: #fbbf24;
+  font-weight: 400;
+  margin: 16rpx 0 8rpx;
 }
 
-.content {
-  font-size: 28rpx;
-  white-space: pre-wrap;
+.bubble h1 { font-size: 30rpx; }
+.bubble h2 { font-size: 28rpx; }
+.bubble h3 { font-size: 26rpx; }
+
+.bubble strong {
+  color: #fbbf24;
 }
 
-.cursor {
-  color: #8b5cf6;
-  animation: blink 1s infinite;
+.bubble ul {
+  padding-left: 32rpx;
+  margin: 8rpx 0;
 }
 
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+.bubble li {
+  margin: 4rpx 0;
+}
+
+.bubble blockquote {
+  border-left: 4rpx solid #8b5cf6;
+  background: rgba(139,92,246,0.08);
+  padding: 12rpx 24rpx;
+  margin: 12rpx 0;
+  font-size: 22rpx;
+}
+
+.bubble code {
+  background: rgba(255,255,255,0.1);
+  padding: 2rpx 8rpx;
+  border-radius: 4rpx;
+  font-size: 22rpx;
 }
