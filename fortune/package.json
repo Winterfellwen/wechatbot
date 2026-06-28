@@ -1,0 +1,11 @@
+{
+  "name": "fortune-miniprogram",
+  "version": "1.0.0",
+  "description": "AI运势微信小程序",
+  "dependencies": {
+    "lunar-javascript": "^1.6.0",
+    "iztro": "^1.0.0",
+    "@vant/weapp": "^1.11.7",
+    "mp-html": "^2.4.0"
+  }
+}
