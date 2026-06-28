@@ -1,4 +1,4 @@
-<view class="page-container {{themeClass}}">
+<view class="page-container fortune-page {{themeClass}}">
   <view class="page-content">
     <!-- Nav -->
     <view class="nav-bar">

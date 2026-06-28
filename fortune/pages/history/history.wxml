@@ -1,5 +1,5 @@
 <!-- fortune/pages/history/history.wxml -->
-<view class="page-container bg-neutral">
+<view class="page-container fortune-page bg-neutral">
   <view class="page-content">
     <!-- Nav -->
     <view class="nav-bar">
