@@ -100,7 +100,7 @@ function callAI(prompt, enableThinking) {
       requestData.reasoning_budget = 16384;
       requestData.grace_period = 1024;
     } else {
-      requestData.enable_thinking = false;
+      requestData.reasoning_budget = 0;
     }
 
     wx.request({
@@ -166,7 +166,7 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
     requestData.reasoning_budget = 16384;
     requestData.grace_period = 1024;
   } else {
-    requestData.enable_thinking = false;
+    requestData.reasoning_budget = 0;
   }
 
   var task = wx.request({
