@@ -4,7 +4,7 @@ const NVIDIA_CONFIG = {
   key: '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',
   apiUrl: 'https://integrate.api.nvidia.com/v1',
   model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
-  maxTokens: 20000
+  maxTokens: 20480
 };
 
 const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文化和西方占星术。
@@ -84,8 +84,24 @@ ${resultsText}
 }
 
 // 非流式调用（兜底）
-function callAI(prompt) {
+function callAI(prompt, enableThinking) {
   return new Promise(function(resolve, reject) {
+    var requestData = {
+      model: NVIDIA_CONFIG.model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: NVIDIA_CONFIG.maxTokens,
+      temperature: enableThinking ? 0.6 : 0.7
+    };
+    if (enableThinking) {
+      requestData.reasoning_budget = 16384;
+      requestData.grace_period = 1024;
+    } else {
+      requestData.enable_thinking = false;
+    }
+
     wx.request({
       url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
       method: 'POST',
@@ -94,15 +110,7 @@ function callAI(prompt) {
         'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
         'Content-Type': 'application/json'
       },
-      data: {
-        model: NVIDIA_CONFIG.model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: NVIDIA_CONFIG.maxTokens,
-        temperature: 0.7
-      },
+      data: requestData,
       success: function(res) {
         if (res.statusCode >= 200 && res.statusCode < 300 && res.data && res.data.choices && res.data.choices[0]) {
           var message = res.data.choices[0].message;
@@ -119,7 +127,7 @@ function callAI(prompt) {
 }
 
 // 流式调用 - 只取content字段，5秒无内容降级非流式
-function streamAI(prompt, onChunk, onDone, onError) {
+function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
   var fullText = '';
   var finishCalled = false;
   var fallbackTriggered = false;
@@ -134,7 +142,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
   var fallbackTimer = setTimeout(function() {
     if (finishCalled || fullText.length > 0) return;
     fallbackTriggered = true;
-    callAI(prompt).then(function(content) {
+    callAI(prompt, enableThinking).then(function(content) {
       fullText = content;
       finish();
     }).catch(function(err) {
@@ -142,6 +150,23 @@ function streamAI(prompt, onChunk, onDone, onError) {
       finish();
     });
   }, 5000);
+
+  var requestData = {
+    model: NVIDIA_CONFIG.model,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: NVIDIA_CONFIG.maxTokens,
+    temperature: enableThinking ? 0.6 : 0.7,
+    stream: true
+  };
+  if (enableThinking) {
+    requestData.reasoning_budget = 16384;
+    requestData.grace_period = 1024;
+  } else {
+    requestData.enable_thinking = false;
+  }
 
   var task = wx.request({
     url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
@@ -152,16 +177,7 @@ function streamAI(prompt, onChunk, onDone, onError) {
       'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
       'Content-Type': 'application/json'
     },
-    data: {
-      model: NVIDIA_CONFIG.model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: NVIDIA_CONFIG.maxTokens,
-      temperature: 0.7,
-      stream: true
-    },
+    data: requestData,
     success: function(res) {
       if (res.statusCode < 200 || res.statusCode >= 300) {
         if (onError) onError(new Error('API error: ' + res.statusCode));
@@ -257,7 +273,8 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
         if (onError) onError(type, err);
         currentTypeIndex++;
         processNext();
-      }
+      },
+      false
     );
   }
 

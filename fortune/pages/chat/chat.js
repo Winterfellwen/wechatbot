@@ -75,7 +75,8 @@ Page({
         const messages = [...this.data.messages];
         messages[assistantIndex] = { role: 'assistant', content: '抱歉，回答出现问题，请重试。' };
         this.setData({ messages, isLoading: false });
-      }
+      },
+      true
     );
   },
 
