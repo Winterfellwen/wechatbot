@@ -205,3 +205,52 @@ page {
 /* 按钮/卡片点击缩放反馈 */
 .card-tap { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .card-tap:active { transform: scale(0.96); }
+
+/* ===== Fortune 子包样式 ===== */
+.fortune-page {
+  color: #fff;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+.fortune-page page {
+  background-color: #1c1917;
+}
+
+/* 三套背景 class - 用多重background实现微光，避免伪元素拦截点击 */
+.bg-neutral {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(217,119,87,0.08), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(99,102,241,0.08), transparent 45%),
+    linear-gradient(180deg, #1c1917 0%, #292524 100%);
+  min-height: 100vh;
+}
+
+.bg-chinese {
+  background:
+    radial-gradient(circle at 30% 35%, rgba(217,119,87,0.15), transparent 55%),
+    radial-gradient(circle at 70% 65%, rgba(120,113,108,0.1), transparent 50%),
+    linear-gradient(180deg, #1c1917 0%, #44403c 50%, #292524 100%);
+  min-height: 100vh;
+}
+
+.bg-western {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(99,102,241,0.15), transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(14,165,233,0.1), transparent 50%),
+    linear-gradient(180deg, #0a0e27 0%, #1a1f3a 50%, #0d1b2a 100%);
+  min-height: 100vh;
+}
+
+/* 玻璃拟态卡片 */
+.fortune-page .glass-card {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24rpx;
+}
+
+/* 页面内容层级 */
+.page-content {
+  position: relative;
+  z-index: 1;
+}

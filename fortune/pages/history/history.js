@@ -34,7 +34,7 @@ Page({
   handleItemTap(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: '/pages/reading/reading?mode=view&id=' + id
+      url: '/fortune/pages/reading/reading?mode=view&id=' + id
     });
   },
 

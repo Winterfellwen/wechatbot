@@ -129,11 +129,13 @@ Page({
         this.saveToHistory(calcResults);
       },
       (type, err) => {
-        console.error('Reading error:', type, err);
+        // 详细打印错误对象，便于定位 API 问题
+        var errMsg = err && err.message ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+        console.error('Reading error:', type, errMsg, err);
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
         if (index >= 0) {
-          readings[index] = { ...readings[index], status: 'error' };
+          readings[index] = { ...readings[index], status: 'error', content: '推演失败：' + errMsg };
           this.setData({ readings });
         }
       }
@@ -176,7 +178,7 @@ Page({
     }
 
     wx.navigateTo({
-      url: '/pages/chat/chat?readingId=' + id
+      url: '/fortune/pages/chat/chat?readingId=' + id
     });
   },
 

@@ -89,13 +89,13 @@ Page({
     }
 
     wx.navigateTo({
-      url: '/pages/reading/reading?category=' + category
+      url: '/fortune/pages/reading/reading?category=' + category
     });
   },
 
   handleHistoryTap() {
     wx.navigateTo({
-      url: '/pages/history/history'
+      url: '/fortune/pages/history/history'
     });
   }
 });
