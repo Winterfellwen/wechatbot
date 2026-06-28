@@ -1,5 +1,5 @@
 <!-- fortune/components/chat-input/chat-input.wxml -->
-<view class="input-bar">
+<view class="input-wrap">
   <input 
     class="input" 
     placeholder="输入你想问的问题..." 

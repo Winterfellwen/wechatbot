@@ -14,6 +14,13 @@ const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文�
 2. 所有内容必须是中文，包括星座名、术语、地名等全部使用中文翻译
 3. 如果你输出任何英文，将被视为严重错误`;
 
+const WEB_SEARCH_SUFFIX = `\n\n【联网搜索模式】
+用户开启了联网搜索功能。请基于你的知识库回答，如涉及以下内容请特别说明：
+- 实时运势、天象变化
+- 最新新闻、事件
+- 当前日期相关的建议
+回答末尾请加一句提示："以上内容基于AI知识库分析，如需实时信息请自行搜索确认。"`;
+
 function buildReadingPrompt(type, profile) {
   const typeNames = {
     bazi: '八字命理',
@@ -63,13 +70,14 @@ ${profileInfo}
 请直接输出分析结果。`;
 }
 
-function buildChatPrompt(profile, results, question) {
+function buildChatPrompt(profile, results, question, options) {
+  options = options || {};
   let resultsText = '';
   if (results && results.length > 0) {
     resultsText = results.map(r => `【${r.typeName}】\n${r.content}`).join('\n\n');
   }
 
-  return `你是一个专业的运势分析师。
+  let prompt = `你是一个专业的运势分析师。
 
 【用户档案】
 姓名：${profile.name}
@@ -78,9 +86,19 @@ function buildChatPrompt(profile, results, question) {
 ${profile.birthTime ? '出生时辰：' + profile.birthTime : ''}
 
 【运势分析结果】
-${resultsText}
+${resultsText}`;
 
-请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
+  if (options.fileContent) {
+    prompt += `\n\n【用户上传的文件内容】\n文件名：${options.fileName}\n内容：\n${options.fileContent}`;
+  }
+
+  prompt += `\n\n请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
+
+  if (options.webSearch) {
+    prompt += WEB_SEARCH_SUFFIX;
+  }
+
+  return prompt;
 }
 
 // 非流式调用（兜底）
@@ -92,7 +110,7 @@ function callAI(prompt, enableThinking) {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
-    max_tokens: NVIDIA_CONFIG.maxTokens,
+      max_tokens: NVIDIA_CONFIG.maxTokens,
       temperature: enableThinking ? 0.6 : 0.7
     };
     if (enableThinking) {
@@ -157,7 +175,7 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: prompt }
     ],
-      max_tokens: NVIDIA_CONFIG.maxTokens,
+    max_tokens: NVIDIA_CONFIG.maxTokens,
     temperature: enableThinking ? 0.6 : 0.7,
     stream: true
   };
@@ -281,10 +299,36 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
   processNext();
 }
 
+// 读取文件内容
+function readFileContent(filePath, fileName) {
+  return new Promise(function(resolve, reject) {
+    var ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'txt' || ext === 'md' || ext === 'csv') {
+      wx.getFileSystemManager().readFile({
+        filePath: filePath,
+        encoding: 'utf-8',
+        success: function(res) {
+          var content = res.data || '';
+          if (content.length > 3000) {
+            content = content.substring(0, 3000) + '\n...(内容过长已截断)';
+          }
+          resolve(content);
+        },
+        fail: function(err) {
+          reject(new Error('读取文件失败: ' + (err.errMsg || 'unknown')));
+        }
+      });
+    } else {
+      resolve('[文件: ' + fileName + ' - 暂不支持解析此格式，仅支持txt/md/csv]');
+    }
+  });
+}
+
 module.exports = {
   buildReadingPrompt,
   buildChatPrompt,
   streamAI,
   callAI,
-  streamReadings
+  streamReadings,
+  readFileContent
 };

@@ -5,20 +5,42 @@
     <text class="nav-title">AI运势助手</text>
   </view>
 
+  <!-- 功能开关栏 -->
+  <view class="toolbar">
+    <view class="toolbar-btn {{enableThinking ? 'active' : ''}}" bindtap="toggleThinking">
+      <text class="toolbar-icon">🧠</text>
+      <text class="toolbar-text">深度思考</text>
+    </view>
+    <view class="toolbar-btn {{enableWebSearch ? 'active' : ''}}" bindtap="toggleWebSearch">
+      <text class="toolbar-icon">🌐</text>
+      <text class="toolbar-text">联网搜索</text>
+    </view>
+  </view>
+
   <!-- 对话列表 -->
-  <scroll-view class="chat-list" scroll-y>
+  <scroll-view class="chat-list" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation>
     <chat-bubble
       wx:for="{{messages}}"
-      wx:key="index"
+      wx:key="id"
       role="{{item.role}}"
       content="{{item.content}}"
       streaming="{{isLoading && index === messages.length - 1 && item.role === 'assistant'}}"
+      id="{{item.id}}"
     />
     <view class="loading-hint" wx:if="{{isLoading}}">
       <text class="loading-text">AI正在思考...</text>
     </view>
   </scroll-view>
 
+  <!-- 文件提示 -->
+  <view class="file-hint" wx:if="{{fileName}}">
+    <text class="file-name">📎 {{fileName}}</text>
+    <text class="file-clear" bindtap="clearFile">✕</text>
+  </view>
+
   <!-- 输入框 -->
-  <chat-input bind:send="handleSend" />
+  <view class="input-bar">
+    <view class="attach-btn" bindtap="handleChooseFile">📎</view>
+    <chat-input bind:send="handleSend" />
+  </view>
 </view>

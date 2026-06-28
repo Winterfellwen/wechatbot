@@ -25,6 +25,41 @@
   color: #1E293B;
 }
 
+.toolbar {
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx 30rpx;
+  background: white;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 32rpx;
+  background: #F1F5F9;
+  transition: all 0.2s;
+}
+
+.toolbar-btn.active {
+  background: #3B82F6;
+}
+
+.toolbar-btn.active .toolbar-text {
+  color: white;
+}
+
+.toolbar-icon {
+  font-size: 28rpx;
+}
+
+.toolbar-text {
+  font-size: 24rpx;
+  color: #64748B;
+}
+
 .chat-list {
   flex: 1;
   padding: 30rpx;
@@ -38,4 +73,46 @@
 .loading-text {
   font-size: 24rpx;
   color: #94A3B8;
+}
+
+.file-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 30rpx;
+  background: #EFF6FF;
+  border-top: 1rpx solid #DBEAFE;
+}
+
+.file-name {
+  font-size: 26rpx;
+  color: #3B82F6;
+}
+
+.file-clear {
+  font-size: 30rpx;
+  color: #94A3B8;
+  padding: 10rpx;
+}
+
+.input-bar {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 20rpx;
+  background: white;
+  border-top: 1rpx solid #f0f0f0;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.attach-btn {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  background: #F1F5F9;
+  border-radius: 50%;
+  flex-shrink: 0;
 }

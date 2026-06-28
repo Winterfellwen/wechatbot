@@ -130,23 +130,21 @@ Page({
 
     const typeName = readings[index].typeName;
     const prompt = aiService.buildReadingPrompt(type, profile);
-    let content = '';
 
     aiService.streamAI(prompt,
-      (chunk) => {
-        content += chunk;
+      (fullText) => {
         const readings = [...this.data.readings];
         const idx = readings.findIndex(r => r.type === type);
         if (idx >= 0) {
-          readings[idx] = { ...readings[idx], content, status: 'streaming' };
+          readings[idx] = { ...readings[idx], content: fullText, status: 'streaming' };
           this.setData({ readings });
         }
       },
-      () => {
+      (finalContent) => {
         const readings = [...this.data.readings];
         const idx = readings.findIndex(r => r.type === type);
         if (idx >= 0) {
-          readings[idx] = { ...readings[idx], content, status: 'completed' };
+          readings[idx] = { ...readings[idx], content: finalContent, status: 'completed' };
           this.setData({ readings });
         }
         this.saveToHistory();
