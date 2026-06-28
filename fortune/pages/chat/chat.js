@@ -5,20 +5,34 @@ Page({
   data: {
     readingId: '',
     messages: [],
-    inputValue: '',
     isLoading: false,
-    enableThinking: false,
-    enableWebSearch: false,
     fileName: '',
     filePath: '',
     fileContent: '',
-    scrollToView: ''
+    scrollToView: '',
+    themeClass: 'bg-chinese',
+    themeColor: '#d97757',
+    baziSummary: ''
   },
 
   onLoad(options) {
     const readingId = options.readingId || '';
     this.setData({ readingId });
+    this.loadTheme();
     this.loadChatHistory();
+  },
+
+  loadTheme() {
+    var history = storageService.getHistoryById(this.data.readingId);
+    if (history) {
+      var isChinese = history.category === 'chinese';
+      this.setData({
+        themeClass: isChinese ? 'bg-chinese' : 'bg-western',
+        themeColor: isChinese ? '#d97757' : '#818cf8',
+        baziSummary: history.results && history.results.length > 0 && history.results[0].calcData
+          ? history.results[0].calcData.summary : ''
+      });
+    }
   },
 
   loadChatHistory() {
@@ -34,26 +48,11 @@ Page({
     } else {
       this.setData({ messages });
     }
+    this.scrollToBottom();
   },
 
   handleInput(e) {
     this.setData({ inputValue: e.detail.value });
-  },
-
-  toggleThinking() {
-    this.setData({ enableThinking: !this.data.enableThinking });
-    wx.showToast({
-      title: this.data.enableThinking ? '深度思考已开启' : '深度思考已关闭',
-      icon: 'none'
-    });
-  },
-
-  toggleWebSearch() {
-    this.setData({ enableWebSearch: !this.data.enableWebSearch });
-    wx.showToast({
-      title: this.data.enableWebSearch ? '联网搜索已开启' : '联网搜索已关闭',
-      icon: 'none'
-    });
   },
 
   handleChooseFile() {
@@ -70,7 +69,8 @@ Page({
         }
         this.setData({
           fileName: file.name,
-          filePath: file.path
+          filePath: file.path,
+          fileContent: ''
         });
         wx.showToast({ title: '已选择: ' + file.name, icon: 'none' });
       }
@@ -88,6 +88,7 @@ Page({
     const userMsg = { role: 'user', content, id: 'msg_' + Date.now() };
     const messages = [...this.data.messages, userMsg];
     this.setData({ messages, inputValue: '', isLoading: true });
+    this.scrollToBottom();
 
     const history = storageService.getHistoryById(this.data.readingId);
     let results = [];
@@ -101,7 +102,6 @@ Page({
 
     const doSend = (fileContent) => {
       const prompt = aiService.buildChatPrompt(profile, results, content, {
-        webSearch: this.data.enableWebSearch,
         fileContent: fileContent,
         fileName: this.data.fileName
       });
@@ -111,18 +111,20 @@ Page({
           const messages = [...this.data.messages];
           messages[assistantIndex] = { role: 'assistant', content: fullText, id: assistantMsg.id };
           this.setData({ messages });
+          this.scrollToBottom();
         },
         () => {
           this.setData({ isLoading: false, fileName: '', filePath: '', fileContent: '' });
           this.saveChatHistory();
+          this.scrollToBottom();
         },
         (err) => {
           console.error('Chat error:', err);
           const messages = [...this.data.messages];
           messages[assistantIndex] = { role: 'assistant', content: '抱歉，回答出现问题，请重试。', id: assistantMsg.id };
           this.setData({ messages, isLoading: false, fileName: '', filePath: '', fileContent: '' });
-        },
-        this.data.enableThinking
+          this.scrollToBottom();
+        }
       );
     };
 

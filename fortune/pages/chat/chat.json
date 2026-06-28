@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "chat-bubble": "/fortune/components/chat-bubble/chat-bubble",
-    "chat-input": "/fortune/components/chat-input/chat-input"
+    "chat-input": "../../components/chat-input/chat-input",
+    "chat-bubble": "../../components/chat-bubble/chat-bubble"
   }
 }

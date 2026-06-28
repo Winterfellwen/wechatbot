@@ -1,46 +1,57 @@
-<view class="container">
-  <!-- 顶部导航 -->
-  <view class="nav-bar">
-    <text class="nav-back" bindtap="handleBack">←</text>
-    <text class="nav-title">AI运势助手</text>
-  </view>
-
-  <!-- 功能开关栏 -->
-  <view class="toolbar">
-    <view class="toolbar-btn {{enableThinking ? 'active' : ''}}" bindtap="toggleThinking">
-      <text class="toolbar-icon">🧠</text>
-      <text class="toolbar-text">深度思考</text>
+<view class="page-container {{themeClass}}">
+  <view class="page-content">
+    <!-- Nav -->
+    <view class="nav-bar">
+      <text class="nav-back" bindtap="handleBack">‹</text>
+      <view class="nav-info">
+        <text class="nav-title">深度对话</text>
+        <text class="nav-sub" wx:if="{{baziSummary}}">BASED ON {{baziSummary}}</text>
+      </view>
     </view>
-    <view class="toolbar-btn {{enableWebSearch ? 'active' : ''}}" bindtap="toggleWebSearch">
-      <text class="toolbar-icon">🌐</text>
-      <text class="toolbar-text">联网搜索</text>
+
+    <!-- Messages -->
+    <scroll-view class="messages" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation>
+      <!-- Session start -->
+      <view class="session-start">
+        <text class="session-icon">☯</text>
+        <text class="session-label">SESSION START</text>
+      </view>
+
+      <block wx:for="{{messages}}" wx:key="id">
+        <!-- User message: pill tag -->
+        <view class="user-msg" wx:if="{{item.role === 'user'}}" id="{{item.id}}">
+          <view class="user-pill">
+            <text class="user-prefix">问</text>
+            <text class="user-text">{{item.content}}</text>
+          </view>
+        </view>
+
+        <!-- AI message: scroll stream -->
+        <view class="ai-msg" wx:if="{{item.role === 'assistant'}}" id="{{item.id}}">
+          <view class="ai-stream-line" style="background:linear-gradient(180deg,{{themeColor}},transparent)"></view>
+          <view class="ai-content">
+            <view class="ai-label" style="color:{{themeColor}}">
+              <text>AI 命理师 · {{item.content ? '推演' : '推演中'}}</text>
+            </view>
+            <chat-bubble role="assistant" content="{{item.content}}" themeColor="{{themeColor}}" />
+          </view>
+        </view>
+      </block>
+
+      <!-- Separator -->
+      <view class="separator" wx:if="{{messages.length > 1}}">✦ ✦ ✦</view>
+    </scroll-view>
+
+    <!-- File hint -->
+    <view class="file-hint" wx:if="{{fileName}}">
+      <text>📎 {{fileName}}</text>
+      <text class="file-close" bindtap="clearFile">✕</text>
     </view>
-  </view>
 
-  <!-- 对话列表 -->
-  <scroll-view class="chat-list" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation>
-    <chat-bubble
-      wx:for="{{messages}}"
-      wx:key="id"
-      role="{{item.role}}"
-      content="{{item.content}}"
-      streaming="{{isLoading && index === messages.length - 1 && item.role === 'assistant'}}"
-      id="{{item.id}}"
-    />
-    <view class="loading-hint" wx:if="{{isLoading}}">
-      <text class="loading-text">AI正在思考...</text>
+    <!-- Input bar -->
+    <view class="input-bar">
+      <text class="input-icon" bindtap="handleChooseFile">📎</text>
+      <chat-input value="{{inputValue}}" bind:input="handleInput" bind:send="handleSend" disabled="{{isLoading}}" />
     </view>
-  </scroll-view>
-
-  <!-- 文件提示 -->
-  <view class="file-hint" wx:if="{{fileName}}">
-    <text class="file-name">📎 {{fileName}}</text>
-    <text class="file-clear" bindtap="clearFile">✕</text>
-  </view>
-
-  <!-- 输入框 -->
-  <view class="input-bar">
-    <view class="attach-btn" bindtap="handleChooseFile">📎</view>
-    <chat-input bind:send="handleSend" />
   </view>
 </view>
