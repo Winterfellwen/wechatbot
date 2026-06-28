@@ -4,7 +4,8 @@ const NVIDIA_CONFIG = {
   key: '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',
   apiUrl: 'https://integrate.api.nvidia.com/v1',
   model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
-  maxTokens: 20480
+  maxTokens: 20480,
+  readingMaxTokens: 3000
 };
 
 const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文化和西方占星术。
@@ -92,7 +93,7 @@ function callAI(prompt, enableThinking) {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
-      max_tokens: NVIDIA_CONFIG.maxTokens,
+      max_tokens: enableThinking ? NVIDIA_CONFIG.maxTokens : NVIDIA_CONFIG.readingMaxTokens,
       temperature: enableThinking ? 0.6 : 0.7
     };
     if (enableThinking) {
@@ -157,7 +158,7 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: prompt }
     ],
-    max_tokens: NVIDIA_CONFIG.maxTokens,
+    max_tokens: enableThinking ? NVIDIA_CONFIG.maxTokens : NVIDIA_CONFIG.readingMaxTokens,
     temperature: enableThinking ? 0.6 : 0.7,
     stream: true
   };
