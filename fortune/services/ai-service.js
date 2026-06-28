@@ -1,27 +1,30 @@
 // fortune/services/ai-service.js
+const app = getApp();
 
-const NVIDIA_CONFIG = {
-  key: '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',
-  apiUrl: 'https://integrate.api.nvidia.com/v1',
-  model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
-  maxTokens: 20480
-};
+function getConfig() {
+  return {
+    key: app.globalData.fortuneApiKey,
+    apiUrl: app.globalData.fortuneApiUrl,
+    model: app.globalData.fortuneModel,
+    maxTokens: 20480
+  };
+}
 
 const SYSTEM_PROMPT = `你是专业的AI命理分析师，精通中国传统文化和西方占星术。
 
 【强制规则 - 最高优先级】
 1. 你必须100%全程使用中文，绝对禁止输出任何英文单词、英文句子、英文标点
 2. 所有内容必须是中文，包括星座名、术语、地名等全部使用中文翻译
-3. 如果你输出任何英文，将被视为严重错误`;
+3. 如果你输出任何英文，将被视为严重错误
 
-const WEB_SEARCH_SUFFIX = `\n\n【联网搜索模式】
-用户开启了联网搜索功能。请基于你的知识库回答，如涉及以下内容请特别说明：
-- 实时运势、天象变化
-- 最新新闻、事件
-- 当前日期相关的建议
-回答末尾请加一句提示："以上内容基于AI知识库分析，如需实时信息请自行搜索确认。"`;
+【回答风格 - 防止循环】
+- 直接给出分析结果，不要过度推理或自我验证
+- 每个问题只回答一次，不要重复检查或反复推敲
+- 保持回答简洁有力，避免冗长
+- 不要自我怀疑或反复验证自己的答案
+- 确信自己的专业判断，直接输出`;
 
-function buildReadingPrompt(type, profile) {
+function buildReadingPrompt(type, profile, calcData) {
   const typeNames = {
     bazi: '八字命理',
     ziwei: '紫微斗数',
@@ -38,10 +41,16 @@ function buildReadingPrompt(type, profile) {
     profileInfo += `\n出生时辰：${profile.birthTime}`;
   }
 
+  let calcSection = '';
+  if (calcData && calcData.summary && !calcData.error && !calcData.needTime) {
+    calcSection = `\n\n【排盘数据 · 由专业库计算】\n${calcData.summary}\n\n请基于以上真实排盘结果进行专业解读，禁止编造与排盘数据矛盾的内容。`;
+  }
+
   return `请根据以下用户信息进行${typeName}分析。
 
 【用户信息】
 ${profileInfo}
+${calcSection}
 
 【输出格式】
 
@@ -94,38 +103,30 @@ ${resultsText}`;
 
   prompt += `\n\n请回答用户的问题。要求：100%中文，禁止英文，适当使用emoji。`;
 
-  if (options.webSearch) {
-    prompt += WEB_SEARCH_SUFFIX;
-  }
-
   return prompt;
 }
 
 // 非流式调用（兜底）
-function callAI(prompt, enableThinking) {
+function callAI(prompt) {
+  var config = getConfig();
   return new Promise(function(resolve, reject) {
     var requestData = {
-      model: NVIDIA_CONFIG.model,
+      model: config.model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
-      max_tokens: NVIDIA_CONFIG.maxTokens,
-      temperature: enableThinking ? 0.6 : 0.7
+      max_tokens: config.maxTokens,
+      temperature: 0.7,
+      reasoning_budget: 0
     };
-    if (enableThinking) {
-      requestData.reasoning_budget = 16384;
-      requestData.grace_period = 1024;
-    } else {
-      requestData.reasoning_budget = 0;
-    }
 
     wx.request({
-      url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
+      url: config.apiUrl + '/chat/completions',
       method: 'POST',
       timeout: 120000,
       header: {
-        'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
+        'Authorization': 'Bearer ' + config.key,
         'Content-Type': 'application/json'
       },
       data: requestData,
@@ -144,8 +145,9 @@ function callAI(prompt, enableThinking) {
   });
 }
 
-// 流式调用 - 只取content字段，5秒无内容降级非流式
-function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
+// 流式调用 - 5秒无内容降级非流式
+function streamAI(prompt, onChunk, onDone, onError) {
+  var config = getConfig();
   var fullText = '';
   var finishCalled = false;
   var fallbackTriggered = false;
@@ -160,8 +162,9 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
   var fallbackTimer = setTimeout(function() {
     if (finishCalled || fullText.length > 0) return;
     fallbackTriggered = true;
-    callAI(prompt, enableThinking).then(function(content) {
+    callAI(prompt).then(function(content) {
       fullText = content;
+      if (onChunk) onChunk(fullText);
       finish();
     }).catch(function(err) {
       if (onError) onError(err);
@@ -170,29 +173,24 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
   }, 5000);
 
   var requestData = {
-    model: NVIDIA_CONFIG.model,
+    model: config.model,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: prompt }
     ],
-    max_tokens: NVIDIA_CONFIG.maxTokens,
-    temperature: enableThinking ? 0.6 : 0.7,
+    max_tokens: config.maxTokens,
+    temperature: 0.7,
+    reasoning_budget: 0,
     stream: true
   };
-  if (enableThinking) {
-    requestData.reasoning_budget = 16384;
-    requestData.grace_period = 1024;
-  } else {
-    requestData.reasoning_budget = 0;
-  }
 
   var task = wx.request({
-    url: NVIDIA_CONFIG.apiUrl + '/chat/completions',
+    url: config.apiUrl + '/chat/completions',
     method: 'POST',
     enableChunked: true,
     timeout: 120000,
     header: {
-      'Authorization': 'Bearer ' + NVIDIA_CONFIG.key,
+      'Authorization': 'Bearer ' + config.key,
       'Content-Type': 'application/json'
     },
     data: requestData,
@@ -212,7 +210,7 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
 
   if (task && task.onChunkReceived) {
     task.onChunkReceived(function(res) {
-      if (fallbackTriggered) return;
+      if (fallbackTriggered || finishCalled) return;
       try {
         var data = new TextDecoder().decode(res.data);
         var lines = data.split('\n');
@@ -254,7 +252,7 @@ function streamAI(prompt, onChunk, onDone, onError, enableThinking) {
 }
 
 // 串行流式测算
-function streamReadings(category, profile, onReadingStart, onChunk, onReadingComplete, onAllComplete, onError) {
+function streamReadings(category, profile, calcResults, onReadingStart, onChunk, onReadingComplete, onAllComplete, onError) {
   var types = category === 'chinese'
     ? ['bazi', 'ziwei', 'yijing']
     : ['constellation', 'tarot', 'astrology'];
@@ -276,7 +274,8 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
 
     if (onReadingStart) onReadingStart(type, typeNames[type]);
 
-    var prompt = buildReadingPrompt(type, profile);
+    var calcData = calcResults[type] || null;
+    var prompt = buildReadingPrompt(type, profile, calcData);
 
     streamAI(prompt,
       function(content) {
@@ -291,8 +290,7 @@ function streamReadings(category, profile, onReadingStart, onChunk, onReadingCom
         if (onError) onError(type, err);
         currentTypeIndex++;
         processNext();
-      },
-      false
+      }
     );
   }
 
