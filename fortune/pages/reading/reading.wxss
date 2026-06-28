@@ -1,77 +1,195 @@
-.container {
-  padding: 30rpx;
-  background: #f8fafc;
+.page-container {
   min-height: 100vh;
+  color: #fff;
+}
+
+.page-content {
+  position: relative;
+  z-index: 1;
   padding-bottom: 120rpx;
 }
 
 .nav-bar {
   display: flex;
   align-items: center;
-  padding: 20rpx 0 30rpx;
+  gap: 20rpx;
+  padding: 30rpx 32rpx 20rpx;
 }
 
 .nav-back {
-  font-size: 40rpx;
-  color: #1E293B;
-  margin-right: 20rpx;
+  font-size: 36rpx;
+  opacity: 0.7;
 }
 
 .nav-title {
-  font-size: 36rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #1E293B;
+  flex: 1;
 }
 
-.profile-bar {
-  background: white;
+.tags {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  padding: 0 32rpx 16rpx;
+}
+
+.tag {
+  border: 1px solid;
+  border-radius: 40rpx;
+  padding: 6rpx 20rpx;
+  font-size: 20rpx;
+  background: rgba(255,255,255,0.05);
+}
+
+.notice {
+  margin: 0 24rpx 16rpx;
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.25);
   border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
+  padding: 16rpx 24rpx;
+  font-size: 22rpx;
+  color: #fbbf24;
 }
 
-.profile-info {
-  font-size: 26rpx;
-  color: #64748b;
-  display: block;
-  margin-bottom: 4rpx;
-}
-
-.warning-bar {
-  background: #fef3c7;
-  border-radius: 12rpx;
-  padding: 20rpx;
-  margin-bottom: 20rpx;
-}
-
-.warning-text {
-  font-size: 24rpx;
-  color: #92400e;
-}
-
-.readings-list {
-  margin-bottom: 30rpx;
-}
-
-.chat-fab {
-  position: fixed;
-  right: 40rpx;
-  bottom: 80rpx;
-  background: linear-gradient(135deg, #8b5cf6, #d946ef);
-  border-radius: 60rpx;
-  padding: 24rpx 36rpx;
+.steps {
   display: flex;
   align-items: center;
-  box-shadow: 0 8rpx 24rpx rgba(139, 92, 246, 0.4);
+  margin: 0 24rpx 24rpx;
+  padding: 24rpx;
+  background: rgba(255,255,255,0.06);
+  border-radius: 20rpx;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
-.fab-icon {
-  font-size: 36rpx;
-  margin-right: 10rpx;
+.step {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  flex-shrink: 0;
 }
 
-.fab-text {
-  font-size: 28rpx;
-  color: white;
-  font-weight: 500;
+.step-done {
+  color: #fff;
+}
+
+.step-active {
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+
+.step-pending {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  opacity: 0.4;
+}
+
+.step-line {
+  flex: 1;
+  height: 2rpx;
+  margin: 0 12rpx;
+  margin-top: -28rpx;
+}
+
+.cards {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.card {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24rpx;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.card-streaming {
+  border-width: 2rpx;
+}
+
+.card-pending {
+  opacity: 0.5;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.card-status {
+  font-size: 20rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.card-summary {
+  padding: 16rpx 28rpx;
+  font-size: 20rpx;
+  font-family: monospace;
+  color: #fbbf24;
+  opacity: 0.9;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.card-content {
+  padding: 20rpx 28rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  opacity: 0.9;
+  white-space: pre-wrap;
+}
+
+.card-loading-dots {
+  display: flex;
+  gap: 8rpx;
+  padding: 20rpx 28rpx;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.dot:nth-child(1) { animation: blink 1s infinite; }
+.dot:nth-child(2) { animation: blink 1s 0.2s infinite; }
+.dot:nth-child(3) { animation: blink 1s 0.4s infinite; }
+
+.fab {
+  position: fixed;
+  bottom: 48rpx;
+  left: 48rpx;
+  right: 48rpx;
+  border-radius: 48rpx;
+  padding: 24rpx;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }

@@ -1,33 +1,57 @@
-<view class="container">
-  <view class="nav-bar">
-    <text class="nav-back" bindtap="handleBack">←</text>
-    <text class="nav-title">{{categoryName}} · {{profile.name}}</text>
-  </view>
+<view class="page-container {{themeClass}}">
+  <view class="page-content">
+    <!-- 顶部导航 -->
+    <view class="nav-bar">
+      <text class="nav-back" bindtap="handleBack">‹</text>
+      <text class="nav-title">{{categoryName}} · {{profile.name}}</text>
+    </view>
 
-  <view class="profile-bar">
-    <text class="profile-info">📅 {{profile.birthday}} {{profile.gender === 'male' ? '男' : '女'}}</text>
-    <text class="profile-info" wx:if="{{profile.birthTime}}">⏰ {{profile.birthTime}}</text>
-  </view>
+    <!-- 用户档案标签 -->
+    <view class="tags" wx:if="{{profile}}">
+      <view class="tag" style="border-color:{{themeColor}};color:{{themeColor}}">📅 {{profile.birthday}}</view>
+      <view class="tag" style="border-color:{{themeColor}};color:{{themeColor}}">{{profile.gender === 'male' ? '♂ 男' : '♀ 女'}}</view>
+      <view class="tag" wx:if="{{profile.birthTime}}" style="border-color:{{themeColor}};color:{{themeColor}}">🕐 {{profile.birthTime}}</view>
+    </view>
 
-  <view class="warning-bar" wx:if="{{category === 'chinese' && !profile.birthTime}}">
-    <text class="warning-text">⚠️ 未填写出生时辰，易学命理分析可能不准确</text>
-  </view>
+    <!-- 时辰缺失提示 -->
+    <view class="notice" wx:if="{{needTimeWarn}}">
+      <text>⚠️ 八字/紫微需出生时辰，请完善档案</text>
+    </view>
 
-  <view class="readings-list">
-    <fortune-card
-      wx:for="{{readings}}"
-      wx:key="type"
-      typeName="{{item.typeName}}"
-      content="{{item.content}}"
-      status="{{item.status}}"
-      category="{{category}}"
-      data-type="{{item.type}}"
-      bind:retry="handleRetry"
-    />
-  </view>
+    <!-- 三步进度条 -->
+    <view class="steps">
+      <block wx:for="{{readings}}" wx:key="type">
+        <view class="step {{item.status === 'completed' ? 'step-done' : item.status === 'loading' || item.status === 'streaming' ? 'step-active' : 'step-pending'}}" style="{{item.status === 'completed' || item.status === 'loading' || item.status === 'streaming' ? 'background:' + themeColor : ''}}">
+          <text wx:if="{{item.status === 'completed'}}">✓</text>
+          <text wx:elif="{{item.status === 'loading' || item.status === 'streaming'}}">{{index + 1}}</text>
+          <text wx:else>{{index + 1}}</text>
+        </view>
+        <view class="step-line" wx:if="{{index < readings.length - 1}}" style="background:{{item.status === 'completed' ? themeColor : 'rgba(255,255,255,0.15)'}}"></view>
+      </block>
+    </view>
 
-  <view class="chat-fab" bindtap="handleChatTap">
-    <text class="fab-icon">💬</text>
-    <text class="fab-text">AI提问</text>
+    <!-- 三张玻璃卡 -->
+    <view class="cards">
+      <view class="card {{item.status === 'streaming' ? 'card-streaming' : item.status === 'completed' ? 'card-done' : item.status === 'loading' ? 'card-loading' : 'card-pending'}}" wx:for="{{readings}}" wx:key="type" style="{{item.status === 'streaming' || item.status === 'loading' ? 'border-color:' + themeColor + ';box-shadow:0 0 30rpx ' + themeColor + '33' : ''}}">
+        <view class="card-header">
+          <text class="card-title">{{item.typeName}}</text>
+          <text class="card-status" wx:if="{{item.status === 'completed'}}" style="color:{{themeColor}};background:{{themeColor}}22">✓ 完成</text>
+          <text class="card-status" wx:if="{{item.status === 'loading' || item.status === 'streaming'}}" style="color:{{themeColor}}">● 推演中</text>
+          <text class="card-status" wx:if="{{item.status === 'pending'}}" style="opacity:0.4">排队中</text>
+        </view>
+        <view class="card-summary" wx:if="{{item.summary}}">{{item.summary}}</view>
+        <view class="card-content" wx:if="{{item.content}}">{{item.content}}</view>
+        <view class="card-loading-dots" wx:if="{{item.status === 'loading'}}">
+          <view class="dot" style="background:{{themeColor}}"></view>
+          <view class="dot" style="background:{{themeColor}}"></view>
+          <view class="dot" style="background:{{themeColor}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- FAB 浮动按钮 -->
+    <view class="fab" bindtap="handleChatTap" style="background:linear-gradient(135deg,{{themeColor}},{{themeColor}}aa);box-shadow:0 8rpx 32rpx {{themeColor}}66">
+      <text>💬 AI提问</text>
+    </view>
   </view>
 </view>

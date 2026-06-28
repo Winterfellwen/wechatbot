@@ -1,5 +1,6 @@
 const storageService = require('../../services/storage-service');
 const aiService = require('../../services/ai-service');
+const calcService = require('../../services/calc-service');
 
 Page({
   data: {
@@ -8,12 +9,19 @@ Page({
     profile: null,
     readings: [],
     isViewMode: false,
-    historyId: null
+    historyId: null,
+    themeClass: 'bg-chinese',
+    themeColor: '#d97757',
+    needTimeWarn: false
   },
 
   onLoad(options) {
     const category = options.category || 'chinese';
     const categoryName = category === 'chinese' ? '易学命理' : '西方星象';
+    const themeClass = category === 'chinese' ? 'bg-chinese' : 'bg-western';
+    const themeColor = category === 'chinese' ? '#d97757' : '#818cf8';
+
+    this.setData({ category, categoryName, themeClass, themeColor });
 
     if (options.mode === 'view' && options.id) {
       this.loadHistoryReading(options.id);
@@ -25,6 +33,8 @@ Page({
   loadHistoryReading(id) {
     const record = storageService.getHistoryById(id);
     if (record) {
+      const themeClass = record.category === 'chinese' ? 'bg-chinese' : 'bg-western';
+      const themeColor = record.category === 'chinese' ? '#d97757' : '#818cf8';
       this.setData({
         category: record.category,
         categoryName: record.category === 'chinese' ? '易学命理' : '西方星象',
@@ -33,10 +43,13 @@ Page({
           type: r.type,
           typeName: r.typeName,
           content: r.content,
+          summary: r.calcData ? r.calcData.summary : '',
           status: 'completed'
         })),
         isViewMode: true,
-        historyId: id
+        historyId: id,
+        themeClass,
+        themeColor
       });
     }
   },
@@ -53,27 +66,41 @@ Page({
       ? [{ type: 'bazi', typeName: '八字命理' }, { type: 'ziwei', typeName: '紫微斗数' }, { type: 'yijing', typeName: '易经卦象' }]
       : [{ type: 'constellation', typeName: '星座分析' }, { type: 'tarot', typeName: '塔罗占卜' }, { type: 'astrology', typeName: '占星术' }];
 
+    // 计算排盘数据
+    var typeStrings = types.map(function(t) { return t.type; });
+    var calcResults = calcService.buildContext(profile, typeStrings);
+
+    // 检查是否缺时辰
+    var needTimeWarn = false;
+    if (category === 'chinese') {
+      if (calcResults.bazi && calcResults.bazi.needTime) needTimeWarn = true;
+    }
+
     this.setData({
-      category,
-      categoryName,
       profile,
-      readings: types.map(t => ({
-        ...t,
-        content: '',
-        status: 'pending'
-      }))
+      readings: types.map(function(t) {
+        var calcData = calcResults[t.type];
+        return {
+          type: t.type,
+          typeName: t.typeName,
+          content: '',
+          summary: (calcData && !calcData.error && !calcData.needTime) ? calcData.summary : '',
+          status: 'pending'
+        };
+      }),
+      needTimeWarn: needTimeWarn
     });
 
-    this.startStreamReadings();
+    this.startStreamReadings(calcResults);
   },
 
-  startStreamReadings() {
+  startStreamReadings(calcResults) {
     const { category, profile } = this.data;
 
     aiService.streamReadings(
       category,
       profile,
-      // onReadingStart — 全部同时变loading
+      calcResults,
       (type, typeName) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -82,7 +109,6 @@ Page({
           this.setData({ readings });
         }
       },
-      // onChunk — 打字效果
       (type, content) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -91,7 +117,6 @@ Page({
           this.setData({ readings });
         }
       },
-      // onReadingComplete — 单个卡片完成
       (type, typeName, content) => {
         const readings = [...this.data.readings];
         const index = readings.findIndex(r => r.type === type);
@@ -100,11 +125,9 @@ Page({
           this.setData({ readings });
         }
       },
-      // onAllComplete
       () => {
-        this.saveToHistory();
+        this.saveToHistory(calcResults);
       },
-      // onError
       (type, err) => {
         console.error('Reading error:', type, err);
         const readings = [...this.data.readings];
@@ -117,51 +140,7 @@ Page({
     );
   },
 
-  handleRetry(e) {
-    const type = e.currentTarget.dataset.type;
-    const { category, profile } = this.data;
-
-    const readings = [...this.data.readings];
-    const index = readings.findIndex(r => r.type === type);
-    if (index >= 0) {
-      readings[index] = { ...readings[index], status: 'loading', content: '' };
-      this.setData({ readings });
-    }
-
-    const typeName = readings[index].typeName;
-    const prompt = aiService.buildReadingPrompt(type, profile);
-
-    aiService.streamAI(prompt,
-      (fullText) => {
-        const readings = [...this.data.readings];
-        const idx = readings.findIndex(r => r.type === type);
-        if (idx >= 0) {
-          readings[idx] = { ...readings[idx], content: fullText, status: 'streaming' };
-          this.setData({ readings });
-        }
-      },
-      (finalContent) => {
-        const readings = [...this.data.readings];
-        const idx = readings.findIndex(r => r.type === type);
-        if (idx >= 0) {
-          readings[idx] = { ...readings[idx], content: finalContent, status: 'completed' };
-          this.setData({ readings });
-        }
-        this.saveToHistory();
-      },
-      (err) => {
-        console.error('Retry error:', err);
-        const readings = [...this.data.readings];
-        const idx = readings.findIndex(r => r.type === type);
-        if (idx >= 0) {
-          readings[idx] = { ...readings[idx], status: 'error' };
-          this.setData({ readings });
-        }
-      }
-    );
-  },
-
-  saveToHistory() {
+  saveToHistory(calcResults) {
     const { category, profile, readings } = this.data;
     const record = {
       category,
@@ -169,10 +148,14 @@ Page({
       results: readings.map(r => ({
         type: r.type,
         typeName: r.typeName,
-        content: r.content
+        content: r.content,
+        calcData: calcResults[r.type] || null
       }))
     };
-    storageService.addHistory(record);
+    var saved = storageService.addHistory(record);
+    if (saved) {
+      this.setData({ historyId: saved.id });
+    }
   },
 
   handleChatTap() {
@@ -184,7 +167,7 @@ Page({
       return;
     }
 
-    let id = historyId;
+    var id = historyId;
     if (!id) {
       const history = storageService.getHistory();
       if (history.length > 0) {
@@ -193,7 +176,7 @@ Page({
     }
 
     wx.navigateTo({
-      url: `/fortune/pages/chat/chat?readingId=${id}`
+      url: '/pages/chat/chat?readingId=' + id
     });
   },
 
