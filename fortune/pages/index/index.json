@@ -1,5 +1,5 @@
 {
   "usingComponents": {
-    "profile-form": "/fortune/components/profile-form/profile-form"
+    "profile-form": "../../components/profile-form/profile-form"
   }
 }

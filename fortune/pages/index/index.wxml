@@ -1,47 +1,48 @@
-<!-- fortune/pages/index/index.wxml -->
-<view class="container">
-  <view class="header">
-    <text class="title">AI运势分析</text>
+<view class="page-container bg-neutral">
+  <view class="page-content">
+    <!-- 顶部导航 -->
+    <view class="nav-bar">
+      <text class="nav-title">☯ AI命理</text>
+      <text class="nav-icon" bindtap="handleHistoryTap">📜</text>
+    </view>
+
+    <!-- 今日运势 Hero -->
+    <view class="hero">
+      <text class="hero-label">TODAY · 今日</text>
+      <text class="hero-text">{{dailyFortune || '完善档案后查看今日运势'}}</text>
+    </view>
+
+    <!-- 档案卡 -->
+    <view class="glass-card profile-card" bindtap="handleShowProfileForm">
+      <view class="profile-avatar">{{profile ? profile.name[0] : '?'}}</view>
+      <view class="profile-info">
+        <text class="profile-name">{{profile ? profile.name : '点击填写档案'}}</text>
+        <text class="profile-detail" wx:if="{{profile}}">{{profile.birthday}} · {{profile.gender === 'male' ? '♂' : '♀'}}{{profile.birthTime ? ' · ' + profile.birthTime : ''}}</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+
+    <!-- 双入口网格 -->
+    <view class="grid">
+      <view class="grid-item grid-chinese" data-category="chinese" bindtap="handleCategoryTap">
+        <text class="grid-icon">☯</text>
+        <text class="grid-title">易学命理</text>
+        <text class="grid-sub">八字·紫微·易经</text>
+      </view>
+      <view class="grid-item grid-western" data-category="western" bindtap="handleCategoryTap">
+        <text class="grid-icon">⭐</text>
+        <text class="grid-title">西方星象</text>
+        <text class="grid-sub">星座·塔罗·占星</text>
+      </view>
+    </view>
+
+    <!-- 历史记录入口 -->
+    <view class="glass-card history-entry" bindtap="handleHistoryTap">
+      <text class="history-label">📜 历史记录</text>
+      <text class="arrow">›</text>
+    </view>
   </view>
 
-  <!-- 档案卡片 -->
-  <view class="profile-card" bindtap="handleShowProfileForm">
-    <view class="profile-info" wx:if="{{profile}}">
-      <text class="profile-name">{{profile.name}}</text>
-      <text class="profile-detail">📅 {{profile.birthday}} {{profile.gender === 'male' ? '男' : '女'}}</text>
-      <text class="profile-detail" wx:if="{{profile.birthTime}}">⏰ {{profile.birthTime}}</text>
-    </view>
-    <view class="profile-empty" wx:else>
-      <text class="empty-text">点击创建档案</text>
-      <text class="empty-hint">填写信息后即可开始测算</text>
-    </view>
-    <text class="profile-arrow">›</text>
-  </view>
-
-  <!-- 分类入口 -->
-  <view class="category-grid">
-    <view class="category-card" bindtap="handleCategoryTap" data-category="chinese">
-      <text class="category-icon">☯</text>
-      <text class="category-name">易学命理</text>
-      <text class="category-desc">八字 · 紫微 · 易经</text>
-    </view>
-    <view class="category-card" bindtap="handleCategoryTap" data-category="western">
-      <text class="category-icon">⭐</text>
-      <text class="category-name">西方星象</text>
-      <text class="category-desc">星座 · 塔罗 · 占星</text>
-    </view>
-  </view>
-
-  <!-- 历史记录入口 -->
-  <view class="history-entry" bindtap="handleHistoryTap">
-    <text class="history-text">查看历史记录</text>
-  </view>
-
-  <!-- 档案表单弹窗 -->
-  <profile-form 
-    visible="{{showProfileForm}}" 
-    profile="{{profile}}"
-    bind:save="handleSaveProfile"
-    bind:close="handleCloseProfileForm"
-  />
+  <!-- 档案表单弹层 -->
+  <profile-form wx:if="{{showProfileForm}}" bind:close="handleCloseProfileForm" bind:save="handleSaveProfile" profile="{{profile}}" />
 </view>
