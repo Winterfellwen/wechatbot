@@ -4,9 +4,10 @@
     class="input" 
     placeholder="输入你想问的问题..." 
     value="{{inputValue}}" 
+    adjust-position="{{false}}"
     bindinput="handleInput"
     confirm-type="send"
-    bindconfirm="handleSend"
+    bindconfirm="handleConfirm"
+    disabled="{{disabled}}"
   />
-  <view class="send-btn {{inputValue ? 'active' : ''}}" bindtap="handleSend">发送</view>
 </view>

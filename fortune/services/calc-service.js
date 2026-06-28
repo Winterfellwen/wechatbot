@@ -219,7 +219,7 @@ function calcConstellation(profile) {
       rulingPlanet: info.rulingPlanet || '',
       dateRange: info.dateRange || '',
       zodiac: zodiac,
-      summary: fullName + ' · ' + (info.element || '') + ' · 守护星' + (info.rulingPlanet || '') + ' | 生肖' + zodiac
+      summary: fullName + ' · ' + (info.element || '') + ' · 守护星' + (info.rulingPlanet || '')
     };
   } catch (e) {
     console.error('calcConstellation error:', e);
@@ -342,20 +342,37 @@ var TAROT_MAJOR = [
 
 function calcTarot() {
   try {
-    var index = Math.floor(Math.random() * 22);
-    var card = TAROT_MAJOR[index];
-    var isReversed = Math.random() < 0.5;
-    var meaning = isReversed ? card.reversed : card.upright;
+    var indices = [];
+    while (indices.length < 3) {
+      var idx = Math.floor(Math.random() * 22);
+      if (indices.indexOf(idx) === -1) indices.push(idx);
+    }
+
+    var positions = [
+      { name: '过去', meaning: '过去的能量和影响，问题的根源' },
+      { name: '现在', meaning: '当下的状态、挑战与机遇' },
+      { name: '未来', meaning: '未来的发展趋势和潜在结果' }
+    ];
+
+    var spread = indices.map(function(idx, i) {
+      var card = TAROT_MAJOR[idx];
+      var isRev = Math.random() < 0.5;
+      return {
+        position: positions[i].name,
+        positionMeaning: positions[i].meaning,
+        card: card.name,
+        number: card.number,
+        reversed: isRev,
+        meanings: isRev ? card.reversed : card.upright,
+        element: card.element,
+        planet: card.planet
+      };
+    });
 
     return {
       error: false,
-      card: card.name,
-      number: card.number,
-      reversed: isReversed,
-      meanings: meaning,
-      element: card.element,
-      planet: card.planet,
-      summary: card.name + (isReversed ? '（逆位）' : '（正位）') + ' | 关键词：' + meaning.join('、') + ' | 元素' + card.element
+      spread: spread,
+      summary: '过去「' + spread[0].card + '」→ 现在「' + spread[1].card + '」→ 未来「' + spread[2].card + '」'
     };
   } catch (e) {
     return { error: true, summary: '塔罗抽牌失败' };
@@ -374,7 +391,7 @@ function calcAstrology(profile) {
       element: conResult.element,
       rulingPlanet: conResult.rulingPlanet,
       zodiac: conResult.zodiac,
-      summary: conResult.sign + '占星分析 | ' + conResult.element + ' | 守护星' + conResult.rulingPlanet + ' | 生肖' + conResult.zodiac
+      summary: conResult.sign + '占星分析 | ' + conResult.element + ' | 守护星' + conResult.rulingPlanet
     };
   } catch (e) {
     return { error: true, summary: '占星术分析失败' };

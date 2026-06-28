@@ -1,17 +1,43 @@
+/* fortune/components/chat-bubble/chat-bubble.wxss — Celestial Oracle 风格 */
+.bubble-wrap {
+  position: relative;
+}
+
+/* 左侧强调线：呼应主题色 */
+.bubble-wrap::before {
+  content: '';
+  position: absolute;
+  left: -14rpx;
+  top: 8rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: linear-gradient(
+    to bottom,
+    var(--accent, #d97757),
+    transparent
+  );
+  border-radius: 2rpx;
+  opacity: 0.5;
+}
+
 .bubble {
   font-size: 24rpx;
-  line-height: 1.8;
+  line-height: 1.85;
 }
 
 .plain-text {
-  opacity: 0.9;
+  opacity: 0.88;
+  white-space: pre-wrap;
 }
 
-/* mp-html 内部样式覆盖 */
-.bubble h1, .bubble h2, .bubble h3 {
-  color: #fbbf24;
-  font-weight: 400;
-  margin: 16rpx 0 8rpx;
+/* mp-html 内部样式 */
+.bubble h1,
+.bubble h2,
+.bubble h3 {
+  color: var(--accent, #d97757);
+  font-weight: 600;
+  margin: 12rpx 0 6rpx;
+  opacity: 1;
 }
 
 .bubble h1 { font-size: 30rpx; }
@@ -19,29 +45,45 @@
 .bubble h3 { font-size: 26rpx; }
 
 .bubble strong {
-  color: #fbbf24;
+  color: var(--accent, #d97757);
+  font-weight: 600;
+}
+
+.bubble em {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
 }
 
 .bubble ul {
   padding-left: 32rpx;
-  margin: 8rpx 0;
+  margin: 6rpx 0;
 }
 
 .bubble li {
-  margin: 4rpx 0;
+  margin: 3rpx 0;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .bubble blockquote {
-  border-left: 4rpx solid #8b5cf6;
-  background: rgba(139,92,246,0.08);
-  padding: 12rpx 24rpx;
-  margin: 12rpx 0;
+  border-left: 3rpx solid var(--accent, #d97757);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10rpx 20rpx;
+  margin: 10rpx 0;
   font-size: 22rpx;
+  border-radius: 0 8rpx 8rpx 0;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .bubble code {
-  background: rgba(255,255,255,0.1);
-  padding: 2rpx 8rpx;
-  border-radius: 4rpx;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
   font-size: 22rpx;
+  font-family: "SF Mono", "Menlo", monospace;
+  color: var(--accent, #d97757);
+}
+
+.bubble p {
+  margin: 4rpx 0;
+  color: rgba(255, 255, 255, 0.88);
 }

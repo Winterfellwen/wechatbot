@@ -1,5 +1,6 @@
 {
   "usingComponents": {
-    "fortune-card": "../../components/fortune-card/fortune-card"
+    "fortune-card": "../../components/fortune-card/fortune-card",
+    "mp-html": "mp-html/index"
   }
 }

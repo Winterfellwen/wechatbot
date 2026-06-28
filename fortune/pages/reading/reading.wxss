@@ -52,49 +52,6 @@
   color: #fbbf24;
 }
 
-.steps {
-  display: flex;
-  align-items: center;
-  margin: 0 24rpx 24rpx;
-  padding: 24rpx;
-  background: rgba(255,255,255,0.06);
-  border-radius: 20rpx;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.step {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22rpx;
-  flex-shrink: 0;
-}
-
-.step-done {
-  color: #fff;
-}
-
-.step-active {
-  color: #fff;
-  animation: pulse 1.5s infinite;
-}
-
-.step-pending {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  opacity: 0.4;
-}
-
-.step-line {
-  flex: 1;
-  height: 2rpx;
-  margin: 0 12rpx;
-  margin-top: -28rpx;
-}
-
 .cards {
   padding: 0 24rpx;
   display: flex;
@@ -103,6 +60,7 @@
 }
 
 .card {
+  position: relative;
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 24rpx;
@@ -114,9 +72,6 @@
   border-width: 2rpx;
 }
 
-.card-pending {
-  opacity: 0.5;
-}
 
 .card-header {
   display: flex;
@@ -127,7 +82,7 @@
 }
 
 .card-title {
-  font-size: 26rpx;
+  font-size: 28rpx;
   font-weight: 600;
 }
 
@@ -137,32 +92,389 @@
   border-radius: 20rpx;
 }
 
-.card-summary {
+/* 排盘摘要：多模块数据展示 */
+.card-summaries {
   padding: 16rpx 28rpx;
-  font-size: 20rpx;
-  font-family: monospace;
-  color: #fbbf24;
-  opacity: 0.9;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.summary-label {
+  font-size: 18rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  opacity: 0.85;
+}
+
+.summary-text {
+  font-size: 18rpx;
+  font-family: "SF Mono", "Menlo", monospace;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/* ===== 详细排盘卡片区域 ===== */
+.detail-cards {
+  padding: 16rpx 28rpx 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20rpx;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.detail-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.detail-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18rpx 22rpx;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.detail-card-title {
+  font-size: 24rpx;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.detail-card-icon {
+  font-size: 18rpx;
+  opacity: 0.4;
+  background: rgba(255,255,255,0.08);
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.detail-card-body {
+  padding: 16rpx 22rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.detail-label {
+  font-size: 20rpx;
+  opacity: 0.5;
+  min-width: 80rpx;
+}
+
+.detail-value {
+  font-size: 20rpx;
+  opacity: 0.9;
+  text-align: right;
+  flex: 1;
 }
 
 .card-content {
   padding: 20rpx 28rpx;
-  font-size: 22rpx;
-  line-height: 1.7;
-  opacity: 0.9;
+  font-size: 24rpx;
+  line-height: 1.8;
+  opacity: 0.92;
   white-space: pre-wrap;
+  position: relative;
 }
 
+.copy-btn {
+  position: absolute;
+  bottom: 16rpx;
+  right: 24rpx;
+  font-size: 18rpx;
+  color: var(--accent, #d97757);
+  opacity: 0.5;
+  padding: 4rpx 14rpx;
+  border: 1px solid var(--accent, #d97757);
+  border-radius: 20rpx;
+  background: rgba(0,0,0,0.3);
+}
+
+.card-content h1,
+.card-content h2,
+.card-content h3 {
+  color: var(--accent, #d97757);
+  font-weight: 600;
+  margin: 12rpx 0 6rpx;
+  opacity: 1;
+}
+
+.card-content h1 { font-size: 30rpx; }
+.card-content h2 { font-size: 28rpx; }
+.card-content h3 { font-size: 26rpx; }
+
+.card-content strong {
+  color: var(--accent, #d97757);
+  font-weight: 600;
+}
+
+.card-content em {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+.card-content ul {
+  padding-left: 32rpx;
+  margin: 6rpx 0;
+}
+
+.card-content li {
+  margin: 3rpx 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.card-content blockquote {
+  border-left: 3rpx solid var(--accent, #d97757);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10rpx 20rpx;
+  margin: 10rpx 0;
+  font-size: 22rpx;
+  border-radius: 0 8rpx 8rpx 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.card-content code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  font-size: 22rpx;
+  font-family: "SF Mono", "Menlo", monospace;
+  color: var(--accent, #d97757);
+}
+
+.card-content p {
+  margin: 4rpx 0;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ===== 生成 / 重新生成按钮 ===== */
+.generate-section {
+  padding: 24rpx 28rpx 8rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.generate-btn {
+  padding: 16rpx 48rpx;
+  border: 1rpx solid;
+  border-radius: 40rpx;
+  font-size: 24rpx;
+  letter-spacing: 3rpx;
+  background: rgba(255,255,255,0.04);
+  transition: all 0.2s;
+}
+
+.generate-btn:active {
+  background: rgba(255,255,255,0.12);
+  transform: scale(0.97);
+}
+
+.style-cn .generate-btn {
+  font-family: "STKaiti", "KaiTi", serif;
+}
+
+.style-en .generate-btn {
+  font-family: "Times New Roman", "Georgia", serif;
+  font-style: italic;
+}
+
+/* ===== AI 思考阶段动画 — 星尘散落式错落布局 ===== */
+.card-thinking {
+  padding: 32rpx 16rpx 28rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.thinking-symbol {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20rpx;
+  position: relative;
+}
+
+/* 中式图标：极简太极圆环（外环 + 中心点） */
+.icon-taiji {
+  position: relative;
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.taiji-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  border: 2.5rpx solid #fbbf24;
+  box-sizing: border-box;
+}
+
+.taiji-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #fbbf24;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10rpx rgba(251, 191, 36, 0.7);
+}
+
+/* 西式图标：四角星芒（中心点 + 4 道光线） */
+.icon-star {
+  position: relative;
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.star-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #c4b5fd;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12rpx rgba(196, 181, 253, 0.8);
+}
+
+.star-ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2rpx;
+  height: 26rpx;
+  background: linear-gradient(to bottom, rgba(196, 181, 253, 0), #c4b5fd);
+  transform-origin: center top;
+}
+
+.ray-t { transform: translate(-50%, 0) rotate(0deg); }
+.ray-r { transform: translate(-50%, 0) rotate(90deg); }
+.ray-b { transform: translate(-50%, 0) rotate(180deg); }
+.ray-l { transform: translate(-50%, 0) rotate(270deg); }
+
+/* 短语区域：4 条错落散落，如星尘般分布 */
+.thinking-lines {
+  position: relative;
+  width: 100%;
+  min-height: 180rpx;
+  margin-bottom: 16rpx;
+}
+
+.thinking-line {
+  position: absolute;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 22rpx;
+  animation: starDrift 3.2s ease-in-out infinite;
+}
+
+/* 4 条短语错落布局 — 每次 timer 触发替换新内容 */
+.thinking-line:nth-child(1) {
+  top: 10rpx;
+  left: 8%;
+  font-size: 20rpx;
+  animation-delay: 0s;
+  animation-duration: 3s;
+}
+.thinking-line:nth-child(2) {
+  top: 50rpx;
+  right: 6%;
+  font-size: 26rpx;
+  animation-delay: 0.4s;
+  animation-duration: 3.5s;
+}
+.thinking-line:nth-child(3) {
+  top: 95rpx;
+  left: 20%;
+  font-size: 22rpx;
+  animation-delay: 0.9s;
+  animation-duration: 2.8s;
+}
+.thinking-line:nth-child(4) {
+  top: 135rpx;
+  right: 18%;
+  font-size: 24rpx;
+  animation-delay: 1.4s;
+  animation-duration: 3.3s;
+}
+
+.thinking-status {
+  margin-top: 6rpx;
+}
+
+.status-label {
+  font-size: 22rpx;
+  font-weight: 500;
+  opacity: 0.85;
+  animation: breathe 1.5s ease-in-out infinite;
+}
+
+/* 中式：太极圆环旋转浮动，暖金文字发光 */
+.style-cn .thinking-symbol {
+  animation: float 3s ease-in-out infinite, spinY 8s linear infinite;
+}
+.style-cn .thinking-line {
+  color: #fcd34d;
+  text-shadow: 0 0 18rpx rgba(251, 191, 36, 0.45);
+  letter-spacing: 2rpx;
+}
+.style-cn .status-label {
+  color: #fbbf24;
+}
+
+/* 西式：四角星芒浮动脉冲，紫罗兰斜体发光 */
+.style-en .thinking-symbol {
+  animation: float 3s ease-in-out infinite, breathe 2s ease-in-out infinite;
+}
+.style-en .thinking-line {
+  color: #c4b5fd;
+  text-shadow: 0 0 18rpx rgba(167, 139, 250, 0.45);
+  font-style: italic;
+  font-family: "Times New Roman", "Georgia", serif;
+  letter-spacing: 1rpx;
+}
+.style-en .status-label {
+  color: #a78bfa;
+  font-style: italic;
+}
+
+/* 兼容旧的圆点（保留以备其他 loading 场景，当前 wxml 未使用） */
 .card-loading-dots {
   display: flex;
   gap: 8rpx;
-  padding: 20rpx 28rpx;
+  justify-content: center;
+  padding: 0;
 }
 
 .dot {
-  width: 12rpx;
-  height: 12rpx;
+  width: 10rpx;
+  height: 10rpx;
   border-radius: 50%;
   opacity: 0.6;
 }
@@ -192,4 +504,32 @@
 @keyframes blink {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+@keyframes spinY {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes fadeSlideIn {
+  0% { opacity: 0; transform: translateY(10rpx); }
+  50% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10rpx); }
+}
+
+@keyframes starDrift {
+  0% { opacity: 0; transform: translateY(8rpx) scale(0.96); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 0.8; transform: translateY(-4rpx) scale(1.02); }
+  100% { opacity: 0; transform: translateY(-10rpx) scale(0.98); }
 }

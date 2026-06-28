@@ -8,9 +8,9 @@
 
     <!-- 用户档案标签 -->
     <view class="tags" wx:if="{{profile}}">
-      <view class="tag" style="border-color:{{themeColor}};color:{{themeColor}}">📅 {{profile.birthday}}</view>
+      <view class="tag" style="border-color:{{themeColor}};color:{{themeColor}}">{{profile.birthday}}</view>
       <view class="tag" style="border-color:{{themeColor}};color:{{themeColor}}">{{profile.gender === 'male' ? '♂ 男' : '♀ 女'}}</view>
-      <view class="tag" wx:if="{{profile.birthTime}}" style="border-color:{{themeColor}};color:{{themeColor}}">🕐 {{profile.birthTime}}</view>
+      <view class="tag" wx:if="{{profile.birthTime}}" style="border-color:{{themeColor}};color:{{themeColor}}">{{profile.birthTime}}</view>
     </view>
 
     <!-- 时辰缺失提示 -->
@@ -18,33 +18,75 @@
       <text>⚠️ 八字/紫微需出生时辰，请完善档案</text>
     </view>
 
-    <!-- 三步进度条 -->
-    <view class="steps">
-      <block wx:for="{{readings}}" wx:key="type">
-        <view class="step {{item.status === 'completed' ? 'step-done' : item.status === 'loading' || item.status === 'streaming' ? 'step-active' : 'step-pending'}}" style="{{item.status === 'completed' || item.status === 'loading' || item.status === 'streaming' ? 'background:' + themeColor : ''}}">
-          <text wx:if="{{item.status === 'completed'}}">✓</text>
-          <text wx:elif="{{item.status === 'loading' || item.status === 'streaming'}}">{{index + 1}}</text>
-          <text wx:else>{{index + 1}}</text>
-        </view>
-        <view class="step-line" wx:if="{{index < readings.length - 1}}" style="background:{{item.status === 'completed' ? themeColor : 'rgba(255,255,255,0.15)'}}"></view>
-      </block>
-    </view>
+    <!-- 单张综合卡片 -->
+    <view class="cards" wx:if="{{reading}}">
+      <view class="card {{reading.status === 'streaming' ? 'card-streaming' : reading.status === 'completed' ? 'card-done' : reading.status === 'thinking' ? 'card-loading' : reading.status === 'idle' ? 'card-pending' : 'card-pending'}}" style="{{reading.status === 'streaming' || reading.status === 'thinking' ? 'border-color:' + themeColor + ';box-shadow:0 0 40rpx ' + themeColor + '33' : ''}}">
 
-    <!-- 三张玻璃卡 -->
-    <view class="cards">
-      <view class="card {{item.status === 'streaming' ? 'card-streaming' : item.status === 'completed' ? 'card-done' : item.status === 'loading' ? 'card-loading' : 'card-pending'}}" wx:for="{{readings}}" wx:key="type" style="{{item.status === 'streaming' || item.status === 'loading' ? 'border-color:' + themeColor + ';box-shadow:0 0 30rpx ' + themeColor + '33' : ''}}">
+        <!-- 卡片头部 -->
         <view class="card-header">
-          <text class="card-title">{{item.typeName}}</text>
-          <text class="card-status" wx:if="{{item.status === 'completed'}}" style="color:{{themeColor}};background:{{themeColor}}22">✓ 完成</text>
-          <text class="card-status" wx:if="{{item.status === 'loading' || item.status === 'streaming'}}" style="color:{{themeColor}}">● 推演中</text>
-          <text class="card-status" wx:if="{{item.status === 'pending'}}" style="opacity:0.4">排队中</text>
+          <text class="card-title">{{categoryName}}综合解读</text>
+          <text class="card-status" wx:if="{{reading.status === 'streaming'}}" style="color:{{themeColor}}">● 推演中</text>
+          <text class="card-status" wx:if="{{reading.status === 'error'}}" style="opacity:0.4">推演失败</text>
         </view>
-        <view class="card-summary" wx:if="{{item.summary}}">{{item.summary}}</view>
-        <view class="card-content" wx:if="{{item.content}}">{{item.content}}</view>
-        <view class="card-loading-dots" wx:if="{{item.status === 'loading'}}">
-          <view class="dot" style="background:{{themeColor}}"></view>
-          <view class="dot" style="background:{{themeColor}}"></view>
-          <view class="dot" style="background:{{themeColor}}"></view>
+
+        <!-- 排盘摘要（多模块数据） -->
+        <view class="card-summaries" wx:if="{{reading.summaries.length}}">
+          <view class="summary-item" wx:for="{{reading.summaries}}" wx:key="typeName">
+            <text class="summary-label" style="color:{{themeColor}}">{{item.typeName}}</text>
+            <text class="summary-text">{{item.summary}}</text>
+          </view>
+        </view>
+
+        <!-- 生成 / 重新生成按钮（idle 或 completed 非历史模式显示） -->
+        <view class="generate-section" wx:if="{{!isViewMode && (reading.status === 'idle' || reading.status === 'completed')}}">
+          <view class="generate-btn" bindtap="handleGenerateOrRegenerate" style="border-color:{{themeColor}};color:{{themeColor}}">
+            <text>{{reading.status === 'idle' ? generateLabel : '重新推演命盘'}}</text>
+          </view>
+        </view>
+
+        <!-- 深度思考动画（思考阶段显示） -->
+        <view class="card-thinking {{category === 'chinese' ? 'style-cn' : 'style-en'}}" wx:if="{{reading.status === 'thinking'}}">
+          <view class="thinking-symbol">
+            <view class="icon-taiji" wx:if="{{category === 'chinese'}}">
+              <view class="taiji-ring"></view>
+              <view class="taiji-dot"></view>
+            </view>
+            <view class="icon-star" wx:else>
+              <view class="star-core"></view>
+              <view class="star-ray ray-t"></view>
+              <view class="star-ray ray-r"></view>
+              <view class="star-ray ray-b"></view>
+              <view class="star-ray ray-l"></view>
+            </view>
+          </view>
+          <view class="thinking-lines" wx:if="{{reading.thinkingTexts.length}}">
+            <text class="thinking-line" wx:for="{{reading.thinkingTexts}}" wx:for-item="text" wx:key="index">{{text}}</text>
+          </view>
+          <view class="thinking-status">
+            <text class="status-label">{{category === 'chinese' ? '深度推演中' : 'Deep Reading'}}</text>
+          </view>
+        </view>
+
+        <!-- AI 输出内容 -->
+        <view class="card-content" style="--accent: {{themeColor}}" wx:if="{{reading.content}}">
+          <mp-html content="{{readingHtml}}" tag-style="{{tagStyle}}" />
+          <text class="copy-btn" bindtap="handleCopyContent">复制原文</text>
+        </view>
+
+        <!-- 详细排盘卡片 -->
+        <view class="detail-cards" wx:if="{{detailCards.length}}">
+          <view class="detail-card" wx:for="{{detailCards}}" wx:key="id" wx:for-item="card">
+            <view class="detail-card-header">
+              <text class="detail-card-title">{{card.title}}</text>
+              <text class="detail-card-icon">{{card.icon}}</text>
+            </view>
+            <view class="detail-card-body">
+              <view class="detail-row" wx:for="{{card.rows}}" wx:key="label" wx:for-item="row">
+                <text class="detail-label">{{row.label}}</text>
+                <text class="detail-value" style="{{row.color ? 'color:' + row.color : ''}}">{{row.value}}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </view>

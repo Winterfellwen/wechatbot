@@ -1,0 +1,215 @@
+<h2>重新设计 · 对话页 + 历史页</h2>
+<p class="subtitle">打破传统气泡/列表 · 两个全新方向</p>
+
+<div class="split">
+  <!-- 方向1: 卷轴对话流 -->
+  <div class="mockup">
+    <div class="mockup-header">方向1：卷轴对话流</div>
+    <div class="mockup-body" style="background:radial-gradient(ellipse at top,#312e81 0%,#0f0a2e 70%);padding:0;font-family:-apple-system,sans-serif;color:#fff;min-height:600px;display:flex;flex-direction:column">
+      <!-- Nav minimal -->
+      <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px;color:#a78bfa">‹</span>
+          <div>
+            <div style="font-size:13px;font-weight:600">深度对话</div>
+            <div style="font-size:9px;opacity:.5;letter-spacing:1px">BASED ON 庚午·己卯·丙寅·戊子</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;font-size:12px">🧠</div>
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;opacity:.4">🔍</div>
+        </div>
+      </div>
+
+      <!-- 卷轴流 -->
+      <div style="flex:1;padding:16px;overflow-y:auto">
+        <!-- 开场卷轴 -->
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:24px;margin-bottom:8px">☯</div>
+          <div style="font-size:9px;opacity:.4;letter-spacing:3px">SESSION START</div>
+        </div>
+
+        <!-- 用户问题: 嵌入式标签 -->
+        <div style="margin-bottom:16px">
+          <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.2));border:1px solid rgba(139,92,246,.4);border-radius:16px;padding:6px 14px;font-size:11px">
+            <span style="opacity:.6">问</span>
+            <span>我事业上有什么建议？</span>
+          </div>
+        </div>
+
+        <!-- AI回复: 卷轴展开式，无气泡 -->
+        <div style="position:relative;padding:0 4px">
+          <!-- 左侧装饰线 -->
+          <div style="position:absolute;left:0;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#8b5cf6,transparent)"></div>
+          <div style="padding-left:16px">
+            <div style="font-size:9px;color:#c4b5fd;letter-spacing:2px;margin-bottom:8px;opacity:.7">AI 命理师 · 推演</div>
+            <div style="font-size:12px;line-height:1.8;opacity:.95">
+              <div style="font-size:15px;color:#fbbf24;font-weight:300;margin-bottom:10px">事业分析</div>
+              <div style="margin-bottom:12px">根据丙火日主与五行缺水排盘，你的事业格局呈现以下特征：</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0">
+                <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:8px">
+                  <div style="font-size:9px;color:#10b981;letter-spacing:1px;margin-bottom:3px">宜 · FAVORABLE</div>
+                  <div style="font-size:11px">金水行业<br><span style="opacity:.6;font-size:10px">金融·物流·传媒</span></div>
+                </div>
+                <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px">
+                  <div style="font-size:9px;color:#ef4444;letter-spacing:1px;margin-bottom:3px">忌 · UNFAVORABLE</div>
+                  <div style="font-size:11px">火土行业<br><span style="opacity:.6;font-size:10px">餐饮·地产·能源</span></div>
+                </div>
+              </div>
+              <div style="border-left:2px solid #8b5cf6;padding:8px 12px;background:rgba(139,92,246,.08);margin:10px 0;font-size:11px">
+                <span style="color:#a78bfa">💡 </span>2024-2026年进入新大运，宜守不宜攻，积累人脉为上。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分隔符 -->
+        <div style="text-align:center;margin:20px 0;color:rgba(255,255,255,.15);font-size:10px;letter-spacing:4px">✦ ✦ ✦</div>
+
+        <!-- 用户问题2 -->
+        <div style="margin-bottom:16px">
+          <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.2));border:1px solid rgba(139,92,246,.4);border-radius:16px;padding:6px 14px;font-size:11px">
+            <span style="opacity:.6">问</span>
+            <span>感情方面呢？</span>
+          </div>
+        </div>
+
+        <!-- 流式中 -->
+        <div style="position:relative;padding:0 4px">
+          <div style="position:absolute;left:0;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#8b5cf6,#ec4899)"></div>
+          <div style="padding-left:16px">
+            <div style="font-size:9px;color:#c4b5fd;letter-spacing:2px;margin-bottom:8px">AI 命理师 · 推演中</div>
+            <div style="font-size:12px;line-height:1.8;opacity:.6">感情方面，从你的夫妻宫来看</div>
+            <div style="display:flex;gap:4px;margin-top:8px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#a78bfa;opacity:.3"></span>
+              <span style="width:6px;height:6px;border-radius:50%;background:#a78bfa;opacity:.6"></span>
+              <span style="width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:blink 1s infinite"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入: 悬浮极简 -->
+      <div style="padding:10px 16px 16px">
+        <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:4px 4px 4px 16px;display:flex;align-items:center;gap:10px">
+          <input class="mock-input" placeholder="继续追问…" style="flex:1;background:transparent;border:none;color:#fff;font-size:12px;outline:none">
+          <span style="font-size:16px;opacity:.5">📎</span>
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 16px rgba(139,92,246,.5)">↑</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 方向2: 时空画廊 -->
+  <div class="mockup">
+    <div class="mockup-header">方向2：星轨对话 + 画廊历史</div>
+    <div class="mockup-body" style="background:#000;font-family:-apple-system,sans-serif;color:#fff;min-height:600px;display:flex;flex-direction:column;position:relative;overflow:hidden">
+      <!-- 星空背景 -->
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(139,92,246,.15),transparent 40%),radial-gradient(circle at 80% 70%,rgba(236,72,153,.12),transparent 40%);pointer-events:none"></div>
+      
+      <!-- Nav -->
+      <div style="position:relative;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:20px;color:#a78bfa">‹</span>
+        <div style="text-align:center">
+          <div style="font-size:11px;font-weight:600">命理对话</div>
+          <div style="font-size:8px;opacity:.4">7 轮对话</div>
+        </div>
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:11px">⋯</div>
+      </div>
+
+      <!-- 对话: 星轨卡片 -->
+      <div style="position:relative;flex:1;padding:12px 16px;overflow-y:auto">
+        <!-- 用户: 星辰标签 -->
+        <div style="text-align:right;margin-bottom:14px">
+          <div style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:11px;max-width:70%;text-align:left;box-shadow:0 4px 20px rgba(139,92,246,.3)">我事业上有什么建议？</div>
+        </div>
+
+        <!-- AI: 星轨卡片，无头像 -->
+        <div style="margin-bottom:14px">
+          <div style="background:linear-gradient(135deg,rgba(30,27,75,.8),rgba(49,46,129,.6));border:1px solid rgba(139,92,246,.25);border-radius:16px;padding:14px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,.4)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981"></div>
+              <span style="font-size:9px;letter-spacing:2px;color:#10b981">已推演</span>
+            </div>
+            <div style="font-size:14px;color:#fbbf24;font-weight:300;margin-bottom:8px">事业格局</div>
+            <div style="font-size:11px;line-height:1.7;opacity:.9;margin-bottom:10px">丙火日主偏旺，缺水调候。事业上需金水润局…</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:9px;background:rgba(16,185,129,.15);color:#10b981;border-radius:6px;padding:3px 8px">✓ 金融</span>
+              <span style="font-size:9px;background:rgba(16,185,129,.15);color:#10b981;border-radius:6px;padding:3px 8px">✓ 物流</span>
+              <span style="font-size:9px;background:rgba(239,68,68,.15);color:#ef4444;border-radius:6px;padding:3px 8px">✕ 餐饮</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 用户2 -->
+        <div style="text-align:right;margin-bottom:14px">
+          <div style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:11px;max-width:70%;text-align:left;box-shadow:0 4px 20px rgba(139,92,246,.3)">感情呢？</div>
+        </div>
+
+        <!-- AI 流式: 星轨生成中 -->
+        <div style="margin-bottom:14px">
+          <div style="background:linear-gradient(135deg,rgba(30,27,75,.8),rgba(49,46,129,.6));border:1px solid rgba(139,92,246,.5);border-radius:16px;padding:14px;backdrop-filter:blur(10px);box-shadow:0 0 24px rgba(139,92,246,.3)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:blink 1s infinite"></div>
+              <span style="font-size:9px;letter-spacing:2px;color:#a78bfa">推演中</span>
+            </div>
+            <div style="font-size:11px;line-height:1.7;opacity:.6">夫妻宫坐紫微天府…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入 -->
+      <div style="position:relative;padding:10px 16px 16px">
+        <div style="background:rgba(20,20,35,.8);backdrop-filter:blur(20px);border:1px solid rgba(139,92,246,.3);border-radius:20px;padding:8px 12px;display:flex;align-items:center;gap:10px">
+          <input class="mock-input" placeholder="问点什么…" style="flex:1;background:transparent;border:none;color:#fff;font-size:12px;outline:none">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:flex;align-items:center;justify-content:center;font-size:14px">↑</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes blink {0%,100%{opacity:1}50%{opacity:.2}}
+</style>
+
+<div class="section" style="margin-top:16px">
+  <h3>两个方向的差异</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>方向1 卷轴流</h4>
+      <ul style="font-size:12px">
+        <li>用户问题=小标签，AI回复=左侧光带卷轴</li>
+        <li>无传统气泡，像古卷展开</li>
+        <li>适合长文解读，阅读沉浸</li>
+        <li>分隔符 ✦✦✦ 划分轮次</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>方向2 星轨卡片</h4>
+      <ul style="font-size:12px">
+        <li>用户=渐变气泡，AI=发光玻璃卡</li>
+        <li>纯黑星空背景，星轨感</li>
+        <li>卡片更结构化(状态灯/标签)</li>
+        <li>现代感更强</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:16px">
+  <div class="option" data-choice="scroll" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>方向1 卷轴对话流</h3>
+      <p>左侧光带 + 标签式提问 + 分隔符</p>
+    </div>
+  </div>
+  <div class="option" data-choice="star" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>方向2 星轨卡片</h3>
+      <p>纯黑星空 + 玻璃发光卡 + 状态灯</p>
+    </div>
+  </div>
+</div>

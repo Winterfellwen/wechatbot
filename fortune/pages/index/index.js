@@ -1,17 +1,23 @@
 const storageService = require('../../services/storage-service');
-const calcService = require('../../services/calc-service');
-const aiService = require('../../services/ai-service');
 
 Page({
   data: {
     profile: null,
     showProfileForm: false,
-    dailyFortune: ''
+    chineseMethods: [
+      { name: '八字', desc: '四柱八字推算命运格局' },
+      { name: '紫微', desc: '紫微斗数剖析人生轨迹' },
+      { name: '易经', desc: '卦象阴阳五行解疑释惑' }
+    ],
+    westernMethods: [
+      { name: '星座', desc: '十二星座性格基本分析' },
+      { name: '塔罗', desc: '大阿卡纳揭示潜在能量' },
+      { name: '占星', desc: '星盘行星宫位综合推演' }
+    ]
   },
 
   onLoad() {
     this.loadProfile();
-    this.loadDailyFortune();
   },
 
   onShow() {
@@ -21,38 +27,6 @@ Page({
   loadProfile() {
     const profile = storageService.getProfile();
     this.setData({ profile });
-  },
-
-  loadDailyFortune() {
-    var cache = storageService.getDailyCache();
-    var today = new Date().toISOString().slice(0, 10);
-
-    if (cache && cache.date === today && cache.fortune) {
-      this.setData({ dailyFortune: cache.fortune });
-      return;
-    }
-
-    var profile = storageService.getProfile();
-    if (!profile) {
-      this.setData({ dailyFortune: '完善档案后查看今日运势' });
-      return;
-    }
-
-    // 用星座生成简要运势
-    var conResult = calcService.calcConstellation(profile);
-    if (conResult.error) {
-      this.setData({ dailyFortune: '今日运势加载中…' });
-      return;
-    }
-
-    var prompt = '请为' + conResult.sign + '的人生成一句简短的今日运势（30字以内），包含星级评分（★☆）。要求100%中文。';
-    aiService.callAI(prompt).then(function(content) {
-      var fortune = content.trim().substring(0, 50);
-      this.setData({ dailyFortune: fortune });
-      storageService.saveDailyCache({ date: today, fortune: fortune });
-    }.bind(this)).catch(function() {
-      this.setData({ dailyFortune: conResult.sign + ' · 今日宜静心思考' });
-    }.bind(this));
   },
 
   handleShowProfileForm() {
@@ -68,7 +42,6 @@ Page({
     storageService.saveProfile(profile);
     this.setData({ profile, showProfileForm: false });
     wx.showToast({ title: '档案已保存', icon: 'success' });
-    this.loadDailyFortune();
   },
 
   handleCategoryTap(e) {

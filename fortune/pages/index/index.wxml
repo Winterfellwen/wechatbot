@@ -6,10 +6,10 @@
       <text class="nav-icon" bindtap="handleHistoryTap">📜</text>
     </view>
 
-    <!-- 今日运势 Hero -->
-    <view class="hero">
-      <text class="hero-label">TODAY · 今日</text>
-      <text class="hero-text">{{dailyFortune || '完善档案后查看今日运势'}}</text>
+    <!-- 标语 -->
+    <view class="tagline">
+      <text class="tagline-cn">顺天应时</text>
+      <text class="tagline-la">TEMPORA SEQUERE</text>
     </view>
 
     <!-- 档案卡 -->
@@ -36,6 +36,22 @@
       </view>
     </view>
 
+    <!-- 方法介绍（左右分栏） -->
+    <view class="intro-grid">
+      <view class="intro-col">
+        <view class="intro-item" wx:for="{{chineseMethods}}" wx:key="name" wx:for-item="m">
+          <text class="intro-name">{{m.name}}</text>
+          <text class="intro-desc">{{m.desc}}</text>
+        </view>
+      </view>
+      <view class="intro-col">
+        <view class="intro-item" wx:for="{{westernMethods}}" wx:key="name" wx:for-item="m">
+          <text class="intro-name">{{m.name}}</text>
+          <text class="intro-desc">{{m.desc}}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 历史记录入口 -->
     <view class="glass-card history-entry" bindtap="handleHistoryTap">
       <text class="history-label">📜 历史记录</text>
@@ -44,5 +60,5 @@
   </view>
 
   <!-- 档案表单弹层 -->
-  <profile-form wx:if="{{showProfileForm}}" bind:close="handleCloseProfileForm" bind:save="handleSaveProfile" profile="{{profile}}" />
+  <profile-form wx:if="{{showProfileForm}}" visible="{{showProfileForm}}" bind:close="handleCloseProfileForm" bind:save="handleSaveProfile" profile="{{profile}}" />
 </view>

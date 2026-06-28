@@ -1,8 +1,12 @@
+/* ===== Chat 页面 — Celestial Oracle 美学 ===== */
+
+/* --- 根容器 --- */
 .page-container {
-  min-height: 100vh;
+  height: 100vh;
   color: #fff;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .page-content {
@@ -11,97 +15,160 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* --- 顶部导航栏：天文台 header 风格 --- */
 .nav-bar {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 30rpx 32rpx 20rpx;
+  padding: calc(30rpx + env(safe-area-inset-top)) 32rpx 20rpx;
+  background: rgba(8, 6, 16, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.07);
 }
 
 .nav-back {
-  font-size: 40rpx;
-  opacity: 0.7;
+  font-size: 44rpx;
+  opacity: 0.5;
+  font-weight: 200;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.nav-back:active {
+  opacity: 1;
 }
 
 .nav-info {
   flex: 1;
+  min-width: 0;
 }
 
 .nav-title {
   display: block;
-  font-size: 26rpx;
+  font-size: 28rpx;
   font-weight: 600;
+  letter-spacing: 1rpx;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .nav-sub {
   display: block;
-  font-size: 18rpx;
-  opacity: 0.5;
+  font-size: 16rpx;
+  opacity: 0.35;
   letter-spacing: 2rpx;
-  margin-top: 4rpx;
+  margin-top: 2rpx;
+  font-weight: 300;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* --- 消息滚动区 --- */
 .messages {
   flex: 1;
-  padding: 24rpx 32rpx;
-  padding-bottom: 120rpx;
+  padding: 28rpx 32rpx;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* --- Session 起始分隔线 --- */
 .session-start {
+  position: relative;
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 48rpx;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
 }
 
+/* 现代轨道仪图标 */
 .session-icon {
-  display: block;
-  font-size: 48rpx;
-  margin-bottom: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.session-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5rpx solid rgba(255, 255, 255, 0.2);
+  animation: orbitRing 4s linear infinite;
+}
+
+.session-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8rpx rgba(255, 255, 255, 0.4);
 }
 
 .session-label {
-  font-size: 18rpx;
-  opacity: 0.4;
-  letter-spacing: 6rpx;
+  font-size: 16rpx;
+  opacity: 0.25;
+  letter-spacing: 8rpx;
+  font-weight: 300;
 }
 
+/* --- 用户消息：右浮玻璃药丸 --- */
 .user-msg {
-  margin-bottom: 32rpx;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 28rpx;
+  animation: msgInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .user-pill {
   display: inline-flex;
-  align-items: center;
-  gap: 12rpx;
-  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2));
-  border: 1px solid rgba(139,92,246,0.4);
-  border-radius: 32rpx;
-  padding: 12rpx 28rpx;
+  align-items: flex-start;
+  gap: 10rpx;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1rpx solid rgba(167, 139, 250, 0.28);
+  border-radius: 24rpx 24rpx 6rpx 24rpx;
+  padding: 14rpx 22rpx;
+  max-width: 76%;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4rpx 24rpx rgba(139, 92, 246, 0.12),
+              inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
 }
 
 .user-prefix {
-  font-size: 20rpx;
-  opacity: 0.6;
+  font-size: 18rpx;
+  opacity: 0.4;
+  flex-shrink: 0;
+  margin-top: 3rpx;
+  letter-spacing: 1rpx;
 }
 
 .user-text {
   font-size: 24rpx;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.92);
 }
 
+/* --- AI 消息：左对齐羊皮纸卷轴感 --- */
 .ai-msg {
   position: relative;
-  padding-left: 32rpx;
-  margin-bottom: 32rpx;
-}
-
-.ai-stream-line {
-  position: absolute;
-  left: 0;
-  top: 16rpx;
-  bottom: 16rpx;
-  width: 4rpx;
+  padding-left: 36rpx;
+  margin-bottom: 36rpx;
+  animation: msgInLeft 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .ai-content {
@@ -109,47 +176,373 @@
 }
 
 .ai-label {
-  font-size: 18rpx;
-  letter-spacing: 4rpx;
-  margin-bottom: 16rpx;
+  font-size: 16rpx;
+  letter-spacing: 3rpx;
+  margin-bottom: 10rpx;
+  opacity: 0.45;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+/* AI label 前缀装饰点 */
+.ai-label::before {
+  content: '';
+  display: inline-block;
+  width: 5rpx;
+  height: 5rpx;
+  border-radius: 50%;
+  background: currentColor;
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
+/* --- 消息间隔符：星轨 --- */
 .separator {
-  text-align: center;
-  color: rgba(255,255,255,0.15);
-  font-size: 20rpx;
-  letter-spacing: 8rpx;
-  margin: 40rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  margin: 32rpx 0 28rpx;
+  color: rgba(255, 255, 255, 0.12);
 }
 
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+}
+
+.separator-dots {
+  display: flex;
+  gap: 10rpx;
+  padding: 0 8rpx;
+}
+
+.separator-dot {
+  width: 3rpx;
+  height: 3rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- 文件提示：悬浮玻璃条 --- */
 .file-hint {
-  margin: 0 32rpx 12rpx;
-  background: rgba(251,191,36,0.15);
-  border: 1px solid rgba(251,191,36,0.3);
+  background: rgba(251, 191, 36, 0.1);
+  border: 1rpx solid rgba(251, 191, 36, 0.22);
   border-radius: 16rpx;
   padding: 12rpx 20rpx;
   font-size: 20rpx;
-  color: #fbbf24;
+  color: #fcd34d;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4rpx 20rpx rgba(251, 191, 36, 0.08);
+}
+
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-close {
-  opacity: 0.7;
+  margin-left: 12rpx;
+  opacity: 0.6;
+  font-size: 22rpx;
+  flex-shrink: 0;
 }
 
+/* --- 输入栏：底部玻璃面板 --- */
 .input-bar {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 32rpx 32rpx;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.2);
+  gap: 12rpx;
+  padding: 12rpx 16rpx calc(12rpx + env(safe-area-inset-bottom));
+  background: rgba(8, 6, 16, 0.82);
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.input-field-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 .input-icon {
   font-size: 36rpx;
-  opacity: 0.5;
+  opacity: 0.3;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.input-icon:active {
+  opacity: 0.7;
+}
+
+/* --- 发送按钮：屏幕右侧 --- */
+.send-btn {
+  width: 72rpx;
+  height: 72rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(167, 139, 250, 0.1);
+  color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.send-arrow {
+  font-size: 32rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.send-btn.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.6), rgba(167, 139, 250, 0.5));
+  color: #fff;
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 4rpx 24rpx rgba(139, 92, 246, 0.3),
+              0 0 0 1rpx rgba(139, 92, 246, 0.15);
+  transform: scale(1.06);
+}
+
+/* ===== AI 思考阶段动画（与 reading 页共享风格） ===== */
+.chat-thinking {
+  padding: 28rpx 16rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.thinking-symbol {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20rpx;
+  position: relative;
+}
+
+.icon-taiji {
+  position: relative;
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.taiji-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  border: 2.5rpx solid #fbbf24;
+  box-sizing: border-box;
+}
+
+.taiji-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #fbbf24;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10rpx rgba(251, 191, 36, 0.7);
+}
+
+.icon-star {
+  position: relative;
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.star-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #c4b5fd;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12rpx rgba(196, 181, 253, 0.8);
+}
+
+.star-ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2rpx;
+  height: 26rpx;
+  background: linear-gradient(to bottom, rgba(196, 181, 253, 0), #c4b5fd);
+  transform-origin: center top;
+}
+
+.ray-t { transform: translate(-50%, 0) rotate(0deg); }
+.ray-r { transform: translate(-50%, 0) rotate(90deg); }
+.ray-b { transform: translate(-50%, 0) rotate(180deg); }
+.ray-l { transform: translate(-50%, 0) rotate(270deg); }
+
+.thinking-lines {
+  position: relative;
+  width: 100%;
+  min-height: 180rpx;
+  margin-bottom: 16rpx;
+}
+
+.thinking-line {
+  position: absolute;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 22rpx;
+  animation: starDrift 3.2s ease-in-out infinite;
+}
+
+.thinking-line:nth-child(1) {
+  top: 10rpx;
+  left: 8%;
+  font-size: 20rpx;
+  animation-delay: 0s;
+  animation-duration: 3s;
+}
+.thinking-line:nth-child(2) {
+  top: 50rpx;
+  right: 6%;
+  font-size: 26rpx;
+  animation-delay: 0.4s;
+  animation-duration: 3.5s;
+}
+.thinking-line:nth-child(3) {
+  top: 95rpx;
+  left: 20%;
+  font-size: 22rpx;
+  animation-delay: 0.9s;
+  animation-duration: 2.8s;
+}
+.thinking-line:nth-child(4) {
+  top: 135rpx;
+  right: 18%;
+  font-size: 24rpx;
+  animation-delay: 1.4s;
+  animation-duration: 3.3s;
+}
+
+.thinking-status {
+  margin-top: 6rpx;
+}
+
+.status-label {
+  font-size: 22rpx;
+  font-weight: 500;
+  opacity: 0.85;
+  animation: breathe 1.5s ease-in-out infinite;
+}
+
+.style-cn .thinking-symbol {
+  animation: float 3s ease-in-out infinite, spinY 8s linear infinite;
+}
+.style-cn .thinking-line {
+  color: #fcd34d;
+  text-shadow: 0 0 18rpx rgba(251, 191, 36, 0.45);
+  letter-spacing: 2rpx;
+}
+.style-cn .status-label {
+  color: #fbbf24;
+}
+
+.style-en .thinking-symbol {
+  animation: float 3s ease-in-out infinite, breathe 2s ease-in-out infinite;
+}
+.style-en .thinking-line {
+  color: #c4b5fd;
+  text-shadow: 0 0 18rpx rgba(167, 139, 250, 0.45);
+  font-style: italic;
+  font-family: "Times New Roman", "Georgia", serif;
+  letter-spacing: 1rpx;
+}
+.style-en .status-label {
+  color: #a78bfa;
+  font-style: italic;
+}
+
+/* ===== 动画关键帧 ===== */
+@keyframes orbitRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes msgInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20rpx) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes msgInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+@keyframes spinY {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes starDrift {
+  0% { opacity: 0; transform: translateY(8rpx) scale(0.96); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 0.8; transform: translateY(-4rpx) scale(1.02); }
+  100% { opacity: 0; transform: translateY(-10rpx) scale(0.98); }
 }

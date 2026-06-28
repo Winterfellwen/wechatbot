@@ -1,0 +1,110 @@
+<h2>背景方案对比</h2>
+<p class="subtitle">替换当前深紫→品红渐变 · 选一套新背景</p>
+
+<div class="cards" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+  <!-- 方案1: 墨夜星河 -->
+  <div class="card" data-choice="ink" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div style="height:180px;border-radius:12px 12px 0 0;background:linear-gradient(180deg,#0a0e27 0%,#1a1f3a 50%,#0d1b2a 100%);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(99,102,241,.15),transparent 50%),radial-gradient(circle at 70% 80%,rgba(14,165,233,.1),transparent 50%)"></div>
+      <div style="position:absolute;top:20px;left:20px;color:#fff;font-size:11px;opacity:.9">☰ 墨夜星河</div>
+      <div style="position:absolute;top:45px;left:20px;color:#818cf8;font-size:9px;opacity:.7">深蓝黑 + 靛紫微光</div>
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px">
+        <div style="color:#fff;font-size:10px;opacity:.9">☯ 八字命理</div>
+        <div style="color:#818cf8;font-size:8px;margin-top:3px;opacity:.6">庚午·己卯·丙寅·戊子</div>
+      </div>
+    </div>
+    <div style="padding:10px 12px">
+      <h3 style="font-size:12px;margin:0">墨夜星河</h3>
+      <p style="font-size:10px;color:#888;margin:4px 0 0">深邃黑蓝 + 靛紫星点微光，沉静神秘</p>
+    </div>
+  </div>
+
+  <!-- 方案2: 青墨山水 -->
+  <div class="card" data-choice="ink2" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div style="height:180px;border-radius:12px 12px 0 0;background:linear-gradient(180deg,#0d1117 0%,#1a2e2e 50%,#0f1f1a 100%);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(20,184,166,.12),transparent 55%),radial-gradient(circle at 75% 70%,rgba(16,185,129,.08),transparent 50%)"></div>
+      <div style="position:absolute;top:20px;left:20px;color:#fff;font-size:11px;opacity:.9">☰ 青墨山水</div>
+      <div style="position:absolute;top:45px;left:20px;color:#5eead4;font-size:9px;opacity:.7">墨黑 + 青翠微光</div>
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,.06);backdrop-filter:blur(10px);border:1px solid rgba(94,234,212,.2);border-radius:10px;padding:10px">
+        <div style="color:#fff;font-size:10px;opacity:.9">☯ 八字命理</div>
+        <div style="color:#5eead4;font-size:8px;margin-top:3px;opacity:.6">庚午·己卯·丙寅·戊子</div>
+      </div>
+    </div>
+    <div style="padding:10px 12px">
+      <h3 style="font-size:12px;margin:0">青墨山水</h3>
+      <p style="font-size:10px;color:#888;margin:4px 0 0">墨黑 + 青绿微光，东方水墨感</p>
+    </div>
+  </div>
+
+  <!-- 方案3: 玄金曜夜 -->
+  <div class="card" data-choice="gold" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div style="height:180px;border-radius:12px 12px 0 0;background:linear-gradient(180deg,#0a0a0a 0%,#1a1410 50%,#0d0a08 100%);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 35% 25%,rgba(251,191,36,.12),transparent 50%),radial-gradient(circle at 65% 75%,rgba(217,119,6,.08),transparent 50%)"></div>
+      <div style="position:absolute;top:20px;left:20px;color:#fff;font-size:11px;opacity:.9">☰ 玄金曜夜</div>
+      <div style="position:absolute;top:45px;left:20px;color:#fbbf24;font-size:9px;opacity:.7">纯黑 + 琥珀金微光</div>
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:10px">
+        <div style="color:#fff;font-size:10px;opacity:.9">☯ 八字命理</div>
+        <div style="color:#fbbf24;font-size:8px;margin-top:3px;opacity:.7">庚午·己卯·丙寅·戊子</div>
+      </div>
+    </div>
+    <div style="padding:10px 12px">
+      <h3 style="font-size:12px;margin:0">玄金曜夜</h3>
+      <p style="font-size:10px;color:#888;margin:4px 0 0">纯黑 + 琥珀金光，神秘贵气</p>
+    </div>
+  </div>
+
+  <!-- 方案4: 暮云归 -->
+  <div class="card" data-choice="dusk" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div style="height:180px;border-radius:12px 12px 0 0;background:linear-gradient(180deg,#1c1917 0%,#44403c 50%,#292524 100%);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 35%,rgba(217,119,87,.15),transparent 55%),radial-gradient(circle at 70% 65%,rgba(120,113,108,.1),transparent 50%)"></div>
+      <div style="position:absolute;top:20px;left:20px;color:#fff;font-size:11px;opacity:.9">☰ 暮云归</div>
+      <div style="position:absolute;top:45px;left:20px;color:#d97757;font-size:9px;opacity:.7">暖灰褐 + 赭橙微光</div>
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(217,119,87,.2);border-radius:10px;padding:10px">
+        <div style="color:#fff;font-size:10px;opacity:.9">☯ 八字命理</div>
+        <div style="color:#d97757;font-size:8px;margin-top:3px;opacity:.7">庚午·己卯·丙寅·戊子</div>
+      </div>
+    </div>
+    <div style="padding:10px 12px">
+      <h3 style="font-size:12px;margin:0">暮云归</h3>
+      <p style="font-size:10px;color:#888;margin:4px 0 0">暖灰褐 + 赭橙微光，温润古朴</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="pros-cons" style="margin-top:16px">
+  <div class="pros">
+    <h4 style="font-size:13px">共同特征</h4>
+    <ul style="font-size:11px;line-height:1.7">
+      <li>都是深色底，保持沉浸感</li>
+      <li>用 radial-gradient 加微光而非纯色</li>
+      <li>玻璃卡半透明 + 微光边框</li>
+      <li>卡片强调色随背景主色变化</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4 style="font-size:13px">差异</h4>
+    <ul style="font-size:11px;line-height:1.7">
+      <li><strong>墨夜</strong>：靛紫，偏理性科技</li>
+      <li><strong>青墨</strong>：青绿，东方水墨</li>
+      <li><strong>玄金</strong>：琥珀金，贵气神秘</li>
+      <li><strong>暮云</strong>：赭橙，温润古朴</li>
+    </ul>
+  </div>
+</div>
+
+<div class="options" style="margin-top:16px">
+  <div class="option" data-choice="ink" onclick="toggleSelect(this)">
+    <div class="letter">1</div><div class="content"><h3>墨夜星河</h3><p>深蓝黑 + 靛紫微光</p></div>
+  </div>
+  <div class="option" data-choice="ink2" onclick="toggleSelect(this)">
+    <div class="letter">2</div><div class="content"><h3>青墨山水</h3><p>墨黑 + 青绿微光</p></div>
+  </div>
+  <div class="option" data-choice="gold" onclick="toggleSelect(this)">
+    <div class="letter">3</div><div class="content"><h3>玄金曜夜</h3><p>纯黑 + 琥珀金光</p></div>
+  </div>
+  <div class="option" data-choice="dusk" onclick="toggleSelect(this)">
+    <div class="letter">4</div><div class="content"><h3>暮云归</h3><p>暖灰褐 + 赭橙微光</p></div>
+  </div>
+</div>

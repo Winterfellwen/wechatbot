@@ -1,0 +1,131 @@
+<h2>解读页布局 · Reading</h2>
+<p class="subtitle">沉浸式深色风格 · 三步排盘串行 + AI解读流式</p>
+
+<div class="mockup">
+  <div class="mockup-header">解读页（易学命理 · 张三）</div>
+  <div class="mockup-body" style="background:linear-gradient(180deg,#1e1b4b 0%,#4c1d95 60%,#831843 100%);padding:0;font-family:-apple-system,sans-serif;color:#fff;min-height:560px">
+    <!-- Nav -->
+    <div style="padding:14px 16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">‹</span>
+      <span style="font-size:15px;font-weight:600;flex:1">易学命理 · 张三</span>
+      <span style="font-size:12px;opacity:.7">分享</span>
+    </div>
+
+    <!-- Tags -->
+    <div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap">
+      <span style="background:rgba(139,92,246,.3);border:1px solid rgba(139,92,246,.5);border-radius:20px;padding:3px 10px;font-size:10px">📅 1990-03-15</span>
+      <span style="background:rgba(236,72,153,.3);border:1px solid rgba(236,72,153,.5);border-radius:20px;padding:3px 10px;font-size:10px">♂ 男</span>
+      <span style="background:rgba(251,191,36,.3);border:1px solid rgba(251,191,36,.5);border-radius:20px;padding:3px 10px;font-size:10px">🕐 子时</span>
+    </div>
+
+    <!-- Notice -->
+    <div style="margin:0 12px 8px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#fbbf24;display:flex;gap:6px;align-items:flex-start">
+      <span>⚠️</span><span>八字/紫微需出生时辰，已填写"子时"</span>
+    </div>
+
+    <!-- Steps -->
+    <div style="margin:0 12px 12px;background:rgba(255,255,255,.08);border-radius:10px;padding:12px;display:flex;justify-content:space-around;align-items:center;border:1px solid rgba(255,255,255,.1)">
+      <div style="text-align:center">
+        <div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:12px;margin:0 auto 4px">✓</div>
+        <div style="font-size:10px;opacity:.9">八字</div>
+      </div>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,#10b981,#8b5cf6);margin:0 6px;margin-top:-14px"></div>
+      <div style="text-align:center">
+        <div style="width:24px;height:24px;border-radius:50%;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-size:10px;margin:0 auto 4px;animation:pulse 1.5s infinite">2</div>
+        <div style="font-size:10px;color:#a78bfa;font-weight:600">紫微</div>
+      </div>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,.15);margin:0 6px;margin-top:-14px"></div>
+      <div style="text-align:center">
+        <div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:10px;margin:0 auto 4px">3</div>
+        <div style="font-size:10px;opacity:.4">易经</div>
+      </div>
+    </div>
+
+    <!-- Card 1: 八字 done -->
+    <div style="margin:0 12px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">☯</span>
+          <span style="font-size:13px;font-weight:600">八字命理</span>
+        </div>
+        <span style="font-size:10px;color:#10b981;background:rgba(16,185,129,.2);padding:2px 8px;border-radius:10px">✓ 完成</span>
+      </div>
+      <div style="padding:10px 14px;font-size:11px;line-height:1.7;opacity:.9">
+        <div style="font-family:monospace;color:#c4b5fd;margin-bottom:6px">庚午 · 己卯 · 丙寅 · 戊子</div>
+        <div>日主丙火偏旺，五行缺水。性格刚毅有领导力，事业宜金水行业…</div>
+      </div>
+    </div>
+
+    <!-- Card 2: 紫微 streaming -->
+    <div style="margin:0 12px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,.4);border-radius:14px;overflow:hidden;box-shadow:0 0 20px rgba(139,92,246,.2)">
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">🌟</span>
+          <span style="font-size:13px;font-weight:600">紫微斗数</span>
+        </div>
+        <span style="font-size:10px;color:#a78bfa;display:flex;align-items:center;gap:4px">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:blink 1s infinite"></span>
+          推演中
+        </span>
+      </div>
+      <div style="padding:10px 14px;font-size:11px;line-height:1.7">
+        <div style="opacity:.6;margin-bottom:4px">命宫紫微天府同坐…</div>
+        <div style="display:flex;gap:3px">
+          <span style="width:4px;height:4px;border-radius:50%;background:#a78bfa;opacity:.4"></span>
+          <span style="width:4px;height:4px;border-radius:50%;background:#a78bfa;opacity:.7"></span>
+          <span style="width:4px;height:4px;border-radius:50%;background:#a78bfa"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: 易经 pending -->
+    <div style="margin:0 12px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:8px;opacity:.4">
+          <span style="font-size:16px">📜</span>
+          <span style="font-size:13px;font-weight:600">易经卦象</span>
+        </div>
+        <span style="font-size:10px;opacity:.4">排队中</span>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <div style="padding:14px 16px 20px">
+      <div style="background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:24px;padding:12px;text-align:center;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(139,92,246,.4)">💬 AI提问</div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse {0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
+@keyframes blink {0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+
+<div class="section" style="margin-top:16px">
+  <h3>关键交互</h3>
+  <ul style="font-size:13px;line-height:1.8;color:#666">
+    <li><strong>三步进度条</strong>：八字✓ → 紫微●推演中 → 易经○排队，随完成状态实时更新</li>
+    <li><strong>串行流式</strong>：三项依次请求AI，每项流式输出文字（避免并发超时）</li>
+    <li><strong>排盘数据注入</strong>：每张卡片头部显示lunar/iztro计算的真实四柱/星盘摘要</li>
+    <li><strong>时辰缺失提示</strong>：notice-bar 黄色提醒，但不阻断（星座/塔罗仍可算）</li>
+    <li><strong>完成态</strong>：三张全✓后底部FAB"AI提问"高亮可点，进入对话页</li>
+    <li><strong>骨架/加载</strong>：推演中用脉冲点动画 + van-skeleton，非转圈</li>
+  </ul>
+</div>
+
+<div class="options" style="margin-top:16px">
+  <div class="option" data-choice="ok" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>布局确认</h3>
+      <p>深色沉浸式 + 三步进度 + 玻璃拟态卡片，进入下一节</p>
+    </div>
+  </div>
+  <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content">
+      <h3>需要调整</h3>
+      <p>在终端说明想改哪里</p>
+    </div>
+  </div>
+</div>

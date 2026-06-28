@@ -1,11 +1,11 @@
 <view class="page-container fortune-page {{themeClass}}">
-  <view class="page-content">
+  <view class="page-content" style="{{keyboardStyle}}">
     <!-- Nav -->
     <view class="nav-bar">
       <text class="nav-back" bindtap="handleBack">‹</text>
       <view class="nav-info">
-        <text class="nav-title">深度对话</text>
-        <text class="nav-sub" wx:if="{{baziSummary}}">BASED ON {{baziSummary}}</text>
+        <text class="nav-title">神谕对话</text>
+        <text class="nav-sub" wx:if="{{baziSummary}}">{{baziSummary}}</text>
       </view>
     </view>
 
@@ -13,12 +13,12 @@
     <scroll-view class="messages" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation>
       <!-- Session start -->
       <view class="session-start">
-        <text class="session-icon">☯</text>
-        <text class="session-label">SESSION START</text>
+        <text class="session-icon"></text>
+        <text class="session-label">命盘开启</text>
       </view>
 
       <block wx:for="{{messages}}" wx:key="id">
-        <!-- User message: pill tag -->
+        <!-- User message -->
         <view class="user-msg" wx:if="{{item.role === 'user'}}" id="{{item.id}}">
           <view class="user-pill">
             <text class="user-prefix">问</text>
@@ -26,32 +26,61 @@
           </view>
         </view>
 
-        <!-- AI message: scroll stream -->
-        <view class="ai-msg" wx:if="{{item.role === 'assistant'}}" id="{{item.id}}">
-          <view class="ai-stream-line" style="background:linear-gradient(180deg,{{themeColor}},transparent)"></view>
+        <!-- AI message -->
+        <view class="ai-msg" wx:if="{{item.role === 'assistant'}}" id="{{item.id}}" style="--theme-color: {{themeColor}}">
           <view class="ai-content">
-            <view class="ai-label" style="color:{{themeColor}}">
-              <text>AI 命理师 · {{item.content ? '推演' : '推演中'}}</text>
+            <view class="ai-label" style="color: {{themeColor}}">
+              神谕推演 · {{item.content ? '启示' : '启示中'}}
             </view>
-            <chat-bubble role="assistant" content="{{item.content}}" themeColor="{{themeColor}}" />
+            <!-- 思考动画（内容未到达时显示） -->
+            <view class="chat-thinking {{category === 'chinese' ? 'style-cn' : 'style-en'}}" wx:if="{{!item.content && isLoading}}">
+              <view class="thinking-symbol">
+                <view class="icon-taiji" wx:if="{{category === 'chinese'}}">
+                  <view class="taiji-ring"></view>
+                  <view class="taiji-dot"></view>
+                </view>
+                <view class="icon-star" wx:else>
+                  <view class="star-core"></view>
+                  <view class="star-ray ray-t"></view>
+                  <view class="star-ray ray-r"></view>
+                  <view class="star-ray ray-b"></view>
+                  <view class="star-ray ray-l"></view>
+                </view>
+              </view>
+              <view class="thinking-lines" wx:if="{{thinkingTexts.length}}">
+                <text class="thinking-line" wx:for="{{thinkingTexts}}" wx:for-item="txt" wx:key="index">{{txt}}</text>
+              </view>
+              <view class="thinking-status">
+                <text class="status-label">{{category === 'chinese' ? '深度推演中' : 'Deep Reading'}}</text>
+              </view>
+            </view>
+            <!-- 内容 -->
+            <chat-bubble wx:else role="assistant" content="{{item.content}}" themeColor="{{themeColor}}" />
           </view>
         </view>
       </block>
 
-      <!-- Separator -->
-      <view class="separator" wx:if="{{messages.length > 1}}">✦ ✦ ✦</view>
+      <!-- Star trail separator -->
+      <view class="separator" wx:if="{{messages.length > 1}}">
+        <text class="separator-dots">· · ·</text>
+      </view>
     </scroll-view>
 
     <!-- File hint -->
     <view class="file-hint" wx:if="{{fileName}}">
-      <text>📎 {{fileName}}</text>
+      <text class="file-name">{{fileName}}</text>
       <text class="file-close" bindtap="clearFile">✕</text>
     </view>
 
     <!-- Input bar -->
     <view class="input-bar">
-      <text class="input-icon" bindtap="handleChooseFile">📎</text>
-      <chat-input value="{{inputValue}}" bind:input="handleInput" bind:send="handleSend" disabled="{{isLoading}}" />
+      <text class="input-icon" bindtap="handleChooseFile">+</text>
+      <view class="input-field-wrap">
+        <chat-input value="{{inputValue}}" bind:input="handleInputChange" bind:confirm="handleConfirm" disabled="{{isLoading}}" />
+      </view>
+      <view class="send-btn {{inputValue && !isLoading ? 'active' : ''}}" bindtap="handleTapSend">
+        <text class="send-arrow">↑</text>
+      </view>
     </view>
   </view>
 </view>

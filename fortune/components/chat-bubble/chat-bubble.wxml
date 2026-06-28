@@ -1,4 +1,7 @@
-<view class="bubble">
-  <mp-html wx:if="{{htmlContent}}" content="{{htmlContent}}" />
-  <text wx:else class="plain-text">{{content}}</text>
+<!-- fortune/components/chat-bubble/chat-bubble.wxml -->
+<view class="bubble-wrap">
+  <view class="bubble" style="--accent: {{themeColor}}">
+    <mp-html wx:if="{{htmlContent}}" content="{{htmlContent}}" />
+    <text wx:else class="plain-text">{{content}}</text>
+  </view>
 </view>

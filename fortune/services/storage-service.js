@@ -2,7 +2,8 @@ const STORAGE_KEYS = {
   PROFILE: 'fortune_profile',
   HISTORY: 'fortune_history',
   CHAT: 'fortune_chat_history',
-  DAILY_CACHE: 'fortune_daily_cache'
+  DAILY_CACHE: 'fortune_daily_cache',
+  READING_CACHE: 'fortune_reading_cache'
 };
 
 function formatDate(timestamp) {
@@ -147,6 +148,41 @@ function saveDailyCache(cache) {
   }
 }
 
+// 测算缓存：按 category + 日期（YYYY-MM-DD）缓存当天结果，当天不重算
+function getReadingCache(category) {
+  try {
+    var all = wx.getStorageSync(STORAGE_KEYS.READING_CACHE) || {};
+    var today = new Date().toISOString().slice(0, 10);
+    var key = category + '_' + today;
+    return all[key] || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveReadingCache(category, data) {
+  try {
+    var all = wx.getStorageSync(STORAGE_KEYS.READING_CACHE) || {};
+    var today = new Date().toISOString().slice(0, 10);
+    var key = category + '_' + today;
+    // 保留最近 10 条缓存（5 个 category × 2 天）
+    var keys = Object.keys(all);
+    if (keys.length >= 10) {
+      delete all[keys[0]];
+    }
+    all[key] = {
+      ...data,
+      category,
+      date: today,
+      cachedAt: Date.now()
+    };
+    wx.setStorageSync(STORAGE_KEYS.READING_CACHE, all);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 module.exports = {
   formatDate,
   getProfile,
@@ -159,5 +195,7 @@ module.exports = {
   getChatHistory,
   saveChatHistory,
   getDailyCache,
-  saveDailyCache
+  saveDailyCache,
+  getReadingCache,
+  saveReadingCache
 };
