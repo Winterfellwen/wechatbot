@@ -3,7 +3,9 @@
     <!-- 顶部导航 -->
     <view class="nav-bar">
       <text class="nav-title">☯ AI命理</text>
-      <text class="nav-icon" bindtap="handleHistoryTap">📜</text>
+      <view class="nav-actions">
+        <text class="nav-action" bindtap="handleHistoryTap">📜</text>
+      </view>
     </view>
 
     <!-- 标语 -->
@@ -12,62 +14,79 @@
       <text class="tagline-la">TEMPORA SEQUERE</text>
     </view>
 
-    <!-- 档案卡 -->
-    <view class="glass-card profile-card" bindtap="handleShowProfileForm">
-      <view class="profile-avatar">{{profile ? profile.name[0] : '?'}}</view>
-      <view class="profile-info">
-        <text class="profile-name">{{profile ? profile.name : '点击填写档案'}}</text>
-        <text class="profile-detail" wx:if="{{profile}}">{{profile.birthday}} · {{profile.gender === 'male' ? '♂' : '♀'}}{{profile.birthTime ? ' · ' + profile.birthTime : ''}}</text>
+    <!-- 紧凑档案行 -->
+    <view class="profile-row" bindtap="handleShowProfileForm">
+      <view class="profile-avatar-sm">{{profile ? profile.name[0] : '?'}}</view>
+      <view class="profile-row-info">
+        <text class="profile-row-name">{{profile ? profile.name : '点击填写档案'}}</text>
+        <text class="profile-row-detail" wx:if="{{profile}}">{{profile.birthday}} · {{profile.gender === 'male' ? '♂' : '♀'}}</text>
       </view>
-      <text class="arrow">›</text>
+      <text class="profile-row-arrow">›</text>
     </view>
 
-    <!-- 双入口网格 -->
-    <view class="grid">
-      <view class="grid-item grid-chinese" data-category="chinese" bindtap="handleCategoryTap">
-        <text class="grid-icon">☯</text>
-        <text class="grid-title">易学命理</text>
-        <text class="grid-sub">八字·紫微·易经</text>
-      </view>
-      <view class="grid-item grid-western" data-category="western" bindtap="handleCategoryTap">
-        <text class="grid-icon">⭐</text>
-        <text class="grid-title">西方星象</text>
-        <text class="grid-sub">星座·占星</text>
-      </view>
-    </view>
-
-    <!-- 塔罗占卜独立入口 -->
-    <view class="tarot-entry" bindtap="handleTarotTap">
-      <view class="tarot-entry-left">
-        <text class="tarot-entry-icon">🃏</text>
-        <view class="tarot-entry-info">
-          <text class="tarot-entry-title">塔罗占卜</text>
-          <text class="tarot-entry-desc">洗牌·切牌·抽牌·AI解读</text>
+    <!-- 三大测算入口 — 纵向大卡片 -->
+    <view class="main-entries">
+      <view class="entry-card entry-chinese" data-category="chinese" bindtap="handleCategoryTap">
+        <view class="entry-card-bg"></view>
+        <view class="entry-card-content">
+          <view class="entry-card-top">
+            <text class="entry-icon">☯</text>
+            <view class="entry-tags">
+              <text class="entry-tag">八字</text>
+              <text class="entry-tag">紫微</text>
+              <text class="entry-tag">易经</text>
+            </view>
+          </view>
+          <view class="entry-card-bottom">
+            <text class="entry-title">易学命理</text>
+            <text class="entry-desc">四柱八字 · 紫微斗数 · 六十四卦</text>
+          </view>
         </view>
+        <view class="entry-card-arrow">›</view>
       </view>
-      <text class="tarot-entry-arrow">›</text>
+
+      <view class="entry-card entry-western" data-category="western" bindtap="handleCategoryTap">
+        <view class="entry-card-bg"></view>
+        <view class="entry-card-content">
+          <view class="entry-card-top">
+            <text class="entry-icon">⭐</text>
+            <view class="entry-tags">
+              <text class="entry-tag">星座</text>
+              <text class="entry-tag">占星</text>
+            </view>
+          </view>
+          <view class="entry-card-bottom">
+            <text class="entry-title">西方星象</text>
+            <text class="entry-desc">十二星座 · 星盘宫位 · 行星推演</text>
+          </view>
+        </view>
+        <view class="entry-card-arrow">›</view>
+      </view>
+
+      <view class="entry-card entry-tarot" bindtap="handleTarotTap">
+        <view class="entry-card-bg"></view>
+        <view class="entry-card-content">
+          <view class="entry-card-top">
+            <text class="entry-icon">🃏</text>
+            <view class="entry-tags">
+              <text class="entry-tag">洗牌</text>
+              <text class="entry-tag">抽牌</text>
+              <text class="entry-tag">AI解</text>
+            </view>
+          </view>
+          <view class="entry-card-bottom">
+            <text class="entry-title">塔罗占卜</text>
+            <text class="entry-desc">大阿卡纳 · 直觉抽牌 · 深度解读</text>
+          </view>
+        </view>
+        <view class="entry-card-arrow">›</view>
+      </view>
     </view>
 
-    <!-- 方法介绍（左右分栏） -->
-    <view class="intro-grid">
-      <view class="intro-col">
-        <view class="intro-item" wx:for="{{chineseMethods}}" wx:key="name" wx:for-item="m">
-          <text class="intro-name">{{m.name}}</text>
-          <text class="intro-desc">{{m.desc}}</text>
-        </view>
-      </view>
-      <view class="intro-col">
-        <view class="intro-item" wx:for="{{westernMethods}}" wx:key="name" wx:for-item="m">
-          <text class="intro-name">{{m.name}}</text>
-          <text class="intro-desc">{{m.desc}}</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 历史记录入口 -->
-    <view class="glass-card history-entry" bindtap="handleHistoryTap">
-      <text class="history-label">📜 历史记录</text>
-      <text class="arrow">›</text>
+    <!-- 底部方法说明（弱化） -->
+    <view class="footer-hint">
+      <text class="footer-line">八字定格局 · 紫微观轨迹 · 易经通变化</text>
+      <text class="footer-line">星座察性格 · 占星看宫位 · 塔罗启直觉</text>
     </view>
   </view>
 

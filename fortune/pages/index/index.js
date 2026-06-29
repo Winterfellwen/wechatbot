@@ -3,16 +3,7 @@ const storageService = require('../../services/storage-service');
 Page({
   data: {
     profile: null,
-    showProfileForm: false,
-    chineseMethods: [
-      { name: '八字', desc: '四柱八字推算命运格局' },
-      { name: '紫微', desc: '紫微斗数剖析人生轨迹' },
-      { name: '易经', desc: '卦象阴阳五行解疑释惑' }
-    ],
-    westernMethods: [
-      { name: '星座', desc: '十二星座性格基本分析' },
-      { name: '占星', desc: '星盘行星宫位综合推演' }
-    ]
+    showProfileForm: false
   },
 
   onLoad() {
