@@ -32,7 +32,7 @@
       <view class="grid-item grid-western" data-category="western" bindtap="handleCategoryTap">
         <text class="grid-icon">⭐</text>
         <text class="grid-title">西方星象</text>
-        <text class="grid-sub">星座·塔罗·占星</text>
+        <text class="grid-sub">星座·占星</text>
       </view>
     </view>
 

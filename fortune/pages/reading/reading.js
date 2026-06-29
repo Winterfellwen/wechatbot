@@ -131,27 +131,6 @@ function buildDetailCards(category, calcResults) {
       });
     }
 
-    // 塔罗卡片
-    if (calcResults.tarot && !calcResults.tarot.error && calcResults.tarot.spread) {
-      var tarot = calcResults.tarot;
-      var items = [];
-      tarot.spread.forEach(function(card) {
-        items.push(
-          { label: card.position, value: card.card + (card.reversed ? '（逆位）' : '（正位）'), color: card.reversed ? '#ef4444' : '#22c55e' },
-          { label: card.position + '含义', value: card.positionMeaning, color: '#60a5fa' },
-          { label: '关键词', value: card.meanings.join('、'), color: '#fbbf24' },
-          { label: '元素', value: card.element, color: card.element === '火' ? '#ef4444' : card.element === '土' ? '#f59e0b' : card.element === '风' ? '#60a5fa' : '#3b82f6' }
-        );
-      });
-      items.push({ label: '牌阵', value: tarot.spread.map(function(c) { return c.position + '·' + c.card; }).join(' → '), color: '#c084fc' });
-      cards.push({
-        id: 'tarot',
-        title: '塔罗占卜',
-        icon: '牌',
-        rows: items
-      });
-    }
-
     // 占星卡片
     if (calcResults.astrology && !calcResults.astrology.error) {
       var astro = calcResults.astrology;
@@ -226,7 +205,7 @@ Page({
       var content = result.content || '';
       var types = record.category === 'chinese'
         ? ['bazi', 'ziwei', 'yijing']
-        : ['constellation', 'tarot', 'astrology'];
+        : ['constellation', 'astrology'];
       var calcResults = calcService.buildContext(record.profile, types);
       var detailCards = buildDetailCards(record.category, calcResults);
       var needTimeWarn = false;
@@ -266,7 +245,7 @@ Page({
 
     var types = category === 'chinese'
       ? ['bazi', 'ziwei', 'yijing']
-      : ['constellation', 'tarot', 'astrology'];
+      : ['constellation', 'astrology'];
     var calcResults = calcService.buildContext(profile, types);
     var detailCards = buildDetailCards(category, calcResults);
     var needTimeWarn = category === 'chinese' && calcResults.bazi && calcResults.bazi.needTime;
@@ -367,7 +346,7 @@ Page({
   _doStreamReading(category, categoryName, profile) {
     const types = category === 'chinese'
       ? [{ type: 'bazi', typeName: '八字命理' }, { type: 'ziwei', typeName: '紫微斗数' }, { type: 'yijing', typeName: '易经卦象' }]
-      : [{ type: 'constellation', typeName: '星座分析' }, { type: 'tarot', typeName: '塔罗占卜' }, { type: 'astrology', typeName: '占星术' }];
+      : [{ type: 'constellation', typeName: '星座分析' }, { type: 'astrology', typeName: '占星术' }];
 
     var typeStrings = types.map(function(t) { return t.type; });
     var calcResults = calcService.buildContext(profile, typeStrings);

@@ -11,7 +11,6 @@ Page({
     ],
     westernMethods: [
       { name: '星座', desc: '十二星座性格基本分析' },
-      { name: '塔罗', desc: '大阿卡纳揭示潜在能量' },
       { name: '占星', desc: '星盘行星宫位综合推演' }
     ]
   },

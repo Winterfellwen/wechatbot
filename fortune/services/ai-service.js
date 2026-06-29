@@ -19,7 +19,6 @@ function buildReadingPrompt(type, profile, calcData) {
     ziwei: '紫微斗数',
     yijing: '易经卦象',
     constellation: '星座分析',
-    tarot: '塔罗占卜',
     astrology: '占星术'
   };
 
@@ -68,15 +67,15 @@ ${calcSection}
 请直接输出分析结果。`;
 }
 
-// 构建综合测算 prompt（合并三类排盘数据为一次调用，按三类分别输出）
+// 构建综合测算 prompt（合并排盘数据为一次调用，按各方法分别输出）
 function buildUnifiedReadingPrompt(category, profile, calcResults) {
   var typeMap = category === 'chinese'
     ? { bazi: '八字命理', ziwei: '紫微斗数', yijing: '易经卦象' }
-    : { constellation: '星座分析', tarot: '塔罗占卜', astrology: '占星术' };
+    : { constellation: '星座分析', astrology: '占星术' };
 
   var iconMap = category === 'chinese'
     ? { bazi: 'bazi', ziwei: 'ziwei', yijing: 'yijing' }
-    : { constellation: 'star', tarot: 'tarot', astrology: 'astro' };
+    : { constellation: 'star', astrology: 'astro' };
 
   var profileInfo = '姓名：' + profile.name + '\n生日：' + profile.birthday + '\n性别：' + (profile.gender === 'male' ? '男' : '女');
   if (profile.birthTime) {
@@ -118,19 +117,20 @@ function buildUnifiedReadingPrompt(category, profile, calcResults) {
 
   var categoryName = category === 'chinese' ? '易学命理' : '西方星象';
   var typeList = Object.keys(typeMap).map(function(t) { return typeMap[t]; }).join('、');
+  var methodCount = Object.keys(typeMap).length;
 
   var methodOutlines = Object.keys(typeMap).map(function(type) {
     return '::' + iconMap[type] + ':: ' + typeMap[type] + '分析';
   }).join('\n');
 
-  return '你是一个资深的运势分析师。请根据以下用户信息，用' + typeList + '三个方法进行综合分析。\n\n' +
+  return '你是一个资深的运势分析师。请根据以下用户信息，用' + typeList + '进行综合分析。\n\n' +
     '【当前日期】\n' + today + ' 星期' + weekDay + '\n' + yearInfo + '\n\n' +
     '【用户信息】\n' + profileInfo + '\n' +
     calcSection +
     knowledgeText + '\n\n' +
     '【输出要求】\n' +
     '先给出今日运势概述（用 ::today:: 开头），\n' +
-    '然后分别用三个方法推演（每个方法用对应标记开头）：\n' +
+    '然后分别用每个方法推演（每个方法用对应标记开头）：\n' +
     methodOutlines + '\n' +
     '最后给出实用建议（用 ::advice:: 开头）。\n\n' +
     '基于排盘数据和经典依据分析，自由发挥，语言自然有深度。';
@@ -466,11 +466,11 @@ function streamAI(prompt, onChunk, onDone, onError) {
 function streamReadings(category, profile, calcResults, onReadingStart, onChunk, onReadingComplete, onAllComplete, onError) {
   var types = category === 'chinese'
     ? ['bazi', 'ziwei', 'yijing']
-    : ['constellation', 'tarot', 'astrology'];
+    : ['constellation', 'astrology'];
 
   var typeNames = {
     bazi: '八字命理', ziwei: '紫微斗数', yijing: '易经卦象',
-    constellation: '星座分析', tarot: '塔罗占卜', astrology: '占星术'
+    constellation: '星座分析', astrology: '占星术'
   };
 
   var currentTypeIndex = 0;
