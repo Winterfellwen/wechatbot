@@ -120,7 +120,7 @@ var ART = {
   ),
   // 10 命运之轮 — 轮盘
   10: SVG_TEMPLATE(
-    '<g fill="none" stroke="#f4b5fd" stroke-width="1.5">' +
+    '<g fill="none" stroke="#c4b5fd" stroke-width="1.5">' +
     '<circle cx="50" cy="60" r="18" stroke="#fbbf24"/>' +
     '<circle cx="50" cy="60" r="12" stroke="#c4b5fd"/>' +
     '<line x1="32" y1="60" x2="68" y2="60" stroke="#c4b5fd" stroke-width="1"/>' +

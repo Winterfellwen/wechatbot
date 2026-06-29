@@ -43,14 +43,6 @@ var SPREADS = {
   }
 };
 
-// 主题配置
-var TOPICS = [
-  { key: 'love', label: '爱情', icon: '♡' },
-  { key: 'career', label: '事业', icon: '⚔' },
-  { key: 'wealth', label: '财运', icon: '◈' },
-  { key: 'general', label: '综合', icon: '✦' }
-];
-
 // 洗牌提示语
 var SHUFFLE_TEXTS = [
   '闭上双眼，深呼吸...',
@@ -98,9 +90,15 @@ Page({
   },
 
   onUnload: function() {
-    if (this._shuffleTimer) clearInterval(this._shuffleTimer);
-    if (this._revealTimer) clearTimeout(this._revealTimer);
-    if (this._thinkingTimer) clearInterval(this._thinkingTimer);
+    this._aborted = true;
+    this._clearAllTimers();
+  },
+
+  _clearAllTimers: function() {
+    if (this._shuffleTimer) { clearInterval(this._shuffleTimer); this._shuffleTimer = null; }
+    if (this._revealTimer) { clearTimeout(this._revealTimer); this._revealTimer = null; }
+    if (this._thinkingTimer) { clearInterval(this._thinkingTimer); this._thinkingTimer = null; }
+    if (this._phaseTimer) { clearTimeout(this._phaseTimer); this._phaseTimer = null; }
   },
 
   // 本地图片加载失败时回退到 SVG
@@ -160,7 +158,7 @@ Page({
     }, 800);
 
     // 2.8 秒后进入切牌
-    setTimeout(function() {
+    this._phaseTimer = setTimeout(function() {
       if (that._shuffleTimer) {
         clearInterval(that._shuffleTimer);
         that._shuffleTimer = null;
@@ -176,13 +174,12 @@ Page({
     this.setData({ cutProgress: 1 });
 
     // 切牌动画后进入抽牌
-    setTimeout(function() {
+    this._phaseTimer = setTimeout(function() {
       that.setData({ cutProgress: 2 });
+      that._phaseTimer = setTimeout(function() {
+        that._initDrawPhase();
+      }, 600);
     }, 600);
-
-    setTimeout(function() {
-      that._initDrawPhase();
-    }, 1200);
   },
 
   // ===== 第5步：抽牌 =====
@@ -246,7 +243,7 @@ Page({
     // 抽完所有牌，进入翻牌
     if (drawn.length >= spread.count) {
       var that = this;
-      setTimeout(function() {
+      this._phaseTimer = setTimeout(function() {
         that.setData({ step: 'reveal' });
         that._startReveal();
       }, 600);
@@ -262,7 +259,7 @@ Page({
     function flipNext() {
       if (i >= drawn.length) {
         // 全部翻完，进入解读
-        setTimeout(function() {
+        that._phaseTimer = setTimeout(function() {
           that.setData({ step: 'reading', readingStatus: 'thinking' });
           that._startReading();
         }, 800);
@@ -289,17 +286,11 @@ Page({
       this.data.drawnCards
     );
 
-    // 思考动画
-    this._thinkingTimer = setInterval(function() {
-      // 保持 thinking 状态
-    }, 2000);
+    this._aborted = false;
 
     aiService.streamAI(prompt,
       function(content) {
-        if (that._thinkingTimer) {
-          clearInterval(that._thinkingTimer);
-          that._thinkingTimer = null;
-        }
+        if (that._aborted) return;
         that.setData({
           readingContent: content,
           readingHtml: renderService.toHtml(content),
@@ -307,18 +298,12 @@ Page({
         });
       },
       function() {
-        if (that._thinkingTimer) {
-          clearInterval(that._thinkingTimer);
-          that._thinkingTimer = null;
-        }
+        if (that._aborted) return;
         that.setData({ readingStatus: 'done' });
         that._saveToHistory();
       },
       function(err) {
-        if (that._thinkingTimer) {
-          clearInterval(that._thinkingTimer);
-          that._thinkingTimer = null;
-        }
+        if (that._aborted) return;
         var msg = err && err.message ? err.message : '解读失败';
         that.setData({
           readingStatus: 'error',
@@ -355,6 +340,8 @@ Page({
 
   // ===== 重新占卜 =====
   handleRestart: function() {
+    this._aborted = true;
+    this._clearAllTimers();
     this.setData({
       step: 'question',
       question: '',
