@@ -313,9 +313,8 @@
   opacity: 0;
   pointer-events: none;
 }
-.cut-split-l ~ .cut-area::after,
-.cut-area:active::after {
-  animation: cutFlash 0.5s ease-out;
+.cut-done::after {
+  animation: cutFlash 0.6s ease-out;
 }
 .cut-hint {
   margin-top: 60rpx;
@@ -562,12 +561,6 @@
   width: 100rpx;
   height: 110rpx;
 }
-.card-number {
-  font-size: 36rpx;
-  color: var(--tarot-gold);
-  font-weight: 600;
-  margin-bottom: 8rpx;
-}
 .card-name {
   font-size: 24rpx;
   color: #fff;
@@ -611,9 +604,6 @@
   align-items: center;
   justify-content: center;
   animation: fadeInUp 0.4s ease;
-}
-.reading-card-face .card-number {
-  font-size: 28rpx;
 }
 .reading-card-face .card-name {
   font-size: 20rpx;

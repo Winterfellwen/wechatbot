@@ -16,7 +16,7 @@
 
     <!-- List -->
     <view class="list" wx:if="{{!isEmpty}}">
-      <view class="item" wx:for="{{history}}" wx:key="id" data-id="{{item.id}}" bindtap="handleItemTap">
+      <view class="item" wx:for="{{history}}" wx:key="id" data-id="{{item.id}}" data-tarot="{{item.isTarot}}" bindtap="handleItemTap">
         <view class="item-bar {{item.isChinese ? 'bar-chinese' : 'bar-western'}}"></view>
         <view class="item-icon {{item.isChinese ? 'icon-chinese' : 'icon-western'}}">
           <text>{{item.isChinese ? '☯' : '⭐'}}</text>

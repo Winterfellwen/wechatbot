@@ -69,10 +69,11 @@ Page({
     profile: null,
     statusBarHeight: 20,
     tagStyle: null,
-    cutProgress: 0            // 切牌动画 0/1/2
+    cutProgress: 0,           // 切牌动画 0/1/2
+    isView: false             // 历史记录查看模式
   },
 
-  onLoad: function() {
+  onLoad: function(options) {
     var profile = storageService.getProfile();
     var sys = wx.getSystemInfoSync();
     this.setData({
@@ -87,6 +88,53 @@ Page({
         li: 'margin:3rpx 0;color:rgba(255,255,255,0.85);'
       }
     });
+
+    // 历史记录查看模式
+    if (options.mode === 'view' && options.id) {
+      this._loadHistoryView(options.id);
+    }
+  },
+
+  // 从历史记录加载查看
+  _loadHistoryView: function(id) {
+    var record = storageService.getHistoryById(id);
+    if (!record || !record.results || record.results.length === 0) return;
+
+    var result = record.results[0];
+    var drawnCards = [];
+    // 从 calcData.summary 解析牌面信息
+    if (result.calcData && result.calcData.summary) {
+      var parts = result.calcData.summary.split(' | ');
+      drawnCards = parts.map(function(part, idx) {
+        var match = part.match(/^(.+?)：(.+?)（(.+?)）$/);
+        if (!match) return null;
+        var cardName = match[2];
+        var reversed = match[3] === '逆位';
+        // 从 TAROT_MAJOR 查找牌面数据
+        var card = TAROT_MAJOR.find(function(c) { return c.name === cardName; }) || { name: cardName, number: 0, upright: '', reversed: '' };
+        var art = tarotArt.getCardArt(card.number);
+        var imgPath = tarotArt.getCardImagePath(card.number);
+        return {
+          card: card,
+          reversed: reversed,
+          positionIdx: idx,
+          flipped: true,
+          useImage: !!imgPath,
+          artImage: imgPath,
+          artUri: art
+        };
+      }).filter(function(c) { return c !== null; });
+    }
+
+    this.setData({
+      step: 'reading',
+      readingContent: result.content || '',
+      readingHtml: renderService.toHtml(result.content || ''),
+      readingStatus: 'done',
+      historyId: id,
+      drawnCards: drawnCards,
+      isView: true
+    });
   },
 
   onUnload: function() {
@@ -97,7 +145,6 @@ Page({
   _clearAllTimers: function() {
     if (this._shuffleTimer) { clearInterval(this._shuffleTimer); this._shuffleTimer = null; }
     if (this._revealTimer) { clearTimeout(this._revealTimer); this._revealTimer = null; }
-    if (this._thinkingTimer) { clearInterval(this._thinkingTimer); this._thinkingTimer = null; }
     if (this._phaseTimer) { clearTimeout(this._phaseTimer); this._phaseTimer = null; }
   },
 

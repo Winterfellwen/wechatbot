@@ -125,7 +125,7 @@
         <text class="step-sub">点击牌堆，将命运一分为二</text>
       </view>
 
-      <view class="cut-area" bindtap="handleCutTap">
+      <view class="cut-area {{cutProgress >= 1 ? 'cut-done' : ''}}" bindtap="handleCutTap">
         <view class="cut-deck cut-left {{cutProgress >= 1 ? 'cut-split-l' : ''}}">
           <view class="cut-card"></view>
           <view class="cut-card"></view>
@@ -242,7 +242,7 @@
 
       <!-- 操作按钮 -->
       <view class="reading-actions" wx:if="{{readingStatus === 'done' || readingStatus === 'error'}}">
-        <view class="action-btn action-btn-outline" bindtap="handleRestart">
+        <view class="action-btn action-btn-outline" wx:if="{{!isView}}" bindtap="handleRestart">
           <text>再次占卜</text>
         </view>
         <view class="action-btn" wx:if="{{historyId}}" bindtap="handleChatTap">

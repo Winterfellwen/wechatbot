@@ -19,10 +19,12 @@ Page({
     const history = storageService.getHistory();
     // 为每条记录补充格式化时间戳（兼容旧数据）
     var formatted = history.map(function(item) {
+      var isTarot = item.results && item.results.length > 0 && item.results[0].type === 'tarot';
       return {
         ...item,
         timeText: item.createdAtFormatted || (item.timestamp ? storageService.formatDate(item.timestamp) : '未知时间'),
-        isChinese: item.category === 'chinese'
+        isChinese: item.category === 'chinese',
+        isTarot: isTarot
       };
     });
     this.setData({
@@ -33,9 +35,16 @@ Page({
 
   handleItemTap(e) {
     const id = e.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: '/fortune/pages/reading/reading?mode=view&id=' + id
-    });
+    const isTarot = e.currentTarget.dataset.tarot;
+    if (isTarot) {
+      wx.navigateTo({
+        url: '/fortune/pages/tarot/tarot?mode=view&id=' + id
+      });
+    } else {
+      wx.navigateTo({
+        url: '/fortune/pages/reading/reading?mode=view&id=' + id
+      });
+    }
   },
 
   handleDelete(e) {

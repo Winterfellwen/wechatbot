@@ -115,9 +115,7 @@ function buildUnifiedReadingPrompt(category, profile, calcResults) {
   var weekDay = weekDays[now.getDay()];
   var yearInfo = now.getFullYear() + '年';
 
-  var categoryName = category === 'chinese' ? '易学命理' : '西方星象';
   var typeList = Object.keys(typeMap).map(function(t) { return typeMap[t]; }).join('、');
-  var methodCount = Object.keys(typeMap).length;
 
   var methodOutlines = Object.keys(typeMap).map(function(type) {
     return '::' + iconMap[type] + ':: ' + typeMap[type] + '分析';
