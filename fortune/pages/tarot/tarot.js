@@ -103,6 +103,16 @@ Page({
     if (this._thinkingTimer) clearInterval(this._thinkingTimer);
   },
 
+  // 本地图片加载失败时回退到 SVG
+  handleArtError: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var drawn = this.data.drawnCards;
+    if (drawn[idx]) {
+      drawn[idx].useImage = false;
+      this.setData({ drawnCards: drawn });
+    }
+  },
+
   // ===== 第1步：提问 =====
   handleQuestionInput: function(e) {
     this.setData({ question: e.detail.value });
@@ -220,7 +230,9 @@ Page({
       reversed: reversed,
       positionIdx: drawn.length,
       flipped: false,
-      artUri: tarotArt.getCardArt(card.number)
+      artUri: tarotArt.getCardArt(card.number),
+      artImage: tarotArt.getCardImagePath(card.number),
+      useImage: true
     });
 
     deck[id].picked = true;

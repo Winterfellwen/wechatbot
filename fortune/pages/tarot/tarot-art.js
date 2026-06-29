@@ -259,7 +259,13 @@ var ART = {
   )
 };
 
-// 获取牌面 SVG 的 data URI
+// 本地图片路径（韦特塔罗公共领域扫描件，需运行 download-tarot.sh 下载）
+function getCardImagePath(number) {
+  var padded = number < 10 ? '0' + number : '' + number;
+  return '/fortune/pages/tarot/images/tarot-' + padded + '.jpg';
+}
+
+// 获取牌面艺术资源：优先本地图片，回退 SVG 矢量图
 function getCardArt(number) {
   var svg = ART[number];
   if (!svg) return '';
@@ -268,5 +274,6 @@ function getCardArt(number) {
 
 module.exports = {
   getCardArt: getCardArt,
+  getCardImagePath: getCardImagePath,
   ART: ART
 };
