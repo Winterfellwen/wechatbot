@@ -61,7 +61,9 @@ Page({
     baziSummary: '',
     thinkingTexts: [],
     keyboardHeight: 0,
-    keyboardStyle: ''
+    keyboardStyle: '',
+    showHistory: false,
+    chatSessions: []
   },
 
   _thinkingTimer: null,
@@ -254,5 +256,46 @@ Page({
 
   handleBack() {
     wx.navigateBack();
+  },
+
+  handleCopyMsg(e) {
+    var content = e.currentTarget.dataset.content;
+    if (!content) {
+      wx.showToast({ title: '无内容可复制', icon: 'none' });
+      return;
+    }
+    wx.setClipboardData({
+      data: content,
+      success: function() {
+        wx.showToast({ title: '已复制', icon: 'none' });
+      }
+    });
+  },
+
+  // ===== 对话历史 =====
+  toggleHistory() {
+    var show = !this.data.showHistory;
+    if (show) {
+      this.loadChatSessions();
+    }
+    this.setData({ showHistory: show });
+  },
+
+  loadChatSessions() {
+    var sessions = storageService.getChatSessions();
+    this.setData({ chatSessions: sessions });
+  },
+
+  handleSelectSession(e) {
+    var readingId = e.currentTarget.dataset.id;
+    if (!readingId) return;
+    this.setData({
+      readingId: readingId,
+      showHistory: false,
+      messages: [],
+      inputValue: ''
+    });
+    this.loadTheme();
+    this.loadChatHistory();
   }
 });

@@ -194,6 +194,11 @@ Page({
     } else {
       this.initIdleState(category, categoryName);
     }
+
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
   },
 
   loadHistoryReading(id) {
@@ -509,5 +514,28 @@ Page({
         wx.showToast({ title: '已复制', icon: 'none' });
       }
     });
+  },
+
+  // ===== 分享 =====
+  onShareAppMessage() {
+    var category = this.data.category;
+    var categoryName = this.data.categoryName || (category === 'chinese' ? '易学命理' : '西方星象');
+    var title = categoryName + '运势';
+    var path = '/fortune/pages/reading/reading?category=' + category;
+    if (this.data.readingId) {
+      path = '/fortune/pages/reading/reading?mode=view&id=' + this.data.readingId;
+    }
+    return {
+      title: title,
+      path: path
+    };
+  },
+
+  onShareTimeline() {
+    var category = this.data.category;
+    var categoryName = this.data.categoryName || (category === 'chinese' ? '易学命理' : '西方星象');
+    return {
+      title: categoryName + '运势'
+    };
   }
 });

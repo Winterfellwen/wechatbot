@@ -113,10 +113,12 @@ function saveChatHistory(readingId, messages) {
     let allChats = wx.getStorageSync(STORAGE_KEYS.CHAT) || [];
     const existingIndex = allChats.findIndex(c => c.readingId === readingId);
 
+    var now = Date.now();
     if (existingIndex >= 0) {
       allChats[existingIndex].messages = messages;
+      allChats[existingIndex].updatedAt = now;
     } else {
-      allChats.push({ readingId, messages });
+      allChats.push({ readingId, messages, updatedAt: now });
     }
 
     if (allChats.length > 20) {
@@ -128,6 +130,44 @@ function saveChatHistory(readingId, messages) {
   } catch (e) {
     console.error('Failed to save chat history:', e);
     return false;
+  }
+}
+
+// 获取所有对话会话列表（带关联测算信息）
+function getChatSessions() {
+  try {
+    const allChats = wx.getStorageSync(STORAGE_KEYS.CHAT) || [];
+    const history = getHistory();
+    return allChats.map(function(chat) {
+      var record = history.find(function(h) { return h.id === chat.readingId; });
+      var lastMsg = '';
+      var msgCount = 0;
+      if (chat.messages && chat.messages.length > 0) {
+        var msgs = chat.messages.filter(function(m) { return m.role === 'user'; });
+        msgCount = msgs.length;
+        var last = chat.messages[chat.messages.length - 1];
+        lastMsg = last.content || '';
+        if (lastMsg.length > 40) lastMsg = lastMsg.slice(0, 40) + '...';
+      }
+      var typeName = '';
+      var category = '';
+      if (record && record.results && record.results.length > 0) {
+        typeName = record.results[0].typeName || '';
+        category = record.category || '';
+      }
+      return {
+        readingId: chat.readingId,
+        updatedAt: chat.updatedAt || 0,
+        updatedAtFormatted: chat.updatedAt ? formatDate(chat.updatedAt) : '',
+        lastMsg: lastMsg,
+        msgCount: msgCount,
+        typeName: typeName,
+        category: category
+      };
+    }).sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+  } catch (e) {
+    console.error('Failed to get chat sessions:', e);
+    return [];
   }
 }
 
@@ -194,6 +234,7 @@ module.exports = {
   clearHistory,
   getChatHistory,
   saveChatHistory,
+  getChatSessions,
   getDailyCache,
   saveDailyCache,
   getReadingCache,

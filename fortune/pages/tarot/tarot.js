@@ -93,6 +93,12 @@ Page({
     if (options.mode === 'view' && options.id) {
       this._loadHistoryView(options.id);
     }
+
+    // 显示分享菜单
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
   },
 
   // 从历史记录加载查看
@@ -430,5 +436,31 @@ Page({
       return;
     }
     wx.navigateBack();
+  },
+
+  // ===== 分享 =====
+  onShareAppMessage: function() {
+    var title = '塔罗占卜';
+    var path = '/fortune/pages/tarot/tarot';
+    if (this.data.question) {
+      title = '塔罗·' + this.data.question;
+    }
+    if (this.data.historyId) {
+      path = '/fortune/pages/tarot/tarot?mode=view&id=' + this.data.historyId;
+    }
+    return {
+      title: title,
+      path: path
+    };
+  },
+
+  onShareTimeline: function() {
+    var title = '塔罗占卜';
+    if (this.data.question) {
+      title = '塔罗·' + this.data.question;
+    }
+    return {
+      title: title
+    };
   }
 });

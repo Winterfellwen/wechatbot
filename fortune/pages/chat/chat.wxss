@@ -497,6 +497,155 @@
   font-style: italic;
 }
 
+/* --- 历史入口按钮 --- */
+.nav-history {
+  font-size: 28rpx;
+  opacity: 0.5;
+  padding: 8rpx 12rpx;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+.nav-history:active {
+  opacity: 1;
+}
+
+/* ===== 对话历史面板 ===== */
+.history-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.history-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80%;
+  max-width: 560rpx;
+  height: 100%;
+  background: linear-gradient(180deg, #0f0c1a, #1a1628);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4rpx 0 32rpx rgba(0,0,0,0.5);
+  animation: slideInRight 0.3s ease;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(30rpx + env(safe-area-inset-top)) 32rpx 24rpx;
+  border-bottom: 1rpx solid rgba(255,255,255,0.07);
+}
+
+.history-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 1rpx;
+}
+
+.history-close {
+  font-size: 32rpx;
+  opacity: 0.5;
+  padding: 8rpx;
+}
+
+.history-list {
+  flex: 1;
+  padding: 16rpx 24rpx;
+}
+
+.history-empty {
+  text-align: center;
+  padding: 120rpx 32rpx;
+  opacity: 0.4;
+  font-size: 26rpx;
+}
+
+.history-item {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 16rpx;
+  border-radius: 16rpx;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.history-item:active {
+  background: rgba(255,255,255,0.08);
+}
+
+.history-item-bar {
+  width: 6rpx;
+  flex-shrink: 0;
+}
+.bar-chinese {
+  background: linear-gradient(180deg, #d97757, #b4533a);
+}
+.bar-western {
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+}
+
+.history-item-body {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  min-width: 0;
+}
+
+.history-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.history-item-type {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+}
+
+.history-item-time {
+  font-size: 20rpx;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+.history-item-msg {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 6rpx;
+}
+
+.history-item-count {
+  font-size: 20rpx;
+  opacity: 0.4;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 /* ===== 动画关键帧 ===== */
 @keyframes orbitRing {
   from { transform: rotate(0deg); }

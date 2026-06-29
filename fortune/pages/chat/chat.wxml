@@ -7,6 +7,7 @@
         <text class="nav-title">神谕对话</text>
         <text class="nav-sub" wx:if="{{baziSummary}}">{{baziSummary}}</text>
       </view>
+      <text class="nav-history" bindtap="toggleHistory">☰</text>
     </view>
 
     <!-- Messages -->
@@ -19,7 +20,7 @@
 
       <block wx:for="{{messages}}" wx:key="id">
         <!-- User message -->
-        <view class="user-msg" wx:if="{{item.role === 'user'}}" id="{{item.id}}">
+        <view class="user-msg" wx:if="{{item.role === 'user'}}" id="{{item.id}}" bindlongpress="handleCopyMsg" data-content="{{item.content}}">
           <view class="user-pill">
             <text class="user-prefix">问</text>
             <text class="user-text">{{item.content}}</text>
@@ -27,7 +28,7 @@
         </view>
 
         <!-- AI message -->
-        <view class="ai-msg" wx:if="{{item.role === 'assistant'}}" id="{{item.id}}" style="--theme-color: {{themeColor}}">
+        <view class="ai-msg" wx:if="{{item.role === 'assistant'}}" id="{{item.id}}" style="--theme-color: {{themeColor}}" bindlongpress="handleCopyMsg" data-content="{{item.content}}">
           <view class="ai-content">
             <view class="ai-label" style="color: {{themeColor}}">
               神谕推演 · {{item.content ? '启示' : '启示中'}}
@@ -65,6 +66,33 @@
         <text class="separator-dots">· · ·</text>
       </view>
     </scroll-view>
+
+    <!-- 对话历史面板 -->
+    <view class="history-panel {{showHistory ? 'show' : ''}}" wx:if="{{showHistory}}">
+      <view class="history-mask" bindtap="toggleHistory"></view>
+      <view class="history-content">
+        <view class="history-header">
+          <text class="history-title">对话历史</text>
+          <text class="history-close" bindtap="toggleHistory">✕</text>
+        </view>
+        <scroll-view class="history-list" scroll-y>
+          <view class="history-empty" wx:if="{{chatSessions.length === 0}}">
+            <text>暂无对话记录</text>
+          </view>
+          <view class="history-item" wx:for="{{chatSessions}}" wx:key="readingId" data-id="{{item.readingId}}" bindtap="handleSelectSession">
+            <view class="history-item-bar {{item.category === 'chinese' ? 'bar-chinese' : 'bar-western'}}"></view>
+            <view class="history-item-body">
+              <view class="history-item-top">
+                <text class="history-item-type">{{item.typeName || '运势'}}</text>
+                <text class="history-item-time">{{item.updatedAtFormatted}}</text>
+              </view>
+              <text class="history-item-msg" wx:if="{{item.lastMsg}}">{{item.lastMsg}}</text>
+              <text class="history-item-count">{{item.msgCount}} 条提问</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
 
     <!-- File hint -->
     <view class="file-hint" wx:if="{{fileName}}">
