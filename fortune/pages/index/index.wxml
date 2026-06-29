@@ -36,6 +36,18 @@
       </view>
     </view>
 
+    <!-- 塔罗占卜独立入口 -->
+    <view class="tarot-entry" bindtap="handleTarotTap">
+      <view class="tarot-entry-left">
+        <text class="tarot-entry-icon">🃏</text>
+        <view class="tarot-entry-info">
+          <text class="tarot-entry-title">塔罗占卜</text>
+          <text class="tarot-entry-desc">洗牌·切牌·抽牌·AI解读</text>
+        </view>
+      </view>
+      <text class="tarot-entry-arrow">›</text>
+    </view>
+
     <!-- 方法介绍（左右分栏） -->
     <view class="intro-grid">
       <view class="intro-col">

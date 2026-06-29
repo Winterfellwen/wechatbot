@@ -77,7 +77,8 @@
         "pages/index/index",
         "pages/reading/reading",
         "pages/chat/chat",
-        "pages/history/history"
+        "pages/history/history",
+        "pages/tarot/tarot"
       ]
     }
   ],

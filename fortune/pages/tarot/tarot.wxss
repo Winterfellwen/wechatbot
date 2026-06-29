@@ -1,0 +1,579 @@
+/* fortune/pages/tarot/tarot.wxss
+   塔罗占卜完整仪式流程样式 — 神秘紫罗兰 + 金色 */
+
+.tarot-page {
+  color: #fff;
+  --tarot-purple: #818cf8;
+  --tarot-gold: #c4b5fd;
+  --tarot-deep: #1a1f3a;
+}
+
+.page-content {
+  padding-bottom: 80rpx;
+}
+
+/* ===== 导航 ===== */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 30rpx 32rpx 20rpx;
+}
+.nav-back {
+  font-size: 36rpx;
+  opacity: 0.7;
+}
+.nav-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  flex: 1;
+  letter-spacing: 2rpx;
+}
+
+/* ===== 步骤通用 ===== */
+.step-section {
+  padding: 0 32rpx;
+  animation: fadeInUp 0.4s ease;
+}
+
+.step-header {
+  text-align: center;
+  padding: 40rpx 0 48rpx;
+}
+.step-icon {
+  display: block;
+  font-size: 40rpx;
+  color: var(--tarot-gold);
+  margin-bottom: 16rpx;
+  animation: pulse 2s ease-in-out infinite;
+}
+.step-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  letter-spacing: 4rpx;
+}
+.step-sub {
+  display: block;
+  font-size: 24rpx;
+  opacity: 0.5;
+  margin-top: 12rpx;
+  letter-spacing: 1rpx;
+}
+
+/* ===== 提问页 ===== */
+.question-box {
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+}
+.question-input {
+  width: 100%;
+  min-height: 120rpx;
+  font-size: 28rpx;
+  color: #fff;
+  line-height: 1.6;
+}
+.placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.topic-section {
+  margin-bottom: 40rpx;
+}
+.topic-label {
+  display: block;
+  font-size: 24rpx;
+  opacity: 0.6;
+  margin-bottom: 20rpx;
+  letter-spacing: 2rpx;
+}
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+}
+.topic-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 0;
+  border-radius: 20rpx;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  transition: all 0.25s;
+}
+.topic-item:active {
+  transform: scale(0.95);
+}
+.topic-active {
+  border-color: var(--tarot-purple);
+  background: rgba(129,140,248,0.15);
+  box-shadow: 0 0 24rpx rgba(129,140,248,0.3);
+}
+.topic-icon {
+  font-size: 32rpx;
+  color: var(--tarot-gold);
+}
+.topic-text {
+  font-size: 22rpx;
+  margin-top: 8rpx;
+  opacity: 0.8;
+}
+
+/* ===== 通用按钮 ===== */
+.action-btn {
+  width: 100%;
+  padding: 26rpx 0;
+  text-align: center;
+  border-radius: 48rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 4rpx;
+  background: linear-gradient(135deg, var(--tarot-purple), #6366f1);
+  color: #fff;
+  box-shadow: 0 8rpx 32rpx rgba(129,140,248,0.4);
+  transition: all 0.2s;
+}
+.action-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+.action-btn-outline {
+  background: transparent;
+  border: 1px solid var(--tarot-purple);
+  color: var(--tarot-purple);
+  box-shadow: none;
+}
+.btn-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ===== 牌阵选择 ===== */
+.spread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.spread-card {
+  display: flex;
+  align-items: center;
+  padding: 28rpx;
+  gap: 24rpx;
+  transition: all 0.25s;
+}
+.spread-card:active {
+  transform: scale(0.97);
+  border-color: var(--tarot-purple);
+}
+.spread-preview {
+  display: flex;
+  gap: 6rpx;
+  flex-shrink: 0;
+  width: 100rpx;
+  justify-content: center;
+}
+.spread-3, .spread-5 {
+  gap: 4rpx;
+}
+.spread-5 .mini-card {
+  width: 16rpx;
+  height: 28rpx;
+}
+.mini-card {
+  width: 24rpx;
+  height: 36rpx;
+  border-radius: 4rpx;
+  background: linear-gradient(135deg, var(--tarot-purple), #4f46e5);
+  border: 1px solid rgba(196,181,253,0.4);
+}
+.spread-info {
+  flex: 1;
+}
+.spread-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+.spread-desc {
+  display: block;
+  font-size: 22rpx;
+  opacity: 0.5;
+  margin-top: 6rpx;
+}
+.spread-arrow {
+  font-size: 32rpx;
+  opacity: 0.4;
+}
+
+/* ===== 洗牌动画 ===== */
+.shuffle-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500rpx;
+  position: relative;
+}
+.shuffle-deck {
+  position: relative;
+  width: 200rpx;
+  height: 280rpx;
+}
+.shuffle-card {
+  position: absolute;
+  width: 160rpx;
+  height: 240rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #2d1b69, #1a1f3a);
+  border: 2rpx solid rgba(196,181,253,0.3);
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+}
+.sc-1 { animation: shuffleMove1 1.4s ease-in-out infinite; }
+.sc-2 { animation: shuffleMove2 1.4s ease-in-out infinite 0.1s; }
+.sc-3 { animation: shuffleMove3 1.4s ease-in-out infinite 0.2s; }
+.sc-4 { animation: shuffleMove1 1.4s ease-in-out infinite 0.35s; }
+.sc-5 { animation: shuffleMove2 1.4s ease-in-out infinite 0.5s; }
+
+@keyframes shuffleMove1 {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-8deg) translateX(-20rpx); }
+  50% { transform: translate(-50%, -50%) rotate(8deg) translateX(20rpx); }
+}
+@keyframes shuffleMove2 {
+  0%, 100% { transform: translate(-50%, -50%) rotate(6deg) translateX(15rpx); }
+  50% { transform: translate(-50%, -50%) rotate(-6deg) translateX(-15rpx); }
+}
+@keyframes shuffleMove3 {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg) translateY(-10rpx); }
+  50% { transform: translate(-50%, -50%) rotate(0deg) translateY(10rpx); }
+}
+
+.shuffle-glow {
+  position: absolute;
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(129,140,248,0.15), transparent 70%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== 切牌 ===== */
+.cut-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500rpx;
+  position: relative;
+}
+.cut-deck {
+  position: relative;
+  display: flex;
+  transition: transform 0.6s ease;
+}
+.cut-left {
+  margin-right: 0;
+}
+.cut-right {
+  position: absolute;
+  left: 50%;
+  top: 0;
+}
+.cut-split-l {
+  transform: translateX(-120rpx);
+}
+.cut-split-r {
+  transform: translateX(80rpx);
+}
+.cut-card {
+  width: 120rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(135deg, #2d1b69, #1a1f3a);
+  border: 2rpx solid rgba(196,181,253,0.3);
+  margin-left: -100rpx;
+}
+.cut-card:first-child {
+  margin-left: 0;
+}
+.cut-hint {
+  margin-top: 60rpx;
+  font-size: 24rpx;
+  color: var(--tarot-gold);
+  animation: breathe 1.5s ease-in-out infinite;
+  letter-spacing: 2rpx;
+}
+
+/* ===== 牌背图案（通用） ===== */
+.card-back-pattern {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(196,181,253,0.15), transparent 60%),
+    linear-gradient(135deg, #2d1b69, #1a1f3a);
+  border: 2rpx solid rgba(196,181,253,0.25);
+  position: relative;
+  box-sizing: border-box;
+}
+.card-back-pattern::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48rpx;
+  color: rgba(196,181,253,0.4);
+}
+
+/* ===== 抽牌 ===== */
+.drawn-preview {
+  display: flex;
+  gap: 16rpx;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+.drawn-slot {
+  width: 80rpx;
+  height: 120rpx;
+}
+.card-back-mini {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(196,181,253,0.15), transparent 60%),
+    linear-gradient(135deg, #2d1b69, #1a1f3a);
+  border: 2rpx solid rgba(196,181,253,0.25);
+  animation: fadeInUp 0.3s ease;
+}
+
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+  padding: 0 8rpx;
+}
+.deck-card-back {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 12rpx;
+  transition: all 0.2s;
+}
+.deck-card-back:active {
+  transform: scale(0.92);
+}
+.deck-picked {
+  opacity: 0.2;
+  pointer-events: none;
+  transform: scale(0.85);
+}
+
+/* ===== 3D 翻牌 ===== */
+.reveal-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+  justify-content: center;
+  padding: 20rpx 0;
+}
+.reveal-card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+.reveal-position {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: rgba(129,140,248,0.2);
+  border: 1px solid var(--tarot-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  color: var(--tarot-gold);
+}
+
+.flip-card {
+  width: 180rpx;
+  height: 270rpx;
+  perspective: 800rpx;
+}
+.flip-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 14rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.6s ease;
+}
+.flip-back {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+.flip-front {
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, #1e1b4b, #312e81);
+  border: 2rpx solid rgba(196,181,253,0.4);
+}
+.flipped .flip-back {
+  transform: rotateY(-180deg);
+}
+.flipped .flip-front {
+  transform: rotateY(0deg);
+}
+
+/* 牌面内容 */
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.card-number {
+  font-size: 36rpx;
+  color: var(--tarot-gold);
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+.card-name {
+  font-size: 24rpx;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+.card-orient {
+  font-size: 18rpx;
+  color: rgba(196,181,253,0.7);
+  margin-top: 8rpx;
+  letter-spacing: 1rpx;
+}
+/* 逆位牌内容旋转180度（在内层，不影响翻牌 rotateY） */
+.card-reversed {
+  transform: rotate(180deg);
+}
+
+/* ===== 解读页 ===== */
+.reading-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+.reading-card-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.reading-card-face {
+  width: 130rpx;
+  height: 190rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(160deg, #1e1b4b, #312e81);
+  border: 2rpx solid rgba(196,181,253,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInUp 0.4s ease;
+}
+.reading-card-face .card-number {
+  font-size: 28rpx;
+}
+.reading-card-face .card-name {
+  font-size: 20rpx;
+}
+.reading-card-face .card-orient {
+  font-size: 16rpx;
+}
+.reading-card-pos {
+  font-size: 18rpx;
+  opacity: 0.5;
+}
+
+/* 思考动画 */
+.reading-thinking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+}
+.thinking-orb {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tarot-gold), var(--tarot-purple));
+  box-shadow: 0 0 40rpx rgba(196,181,253,0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+  margin-bottom: 24rpx;
+}
+.thinking-text {
+  font-size: 24rpx;
+  color: var(--tarot-gold);
+  letter-spacing: 2rpx;
+  animation: breathe 1.5s ease-in-out infinite;
+}
+
+/* AI 解读内容 */
+.reading-content {
+  padding: 28rpx;
+  font-size: 26rpx;
+  line-height: 1.8;
+  margin-bottom: 32rpx;
+  animation: fadeInUp 0.4s ease;
+}
+.reading-content h1,
+.reading-content h2,
+.reading-content h3 {
+  color: var(--tarot-gold);
+  font-weight: 600;
+  margin: 12rpx 0 6rpx;
+}
+.reading-content strong {
+  color: var(--tarot-gold);
+}
+.reading-content p {
+  color: rgba(255,255,255,0.85);
+}
+.reading-content ul {
+  padding-left: 32rpx;
+}
+.reading-content li {
+  color: rgba(255,255,255,0.8);
+}
+
+/* 操作按钮组 */
+.reading-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 0 8rpx;
+}
+.reading-actions .action-btn {
+  flex: 1;
+}
+
+/* ===== 动画 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

@@ -70,5 +70,11 @@ Page({
     wx.navigateTo({
       url: '/fortune/pages/history/history'
     });
+  },
+
+  handleTarotTap() {
+    wx.navigateTo({
+      url: '/fortune/pages/tarot/tarot'
+    });
   }
 });

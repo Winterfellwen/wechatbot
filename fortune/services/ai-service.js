@@ -508,6 +508,50 @@ function streamReadings(category, profile, calcResults, onReadingStart, onChunk,
   processNext();
 }
 
+// 构建塔罗占卜 prompt（用户问题 + 牌阵 + 抽到的牌）
+function buildTarotPrompt(question, topic, spreadName, positions, drawnCards) {
+  var topicNames = {
+    love: '爱情',
+    career: '事业',
+    wealth: '财运',
+    general: '综合运势'
+  };
+  var topicName = topicNames[topic] || '综合运势';
+
+  var cardsText = drawnCards.map(function(c, i) {
+    var pos = positions[i] || {};
+    var orient = c.reversed ? '逆位' : '正位';
+    var keywords = (c.reversed ? c.card.reversed : c.card.upright).join('、');
+    return '第' + (i + 1) + '张 【' + (pos.name || '') + '】' +
+      c.card.name + '（' + orient + '）' +
+      ' — 关键词：' + keywords +
+      (pos.meaning ? ' | 位置含义：' + pos.meaning : '');
+  }).join('\n');
+
+  var positionOutlines = positions.map(function(pos, i) {
+    return '::card' + (i + 1) + ':: ' + pos.name + '解读';
+  }).join('\n');
+
+  return '你是一位经验丰富的塔罗牌咨询师，擅长荣格心理学与共情倾听。语言风格神秘、优雅、充满治愈感。\n\n' +
+    '【用户问题】\n' + question + '\n\n' +
+    '【占卜主题】\n' + topicName + '\n\n' +
+    '【牌阵类型】\n' + spreadName + '\n\n' +
+    '【抽到的牌】\n' + cardsText + '\n\n' +
+    '【输出格式】\n' +
+    '::overview:: 整体概述（简要总结牌面整体能量）\n\n' +
+    positionOutlines + '\n（逐张解读，结合用户问题分析每张牌在对应位置的含义）\n\n' +
+    '::advice:: 综合建议（给出行动指引与情绪安抚）\n\n' +
+    '::warn:: 注意事项（特别提醒）\n\n' +
+    '【要求】\n' +
+    '1. 100%使用中文，禁止任何英文\n' +
+    '2. 每个段落用 ::标记:: 开头，禁止使用 emoji\n' +
+    '3. 将牌面含义与用户问题紧密关联，用隐喻连接\n' +
+    '4. 语气温柔神秘，多用"可能""能量""指引"等词汇\n' +
+    '5. 牌名全部用中文\n' +
+    '6. 正位和逆位的解读要有明显区别\n\n' +
+    '请直接输出解读结果。';
+}
+
 // 读取文件内容
 function readFileContent(filePath, fileName) {
   return new Promise(function(resolve, reject) {
@@ -537,6 +581,7 @@ module.exports = {
   buildReadingPrompt,
   buildUnifiedReadingPrompt,
   buildChatPrompt,
+  buildTarotPrompt,
   streamAI,
   streamAIWithThinking,
   streamUnifiedReading,

@@ -430,6 +430,7 @@ module.exports = {
   parseBirthTime: parseBirthTime,
   parseBirthday: parseBirthday,
   BIRTH_TIME_MAP: BIRTH_TIME_MAP,
+  TAROT_MAJOR: TAROT_MAJOR,
   calcBazi: calcBazi,
   calcZiwei: calcZiwei,
   calcConstellation: calcConstellation,

@@ -1,0 +1,247 @@
+<view class="page-container fortune-page bg-western tarot-page">
+  <view class="page-content">
+    <!-- 顶部导航 -->
+    <view class="nav-bar" style="padding-top:{{statusBarHeight}}px">
+      <text class="nav-back" bindtap="handleBack">‹</text>
+      <text class="nav-title">塔罗占卜</text>
+    </view>
+
+    <!-- ========== 第1步：提问 ========== -->
+    <view class="step-section" wx:if="{{step === 'question'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">提出你的问题</text>
+        <text class="step-sub">集中意念，将困惑交给塔罗</text>
+      </view>
+
+      <view class="question-box glass-card">
+        <textarea
+          class="question-input"
+          placeholder="例如：我的感情会有新发展吗？"
+          placeholder-class="placeholder"
+          value="{{question}}"
+          bindinput="handleQuestionInput"
+          maxlength="100"
+          auto-height
+        />
+      </view>
+
+      <view class="topic-section">
+        <text class="topic-label">选择占卜主题</text>
+        <view class="topic-grid">
+          <view
+            class="topic-item {{topic === item.key ? 'topic-active' : ''}}"
+            wx:for="{{[{key:'love',label:'爱情',icon:'♡'},{key:'career',label:'事业',icon:'⚔'},{key:'wealth',label:'财运',icon:'◈'},{key:'general',label:'综合',icon:'✦'}]}}"
+            wx:key="key"
+            data-key="{{item.key}}"
+            bindtap="handleTopicTap"
+          >
+            <text class="topic-icon">{{item.icon}}</text>
+            <text class="topic-text">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="action-btn {{question ? '' : 'btn-disabled'}}" bindtap="handleStartDivination">
+        <text>开始占卜</text>
+      </view>
+    </view>
+
+    <!-- ========== 第2步：选择牌阵 ========== -->
+    <view class="step-section" wx:if="{{step === 'spread'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">选择牌阵</text>
+        <text class="step-sub">不同牌阵适合不同深度的问题</text>
+      </view>
+
+      <view class="spread-list">
+        <view class="spread-card glass-card" data-type="single" bindtap="handleSpreadTap">
+          <view class="spread-preview spread-1">
+            <view class="mini-card"></view>
+          </view>
+          <view class="spread-info">
+            <text class="spread-name">单牌指引</text>
+            <text class="spread-desc">一张牌的简洁讯息</text>
+          </view>
+          <text class="spread-arrow">›</text>
+        </view>
+
+        <view class="spread-card glass-card" data-type="three" bindtap="handleSpreadTap">
+          <view class="spread-preview spread-3">
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+          </view>
+          <view class="spread-info">
+            <text class="spread-name">时间之流</text>
+            <text class="spread-desc">过去 · 现在 · 未来</text>
+          </view>
+          <text class="spread-arrow">›</text>
+        </view>
+
+        <view class="spread-card glass-card" data-type="five" bindtap="handleSpreadTap">
+          <view class="spread-preview spread-5">
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+            <view class="mini-card"></view>
+          </view>
+          <view class="spread-info">
+            <text class="spread-name">命运之牌</text>
+            <text class="spread-desc">现状 · 挑战 · 根源 · 趋势 · 建议</text>
+          </view>
+          <text class="spread-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== 第3步：洗牌 ========== -->
+    <view class="step-section" wx:if="{{step === 'shuffle'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">洗牌中</text>
+        <text class="step-sub">{{shuffleText}}</text>
+      </view>
+
+      <view class="shuffle-area">
+        <view class="shuffle-deck">
+          <view class="shuffle-card sc-1"></view>
+          <view class="shuffle-card sc-2"></view>
+          <view class="shuffle-card sc-3"></view>
+          <view class="shuffle-card sc-4"></view>
+          <view class="shuffle-card sc-5"></view>
+        </view>
+        <view class="shuffle-glow"></view>
+      </view>
+    </view>
+
+    <!-- ========== 第4步：切牌 ========== -->
+    <view class="step-section" wx:if="{{step === 'cut'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">切牌</text>
+        <text class="step-sub">点击牌堆，将命运一分为二</text>
+      </view>
+
+      <view class="cut-area" bindtap="handleCutTap">
+        <view class="cut-deck cut-left {{cutProgress >= 1 ? 'cut-split-l' : ''}}">
+          <view class="cut-card"></view>
+          <view class="cut-card"></view>
+          <view class="cut-card"></view>
+        </view>
+        <view class="cut-deck cut-right {{cutProgress >= 1 ? 'cut-split-r' : ''}}">
+          <view class="cut-card"></view>
+          <view class="cut-card"></view>
+        </view>
+        <view class="cut-hint" wx:if="{{cutProgress === 0}}">
+          <text>点击切牌</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== 第5步：抽牌 ========== -->
+    <view class="step-section" wx:if="{{step === 'draw'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">抽取塔罗牌</text>
+        <text class="step-sub">凭直觉选择 {{cardsToDraw > 0 ? '还需抽 ' + cardsToDraw + ' 张' : '已抽完'}}</text>
+      </view>
+
+      <!-- 已抽到的牌（顶部预览） -->
+      <view class="drawn-preview" wx:if="{{drawnCards.length > 0}}">
+        <view class="drawn-slot" wx:for="{{drawnCards}}" wx:key="positionIdx">
+          <view class="card-back-mini"></view>
+        </view>
+      </view>
+
+      <!-- 牌背选择区 -->
+      <view class="deck-grid">
+        <view
+          class="deck-card-back {{item.picked ? 'deck-picked' : ''}}"
+          wx:for="{{deckCards}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="handlePickCard"
+        >
+          <view class="card-back-pattern"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== 第6步：翻牌 ========== -->
+    <view class="step-section" wx:if="{{step === 'reveal'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">揭示牌面</text>
+        <text class="step-sub">命运正在展开...</text>
+      </view>
+
+      <view class="reveal-area">
+        <view class="reveal-card-wrap" wx:for="{{drawnCards}}" wx:key="positionIdx" wx:for-item="dc" wx:for-index="idx">
+          <view class="reveal-position">{{idx + 1}}</view>
+          <view class="flip-card {{dc.flipped ? 'flipped' : ''}}">
+            <!-- 牌背 -->
+            <view class="flip-face flip-back">
+              <view class="card-back-pattern"></view>
+            </view>
+            <!-- 牌面 -->
+            <view class="flip-face flip-front">
+              <view class="card-inner {{dc.reversed ? 'card-reversed' : ''}}">
+                <text class="card-number">{{dc.card.number}}</text>
+                <text class="card-name">{{dc.card.name}}</text>
+                <text class="card-orient">{{dc.reversed ? '逆位' : '正位'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== 第7步：AI 解读 ========== -->
+    <view class="step-section" wx:if="{{step === 'reading'}}">
+      <view class="step-header">
+        <text class="step-icon">✦</text>
+        <text class="step-title">塔罗解读</text>
+        <text class="step-sub">{{readingStatus === 'thinking' ? '咨询师正在感应牌面...' : readingStatus === 'streaming' ? '解读中' : readingStatus === 'done' ? '解读完成' : '解读失败'}}</text>
+      </view>
+
+      <!-- 牌面展示（解读阶段） -->
+      <view class="reading-cards">
+        <view class="reading-card-item" wx:for="{{drawnCards}}" wx:key="positionIdx" wx:for-item="dc" wx:for-index="idx">
+          <view class="reading-card-face">
+            <view class="card-inner {{dc.reversed ? 'card-reversed' : ''}}">
+              <text class="card-number">{{dc.card.number}}</text>
+              <text class="card-name">{{dc.card.name}}</text>
+              <text class="card-orient">{{dc.reversed ? '逆位' : '正位'}}</text>
+            </view>
+          </view>
+          <text class="reading-card-pos">第{{idx + 1}}张</text>
+        </view>
+      </view>
+
+      <!-- 思考动画 -->
+      <view class="reading-thinking" wx:if="{{readingStatus === 'thinking'}}">
+        <view class="thinking-orb"></view>
+        <text class="thinking-text">咨询师正在感应牌面能量...</text>
+      </view>
+
+      <!-- AI 输出内容 -->
+      <view class="reading-content glass-card" wx:if="{{readingHtml}}">
+        <mp-html content="{{readingHtml}}" tag-style="{{tagStyle}}" />
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="reading-actions" wx:if="{{readingStatus === 'done' || readingStatus === 'error'}}">
+        <view class="action-btn action-btn-outline" bindtap="handleRestart">
+          <text>再次占卜</text>
+        </view>
+        <view class="action-btn" wx:if="{{historyId}}" bindtap="handleChatTap">
+          <text>深入提问</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</view>
