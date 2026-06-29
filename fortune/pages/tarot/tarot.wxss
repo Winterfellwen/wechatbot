@@ -439,6 +439,18 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+  padding: 10rpx;
+  box-sizing: border-box;
+}
+/* SVG 牌面插画 */
+.card-art {
+  width: 140rpx;
+  height: 160rpx;
+  flex-shrink: 0;
+}
+.card-art-sm {
+  width: 100rpx;
+  height: 110rpx;
 }
 .card-number {
   font-size: 36rpx;
@@ -451,11 +463,12 @@
   color: #fff;
   font-weight: 600;
   letter-spacing: 2rpx;
+  margin-top: 6rpx;
 }
 .card-orient {
   font-size: 18rpx;
   color: rgba(196,181,253,0.7);
-  margin-top: 8rpx;
+  margin-top: 4rpx;
   letter-spacing: 1rpx;
 }
 /* 逆位牌内容旋转180度（在内层，不影响翻牌 rotateY） */
@@ -497,6 +510,9 @@
 }
 .reading-card-face .card-orient {
   font-size: 16rpx;
+}
+.reading-card-face .card-inner {
+  padding: 8rpx;
 }
 .reading-card-pos {
   font-size: 18rpx;

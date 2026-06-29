@@ -189,7 +189,7 @@
             <!-- 牌面 -->
             <view class="flip-face flip-front">
               <view class="card-inner {{dc.reversed ? 'card-reversed' : ''}}">
-                <text class="card-number">{{dc.card.number}}</text>
+                <image class="card-art" src="{{dc.artUri}}" mode="aspectFit" />
                 <text class="card-name">{{dc.card.name}}</text>
                 <text class="card-orient">{{dc.reversed ? '逆位' : '正位'}}</text>
               </view>
@@ -212,7 +212,7 @@
         <view class="reading-card-item" wx:for="{{drawnCards}}" wx:key="positionIdx" wx:for-item="dc" wx:for-index="idx">
           <view class="reading-card-face">
             <view class="card-inner {{dc.reversed ? 'card-reversed' : ''}}">
-              <text class="card-number">{{dc.card.number}}</text>
+              <image class="card-art card-art-sm" src="{{dc.artUri}}" mode="aspectFit" />
               <text class="card-name">{{dc.card.name}}</text>
               <text class="card-orient">{{dc.reversed ? '逆位' : '正位'}}</text>
             </view>

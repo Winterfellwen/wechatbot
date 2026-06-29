@@ -5,6 +5,7 @@ var calcService = require('../../services/calc-service');
 var aiService = require('../../services/ai-service');
 var renderService = require('../../services/render-service');
 var storageService = require('../../services/storage-service');
+var tarotArt = require('./tarot-art.js');
 
 var TAROT_MAJOR = calcService.TAROT_MAJOR;
 
@@ -218,7 +219,8 @@ Page({
       cardIndex: pickIdx,
       reversed: reversed,
       positionIdx: drawn.length,
-      flipped: false
+      flipped: false,
+      artUri: tarotArt.getCardArt(card.number)
     });
 
     deck[id].picked = true;
