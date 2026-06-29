@@ -268,7 +268,14 @@ function buildChatPrompt(profile, results, question, options, messages) {
   options = options || {};
   let resultsText = '';
   if (results && results.length > 0) {
-    resultsText = results.map(r => `【${r.typeName}】\n${r.content}`).join('\n\n');
+    resultsText = results.map(function(r) {
+      var section = '【' + r.typeName + '】\n';
+      if (r.calcData && r.calcData.summary) {
+        section += '排盘数据：' + r.calcData.summary + '\n';
+      }
+      section += 'AI解读：' + r.content;
+      return section;
+    }).join('\n\n');
   }
 
   // 最近对话历史（最多 3 轮）
@@ -299,10 +306,11 @@ function buildChatPrompt(profile, results, question, options, messages) {
 
   prompt += '\n\n【用户本次提问】\n' + question + '\n\n' +
     '【回答要求】\n' +
-    '1. 结合运势分析结果和对话历史来回答\n' +
-    '2. 简洁直接，问什么答什么\n' +
-    '3. 语言自然，像真人对话\n' +
-    '4. 需要时可用 ::advice:: 或 ::warn:: 图标标记重点';
+    '1. 回答时务必参考上方的运势分析结果（包括AI解读和排盘数据）\n' +
+    '2. 如果有塔罗牌结果，结合具体牌面、正逆位及牌阵位置来回答\n' +
+    '3. 简洁直接，问什么答什么\n' +
+    '4. 语言自然，像真人对话\n' +
+    '5. 需要时可用 ::advice:: 或 ::warn:: 图标标记重点';
 
   return prompt;
 }
