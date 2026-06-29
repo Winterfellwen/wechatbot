@@ -35,7 +35,7 @@ Page({
 
   handleItemTap(e) {
     const id = e.currentTarget.dataset.id;
-    const isTarot = e.currentTarget.dataset.tarot;
+    const isTarot = e.currentTarget.dataset.tarot === 'true';
     if (isTarot) {
       wx.navigateTo({
         url: '/fortune/pages/tarot/tarot?mode=view&id=' + id

@@ -459,8 +459,13 @@ Page({
     if (this.data.question) {
       title = '塔罗·' + this.data.question;
     }
+    var query = '';
+    if (this.data.historyId) {
+      query = 'mode=view&id=' + this.data.historyId;
+    }
     return {
-      title: title
+      title: title,
+      query: query
     };
   }
 });

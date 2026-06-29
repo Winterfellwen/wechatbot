@@ -534,8 +534,13 @@ Page({
   onShareTimeline() {
     var category = this.data.category;
     var categoryName = this.data.categoryName || (category === 'chinese' ? '易学命理' : '西方星象');
+    var query = '';
+    if (this.data.readingId) {
+      query = 'mode=view&id=' + this.data.readingId;
+    }
     return {
-      title: categoryName + '运势'
+      title: categoryName + '运势',
+      query: query
     };
   }
 });

@@ -68,7 +68,7 @@
     </scroll-view>
 
     <!-- 对话历史面板 -->
-    <view class="history-panel {{showHistory ? 'show' : ''}}" wx:if="{{showHistory}}">
+    <view class="history-panel" wx:if="{{showHistory}}">
       <view class="history-mask" bindtap="toggleHistory"></view>
       <view class="history-content">
         <view class="history-header">
