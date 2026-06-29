@@ -266,24 +266,27 @@
 
 /* ===== 生成 / 重新生成按钮 ===== */
 .generate-section {
-  padding: 24rpx 28rpx 8rpx;
+  padding: 32rpx 28rpx 16rpx;
   display: flex;
   justify-content: center;
 }
 
 .generate-btn {
-  padding: 16rpx 48rpx;
-  border: 1rpx solid;
-  border-radius: 40rpx;
-  font-size: 24rpx;
-  letter-spacing: 3rpx;
-  background: rgba(255,255,255,0.04);
+  padding: 26rpx 96rpx;
+  border: 2rpx solid;
+  border-radius: 52rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  letter-spacing: 4rpx;
+  background: rgba(255,255,255,0.06);
   transition: all 0.2s;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.2);
 }
 
 .generate-btn:active {
-  background: rgba(255,255,255,0.12);
-  transform: scale(0.97);
+  background: rgba(255,255,255,0.14);
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.15);
 }
 
 .style-cn .generate-btn {
